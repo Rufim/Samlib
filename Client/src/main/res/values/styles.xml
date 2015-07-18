@@ -1,0 +1,93 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="searchViewStyle">@style/AppSearchViewStyle</item>
+    </style>
+
+    <style name="AppSearchViewStyle" parent="Widget.AppCompat.SearchView">
+        <item name="queryBackground">@android:color/transparent</item>
+        <item name="searchIcon">@drawable/ic_action_search</item>
+        <item name="closeIcon">@drawable/ic_action_close</item>
+        <item name="queryHint">@string/search_hint</item>
+        <item name="android:imeActionId">6</item>
+    </style>
+
+	<style name="item_text" parent="Base.TextAppearance.AppCompat.Title">
+        <item name="android:layout_height">60dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingRight">7dp</item>
+        <item name="android:paddingLeft">7dp</item>
+        <item name="android:maxLines">2</item>
+    </style>
+
+    <style name="subtitle" parent="item_text">
+        <item name="android:textColor">@color/deep_grey</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:paddingLeft">@dimen/spacing_medium</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+    <style name="marquee">
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:marqueeRepeatLimit">marquee_forever</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:lines">1</item>
+        <item name="android:fadingEdge">horizontal</item>
+    </style>
+    <style name="top_authors_annotation">
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+    </style>
+    <style name="text.rate_column" parent="rate_column">
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="android:textColor">#ffff0003</item>
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:maxLines">1</item>
+    </style>
+    <style name="rate_column">
+        <item name="android:layout_width">@dimen/rate_column_width</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">5dp</item>
+    </style>
+    <style name="vertical_border">
+        <item name="android:layout_width">2px</item>
+        <item name="android:layout_height">fill_parent</item>
+        <item name="android:background">@color/light_grey</item>
+    </style>
+    <style name="horizontal_border">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">2px</item>
+        <item name="android:background">@color/light_grey</item>
+    </style>
+    <style name="author_info">
+        <item name="android:textSize">@dimen/text_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/red_light</item>
+    </style>
+    <style name="author_info_content">
+        <item name="android:textSize">@dimen/text_medium</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textColor">@color/light_gold</item>
+        <item name="android:autoLink">email|web</item>
+        <item name="android:linksClickable">true</item>
+    </style>
+    <style name="author_info_column_0">
+        <item name="android:layout_column">0</item>
+        <item name="android:layout_gravity">right</item>
+        <item name="android:textColor">@color/red_light</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="author_info_column_1">
+        <item name="android:layout_column">1</item>
+        <item name="android:textColor">@color/light_grey</item>
+        <item name="android:autoLink">email|web</item>
+        <item name="android:linksClickable">true</item>
+    </style>
+</resources>

@@ -1,0 +1,42 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
+         https://developer.android.com/design/patterns/navigation-drawer.html -->
+    <dimen name="navigation_drawer_width">240dp</dimen>
+
+    <dimen name="newest_author_width">100sp</dimen>
+    <dimen name="newest_date_width">55dp</dimen>
+
+    <dimen name="author_avatar_width">160sp</dimen>
+    <dimen name="author_avatar_height">180sp</dimen>
+
+    <dimen name="rate_column_width">70dp</dimen>
+
+
+    <dimen name="text_nano">8sp</dimen>
+    <dimen name="text_small">10sp</dimen>
+    <dimen name="text_medium">13sp</dimen>
+    <dimen name="text_large">16sp</dimen>
+    <dimen name="text_huge">18sp</dimen>
+    <dimen name="text_super_nano">21sp</dimen>
+    <dimen name="text_super_small">23sp</dimen>
+    <dimen name="text_super_medium">26sp</dimen>
+    <dimen name="text_super_large">29sp</dimen>
+    <dimen name="text_super_huge">32sp</dimen>
+
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="spacing_xsmall">2dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">10dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+
+    <dimen name="elevation_low">9dp</dimen>
+    <dimen name="elevation_high">12dp</dimen>
+    <dimen name="status_bar_height">25dp</dimen>
+    <dimen name="fab_compat_margin">0dp</dimen>
+</resources>

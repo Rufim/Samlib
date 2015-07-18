@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+
+        <item android:id="@+id/drawer_new"
+              android:checked="true"
+              android:title="@string/drawer_new"/>
+        <item android:id="@+id/drawer_top"
+              android:title="@string/drawer_top"/>
+        <item android:id="@+id/drawer_favorite"
+              android:title="@string/drawer_favorite"/>
+        <item android:id="@+id/drawer_review"
+              android:title="@string/drawer_review"/>
+        <item android:id="@+id/drawer_discuss"
+              android:title="@string/drawer_discuss"/>
+        <item android:id="@+id/drawer_sign_up"
+              android:title="@string/drawer_sign_up"/>
+        <item android:id="@+id/drawer_help"
+              android:title="@string/drawer_help"/>
+    </group>
+</menu>

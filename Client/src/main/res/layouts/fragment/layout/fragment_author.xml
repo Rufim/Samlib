@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+        <RelativeLayout android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginTop="7dp"
+                        android:id="@+id/author_top_layout">
+
+
+            <LinearLayout android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical"
+                          android:id="@+id/author_about_layout"
+                          android:layout_alignParentTop="true"
+                          android:layout_alignParentLeft="true"
+                          android:layout_alignParentStart="true">
+                <TextView android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:id="@+id/author_about"
+                          android:layout_alignParentTop="true"
+                          style="@style/author_info"
+                          android:text="@string/author_about"/>
+                <TextView android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:id="@+id/author_about_text"
+                          style="@style/author_info_content"
+                          android:text="Привет всем! Спасибо, что заглянули на мою страничку. Я - обычная мечтательница и фантазерка, которая решила поделиться своими фантазиями с читателями. Надеюсь, вам понравятся мои творения. :) "/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical"
+                          android:id="@+id/author_suggestion_layout"
+                          android:layout_below="@+id/author_about_layout">
+                <TextView android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:id="@+id/author_suggestion"
+                          style="@style/author_info"
+                          android:text="@string/author_suggestion"/>
+                <LinearLayout android:id="@+id/author_suggestions"
+                              android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:orientation="vertical"/>
+            </LinearLayout>
+        </RelativeLayout>
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+                      android:id="@+id/author_section_annotation_layout"
+                      android:layout_below="@+id/author_top_layout"
+                      android:layout_marginLeft="7dp">
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:id="@+id/author_annotation"
+                      style="@style/author_info"
+                      android:text="@string/author_annotation"/>
+            <TextView android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:id="@+id/author_section_annotation_text"
+                      style="@style/author_info_content"
+                      android:text="Пишу на Самиздате с 21.05.2014
+Копирование и размещение текстов на сторонних ресурсах без разрешения автора запрещается!!!
+Для желающих угостить автора и Муза шоколадкой: Яндекс.Деньги 410011573041491"/>
+        </LinearLayout>
+        <LinearLayout android:layout_width="fill_parent"
+                      android:layout_height="fill_parent"
+                      android:orientation="vertical"
+                      android:gravity="left"
+                      android:layout_below="@id/author_section_annotation_layout"
+                      android:id="@+id/author_grid_layout"
+                      android:layout_marginLeft="5dp">
+            <android.support.v7.widget.GridLayout android:layout_width="wrap_content"
+                                                  android:layout_height="wrap_content"
+                                                  android:id="@+id/author_grid_info"
+                                                  android:layout_marginTop="15dp"
+                                                  app:columnCount="2"
+                                                  app:useDefaultMargins="true"
+                                                  app:orientation="horizontal"/>
+        </LinearLayout>
+    </RelativeLayout>
+</ScrollView>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content" android:gravity="center_vertical">
+
+    <TextView
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="1106688"
+            android:gravity="center"
+            android:id="@+id/top_authors_views"
+            android:textColor="#ffff0003"
+            android:textStyle="bold|italic"
+            android:padding="5dp"
+            android:singleLine="true"/>
+    <View android:layout_width="2px"
+          android:layout_height="fill_parent"
+          android:background="#ffafafaf"/>
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/top_authors_autor_body"
+                  android:gravity="center_vertical">
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal">
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/item_text"
+                    android:textSize="@dimen/text_large"
+                    android:text="Гончарова Галина Дмитриевна"
+                    android:id="@+id/top_authors_author"
+                    android:singleLine="true"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Писатель должен быть талантлив и дьявольски трудолюбив"
+                    android:id="@+id/top_authors_annotation"
+                    android:singleLine="true"
+                    android:gravity="center"
+                    style="@style/top_authors_annotation"/>
+        </LinearLayout>
+        <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/top_authors_section_annotation"
+                android:layout_marginTop="0sp"
+                android:paddingTop="0sp"
+                android:paddingBottom="0dp"
+                android:gravity="left|top"
+                android:maxLines="3"
+                android:text="Инфо"
+                android:layout_weight="0.2"
+                android:ellipsize="end"
+                android:textColor="#ff767676"
+                style="@style/subtitle"
+                android:textStyle="italic"/>
+    </LinearLayout>
+</LinearLayout>

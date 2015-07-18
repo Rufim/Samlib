@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content" android:gravity="center_vertical">
+
+    <TextView
+        android:text="1106688"
+        android:id="@+id/top_authors_views"
+        style="@style/text.rate_column"/>
+    <View style="@style/vertical_border"/>
+    <LinearLayout android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/top_authors_autor_body"
+                  android:gravity="center_vertical">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_large"
+                android:text="Гончарова Галина Дмитриевна"
+                android:id="@+id/top_authors_author"
+                android:singleLine="true"
+                style="@style/item_text"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/subtitle"
+                android:text="Писатель должен быть талантлив и дьявольски трудолюбив"
+                android:id="@+id/top_authors_annotation" android:maxLines="3"/>
+    </LinearLayout>
+</LinearLayout>

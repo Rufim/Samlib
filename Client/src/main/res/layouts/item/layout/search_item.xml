@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:paddingTop="10px"
+              android:paddingLeft="20px"
+              android:paddingRight="20px"
+              android:paddingBottom="10px"
+              android:gravity="center">
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Петрова Елена"
+            android:id="@+id/search_item_autor" android:singleLine="true"
+            android:textSize="@dimen/text_large"
+            style="@style/item_text" />
+        <Space
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                />
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:text="Лейна. Первая книга цикла"
+            android:id="@+id/search_item_title"
+            android:textSize="@dimen/text_medium"
+            style="@style/item_text" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Жанры: "
+                android:id="@+id/search_item_subtitle"
+                style="@style/subtitle"
+                android:maxLines="2"
+                android:textStyle="italic"/>
+    </LinearLayout>
+</LinearLayout>

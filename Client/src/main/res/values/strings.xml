@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- android base fonts -->
+    <string name="font_sans_serif">sans-serif</string>
+    <!-- roboto regular              -->
+    <string name="font_sans_serif_light">sans-serif-light</string>
+    <!-- roboto light                -->
+    <string name="font_sans_serif_condensed">sans-serif-condensed</string>
+    <!-- roboto condensed            -->
+    <string name="font_sans_serif_thin">sans-serif-thin</string>
+    <!-- roboto thin (android 4.2)   -->
+    <string name="font_sans_serif_medium">sans-serif-medium</string>
+    <!-- roboto medium (android 5.0) -->
+
+    <!-- Dreawer -->
+    <string name="drawer_new">Новинки</string>
+    <string name="drawer_top">Топ Авторов</string>
+    <string name="drawer_favorite">Избранное</string>
+    <string name="drawer_review">Обзоры</string>
+    <string name="drawer_discuss">Обсуждения</string>
+    <string name="drawer_sign_up">Регистрация</string>
+    <string name="drawer_help">Помощь</string>
+
+    <string name="refresh">Обновить</string>
+    <string name="action_settings">Опции</string>
+
+    <string name="app_name">Самлиб</string>
+    <string name="loading">Загрузка...</string>
+    <string name="error">Произошла ошибка!</string>
+
+    <string-array name="main_menu">
+        <item>Новинки</item>
+        <item>Топ Авторов</item>
+        <item>Избранное</item>
+        <item>Обзоры</item>
+        <item>Обсуждения</item>
+        <item>Регистрация</item>
+        <item>Помощь</item>
+    </string-array>
+
+    <string-array name="author_grid">
+        <item>WWW:</item>
+        <item>Aдpeс:</item>
+        <item>Родился:</item>
+        <item>Обновлялось:</item>
+        <item>Объем:</item>
+        <item>Рейтинг:</item>
+        <item>Посетителей за год:</item>
+        <item>Friends/Friend Of:</item>
+        <item>Friend Of:</item>
+        <item>Friends:</item>
+    </string-array>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="item_rate">Оцeнки:</string>
+    <string name="item_people_label">Оц. пользователей:</string>
+    <string name="item_experts_label">Оц. экспертов:</string>
+    <string name="item_size_label">Размер:</string>
+    <string name="item_genres_label">Жанры:</string>
+    <string name="item_form_label">Форма:</string>
+    <string name="search_hint">Поиск...</string>
+    <string name="search">Поиск</string>
+    <string name="author_about">Об авторе:</string>
+    <string name="author_suggestion">Начните знакомство с:</string>
+    <string name="author_annotation">Аннотация к разделу:</string>
+    <string name="illustration">Иллюстрации</string>
+    <string name="author_page">Страничка автора</string>
+
+    <string name="example_book_annotation">
+        <![CDATA[
+         <font color="#555555"><table><tbody><tr><td><img src="http://samlib.ru/img/r/rusaja_w/temnye_pravila/t_p.jpg" width="150"></td>  <td><p><font color="teal"><i>Легко ли жить обладательнице редкого магического дара, с которым она не умеет управляться? А если добавить к этому опеку строгого дяди-короля? И запутанные семейные тайны! А ещё потенциальное замужество, от которого хочется убежать со всех ног! Куда? Да куда угодно. Хоть в Темную Империю! Спросите, какой смысл? А светлые маги там сейчас нужны. И не важно, что играть придётся по чужим правилам. Разве трудно их поменять? </i></font></p>    <p><font color="red">Часть текста удалена. <br> Полную версию романа можно приобрести по ссылкам ниже. <br> <a href="http://feisovet.ru/%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD/%D0%A2%D0%B5%D0%BC%D0%BD%D1%8B%D0%B5-%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D0%92%D0%B5%D1%80%D0%B0-%D0%A0%D1%83%D1%81%D0%B0%D1%8F">Купить на Призрачных Мирах</a> <br><a href="http://russolit.ru/books/item/temnye-pravila.html">Купить на Руссолит</a></font></p>  <p>Огромная благодарность <a href="http://samlib.ru/b/belousowa_e_e/">Эль Бланк</a> за бесценную помощь в вычитке и корректуре! <br> Девочкам-авторам, а также моим любимым читателям спасибо за активную поддержку во время написания!</p> </td></tr></tbody></table></font>
+        ]]>
+    </string>
+
+
+</resources>
