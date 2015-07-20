@@ -201,6 +201,10 @@ public class ParserUtils {
         if (table.select("input").size() > 0) {
             table.remove();
         }
+        if(table.hasAttr("border") && table.select("tr").size() > 2) {
+            table.wrap("<hr>");
+        }
+        table.attr("border", "0");
         el.select("input").remove(); // inputs not supported
         //Cleanup
         for (Element elem : el.select("*")) {

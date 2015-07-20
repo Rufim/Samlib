@@ -210,13 +210,8 @@ class TableElementView extends AbstractElementView {
                 AbstractElementView cell = (AbstractElementView) children.get(rowCount + i);
                 column = cols[i];
                 cell.calculateWidth(maxInnerWidth);
-                if(HtmlView.HtmlOptions.adjustBounds) {
-                    minWidths[column] = HtmlUtils.maxValue(cell.minimumWidth, minWidths[column],
-                            cell.getMinimumWidth(maxInnerWidth)) / cellCount;
-                } else {
-                    minWidths[column] = HtmlUtils.maxValue(cell.minimumWidth, minWidths[column],
-                            cell.getMinimumWidth(maxInnerWidth));
-                }
+                minWidths[column] = HtmlUtils.maxValue(cell.minimumWidth, minWidths[column],
+                        cell.getMinimumWidth(maxInnerWidth));
                 specWidths[column] = HtmlUtils.maxValue(cell.maximumWidth, specWidths[column],
                         cell.getMinimumWidth(maxInnerWidth));
                 maxWidths[column] = HtmlUtils.maxValue(cell.maximumWidth, maxWidths[column],
