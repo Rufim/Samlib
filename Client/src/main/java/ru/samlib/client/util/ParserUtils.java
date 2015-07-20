@@ -2,6 +2,8 @@ package ru.samlib.client.util;
 
 import android.util.Log;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Splitter;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
@@ -191,5 +193,23 @@ public class ParserUtils {
         }
         return builder.toString();
     }
+
+    public static String cleanupHtml(Element el) {
+        //TODO: FIX HtmlView to support inputs and tables
+        //
+        Elements table = el.select("table");  // tablets not supported
+        if (table.select("input").size() > 0) {
+            table.remove();
+        }
+        el.select("input").remove(); // inputs not supported
+        //Cleanup
+        for (Element elem : el.select("*")) {
+            if (!elem.hasText() && elem.select("img").size() < 1) {
+                elem.remove();
+            }
+        }
+        return el.html().replaceAll("\\s<br>\\s\\n", "").replace("\n", "");
+    }
+
 
 }

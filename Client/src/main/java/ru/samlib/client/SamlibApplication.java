@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.res.Configuration;
 import com.facebook.drawee.backends.pipeline.Fresco;
 
+import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.Constants;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;

@@ -60,6 +60,16 @@ class HtmlUtils {
     }
   }
 
+  public static int maxValue(int ... numbers) {
+    int highest = numbers[0];
+    for (int index = 1; index < numbers.length; index++) {
+      if (numbers[index] > highest) {
+        highest = numbers[index];
+      }
+    }
+    return highest;
+  }
+
 
   public static byte[] getUtf8Bytes(final String s) {
     try {

@@ -15,6 +15,8 @@
 package com.nd.android.sdp.im.common.widget.htmlview.view;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
@@ -55,9 +57,16 @@ import java.util.HashSet;
 public class HtmlView extends BlockElementView {
 
     public static class HtmlOptions {
-        static boolean openLinksInside = false;
-        static String fontsPath = null;
+        public static boolean openLinksInside = false;
+        public static boolean adjustBounds = true;
+        public static String fontsPath = null;
+        public int defaultTextColor = 0x0ff000000;
+        public int defaultTextSize = 16;
     }
+
+    private final static String ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android";
+
+    public HtmlOptions options = new HtmlOptions();
 
     public enum Onload {
         ADD_STYLE_SHEET,
@@ -159,12 +168,39 @@ public class HtmlView extends BlockElementView {
     public HtmlView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
+        options.defaultTextColor = getIntAttr("textColor", attrs, options.defaultTextColor, new ResolveRes() {
+            @Override
+            public int resolve(Resources resources, int res) {
+                return resources.getColor(res);
+            }
+        });
+        options.defaultTextSize = getIntAttr("textSize", attrs, options.defaultTextSize, new ResolveRes() {
+            @Override
+            public int resolve(Resources resources, int res) {
+                return (int) resources.getDimension(res);
+            }
+        });
     }
 
-    public HtmlView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context);
+
+    interface ResolveRes {
+        public int resolve(Resources resources, int res);
     }
+
+    public int getIntAttr(String name, AttributeSet attrs, int defaultVal, ResolveRes resolveRes) {
+        String value = attrs.getAttributeValue(ANDROID_NAMESPACE, name);
+        if(!value.startsWith("@")){
+            return attrs.getAttributeIntValue(ANDROID_NAMESPACE, name, defaultVal);
+        } else {
+            int res = attrs.getAttributeResourceValue(ANDROID_NAMESPACE, name, 0);
+            if(res > 0) {
+                return resolveRes.resolve(getResources(), res);
+            } else {
+                return defaultVal;
+            }
+        }
+    }
+
 
     private void init(Context context) {
         // android.R.layout.simple_spinner_dropdown_item

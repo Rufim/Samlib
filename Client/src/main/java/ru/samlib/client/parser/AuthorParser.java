@@ -2,8 +2,6 @@ package ru.samlib.client.parser;
 
 import android.util.Log;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -241,27 +239,7 @@ public class AuthorParser extends Parser {
                         break;
                     } else {
                         if(el.hasText() || el.select("img").size() > 0) {
-                            //TODO: FIX HtmlView to support inputs and tables
-                            Elements table = el.select("table");
-                            if(table.select("input").size() > 0) {
-                                table.remove();
-                            } else {
-                                table.select("td").tagName("nobr");
-                                table.select("tr").tagName("p");
-                                table.select("tbody").unwrap();
-                                table.unwrap();
-                            }
-                            //TODO:More complex fix
-                            el.select("img[width~=\\d{3}]").wrap("<br></br>");
-                            el.select("img").select(":not([width])").wrap("<br></br>");
-                            el.select("input").remove();
-                            //Cleanup
-                            for (Element elem: el.select("*")) {
-                                if (!elem.hasText() && elem.select("img").size() < 1) {
-                              //      elem.remove();
-                                }
-                            }
-                            work.addAnnotation("<p>" + el.html().replaceAll("\\s<br>\\s\\n", "").replace("\n","") + "</p>");
+                            work.addAnnotation("<p>" + ParserUtils.cleanupHtml(el) + "</p>");
                         }
                     }
                     break;

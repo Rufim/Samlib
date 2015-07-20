@@ -44,8 +44,8 @@ import uk.co.chrisjenx.calligraphy.*;
 /**
  * Stylable XML/HTML Element representation. Also used to represent an anonymous
  * parent element of the document root while parsing, in order to simplify the
- * process and to avoid an additional document class. 
- * 
+ * process and to avoid an additional document class.
+ *
  * @author Stefan Haustein
  */
 public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css.StylableElement {
@@ -77,13 +77,13 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   private static final int TAG_BASE = 0x0060000;
 
   /**
-   * Hash table mapping tag names to flags and tag name constants. 
+   * Hash table mapping tag names to flags and tag name constants.
    * Used for automatically closing unbalanced elements.
    */
   private static HashMap<String, Integer> flagMap = new HashMap<String,Integer>();
 
   static final String[] NON_TEXT_INPUT_TYPES = {"checkbox", "cancel", "submit", "hidden", "radio", "image"};
-  
+
   static {
     setFlags("area", FLAG_EMPTY);
     setFlags("base", FLAG_EMPTY | TAG_BASE);
@@ -137,15 +137,15 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   private Element parent;
   private String name;
   private HashMap<String,String> attributes;
-  private ArrayList<Object> content;  
+  private ArrayList<Object> content;
   private Style computedStyle;
   private Paint fontCache;
   private Paint backgroundCache;
   View nativeView;
 
   /**
-   * Create a new element with the given name. 
-   * 
+   * Create a new element with the given name.
+   *
    * @param htmlView the htmlView this element belongs to
    * @param name the name of this element
    */
@@ -156,7 +156,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Add the given child element at the end of this element's content.
-   * 
+   *
    * @param element child element to be added.
    */
   public void addElement(Element element) {
@@ -169,7 +169,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Add the given text at the end of this element's content.
-   * 
+   *
    * @param text the text to add.
    */
   public void addText(String text) {
@@ -181,7 +181,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Set the given attribute to the given value.
-   * 
+   *
    * @param attrName attribute name
    * @param value attribute value
    */
@@ -198,7 +198,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Returns the type (ELEMENT or TEXT) of the child node with the given index.
-   * 
+   *
    * @param index node index
    * @return ELEMENT or TEXT
    */
@@ -208,7 +208,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Returns the number of child nodes.
-   * 
+   *
    * @return number of child nodes.
    */
   public int getChildCount() {
@@ -246,8 +246,8 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   public String getName() {
     return name;
   }
-  
-  /** 
+
+  /**
    * Returns the "native" view associated with this (input) element, e.g. the
    * EditText view for an input element.
    */
@@ -263,11 +263,11 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   public String getText(int index) {
     return (String) content.get(index);
   }
-  
+
   /**
    * Returns the first child which has a matching id attribute.
    * Searches recursively through all children.
-   * 
+   *
    * @param id
    * @return First child with matching id attribute
    */
@@ -277,7 +277,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
     for (int i=0; i < childCount; i++) {
       if (this.getChildType(i) == Element.ELEMENT) {
         currChild = this.getElement(i);
-        if (currChild != null && 
+        if (currChild != null &&
             id.equals(currChild.getAttributeValue("id"))
             ) {
           break;
@@ -306,7 +306,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Returns the value of the given attribute.
-   * 
+   *
    * @param attrName name of the attribute
    * @return attribute value or null
    */
@@ -317,10 +317,10 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   /**
    * Returns the integer value of the given attribute. If there is no such
    * attribute, or the value is not parseable to an integer, 0 is returned.
-   * 
+   *
    * @param attrName name of the attribute
    * @return attribute integer value or 0 if not available
-   */  
+   */
   public int getAttributeInt(String attrName, int dflt) {
     String v = getAttributeValue(attrName);
     if (v == null) {
@@ -336,8 +336,8 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Returns <a href="http://www.w3.org/TR/CSS21/cascade.html#computed-value">
-   * computed css values</a>, taking the cascade and inheritance into 
-   * account, but not actual layout or rendering.  If a style was not yet set 
+   * computed css values</a>, taking the cascade and inheritance into
+   * account, but not actual layout or rendering.  If a style was not yet set
    * (i.e. SyleSheet.apply() was not called), null is returned.
    */
   public Style getComputedStyle() {
@@ -369,9 +369,9 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   }
 
   /**
-   * Returns true if this element is currently focused. Used by widgets to make 
-   * sure the focus highlight spans all elements involved, not just the primary 
-   * widget that is actually traversed. 
+   * Returns true if this element is currently focused. Used by widgets to make
+   * sure the focus highlight spans all elements involved, not just the primary
+   * widget that is actually traversed.
    */
   public boolean isFocused() {
     return htmlView.focusedElement == this;
@@ -391,7 +391,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
     return parent;
   }
 
-  /** 
+  /**
    * Returns all text content in a single string, skipping all tags (but including
    * the text content of child elements).
    */
@@ -411,7 +411,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   /**
    * Parses the contents of an element (the part between the start and the end
    * tag, not including the attributes).
-   * 
+   *
    * @param parser the parser
    * @throws XmlPullParserException should never be thrown in relaxed mode
    * @throws IOException for underlying IO exceptions
@@ -512,7 +512,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
       }
     }
 
-    // perform action on element 
+    // perform action on element
     switch (flags & 0xffff0000) {
       case TAG_STYLE:
         if (StyleSheet.matchesMediaType(getAttributeValue("media"), HtmlView.MEDIA_TYPES)) {
@@ -524,12 +524,12 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
         break;
       case TAG_LINK:
         String rel = getAttributeValue("rel");
-        if (!"stylesheet alternate".equals(rel) && 
-            ("stylesheet".equals(rel) || 
+        if (!"stylesheet alternate".equals(rel) &&
+            ("stylesheet".equals(rel) ||
                 "text/css".equals(getAttributeValue("type")))
                 && StyleSheet.matchesMediaType(getAttributeValue("media"), HtmlView.MEDIA_TYPES)) {
           htmlView.requestStyleSheet(htmlView.getAbsoluteUrl(getAttributeValue("href")), new int[] {position});
-        } 
+        }
         break;
       case TAG_BASE:
         String href = getAttributeValue("href");
@@ -543,12 +543,12 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
         }
     }
   }
-  
+
   public Iterator<Element> getChildElementIterator() {
     return new Iterator<Element>() {
       Element next;
       int index;
-      
+
       @Override
       public boolean hasNext() {
         while (next == null && index < getChildCount()) {
@@ -577,7 +577,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
     };
   }
 
-  /** 
+  /**
    * Called from StyleSheet.apply with the computed style.
    * Return false to signal that style calculation should be aborted.
    */
@@ -585,22 +585,22 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
     fontCache = null;
     backgroundCache = null;
     Style previousStyle = computedStyle;
-    
-    // handle legacy stuff 
+
+    // handle legacy stuff
 
     applyHtmlAttributes(style);
     computedStyle = style;
 
     if (!htmlView.needsBuild) {
-      htmlView.needsBuild = previousStyle == null || 
-      previousStyle.getEnum(Style.DISPLAY) != 
-        computedStyle.getEnum(Style.DISPLAY) || 
+      htmlView.needsBuild = previousStyle == null ||
+      previousStyle.getEnum(Style.DISPLAY) !=
+        computedStyle.getEnum(Style.DISPLAY) ||
         previousStyle.isBlock(false) != computedStyle.isBlock(false);
     }
     return true;
   }
-  
-  
+
+
   /**
    * Apply HTML attributes that influence the style (align, color, valign etc.).
    */
@@ -668,7 +668,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
         } else if ("center".equals(s)) {
           style.set(Style.VERTICAL_ALIGN, Style.MIDDLE, Style.ENUM);
         }
-      } 
+      }
       s = getTableAttributeValue("border");
       if (s != null) {
         int border = 1;
@@ -707,12 +707,12 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
           style.set(Style.MARGIN_TOP | Style.MULTIVALUE_TRBL, 500 * spacing, Style.PX, 0);
         }
       }
-    } 
+    }
     if ("font".equals(name)) {
       String color = getAttributeValue("color");
       if (color != null) {
         style.setColor(Style.COLOR, color, 0);
-      } 
+      }
     } else if ("img".equals(name)) {
       int i = getAttributeInt("vspace", -1);
       if (i >= 0) {
@@ -744,13 +744,13 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Looks up table attributes in parent elements of the same table (tr, table)
-   * 
+   *
    * @param attr name
    * @return attribute value or null if not present
    */
   private String getTableAttributeValue(String attr) {
     String s = getAttributeValue(attr);
-    if (s == null && parent != null && ("table".equals(parent.name) || 
+    if (s == null && parent != null && ("table".equals(parent.name) ||
         "tr".equals(parent.name))) {
       s = parent.getTableAttributeValue(attr);
     }
@@ -759,7 +759,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
   /**
    * Remove the child node with the given index.
-   * 
+   *
    * @param i index of the child node to be removed
    */
   public void remove(int i) {
@@ -767,20 +767,20 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
   }
 
   /**
-   * Sets the parent element. Currently used to detach the html root element 
+   * Sets the parent element. Currently used to detach the html root element
    * from the document pseudo element after parsing. This is necessary to make
-   * CSS behave correctly. 
-   * 
+   * CSS behave correctly.
+   *
    * @param parent the new parent element
    */
   public void setParent(Element parent) {
-    this.parent = parent;    
+    this.parent = parent;
   }
-  
+
   public HtmlView gethtmlView() {
        return htmlView;
   }
-  
+
   public int getScaledPx(int id) {
     return Math.round(computedStyle.getPx(id) * htmlView.pixelScale);
   }
@@ -791,24 +791,25 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
       this.fontCache.setTextSize(getScaledPx(Style.FONT_SIZE));
       int style = computedStyle.getRaw(Style.FONT_WEIGHT) >= Style.BOLD ? Typeface.BOLD : Typeface.NORMAL;
       switch (computedStyle.getEnum(Style.FONT_STYLE)) {
-      case Style.ITALIC: 
+      case Style.ITALIC:
         style |= Typeface.ITALIC;
         break;
       case Style.OBLIQUE:
         fontCache.setTextSkewX(-0.25f);
         break;
       }
-      Typeface typeface;
+      Typeface typeface = null;
       String fontPath;
-      if(HtmlView.HtmlOptions.fontsPath != null) {
-        fontPath = HtmlView.HtmlOptions.fontsPath;
+      if(htmlView.options.fontsPath != null) {
+        fontPath = htmlView.options.fontsPath;
       } else {
         fontPath = CalligraphyConfig.get().getFontPath();
       }
       if(fontPath != null) {
         typeface = TypefaceUtils.load(context.getAssets(), fontPath);
-      } else {
-        typeface = Typeface.DEFAULT;
+      }
+      if(typeface == null) {
+          typeface = Typeface.DEFAULT;
       }
       String fontFamily = computedStyle.getString(Style.FONT_FAMILY);
       if (fontFamily != null) {
@@ -822,8 +823,10 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
       this.fontCache.setTypeface(style == 0 ? typeface : Typeface.create(typeface, style));
       if (isLink()) {
         this.fontCache.setColor(getThemeColor(context, android.R.attr.textColorLink));
-      } else {
+      } else if(computedStyle.isSet(Style.COLOR)) {
         this.fontCache.setColor(computedStyle.getColor(Style.COLOR));
+      } else {
+        this.fontCache.setColor(htmlView.options.defaultTextColor);
       }
     }
     return this.fontCache;
@@ -841,7 +844,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
     return Math.round(computedStyle.getPx(id, Math.round(percentOf / htmlView.pixelScale)) * htmlView.pixelScale);
   }
 
-  
+
   public Paint getBackgroundPaint() {
     if (backgroundCache == null) {
       int color = computedStyle.getColor(Style.BACKGROUND_COLOR);
@@ -850,7 +853,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
         backgroundCache.setStyle(Paint.Style.FILL);
         backgroundCache.setColor(color);
       }
-    } 
+    }
     return backgroundCache;
   }
 
@@ -890,7 +893,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
     }
     return -1;
   }
-  
+
   /**
    * returns the stringified start tag including attributes. Does not do any escaping --
    * this is not safe for any use other than debugging.
@@ -903,7 +906,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
         sb.append(' ');
         sb.append(e.getKey());
         sb.append('=');
-        sb.append(e.getValue()); 
+        sb.append(e.getValue());
       }
     }
     sb.append('>');

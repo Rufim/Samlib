@@ -28,7 +28,7 @@ import com.nd.android.sdp.im.common.widget.htmlview.css.Style;
 /**
  * Widget for rendering HTML block elements. For text content and for inline
  * elements without block content, TextFragmentWidgets are created.
- * 
+ *
  * @author Stefan Haustein
  */
 abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosition {
@@ -38,7 +38,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
 
   /**
    * If false, a call to calculateWidth() is required before the minWidth and
-   * maxWidth values can be used. Used internally in getMinWidth() and 
+   * maxWidth values can be used. Used internally in getMinWidth() and
    * getMaxWidth() only.
    */
   protected boolean widthValid;
@@ -58,11 +58,11 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
    */
   protected int marginRight;
 
-  /** 
-   * X-Coordinate of the CSS box inside this widget. 
+  /**
+   * X-Coordinate of the CSS box inside this widget.
    * The widget may be larger than the CSS box to make sure
    * components outside the CSS box are drawn.
-   */  
+   */
   protected int boxX;
 
   /** Y-Coordinate of the CSS box inside this widget {@see boxX}. */
@@ -74,23 +74,23 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
   /** Height of the CSS box inside this widget {@see boxX}. */
   protected int boxHeight;
 
-  /** 
+  /**
    * Minimal width of this component, as set by calculateWidth(). Use
    * getMinimumWidth to obtain this value.
    */
   protected int minimumWidth;
 
-  /** 
+  /**
    * Maximal width of this component, as set by calculateWidth(). Use
    * getMaximumWidth to obtain this value.
    */
   protected int maximumWidth;
-  
+
   private int measuredX;
   private int measuredY;
 
   private Paint borderPaint = new Paint();
-  
+
   /**
    * Constructs a new BlockWidget for the given element. Does not recurse.
    * Used only in constructors for subclasses.
@@ -130,7 +130,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
 
   /**
    * Request a layout for this and all parent views. In addition, set widthValid to false.
-   * Regular android layout requests are switched dead 
+   * Regular android layout requests are switched dead
    */
   public void requestLayout() {
     widthValid = false;
@@ -144,11 +144,11 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
   boolean isHeightFixed() {
     if (element.getComputedStyle().isLengthFixed(Style.HEIGHT)) {
       return true;
-    } 
-    if (!element.getComputedStyle().isLengthFixedOrPercent(Style.HEIGHT) || 
+    }
+    if (!element.getComputedStyle().isLengthFixedOrPercent(Style.HEIGHT) ||
         !(getParent() instanceof AbstractElementView)) {
       return false;
-    }  
+    }
 
     return ((AbstractElementView) getParent()).isHeightFixed();
   }
@@ -160,17 +160,17 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
     }
     return element.getScaledPx(Style.HEIGHT, ((AbstractElementView) getParent()).getFixedInnerHeight());
   }
-  
+
   /**
-   * Lays the content out according to the CSS style associated with the 
-   * element. 
-   * 
+   * Lays the content out according to the CSS style associated with the
+   * element.
+   *
    * @param outerMaxWidth the maximum available width for this element including
    *        margins, borders and padding
    * @param parentLayoutContext the layout context of the parent element (for nested
    *        block element in regular flow, null otherwise)
    * @param shrinkWrap true if the element is a floating element or positioned
-   *        element where the width is not limited by the with of the display 
+   *        element where the width is not limited by the with of the display
    *        but must be determined from the content width.
    */
   abstract void measureBlock(int outerMaxWidth, final int viewportWidth,
@@ -198,11 +198,11 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
       element.dumpStyle();
 
       System.out.println();
-      System.out.println("Width: " + getWidth() + 
-        " min: " + getMinimumWidth(containingWidth) + 
-        " max: " + getMaximumWidth(containingWidth) + 
+      System.out.println("Width: " + getWidth() +
+        " min: " + getMinimumWidth(containingWidth) +
+        " max: " + getMaximumWidth(containingWidth) +
         " spec: " + getSpecifiedWidth(containingWidth) +
-        " x: " + this.getMeasuredX() + " y: " + this.getMeasuredY() + 
+        " x: " + this.getMeasuredX() + " y: " + this.getMeasuredY() +
         " marginLeft: " + marginLeft + " marginRight: " + marginRight);
     }
   }
@@ -213,7 +213,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
    * Adjust the vertical child positions according to the vertical alignment
    * if there is excessive space in this block that can be distributed. Called from
    * TableElementLayout for the cells.
-   * 
+   *
    * @param verticalGap the space to distribute
    */
   void adjustVerticalPositions(int verticalGap) {
@@ -240,7 +240,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
 
   /**
    * Returns the minimum width of this block including borders.
-   * 
+   *
    * @param containerWidth the width of the container
    */
   public int getMinimumWidth(final int containerWidth) {
@@ -252,28 +252,28 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
 
   /**
    * Returns the maximum width of this block including borders.
-   * 
+   *
    * @param containerWidth the width of the container
    */
   public int getMaximumWidth(final int containerWidth) {
     if (!widthValid) {
       calculateWidth(containerWidth);
     }
-    return maximumWidth;    
+    return maximumWidth;
   }
 
   /**
    * Returns the specified width of this block including borders.
-   * 
+   *
    * @param containerWidth the width of the container
    */
   int getSpecifiedWidth(int containerWidth) {
     return element.getScaledPx(Style.WIDTH, containerWidth) +
-        element.getScaledPx(Style.BORDER_LEFT_WIDTH) + 
-        element.getScaledPx(Style.BORDER_RIGHT_WIDTH) + 
-        element.getScaledPx(Style.MARGIN_LEFT) + 
-        element.getScaledPx(Style.MARGIN_RIGHT) + 
-        element.getScaledPx(Style.PADDING_LEFT) + 
+        element.getScaledPx(Style.BORDER_LEFT_WIDTH) +
+        element.getScaledPx(Style.BORDER_RIGHT_WIDTH) +
+        element.getScaledPx(Style.MARGIN_LEFT) +
+        element.getScaledPx(Style.MARGIN_RIGHT) +
+        element.getScaledPx(Style.PADDING_LEFT) +
         element.getScaledPx(Style.PADDING_RIGHT);
   }
 
@@ -281,20 +281,20 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
    * Calculates the minimum and maximum widths of a block and stores them
    * in minimumWidth and maximumWidth. Do not call this method or use
    * the values directly, use getMinimumWidth() or getMaximumWidht() instead.
-   * 
+   *
    * @param containerWidth Width of the container.
    */
   abstract void calculateWidth(int containerWidth);
 
   /**
-   * Draws the border and fills the area with the background color if set. 
+   * Draws the border and fills the area with the background color if set.
    */
   @Override
   public void onDraw(Canvas g) { // had dx, dy params
     if (element == null) {
       return;
     }
-    
+
     int dx = boxX;
     int dy = boxY;
 
@@ -318,7 +318,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
     if (bg != null) {
       g.drawRect(x0 + 1, y0 + 1, x1 - 1, y1 - 1, bg);
     }
-   /* 
+   /*
     Rect clipBounds = new Rect();
     g.getClipBounds(clipBounds);
     g.save();
@@ -331,11 +331,11 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
       int ch = clipBounds.height();
       int repeat = style.getEnum(Style.BACKGROUND_REPEAT);
 
-      int bgX = repeat == Style.REPEAT_X || repeat == Style.REPEAT ? 0 : 
-        style.getBackgroundReferencePoint(Style.BACKGROUND_POSITION_X, 
+      int bgX = repeat == Style.REPEAT_X || repeat == Style.REPEAT ? 0 :
+        style.getBackgroundReferencePoint(Style.BACKGROUND_POSITION_X,
             x1 - x0 - 1, img.getWidth());
-      int bgY = repeat == Style.REPEAT_Y || repeat == Style.REPEAT ? 0 : 
-        style.getBackgroundReferencePoint(Style.BACKGROUND_POSITION_Y, 
+      int bgY = repeat == Style.REPEAT_Y || repeat == Style.REPEAT ? 0 :
+        style.getBackgroundReferencePoint(Style.BACKGROUND_POSITION_Y,
             y1 - y0 - 1, img.getHeight());
 
       g.clipRect(x0 + 1, y0 + 1, x1 - x0 - 1, y1 - y0 - 1);
@@ -362,7 +362,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
       }
        g.restore();
     } */
-   
+
 
     // TODO: Avoid alloc
     if (borderTop > 0) {
@@ -400,7 +400,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
 
     if (style.getEnum(Style.DISPLAY) == Style.LIST_ITEM) {
       Paint f = element.getFont(getContext());
-      // round up so in doubt the dot size is a bit bigger and the pos is lower 
+      // round up so in doubt the dot size is a bit bigger and the pos is lower
       int liy = y0 + 1 + element.getScaledPx(Style.PADDING_TOP, containingWidth);
 
       String label = "* ";
@@ -409,7 +409,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
           label = "\u25A0 ";
           break;
         case Style.CIRCLE:
-          label = "\u25E6 "; // "\u25CB"; // 
+          label = "\u25E6 "; // "\u25CB"; //
           break;
         case Style.DECIMAL:
           if (getParent() instanceof AbstractElementView) {
@@ -465,7 +465,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
         g.setColor(0x0ff0000);
         g.drawRect(dx, dy, getWidth(), getHeight());
       }
-      
+
       Style style = element.getComputedStyle();
       for (int i = 0; i < 3; i++) {
         int id;
@@ -480,7 +480,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
           color = 0x88ff0000;
           id = Style.BORDER_TOP_WIDTH;
           break;
-        default: 
+        default:
           color = 0x088ff00ff;
           id = Style.PADDING_TOP;
         }
@@ -489,7 +489,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
         int right = i == 0 ? marginRight : style.getPx(id + 1, containingWidth);
         int bottom = style.getPx(id + 2, containingWidth);
         int left = i == 0 ? marginLeft : style.getPx(id + 3, containingWidth);
-        
+
         GraphicsUtils.fillRectAlpha(g, x0, y0, x1 - x0 + 1, top, color);
         GraphicsUtils.fillRectAlpha(g, x0, y1 - bottom, x1 - x0 + 1, bottom, color);
 
@@ -517,7 +517,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
       }
     }
   }
-  
+
 
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -531,12 +531,12 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
         y = mp.getMeasuredY();
       } else {
         // WrapperView case.
-        x = marginLeft + 
-            element.getScaledPx(Style.BORDER_LEFT_WIDTH) + 
+        x = marginLeft +
+            element.getScaledPx(Style.BORDER_LEFT_WIDTH) +
             element.getScaledPx(Style.PADDING_LEFT);
 
-        y = element.getScaledPx(Style.MARGIN_TOP) + 
-            element.getScaledPx(Style.BORDER_LEFT_WIDTH) + 
+        y = element.getScaledPx(Style.MARGIN_TOP) +
+            element.getScaledPx(Style.BORDER_LEFT_WIDTH) +
             element.getScaledPx(Style.PADDING_LEFT);
       }
       child.layout(x, y, x + child.getMeasuredWidth(), y + child.getMeasuredHeight());
@@ -558,14 +558,14 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
     return measuredX;
   }
 
-  @Override 
-  /** 
+  @Override
+  /**
    * Disabled because it completely kills performance when the soft keyboard is shown
    * and does not seem to be needed.
    */
   public void forceLayout() {
   }
-  
+
   @Override
   public int getMeasuredY() {
     return measuredY;
@@ -586,7 +586,7 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
   public void setMeasuredY(int y) {
     this.measuredY = y;
   }
-  
+
   void requestLayoutAll() {
     requestLayout();
     for (int i = 0; i < getChildCount(); i++) {
@@ -598,8 +598,8 @@ abstract class AbstractElementView extends ViewGroup implements HasMeasuredPosit
       }
     }
   }
-  
-  @Override 
+
+  @Override
   public boolean performClick() {
     super.performClick();
     return element.click(getContext());

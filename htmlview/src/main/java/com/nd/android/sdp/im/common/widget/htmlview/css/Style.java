@@ -14,6 +14,8 @@
 
 package com.nd.android.sdp.im.common.widget.htmlview.css;
 
+import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
+
 import java.net.URI;
 import java.util.HashMap;
 
