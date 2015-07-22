@@ -12,6 +12,7 @@ import com.annimon.stream.Stream;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
@@ -37,6 +38,7 @@ public class WorkFragment extends ListFragment<Element> {
 
     private Work work;
     private HtmlSpanner spanner;
+    private Elements dds;
 
     public WorkFragment() {
         spanner = new HtmlSpanner();
@@ -48,12 +50,13 @@ public class WorkFragment extends ListFragment<Element> {
                 try {
                     work = new WorkParser(work).parse();
                     postEvent(new WorkParsedEvent(work));
+                    dds = work.getParsedContent().select("dd");
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
                 }
             }
-            return Stream.of(work.getParsedContent().select("dd"))
+            return Stream.of(dds)
                     .skip(skip)
                     .limit(size)
                     .collect(Collectors.toList());
@@ -76,6 +79,10 @@ public class WorkFragment extends ListFragment<Element> {
         return new WorkFragmentAdaptor();
     }
 
+    public Work getWork() {
+        return work;
+    }
+
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<Element> {
 
@@ -86,16 +93,6 @@ public class WorkFragment extends ListFragment<Element> {
         @Override
         public int getLayoutId(Element item) {
             return R.layout.indent_item;
-        }
-
-        @Override
-        public List<Element> getSubItems(Element item) {
-            return null;
-        }
-
-        @Override
-        public boolean hasSubItems(Element item) {
-            return false;
         }
 
         @Override

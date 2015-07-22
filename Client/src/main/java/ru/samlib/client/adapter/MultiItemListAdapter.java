@@ -6,8 +6,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import org.apache.commons.lang3.ArrayUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.util.GuiUtils;
+import ru.samlib.client.util.SystemUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,15 +45,11 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     public ItemListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Create a new view by inflating the row item xml.
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType != 0) {
-            if (Arrays.binarySearch(layoutIds, viewType) < 0) {
-                Log.e(TAG, "Cannot resolve layout view type");
-                return newHolder(inflater.inflate(R.layout.error, parent, false));
-            } else {
-                return newHolder(inflater.inflate(viewType, parent, false)).bindViews(MultiItemListAdapter.this);
-            }
+        if (ArrayUtils.contains(layoutIds, viewType)) {
+            return newHolder(inflater.inflate(viewType, parent, false)).bindViews(MultiItemListAdapter.this);
         } else {
-            return newHolder(new View(parent.getContext()));
+            Log.e(TAG, "Cannot resolve layout view type");
+            return null;
         }
     }
 
@@ -59,9 +57,13 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     @LayoutRes
     int getLayoutId(I item);
 
-    public abstract List<I> getSubItems(I item);
+    public List<I> getSubItems(I item) {
+        return null;
+    }
 
-    public abstract boolean hasSubItems(I item);
+    public boolean hasSubItems(I item) {
+        return false;
+    }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override

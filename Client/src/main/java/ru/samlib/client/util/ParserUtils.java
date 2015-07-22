@@ -55,7 +55,7 @@ public class ParserUtils {
     }
 
     public static Work parseWork(CachedResponse file) {
-        Work work = new Work();
+        Work work = new Work(file.getRequest().getBaseUrl().getPath());
         String[] parts = extractLines(file, true,
                 new Splitter().addEnd("Первый блок ссылок"),
                 new Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
@@ -72,6 +72,7 @@ public class ParserUtils {
         work.setSize(Integer.parseInt(data[2]));
         work.setDescription(Jsoup.parseBodyFragment(parts[2]).select("center > h2").text());
         work.setRawContent(parts[3]);
+        work.setParsed(true);
         return work;
     }
 

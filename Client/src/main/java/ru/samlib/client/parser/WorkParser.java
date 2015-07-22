@@ -24,6 +24,7 @@ public class WorkParser extends Parser {
     }
 
     public Work parse() {
+        work.setParsed(true);
         return ParserUtils.parseWork(HtmlClient.executeRequest(request));
     }
 }

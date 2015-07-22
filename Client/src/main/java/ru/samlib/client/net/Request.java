@@ -159,8 +159,13 @@ public class Request implements Cloneable {
         return this;
     }
 
-    public URL getBaseUrl() throws MalformedURLException {
-        return new URL(url + suffix);
+    public URL getBaseUrl() {
+        try {
+            return new URL(url + suffix);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "Wrong suffix " + suffix, e);
+            return url;
+        }
     }
 
     public URL getUrl() throws UnsupportedEncodingException, MalformedURLException {

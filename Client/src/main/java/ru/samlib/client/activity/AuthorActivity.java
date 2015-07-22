@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,12 +11,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
-import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
+import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
@@ -28,21 +28,24 @@ import ru.samlib.client.util.GuiUtils;
  */
 public class AuthorActivity extends BaseActivity {
 
-    ImageView authorAvatar;
-    TextView drawerAuthorTitle;
-    TextView drawerAuthorAnnotation;
-    RelativeLayout drawerHeader;
+    private ImageView authorAvatar;
+    private TextView drawerAuthorTitle;
+    private TextView drawerAuthorAnnotation;
+    private RelativeLayout drawerHeader;
     private Author author;
-
-    private AsyncTaskFragment task;
-
+    private Work work;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SectionFragment sectionFragment = (SectionFragment) getLastFragment(savedInstanceState);
-        if(sectionFragment != null) {
-            initializeAuthor(sectionFragment.getAuthor());
+        Fragment sectionFragment = getLastFragment(savedInstanceState);
+        if (sectionFragment != null) {
+            if (sectionFragment instanceof SectionFragment) {
+                initializeAuthor(((SectionFragment) sectionFragment).getAuthor());
+            }
+            if (sectionFragment instanceof WorkFragment) {
+                initializeAuthor(((WorkFragment) sectionFragment).getWork().getAuthor());
+            }
         }
     }
 
@@ -56,16 +59,19 @@ public class AuthorActivity extends BaseActivity {
         if (author != null) {
             authorLink = author.getLink();
         }
-        if (checkIntent(intent)) {
+        if (validateIntent(intent)) {
             authorLink = intent.getData().getPath();
         }
-        if (authorLink.contains(".shtml")) {
-            return;
-        }
         if (authorLink != null) {
-            new FragmentBuilder(getSupportFragmentManager())
-                    .putArg(Constants.ArgsName.LINK, authorLink)
-                    .replaceFragment(R.id.container, SectionFragment.class);
+            if (authorLink.endsWith(".shtml")) {
+                new FragmentBuilder(getSupportFragmentManager())
+                        .putArg(Constants.ArgsName.LINK, authorLink)
+                        .replaceFragment(R.id.container, WorkFragment.class);
+            } else {
+                new FragmentBuilder(getSupportFragmentManager())
+                        .putArg(Constants.ArgsName.LINK, authorLink)
+                        .replaceFragment(R.id.container, SectionFragment.class);
+            }
         }
     }
 
@@ -85,11 +91,10 @@ public class AuthorActivity extends BaseActivity {
         navigationView.addHeaderView(drawerHeader);
     }
 
-    private boolean checkIntent(Intent intent) {
+    private boolean validateIntent(Intent intent) {
         Uri data = getIntent().getData();
         return Intent.ACTION_VIEW.equals(intent.getAction())
-                && Constants.Net.BASE_SCHEME.equals(data.getScheme())
-                && Constants.Net.BASE_HOST.equals(data.getHost());
+                && data.getPath().matches(".*/[a-z]/[a-z]+/?([a-z]+\\.shtml)?");
     }
 
     @Override
@@ -122,4 +127,8 @@ public class AuthorActivity extends BaseActivity {
         initializeAuthor(event.author);
     }
 
+
+    public void onEventMainThread(WorkParsedEvent event) {
+        initializeAuthor(event.work.getAuthor());
+    }
 }

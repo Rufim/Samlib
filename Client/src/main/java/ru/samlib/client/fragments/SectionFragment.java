@@ -16,6 +16,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
+import org.apache.commons.lang3.ArrayUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
@@ -31,6 +32,7 @@ import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
+import ru.samlib.client.util.SystemUtils;
 
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -143,7 +145,10 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public void onClick(View view, int position) {
-            if(view.getId() == R.id.work_item_layout) {
+            if(SystemUtils.contains(view.getId(),
+                    R.id.work_item_layout,
+                    R.id.work_item_title,
+                    R.id.work_item_rate_and_size)) {
                 String link = getItem(position).getLink();
                 new FragmentBuilder(getFragmentManager())
                         .putArg(Constants.ArgsName.LINK, link)

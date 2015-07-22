@@ -89,6 +89,20 @@ public class SystemUtils {
         return result;
     }
 
+    public static <T> boolean contains(final T v, final T ... array) {
+        if (v == null) {
+            for (final T e : array)
+                if (e == null)
+                    return true;
+        } else {
+            for (final T e : array)
+                if (e == v || v.equals(e))
+                    return true;
+        }
+
+        return false;
+    }
+
     public static void directoryMove(File sourceLocation, File targetLocation, Pattern pattern) throws IOException {
         if (sourceLocation == null || !sourceLocation.exists()) {
             return;

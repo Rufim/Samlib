@@ -19,21 +19,16 @@ import ru.samlib.client.util.FragmentBuilder;
 public class MainActivity extends BaseActivity {
 
 
-    CharSequence title;
+    private CharSequence title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getMenuInflater().inflate(R.menu.drawer, navigationView.getMenu());
         if (savedInstanceState != null) {
-            String lastTag = savedInstanceState.getString(Constants.ArgsName.LAST_FRAGMENT_TAG);
-            if (lastTag != null) {
-                FragmentManager manager = getSupportFragmentManager();
-                Fragment fr = manager.findFragmentByTag(lastTag);
-                new FragmentBuilder(manager).replaceFragment(R.id.container, fr);
-               if(!navigationView.isShown()) {
-                   actionBar.setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
-               }
+            Fragment fr = getLastFragment(savedInstanceState);
+            if (!navigationView.isShown()) {
+                actionBar.setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
             }
         } else {
             replaceFragment(getResString(R.string.drawer_new), NewestFragment.class);
