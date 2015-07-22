@@ -1,21 +1,15 @@
 package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
-import android.os.Parcelable;
 import android.text.TextUtils;
 import lombok.*;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.safety.Cleaner;
-import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Linkable;
+import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 
 import java.io.Serializable;
-import java.lang.annotation.Documented;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -26,7 +20,7 @@ import java.util.*;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-public final class Work implements Serializable, Linkable, Validatable {
+public final class Work implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2705011939329628695L;
 
@@ -34,8 +28,7 @@ public final class Work implements Serializable, Linkable, Validatable {
     private String link;
     private Author author;
     private String imageLink;
-    private boolean hasIllustration;
-    private String sectionTitle;
+    private String categoryTitle;
     private Integer size;
     private BigDecimal rate;
     private Integer kudoed;
@@ -51,11 +44,13 @@ public final class Work implements Serializable, Linkable, Validatable {
     private New state = New.EMPTY;
     private String rawContent;
     private String description;
+    private boolean hasIllustration;
+    private boolean parsed = false;
 
 
     public String getTypeName() {
-        if(sectionTitle != null) {
-            return sectionTitle;
+        if(categoryTitle != null) {
+            return categoryTitle;
         } else {
             return type.getTitle();
         }

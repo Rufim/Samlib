@@ -16,14 +16,12 @@
                   android:text="Глава"
                   android:padding="10dp"
                   style="@style/item_text"/>
-        <TextView android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:visibility="gone"
-                  android:id="@+id/section_annotation"
-                  android:layout_marginLeft="@dimen/spacing_large"
-                  android:textSize="@dimen/text_large"
-                  android:textStyle="italic"
-                  android:textColor="@color/LightYellow"
-                  style="@style/author_info_content"/>
+        <com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/section_annotation"
+                android:textColor="@color/light_gold"
+                android:layout_marginLeft="@dimen/spacing_medium"
+                android:textSize="@dimen/text_medium"/>
     </LinearLayout>
 </LinearLayout>

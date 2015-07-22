@@ -3,22 +3,23 @@ package ru.samlib.client.fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
+import ru.samlib.client.activity.BaseActivity;
+import ru.samlib.client.domain.events.Event;
+import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.util.FragmentBuilder;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class BaseFragment extends Fragment {
-
-    public interface FragmentCallback { void onFragmentAttached(BaseFragment fragment);}
+public class BaseFragment extends Fragment implements BaseActivity.BackCallback {
 
     private static BaseFragment lastFragment;
+
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -56,8 +57,15 @@ public class BaseFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        if (activity instanceof FragmentCallback) {
-            ((FragmentCallback) activity).onFragmentAttached(this);
-        }
+        postEvent(new FragmentAttachedEvent(this));
     }
+
+    public boolean allowBackPress() {
+        return true;
+    }
+
+    protected void postEvent(Event event) {
+        EventBus.getDefault().post(event);
+    }
+
 }

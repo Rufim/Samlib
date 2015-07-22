@@ -1,11 +1,10 @@
 package ru.samlib.client.domain.entity;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import lombok.*;
 import ru.samlib.client.domain.Linkable;
+import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 
 import java.io.Serializable;
@@ -18,7 +17,7 @@ import java.util.*;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class Author implements Serializable, Linkable, Validatable {
+public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
@@ -47,7 +46,7 @@ public class Author implements Serializable, Linkable, Validatable {
     private List<Work> recommendations = new ArrayList<>();
     private Boolean isNew;
     @Setter(AccessLevel.NONE)
-    private List<Section> sections = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
     @Setter(AccessLevel.NONE)
     private List<Linkable> rootLinks = new ArrayList<>();
     @Setter(AccessLevel.NONE)
@@ -74,21 +73,21 @@ public class Author implements Serializable, Linkable, Validatable {
         return shortName;
     }
 
-    public List<Section> getLinkableSections() {
-        return Stream.of(sections)
+    public List<Category> getLinkableCategory() {
+        return Stream.of(categories)
                 .filter(sec -> sec.getLink() != null)
                 .collect(Collectors.toList());
     }
 
-    public List<Section> getStaticSections() {
-        return Stream.of(sections)
+    public List<Category> getStaticCategory() {
+        return Stream.of(categories)
                 .filter(sec -> sec.getLink() == null)
                 .collect(Collectors.toList());
     }
 
 
-    public void addSection(Section section) {
-        this.sections.add(section);
+    public void addCategory(Category category) {
+        this.categories.add(category);
     }
 
     public void addFriend(Author friend) {

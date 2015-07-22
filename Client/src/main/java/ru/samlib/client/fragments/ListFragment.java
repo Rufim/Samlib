@@ -36,6 +36,7 @@ public abstract class ListFragment<T> extends BaseFragment {
     protected SwipeRefreshLayout swipeRefresh;
     protected ItemListAdapter<T> adapter;
     protected LinearLayoutManager layoutManager;
+    protected Lister<T> savedlister;
     protected Lister<T> lister;
 
     //
@@ -51,6 +52,21 @@ public abstract class ListFragment<T> extends BaseFragment {
 
     public ListFragment(Lister<T> lister) {
         this.lister = lister;
+    }
+
+    public void saveLister() {
+        savedlister = lister;
+    }
+
+    public boolean restoreLister() {
+        if(savedlister != null) {
+            lister = savedlister;
+            refreshData();
+            savedlister = null;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void setLister(Lister<T> lister) {

@@ -14,21 +14,21 @@ import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
-import com.squareup.picasso.Picasso;
-import net.nightwhistler.htmlspanner.HtmlSpanner;
-import org.sufficientlysecure.htmltextview.HtmlTextView;
+import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.domain.entity.Section;
+import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.events.AuthorParsedEvent;
+import ru.samlib.client.domain.events.CategorySelectedEvent;
+import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.GuiUtils;
-import ru.samlib.client.util.PicassoImageHandler;
 
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -45,16 +45,7 @@ public class SectionFragment extends ListFragment<Linkable> {
     private static final String TAG = SectionFragment.class.getSimpleName();
 
     private Author author;
-    private List<AuthorListener> listeners = new ArrayList<>();
-
-    public interface AuthorListener {
-        public void onAuthorParsed(Author author);
-    }
-
-    public SectionFragment addListener(AuthorListener listener) {
-        listeners.add(listener);
-        return this;
-    }
+    private Category category;
 
     public SectionFragment() {
         setLister((skip, size) -> {
@@ -65,23 +56,66 @@ public class SectionFragment extends ListFragment<Linkable> {
                 try {
                     author = new AuthorParser(author).parse();
                     author.setParsed(true);
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() -> {
-                            for (AuthorListener listener : listeners) {
-                                listener.onAuthorParsed(author);
-                            }
-                        });
-                    }
+                    postEvent(new AuthorParsedEvent(author));
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
+                    return new ArrayList<>();
                 }
             }
-            return Stream.of(author.getStaticSections())
+            return Stream.of(author.getStaticCategory())
                     .skip(skip)
                     .limit(size)
                     .collect(Collectors.toList());
         });
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    public Author getAuthor() {
+        return author;
+    }
+
+    public void onEvent(CategorySelectedEvent event) {
+        saveLister();
+        if (category == null) {
+            setLister((skip, size) -> {
+                if (category != null) {
+                    if (!category.isParsed()) {
+                        try {
+                            category = new CategoryParser(category).parse();
+                            category.setParsed(true);
+                        } catch (MalformedURLException e) {
+                            Log.e(TAG, "Unknown exception", e);
+                            return new ArrayList<>();
+                        }
+                    }
+                    return Stream.of(category)
+                            .skip(skip)
+                            .limit(size)
+                            .collect(Collectors.toList());
+                } else {
+                    return new ArrayList<>();
+                }
+            });
+        }
+        category = event.category;
+        refreshData();
+    }
+
+    @Override
+    public boolean allowBackPress() {
+        category = null;
+        return !restoreLister();
     }
 
     @Override
@@ -95,9 +129,7 @@ public class SectionFragment extends ListFragment<Linkable> {
         if (author == null || !author.getLink().equals(link)) {
             author = new Author(link);
         } else {
-            for (AuthorListener listener : listeners) {
-                listener.onAuthorParsed(author);
-            }
+            EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -120,9 +152,15 @@ public class SectionFragment extends ListFragment<Linkable> {
                     initHeader(holder);
                     break;
                 case R.layout.section_item:
-                    Section section = (Section) getItem(position);
-                    GuiUtils.setText(holder.getView(R.id.section_label), section.getTitle());
-                    GuiUtils.setTextOrHide(holder.getView(R.id.section_annotation), section.getAnnotation());
+                    Category category = (Category) getItem(position);
+                    GuiUtils.setText(holder.getView(R.id.section_label), category.getTitle());
+                    if (category.getAnnotation() != null) {
+                        holder.getView(R.id.section_annotation).setVisibility(View.VISIBLE);
+                        HtmlView htmlView = holder.getView(R.id.section_annotation);
+                        htmlView.loadHtml(category.processAnnotation(getResources().getColor(R.color.light_gold)));
+                    } else {
+                        holder.getView(R.id.section_annotation).setVisibility(View.GONE);
+                    }
                     break;
                 case R.layout.work_item:
                     Linkable linkable = getItem(position);
@@ -249,7 +287,7 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public int getLayoutId(Linkable item) {
-            if (item.getClass() == Section.class) {
+            if (item.getClass() == Category.class) {
                 return R.layout.section_item;
             } else {
                 return R.layout.work_item;
@@ -258,8 +296,8 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public List<Linkable> getSubItems(Linkable item) {
-            if (item.getClass() == Section.class) {
-                return ((Section) item).getLinks();
+            if (item.getClass() == Category.class) {
+                return ((Category) item).getLinks();
             } else {
                 return null;
             }
@@ -267,7 +305,7 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public boolean hasSubItems(Linkable item) {
-            return item.getClass() == Section.class;
+            return item.getClass() == Category.class;
         }
     }
 

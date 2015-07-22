@@ -13,6 +13,7 @@ public class Constants {
     }
 
     public static class ArgsName {
+        public static final String LAST_FRAGMENT_TAG = "last_fragment_tag";
         public static final String AUTHOR = "author";
         public static final String LINK = "link";
         public static final String TITLE = "title";

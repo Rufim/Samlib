@@ -12,7 +12,6 @@ import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.util.ParserUtils;
 
 import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.util.Scanner;
 
@@ -20,6 +19,8 @@ import java.util.Scanner;
  * Created by Rufim on 01.07.2015.
  */
 public class AuthorParser extends Parser {
+
+    private static final String TAG = AuthorParser.class.getSimpleName();
 
     private Author author;
 
@@ -59,7 +60,7 @@ public class AuthorParser extends Parser {
                 if (elements.size() > 0) {
                     for (Element element : elements) {
                         try {
-                            parseInfoTableRow(element);
+                            ParserUtils.parseInfoTableRow(author, element);
                         } catch (Exception ex) {
                             Log.e(TAG, "Error in element parsing: " + element.text());
                         }
@@ -84,14 +85,14 @@ public class AuthorParser extends Parser {
                     String[] rec = ParserUtils.extractString(head, true, new Splitter("<b>Начните знакомство с</b>:", "\\n"));
                     Document recDoc = Jsoup.parseBodyFragment(rec[0]);
                     for (Element workEl : recDoc.select("li")) {
-                        author.addRecommendation(parseWork(workEl));
+                        author.addRecommendation(ParserUtils.parseWork(workEl));
                     }
                 }
             }
             // body - Partitions with Works
             if (parts.length > 2 && !parts[2].isEmpty()) {
                 Scanner scanner = new Scanner(parts[2]);
-                Section newSection = null;
+                Category newCategory = null;
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     Elements a;
@@ -99,38 +100,50 @@ public class AuthorParser extends Parser {
                         try {
                             Document lineDoc = Jsoup.parseBodyFragment(line);
                             if (line.contains("<h3>")) {
-                                newSection = new Section();
-                                newSection.setTitle(lineDoc.select("h3").text());
-                                author.addSection(newSection);
+                                newCategory = new Category();
+                                newCategory.setTitle(lineDoc.select("h3").text());
+                                author.addCategory(newCategory);
                             }
                             if (line.startsWith("</small>")) {
-                                newSection = new Section();
+                                newCategory = new Category();
                                 a = lineDoc.select("a");
-                                newSection.setTitle(a.text());
+                                newCategory.setTitle(a.text());
                                 if (line.contains("href=index")) {
-                                    newSection.setLink(a.attr("href"));
+                                    newCategory.setLink(author.getLink() + "/" + a.attr("href"));
+                                    newCategory.setAuthor(author);
                                 } else if (line.contains("href=/type")) {
-                                    newSection.setType(Type.parseType(a.attr("href")));
+                                    newCategory.setType(Type.parseType(a.attr("href")));
                                 }
                                 scanner.nextLine();
-                                newSection.setAnnotation(Jsoup.parseBodyFragment(scanner.nextLine()).text());
-                                author.addSection(newSection);
+                                line = scanner.nextLine();
+                                if(line.startsWith("<font")) {
+                                    String annotation = line;
+                                    line = scanner.nextLine();
+                                    if(line.startsWith("<dd>")) {
+                                        newCategory.setAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(annotation + line.substring(line.indexOf("<dd>")))));
+                                        line = scanner.nextLine();
+                                    } else {
+                                        newCategory.setAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(annotation)));
+                                    }
+                                }
+                                lineDoc = Jsoup.parseBodyFragment(line);
+                                author.addCategory(newCategory);
                             }
                             if (line.contains("<DL>")) {
                                 Elements dl = lineDoc.select("DL");
-                                a = dl.select("a");
                                 if (line.contains("TYPE=square")) {
-                                    newSection.addLink(new Link(a.text(), a.attr("href")));
+                                    a = dl.select("a");
+                                    newCategory.addLink(new Link(a.text(), a.attr("href")));
                                     continue;
                                 }
-                                Work work = parseWork(dl.first());
+                                Work work = ParserUtils.parseWork(dl.first());
                                 work.setAuthor(author);
-                                work.setSectionTitle(newSection.getTitle());
+                                work.setCategoryTitle(newCategory.getTitle());
                                 if (work.validate()) {
-                                    if (newSection == null) {
+                                    if (newCategory == null) {
                                         author.addRootLink(work);
                                     } else {
-                                        newSection.addLink(work);
+                                        newCategory.addLink(work);
                                     }
                                 } else {
                                     Log.e(TAG, "Invalid work: " + line);
@@ -143,138 +156,11 @@ public class AuthorParser extends Parser {
                 }
                 scanner.close();
             }
-            Log.e(TAG, "Author parsed");
+            Log.e(TAG, "Author " + author.getTitle() + " parsed");
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
         }
-
         return author;
-    }
-
-    private void parseInfoTableRow(Element element) {
-        String content = element.ownText();
-        String[] split = null;
-        switch (element.select("b").text()) {
-            case "WWW:":
-                Element a = element.select("a").first();
-                author.setSite(new Link(a.ownText(), a.attr("href")));
-                break;
-            case "Aдpeс:":
-                author.setEmail(element.select("u").text());
-                break;
-            case "Родился:":
-                author.setDateBirth(ParserUtils.parseData(content));
-                break;
-            case "Живет:":
-                author.setAddress(content);
-                break;
-            case "Обновлялось:":
-                author.setLastUpdateDate(ParserUtils.parseData(content));
-                break;
-            case "Объем:":
-                split = content.split("/");
-                author.setSize(Integer.parseInt(split[0].replace("k", "")));
-                author.setWorkCount(Integer.parseInt(split[1]));
-                break;
-            case "Рейтинг:":
-                split = content.split("\\*");
-                author.setRate(new BigDecimal(split[0]));
-                author.setKudoed(Integer.parseInt(split[1]));
-                break;
-            case "Посетителей за год:":
-                author.setViews(Integer.parseInt(content));
-                break;
-            case "Friends/Friend Of:":
-                split = content.split("/");
-                author.setFriends(Integer.parseInt(split[0]));
-                author.setFriendsOf(Integer.parseInt(split[1]));
-                break;
-            case "Friend Of:":
-                author.setFriends(Integer.parseInt(content));
-                break;
-            case "Friends:":
-                author.setFriendsOf(Integer.parseInt(content));
-                break;
-            default:
-                Log.e(TAG, "Unknown element parsed: " + element.text());
-        }
-    }
-
-    private Work parseWork(Element element) {
-        Work work = new Work();
-        Element li;
-        if (element.tagName().equals("li")) {
-            li = element;
-        } else {
-            li = element.select("li").first();
-            if (li == null) {
-                li = element;
-                Log.w(TAG, "li not found: suspect malformed row - " + element.text());
-            }
-        }
-        for (Element el : li.children()) {
-            switch (el.nodeName()) {
-                case "font":
-                    work.setState(New.parseNew(el.attr("color")));
-                    break;
-                case "a":
-                    String link = el.attr("href");
-                    if (link.contains(".shtml")) {
-                        work.setLink(link);
-                        work.setTitle(el.text());
-                    }
-                    break;
-                case "b":
-                    String text = el.text();
-                    if(text.contains("k")) {
-                        work.setSize(Integer.parseInt(text.replace("k", "")));
-                    }
-                    break;
-                case "small":
-                    parseType(el, work);
-                    break;
-                case "dd":
-                    if (el.select("a[href^=/img]").size() > 0) {
-                        work.setHasIllustration(true);
-                        break;
-                    } else {
-                        if(el.hasText() || el.select("img").size() > 0) {
-                            work.addAnnotation("<p>" + ParserUtils.cleanupHtml(el) + "</p>");
-                        }
-                    }
-                    break;
-            }
-        }
-
-        return work;
-    }
-
-
-    public void parseType(Element el, Work work) {
-        Elements info = el.select("b");
-        if (info.size() > 0) {
-            String[] rate = info.get(0).text().split("\\*");
-            work.setRate(new BigDecimal(rate[0]));
-            work.setKudoed(Integer.parseInt(rate[1]));
-        }
-        String ownText = el.ownText();
-        if (ownText.contains("\"")) {
-            String type = ownText.split("\"")[1];
-            if (!type.isEmpty()) {
-                Type tp = Type.parseType(type);
-                if (tp == Type.OTHER) {
-                    work.setSectionTitle(type);
-                } else {
-                    work.setType(tp);
-                }
-
-            }
-        }
-        String[] genres = ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim().split(",");
-        for (String genre : genres) {
-            work.addGenre(genre);
-        }
-
     }
 
 }

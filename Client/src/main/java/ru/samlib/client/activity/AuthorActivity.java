@@ -3,6 +3,8 @@ package ru.samlib.client.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -10,8 +12,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
+import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.events.AuthorParsedEvent;
+import ru.samlib.client.domain.events.CategorySelectedEvent;
+import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
@@ -20,7 +26,7 @@ import ru.samlib.client.util.GuiUtils;
 /**
  * Created by 0shad on 12.07.2015.
  */
-public class AuthorActivity extends BaseActivity implements SectionFragment.AuthorListener {
+public class AuthorActivity extends BaseActivity {
 
     ImageView authorAvatar;
     TextView drawerAuthorTitle;
@@ -29,6 +35,16 @@ public class AuthorActivity extends BaseActivity implements SectionFragment.Auth
     private Author author;
 
     private AsyncTaskFragment task;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SectionFragment sectionFragment = (SectionFragment) getLastFragment(savedInstanceState);
+        if(sectionFragment != null) {
+            initializeAuthor(sectionFragment.getAuthor());
+        }
+    }
 
     @Override
     protected void handleIntent(Intent intent) {
@@ -49,8 +65,7 @@ public class AuthorActivity extends BaseActivity implements SectionFragment.Auth
         if (authorLink != null) {
             new FragmentBuilder(getSupportFragmentManager())
                     .putArg(Constants.ArgsName.LINK, authorLink)
-                    .replaceFragment(R.id.container, SectionFragment.class)
-                    .addListener(this);
+                    .replaceFragment(R.id.container, SectionFragment.class);
         }
     }
 
@@ -66,7 +81,7 @@ public class AuthorActivity extends BaseActivity implements SectionFragment.Auth
         if (author.isHasAvatar()) {
             Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
         }
-        Stream.of(author.getLinkableSections()).forEach(sec -> navigationView.getMenu().add(sec.getTitle()));
+        Stream.of(author.getLinkableCategory()).forEach(sec -> navigationView.getMenu().add(sec.getTitle()));
         navigationView.addHeaderView(drawerHeader);
     }
 
@@ -79,7 +94,11 @@ public class AuthorActivity extends BaseActivity implements SectionFragment.Auth
 
     @Override
     protected boolean onNavigationItemSelected(MenuItem item) {
-
+        postEvent(new CategorySelectedEvent(Stream
+                .of(author.getLinkableCategory())
+                .filter(cat -> cat.getTitle().equals(item.getTitle()))
+                .findFirst()
+                .get()));
         return false;
     }
 
@@ -94,12 +113,13 @@ public class AuthorActivity extends BaseActivity implements SectionFragment.Auth
     }
 
     @Override
-    public void onFragmentAttached(BaseFragment fragment) {
+    public void onEvent(FragmentAttachedEvent fragmentAttached) {
 
     }
 
-    public void onAuthorParsed(Author author) {
-        initializeAuthor(author);
+
+    public void onEventMainThread(AuthorParsedEvent event) {
+        initializeAuthor(event.author);
     }
 
 }

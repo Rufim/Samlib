@@ -5,10 +5,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Splitter;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -62,7 +63,7 @@ public class ParserUtils {
                 new Splitter().addEnd("<!-------.*"));
         work.setTitle(Jsoup.parseBodyFragment(parts[0]).select("center > h2").text());
         String description = Jsoup.parseBodyFragment(parts[1]).select("ul li").get(2).text();
-        String [] data = extractString(description, true,
+        String[] data = extractString(description, true,
                 new Splitter(" ", ","),
                 new Splitter(" ", "\\."),
                 new Splitter(" ", "k"));
@@ -85,7 +86,7 @@ public class ParserUtils {
             Matcher matcher;
             while ((start = splitter.nextStart()) != null) {
                 matcher = start.matcher(line);
-                if(matcher.find()) {
+                if (matcher.find()) {
                     if (notInclude) index = matcher.end();
                     else index = matcher.start();
                     line = line.substring(index);
@@ -110,8 +111,8 @@ public class ParserUtils {
 
     public static String[] extractLines(CachedResponse source, boolean notInclude, Splitter... splitters) {
         try {
-            if(source != null)
-            return extractLines(new FileInputStream(source), source.getEncoding(), notInclude, splitters);
+            if (source != null)
+                return extractLines(new FileInputStream(source), source.getEncoding(), notInclude, splitters);
         } catch (FileNotFoundException e) {
             Log.e(TAG, "File not found");
             Log.w(FileNotFoundException.class.getSimpleName(), e);
@@ -148,8 +149,8 @@ public class ParserUtils {
                             if (splitter.skip_end-- > 0) matchedEnd = false;
 
                         }
-                        if (matchedEnd ) {
-                            if(!notInclude) builder.append(line + "\n");
+                        if (matchedEnd) {
+                            if (!notInclude) builder.append(line + "\n");
                             break;
                         } else {
                             builder.append(line + "\n");
@@ -200,20 +201,147 @@ public class ParserUtils {
         Elements table = el.select("table");  // tablets not supported
         if (table.select("input").size() > 0) {
             table.remove();
+        } else {
+            if (table.hasAttr("border") && table.select("tr").size() > 2) {
+                table.wrap("<hr><hr>");
+            }
+            table.attr("border", "0");
         }
-        if(table.hasAttr("border") && table.select("tr").size() > 2) {
-            table.wrap("<hr>");
-        }
-        table.attr("border", "0");
-        el.select("input").remove(); // inputs not supported
         //Cleanup
         for (Element elem : el.select("*")) {
             if (!elem.hasText() && elem.select("img").size() < 1) {
-                elem.remove();
+                if (elem.parent() != null) elem.remove();
             }
         }
+        el.select("input").remove(); // inputs not supported
+
         return el.html().replaceAll("\\s<br>\\s\\n", "").replace("\n", "");
     }
 
+    public static void parseType(Element el, Work work) {
+        Elements info = el.select("b");
+        if (info.size() > 0) {
+            String[] rate = info.get(0).text().split("\\*");
+            work.setRate(new BigDecimal(rate[0]));
+            work.setKudoed(Integer.parseInt(rate[1]));
+        }
+        String ownText = el.ownText();
+        if (ownText.contains("\"")) {
+            String type = ownText.split("\"")[1];
+            if (!type.isEmpty()) {
+                Type tp = Type.parseType(type);
+                if (tp == Type.OTHER) {
+                    work.setCategoryTitle(type);
+                } else {
+                    work.setType(tp);
+                }
+
+            }
+        }
+        String[] genres = ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim().split(",");
+        for (String genre : genres) {
+            work.addGenre(genre);
+        }
+
+    }
+
+    public static Work parseWork(Element element) {
+        Work work = new Work();
+        Element li;
+        if (element.tagName().equals("li")) {
+            li = element;
+        } else {
+            li = element.select("li").first();
+            if (li == null) {
+                li = element;
+                Log.w(TAG, "li not found: suspect malformed row - " + element.text());
+            }
+        }
+        for (Element el : li.children()) {
+            switch (el.nodeName()) {
+                case "font":
+                    work.setState(New.parseNew(el.attr("color")));
+                    break;
+                case "a":
+                    String link = el.attr("href");
+                    if (link.contains(".shtml")) {
+                        work.setLink(link);
+                        work.setTitle(el.text());
+                    }
+                    break;
+                case "b":
+                    String text = el.text();
+                    if (text.matches("^\\d+k$")) {
+                        work.setSize(Integer.parseInt(text.replace("k", "")));
+                    }
+                    break;
+                case "small":
+                    ParserUtils.parseType(el, work);
+                    break;
+                case "dd":
+                    if (el.select("a[href^=/img]").size() > 0) {
+                        work.setHasIllustration(true);
+                        break;
+                    } else {
+                        if (el.hasText() || el.select("img").size() > 0) {
+                            work.addAnnotation("<p>" + ParserUtils.cleanupHtml(el) + "</p>");
+                        }
+                    }
+                    break;
+            }
+        }
+
+        return work;
+    }
+
+
+    public static void parseInfoTableRow(Author author, Element element) {
+        String content = element.ownText();
+        String[] split = null;
+        switch (element.select("b").text()) {
+            case "WWW:":
+                Element a = element.select("a").first();
+                author.setSite(new Link(a.ownText(), a.attr("href")));
+                break;
+            case "Aдpeс:":
+                author.setEmail(element.select("u").text());
+                break;
+            case "Родился:":
+                author.setDateBirth(ParserUtils.parseData(content));
+                break;
+            case "Живет:":
+                author.setAddress(content);
+                break;
+            case "Обновлялось:":
+                author.setLastUpdateDate(ParserUtils.parseData(content));
+                break;
+            case "Объем:":
+                split = content.split("/");
+                author.setSize(Integer.parseInt(split[0].replace("k", "")));
+                author.setWorkCount(Integer.parseInt(split[1]));
+                break;
+            case "Рейтинг:":
+                split = content.split("\\*");
+                author.setRate(new BigDecimal(split[0]));
+                author.setKudoed(Integer.parseInt(split[1]));
+                break;
+            case "Посетителей за год:":
+                author.setViews(Integer.parseInt(content));
+                break;
+            case "Friends/Friend Of:":
+                split = content.split("/");
+                author.setFriends(Integer.parseInt(split[0]));
+                author.setFriendsOf(Integer.parseInt(split[1]));
+                break;
+            case "Friend Of:":
+                author.setFriends(Integer.parseInt(content));
+                break;
+            case "Friends:":
+                author.setFriendsOf(Integer.parseInt(content));
+                break;
+            default:
+                Log.e(TAG, "Unknown element parsed: " + element.text());
+        }
+    }
 
 }

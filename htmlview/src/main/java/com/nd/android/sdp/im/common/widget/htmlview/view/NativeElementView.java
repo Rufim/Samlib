@@ -1,10 +1,11 @@
 package com.nd.android.sdp.im.common.widget.htmlview.view;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.*;
 
-import android.app.ActionBar;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
@@ -12,20 +13,13 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.*;
 import android.widget.*;
-import com.facebook.common.references.CloseableReference;
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.drawable.ScalingUtils;
 import com.facebook.drawee.generic.GenericDraweeHierarchy;
 import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
 import com.facebook.drawee.generic.RoundingParams;
-import com.facebook.drawee.interfaces.DraweeController;
-import com.facebook.drawee.view.DraweeView;
 import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.bitmaps.PlatformBitmapFactory;
-import com.facebook.imagepipeline.common.ResizeOptions;
-import com.facebook.imagepipeline.request.ImageRequest;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.facebook.imagepipeline.request.Postprocessor;
+import com.felipecsl.gifimageview.library.GifImageView;
+import com.koushikdutta.ion.Ion;
 import com.nd.android.sdp.im.common.widget.htmlview.R;
 import com.nd.android.sdp.im.common.widget.htmlview.css.Style;
 import android.annotation.SuppressLint;
@@ -34,9 +28,7 @@ import android.graphics.Bitmap;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 
 /**
@@ -90,7 +82,7 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
     }
 
 
-    static NativeElementView createImgFresco(Context context, Element child) {
+    static NativeElementView createFresco(Context context, Element child) {
         GenericDraweeHierarchyBuilder builder =
                 new GenericDraweeHierarchyBuilder(context.getResources());
         RoundingParams roundingParams = RoundingParams.fromCornersRadius(5f);
@@ -159,19 +151,26 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
 
         final int width;
         final int height;
-        final Context context;
+        final String src;
+        final ImageView imageView;
 
 
-        public TransformImage(int width, int height, Context context) {
+        public TransformImage(int width, int height, String src, ImageView imageView) {
             this.width = width;
             this.height = height;
-            this.context = context;
+            this.src = src;
+            this.imageView = imageView;
         }
 
         @Override
         public Bitmap transform(Bitmap bitmap) {
             int bitmapWidth = bitmap.getWidth();
             int bitmapHeight = bitmap.getHeight();
+            int loc [] = new int[2];
+            imageView.getLocationOnScreen(loc);
+            float density = imageView.getResources().getDisplayMetrics().density;
+            int maxWidth = imageView.getResources().getDisplayMetrics().widthPixels
+                    - loc[0];
             float scale = 1;
             if (width < 0 && height > 0) {
                 scale = ((float) height / bitmapHeight);
@@ -179,7 +178,10 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
             if (width > 0 && height < 0) {
                 scale = ((float) width / bitmapWidth);
             }
-            scale *= context.getResources().getDisplayMetrics().density;
+            scale *= density;
+            if (scale * bitmapWidth > maxWidth) {
+                scale = ((float) maxWidth / bitmapWidth);
+            }
             Bitmap scaledBitmap;
             if (scale != 1) {
                 Matrix matrix = new Matrix();
@@ -190,10 +192,10 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
                     // Same bitmap is returned if sizes are the same
                     bitmap.recycle();
                 }
+                return scaledBitmap;
             } else {
-                scaledBitmap = bitmap;
+                return bitmap;
             }
-            return scaledBitmap;
         }
 
         @Override
@@ -205,7 +207,7 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
     static NativeElementView createImg(Context context, Element child) {
         // TODO: Focus / click handling for buttons in a link?
         String src = child.getAttributeValue("src");
-        final ImageView imageView = new ImageView(context);
+        final GifImageView imageView = new GifImageView(context);
         if (src != null) {
             final int width = child.getAttributeInt("width", WRAP_CONTENT);
             final int height = child.getAttributeInt("height", WRAP_CONTENT);
@@ -215,7 +217,7 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
             Picasso.with(context)
                     .load(src)
                     .placeholder(R.drawable.ic_image_crop_original)
-                    .transform(new TransformImage(width, height, context))
+                    .transform(new TransformImage(width, height, src, imageView))
                     .into(imageView);
         }
         return new NativeElementView(context, child, false, imageView);

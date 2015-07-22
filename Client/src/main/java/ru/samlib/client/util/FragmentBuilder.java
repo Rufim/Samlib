@@ -197,9 +197,19 @@ public class FragmentBuilder {
             fr = newFragment(fragmentClass);
             transaction.replace(container, fr, fragmentClass.getSimpleName());
         } else {
+            fr.getArguments().putAll(bundle);
             transaction.replace(container, fr);
         }
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
+        return (F) fr;
+    }
+
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment) {
+        Fragment fr = fragmentManager.findFragmentByTag(fragment.getClass().getSimpleName());
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        fr.getArguments().putAll(bundle);
+        transaction.replace(container, fr);
+        transaction.commitAllowingStateLoss();
         return (F) fr;
     }
 
@@ -216,5 +226,4 @@ public class FragmentBuilder {
     public <F extends Fragment> F newFragment(Class<F> fragmentClass) {
         return newInstance(fragmentClass, bundle);
     }
-
 }

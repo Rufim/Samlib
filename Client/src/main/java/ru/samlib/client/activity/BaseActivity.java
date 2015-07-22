@@ -8,6 +8,8 @@ import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,7 +25,11 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import de.greenrobot.event.EventBus;
+import org.jsoup.Connection;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.events.Event;
+import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
@@ -32,7 +38,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 /**
  * Created by 0shad on 11.07.2015.
  */
-public abstract class BaseActivity extends AppCompatActivity implements BaseFragment.FragmentCallback  {
+public abstract class BaseActivity extends AppCompatActivity {
 
     @Bind(R.id.container)
     protected FrameLayout container;
@@ -48,6 +54,10 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseFrag
     protected View mainBorder;
 
     protected ActionBar actionBar;
+
+    public interface BackCallback {
+        boolean allowBackPress();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +101,13 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseFrag
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(Constants.ArgsName.LAST_FRAGMENT_TAG,
+                getSupportFragmentManager().findFragmentById(R.id.container).getTag());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
@@ -98,6 +115,28 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseFrag
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Fragment fr = getSupportFragmentManager().findFragmentById(R.id.container);
+        if(fr instanceof BackCallback) {
+            if(((BackCallback) fr).allowBackPress()) super.onBackPressed();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     protected abstract void handleIntent(Intent intent);
@@ -120,26 +159,7 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseFrag
         containerDetails.setLayoutParams(p);
     }
 
-    protected String getResString(@StringRes int id) {
-        return getResources().getString(id);
-    }
-
-    protected <F extends BaseFragment> void replaceFragment(Class<F> fragmentClass) {
-        replaceFragment(R.id.container, null, fragmentClass);
-    }
-
-    protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
-        Bundle args = new Bundle();
-        args.putString(Constants.ArgsName.TITLE, title);
-        replaceFragment(R.id.container, args, fragmentClass);
-    }
-
-    protected  <F extends BaseFragment> void replaceFragment(@IdRes int container, Bundle args ,Class<F> fragmentClass) {
-        new FragmentBuilder(getSupportFragmentManager()).putArgs(args).replaceFragment(container, fragmentClass);
-    }
-
-    public abstract void onFragmentAttached(BaseFragment fragment);
-
+    public abstract void onEvent(FragmentAttachedEvent fragmentAttached);
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -178,6 +198,32 @@ public abstract class BaseActivity extends AppCompatActivity implements BaseFrag
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void postEvent(Event event) {
+        EventBus.getDefault().post(event);
+    }
+
+
+    protected String getResString(@StringRes int id) {
+        return getResources().getString(id);
+    }
+
+    protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
+        new FragmentBuilder(getSupportFragmentManager())
+                .putArg(Constants.ArgsName.TITLE, title).
+                 replaceFragment(R.id.container, fragmentClass);
+    }
+
+    protected Fragment getLastFragment(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            String lastTag = savedInstanceState.getString(Constants.ArgsName.LAST_FRAGMENT_TAG);
+            if (lastTag != null) {
+                FragmentManager manager = getSupportFragmentManager();
+                return manager.findFragmentByTag(lastTag);
+            }
+        }
+        return null;
     }
 
 }

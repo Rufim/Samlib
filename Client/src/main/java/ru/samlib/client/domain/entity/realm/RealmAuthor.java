@@ -1,13 +1,8 @@
 package ru.samlib.client.domain.entity.realm;
 
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
-import lombok.*;
-import ru.samlib.client.domain.entity.Section;
-import ru.samlib.client.domain.entity.Work;
 
 import java.math.BigDecimal;
 import java.util.*;

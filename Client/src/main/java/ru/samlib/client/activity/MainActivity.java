@@ -4,12 +4,16 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
+import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.util.FragmentBuilder;
 
 
 public class MainActivity extends BaseActivity {
@@ -21,8 +25,20 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getMenuInflater().inflate(R.menu.drawer, navigationView.getMenu());
-        replaceFragment(getResString(R.string.drawer_new), NewestFragment.class);
-        actionBar.setTitle(R.string.drawer_new);
+        if (savedInstanceState != null) {
+            String lastTag = savedInstanceState.getString(Constants.ArgsName.LAST_FRAGMENT_TAG);
+            if (lastTag != null) {
+                FragmentManager manager = getSupportFragmentManager();
+                Fragment fr = manager.findFragmentByTag(lastTag);
+                new FragmentBuilder(manager).replaceFragment(R.id.container, fr);
+               if(!navigationView.isShown()) {
+                   actionBar.setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
+               }
+            }
+        } else {
+            replaceFragment(getResString(R.string.drawer_new), NewestFragment.class);
+            actionBar.setTitle(R.string.drawer_new);
+        }
     }
 
     protected void handleIntent(Intent intent) {
@@ -64,8 +80,8 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    public void onFragmentAttached(BaseFragment fragment) {
-        title = fragment.getArguments().getString(Constants.ArgsName.TITLE);
+    public void onEvent(FragmentAttachedEvent fragmentAttached) {
+        title = fragmentAttached.fragment.getArguments().getString(Constants.ArgsName.TITLE);
     }
 
 }

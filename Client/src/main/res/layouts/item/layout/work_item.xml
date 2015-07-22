@@ -64,7 +64,7 @@
                   android:id="@+id/work_annotation_layout"
                   android:orientation="vertical"
                   android:visibility="gone"
-                  android:paddingLeft="@dimen/spacing_medium"
+                  android:layout_marginLeft="@dimen/spacing_medium"
                   android:gravity="left">
         <com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView
                   android:layout_width="wrap_content"
