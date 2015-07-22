@@ -369,10 +369,12 @@ class LayoutContext {
     switch (style.getEnum(Style.VERTICAL_ALIGN)) {
       case Style.TOP:
         return 0;
+      case Style.CENTER:
+        return space / 2;
       case Style.BOTTOM:
         return space;
       default:
-        return space / 2;
+        return space; // default is bottom
     }
   }
 }

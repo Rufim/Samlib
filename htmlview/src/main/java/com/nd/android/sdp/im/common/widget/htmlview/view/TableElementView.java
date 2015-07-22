@@ -256,6 +256,7 @@ class TableElementView extends AbstractElementView {
             }
         }
 
+
         // calculate sums, simplify values (ensure min <= spec <= max)
         int minSum = 0;
         int maxSum = 0;
@@ -265,6 +266,15 @@ class TableElementView extends AbstractElementView {
 
         for (int i = 0; i < colCount; i++) {
             minSum += minWidths[i];
+        }
+
+        if(minSum > maxInnerWidth) {
+            for (int i = 0; i < colCount; i++) {
+                minWidths[i] = maxInnerWidth / colCount;
+            }
+        }
+
+        for (int i = 0; i < colCount; i++) {
             specWidths[i] = Math.max(minWidths[i], specWidths[i]);
             specSum += specWidths[i];
             maxWidths[i] = isFixed[i] ? specWidths[i] : maxWidths[i];

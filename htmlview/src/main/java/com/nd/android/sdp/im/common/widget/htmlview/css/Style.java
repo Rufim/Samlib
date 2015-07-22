@@ -791,9 +791,17 @@ public class Style {
     //return v / 1000;
       case EM:
         // TODO(haustein) Increase precision?
-        return v * getPx(FONT_SIZE) / 1000;
+        if(id == FONT_SIZE) {
+          return v / 1000;
+        } else {
+          return v * getPx(FONT_SIZE) / 1000;
+        }
       case EX:
-        return v * getPx(FONT_SIZE) / 2000;
+        if (id == FONT_SIZE) {
+          return v / 1000;
+        } else {
+          return v * getPx(FONT_SIZE) / 2000;
+        }
       case IN:
         return (v * DPI) / 1000;
       case CM:

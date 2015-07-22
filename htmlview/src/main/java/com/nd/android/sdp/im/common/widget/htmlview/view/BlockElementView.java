@@ -3,6 +3,7 @@ package com.nd.android.sdp.im.common.widget.htmlview.view;
 import java.util.ArrayList;
 
 import android.util.AttributeSet;
+import com.facebook.drawee.view.DraweeView;
 import com.nd.android.sdp.im.common.widget.htmlview.css.Style;
 
 import android.annotation.SuppressLint;
@@ -469,7 +470,6 @@ class BlockElementView extends AbstractElementView {
             Element childElement;
             int childPosition;
             int childWidth;
-
             if (child instanceof TextFragmentView) {
                 TextFragmentView fragment = (TextFragmentView) child;
                 addView(fragment, childInsertionIndex);

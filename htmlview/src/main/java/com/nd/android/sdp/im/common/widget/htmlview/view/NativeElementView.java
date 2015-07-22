@@ -28,6 +28,7 @@ import android.graphics.Bitmap;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
@@ -152,25 +153,22 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
         final int width;
         final int height;
         final String src;
-        final ImageView imageView;
+        final int maxWidth;
+        final float density;
 
 
-        public TransformImage(int width, int height, String src, ImageView imageView) {
+        public TransformImage(int width, int height, String src, int maxWidth, float density) {
             this.width = width;
             this.height = height;
             this.src = src;
-            this.imageView = imageView;
+            this.maxWidth = maxWidth;
+            this.density = density;
         }
 
         @Override
         public Bitmap transform(Bitmap bitmap) {
             int bitmapWidth = bitmap.getWidth();
             int bitmapHeight = bitmap.getHeight();
-            int loc [] = new int[2];
-            imageView.getLocationOnScreen(loc);
-            float density = imageView.getResources().getDisplayMetrics().density;
-            int maxWidth = imageView.getResources().getDisplayMetrics().widthPixels
-                    - loc[0];
             float scale = 1;
             if (width < 0 && height > 0) {
                 scale = ((float) height / bitmapHeight);
@@ -200,7 +198,26 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
 
         @Override
         public String key() {
-            return "transformation" + " desiredWidth";
+            return "transformation_" + "Width:" + Math.min(width * density, maxWidth) + "Height:" + height;
+        }
+    }
+
+    public static class ErrorCallback implements Callback {
+
+        final ImageView imageView;
+
+        public ErrorCallback(ImageView imageView) {
+            this.imageView = imageView;
+        }
+
+        @Override
+        public void onSuccess() {
+
+        }
+
+        @Override
+        public void onError() {
+            imageView.setVisibility(GONE);
         }
     }
 
@@ -209,16 +226,21 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
         String src = child.getAttributeValue("src");
         final GifImageView imageView = new GifImageView(context);
         if (src != null) {
-            final int width = child.getAttributeInt("width", WRAP_CONTENT);
-            final int height = child.getAttributeInt("height", WRAP_CONTENT);
-            imageView.setLayoutParams(new LayoutParams(width, height));
+            int loc[] = new int[2];
+            imageView.getLocationOnScreen(loc);
+            float density = imageView.getResources().getDisplayMetrics().density;
+            int maxWidth = imageView.getResources().getDisplayMetrics().widthPixels
+                    - loc[0];
+            int width = child.getAttributeInt("width", WRAP_CONTENT);
+            int height = child.getAttributeInt("height", WRAP_CONTENT);
+            imageView.setLayoutParams(new LayoutParams(Math.min((int)(width * density), maxWidth), height));
             imageView.setAdjustViewBounds(true);
             imageView.setScaleType(ImageView.ScaleType.FIT_START);
             Picasso.with(context)
                     .load(src)
                     .placeholder(R.drawable.ic_image_crop_original)
-                    .transform(new TransformImage(width, height, src, imageView))
-                    .into(imageView);
+                    .transform(new TransformImage(width, height, src, maxWidth, density))
+                    .into(imageView, new ErrorCallback(imageView));
         }
         return new NativeElementView(context, child, false, imageView);
     }

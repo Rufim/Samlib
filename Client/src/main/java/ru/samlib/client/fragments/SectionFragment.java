@@ -86,8 +86,8 @@ public class SectionFragment extends ListFragment<Linkable> {
     }
 
     public void onEvent(CategorySelectedEvent event) {
-        saveLister();
         if (category == null) {
+            saveLister();
             setLister((skip, size) -> {
                 if (category != null) {
                     if (!category.isParsed()) {

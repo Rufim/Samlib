@@ -507,7 +507,11 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
 
           default:
             // ignore other content (DTD, comments, PIs etc.)
-            parser.nextToken();
+            try {
+              parser.nextToken();
+            } catch (Exception ex) {
+              // ignore errors
+            }
         }
       }
     }

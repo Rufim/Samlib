@@ -58,7 +58,6 @@ public class HtmlView extends BlockElementView {
 
     public static class HtmlOptions {
         public static boolean openLinksInside = false;
-        public static boolean adjustBounds = true;
         public static String fontsPath = null;
         public int defaultTextColor = 0x0ff000000;
         public int defaultTextSize = 16;
