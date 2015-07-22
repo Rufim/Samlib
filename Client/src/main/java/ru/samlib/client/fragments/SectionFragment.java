@@ -2,6 +2,7 @@ package ru.samlib.client.fragments;
 
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.app.Fragment;
 import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -28,6 +29,7 @@ import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 
 import java.net.MalformedURLException;
@@ -93,7 +95,6 @@ public class SectionFragment extends ListFragment<Linkable> {
                     if (!category.isParsed()) {
                         try {
                             category = new CategoryParser(category).parse();
-                            category.setParsed(true);
                         } catch (MalformedURLException e) {
                             Log.e(TAG, "Unknown exception", e);
                             return new ArrayList<>();
@@ -142,7 +143,13 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public void onClick(View view, int position) {
-
+            if(view.getId() == R.id.work_item_layout) {
+                String link = getItem(position).getLink();
+                new FragmentBuilder(getFragmentManager())
+                        .putArg(Constants.ArgsName.LINK, link)
+                        .addToBackStack()
+                        .replaceFragment(SectionFragment.this, WorkFragment.class);
+            }
         }
 
         @Override

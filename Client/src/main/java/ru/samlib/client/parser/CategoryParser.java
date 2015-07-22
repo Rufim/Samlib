@@ -130,6 +130,7 @@ public class CategoryParser extends Parser{
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
         }
+        category.setParsed(true);
         return category;
     }
 

@@ -65,7 +65,7 @@ public class ParserUtils {
         String description = Jsoup.parseBodyFragment(parts[1]).select("ul li").get(2).text();
         String[] data = extractString(description, true,
                 new Splitter(" ", ","),
-                new Splitter(" ", "\\."),
+                new Splitter(": ", "\\."),
                 new Splitter(" ", "k"));
         work.setCreateDate(parseData(data[0]));
         work.setUpdateDate(parseData(data[1]));

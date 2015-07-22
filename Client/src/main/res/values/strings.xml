@@ -67,6 +67,10 @@
     <string name="author_annotation">Аннотация к разделу:</string>
     <string name="illustration">Иллюстрации</string>
     <string name="author_page">Страничка автора</string>
+    <string name="work_created">Размёщн:</string>
+    <string name="work_updated">изменён:</string>
+    <string name="work_series">Серия:</string>
+
 
     <string name="example_book_annotation">
         <![CDATA[

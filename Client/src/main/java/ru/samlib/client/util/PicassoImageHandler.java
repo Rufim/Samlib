@@ -1,13 +1,11 @@
 package ru.samlib.client.util;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.v4.app.FragmentManager;
 import android.text.SpannableStringBuilder;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
@@ -21,22 +19,18 @@ import ru.samlib.client.R;
  */
 public class PicassoImageHandler extends TagNodeHandler {
 
-    final Picasso pablo;
     final TextView textView;
-    final FragmentManager manager;
-    final Resources resources;
+    final Picasso picasso;
 
-    public PicassoImageHandler(final TextView textView, Resources resources, final Picasso pablo, final FragmentManager manager) {
+    public PicassoImageHandler(final TextView textView) {
         this.textView = textView;
-        this.resources = resources;
-        this.pablo = pablo;
-        this.manager = manager;
+        this.picasso = Picasso.with(textView.getContext());
     }
 
     @Override
     public void handleTagNode(TagNode tagNode, final SpannableStringBuilder builder, final int start, int end) {
         builder.append("￼");
-        Drawable drawable = resources.getDrawable(R.drawable.ic_image_crop_original);
+        Drawable drawable = textView.getResources().getDrawable(R.drawable.ic_image_crop_original);
         int textSize = (int) (textView.getTextSize() * 1.25);
         drawable.setBounds(0, 0, textSize, textSize);
         final DynamicImageSpan imageSpan = new DynamicImageSpan(drawable);
@@ -51,9 +45,14 @@ public class PicassoImageHandler extends TagNodeHandler {
                         TagNode tag = meh[0];
                         String src = tagNode.getAttributeByName("src");
                         if(src != null) {
+                            int loc[] = new int[2];
+                            textView.getLocationOnScreen(loc);
+                            float density = textView.getResources().getDisplayMetrics().density;
+                            int maxWidth = textView.getResources().getDisplayMetrics().widthPixels
+                                    - loc[0];
                             int width = parseDimen(tagNode.getAttributeByName("width"));
                             int height = parseDimen(tagNode.getAttributeByName("height"));
-                            return pablo.load(src).transform(new TransformImage(width, height, textView.getContext())).get();
+                            return picasso.load(src).transform(new PicassoTransformImage(width, height, maxWidth, density)).get();
                         }
                     }
                 } catch (Exception e) {
@@ -73,7 +72,7 @@ public class PicassoImageHandler extends TagNodeHandler {
             @Override
             protected void onPostExecute(final Bitmap bitmap) {
                 if (bitmap != null) {
-                    Drawable drawable = new BitmapDrawable(resources, bitmap);
+                    Drawable drawable = new BitmapDrawable(textView.getResources(), bitmap);
                     drawable.setBounds(0, 0, bitmap.getWidth() - 1, bitmap.getHeight() - 1);
                     imageSpan.setDrawable(drawable);
                     if (textView != null) {
@@ -85,50 +84,4 @@ public class PicassoImageHandler extends TagNodeHandler {
         }.execute(tagNode);
     }
 
-    public static class TransformImage implements Transformation {
-
-        final int width;
-        final int height;
-        final Context context;
-
-
-        public TransformImage(int width, int height, Context context) {
-            this.width = width;
-            this.height = height;
-            this.context = context;
-        }
-
-        @Override
-        public Bitmap transform(Bitmap bitmap) {
-            int bitmapWidth = bitmap.getWidth();
-            int bitmapHeight = bitmap.getHeight();
-            float scale = 1;
-            if (width < 0 && height > 0) {
-                scale = ((float) height / bitmapHeight);
-            }
-            if (width > 0 && height < 0) {
-                scale = ((float) width / bitmapWidth);
-            }
-            scale *= context.getResources().getDisplayMetrics().density;
-            Bitmap scaledBitmap;
-            if (scale != 1) {
-                Matrix matrix = new Matrix();
-                matrix.postScale(scale, scale);
-                // Create a new bitmap and convert it to a format understood by the ImageView
-                scaledBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmapHeight, matrix, true);
-                if (scaledBitmap != bitmap) {
-                    // Same bitmap is returned if sizes are the same
-                    bitmap.recycle();
-                }
-            } else {
-                scaledBitmap = bitmap;
-            }
-            return scaledBitmap;
-        }
-
-        @Override
-        public String key() {
-            return "transformation" + " desiredWidth";
-        }
-    }
 }

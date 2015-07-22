@@ -109,7 +109,7 @@ public class AuthorParser extends Parser {
                                 a = lineDoc.select("a");
                                 newCategory.setTitle(a.text());
                                 if (line.contains("href=index")) {
-                                    newCategory.setLink(author.getLink() + "/" + a.attr("href"));
+                                    newCategory.setLink(a.attr("href"));
                                     newCategory.setAuthor(author);
                                 } else if (line.contains("href=/type")) {
                                     newCategory.setType(Type.parseType(a.attr("href")));
@@ -160,6 +160,7 @@ public class AuthorParser extends Parser {
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
         }
+        author.setParsed(true);
         return author;
     }
 

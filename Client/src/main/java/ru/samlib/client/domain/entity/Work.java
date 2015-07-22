@@ -46,10 +46,29 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private String description;
     private boolean hasIllustration;
     private boolean parsed = false;
+    private Document parsedContent;
 
+    public Work(String link) {
+        setLink(link);
+    }
+
+    public void setLink(String link) {
+        if (link.contains("/")) {
+            if(author == null) {
+                author = new Author(link.substring(link.indexOf("/"), link.lastIndexOf("/")));
+            }
+            this.link = link.substring(link.lastIndexOf("/"));
+        } else {
+            this.link = link;
+        }
+    }
+
+    public String getLink() {
+        return author.getLink() + "/" + link;
+    }
 
     public String getTypeName() {
-        if(categoryTitle != null) {
+        if (categoryTitle != null) {
             return categoryTitle;
         } else {
             return type.getTitle();
@@ -57,7 +76,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     }
 
     public String printGenres() {
-        if(genres.isEmpty()) {
+        if (genres.isEmpty()) {
             return "";
         }
         StringBuilder builder = new StringBuilder();
@@ -72,7 +91,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
 
     public void addGenre(String genre) {
         Genre tryGenre = Genre.parseGenre(genre);
-        if(tryGenre != null) {
+        if (tryGenre != null) {
             genres.add(tryGenre);
         }
     }
@@ -81,11 +100,12 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         if (genres == null) {
             genres = new ArrayList<Genre>();
         }
-         genres.add(genre);
+        genres.add(genre);
     }
 
-    public String processAnnotationBloks(int color) {;
-        Document an =Jsoup.parse(TextUtils.join("", annotationBlocks));
+    public String processAnnotationBloks(int color) {
+        ;
+        Document an = Jsoup.parse(TextUtils.join("", annotationBlocks));
         an.select("font[color=#555555]").attr("color",
                 String.format("#%02x%02x%02x",
                         Color.red(color),
@@ -102,11 +122,18 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         Calendar calendarToday = Calendar.getInstance();
         Calendar calendarDate = Calendar.getInstance();
         calendarDate.setTime(date);
-        if(calendarToday.get(Calendar.DAY_OF_WEEK) == calendarDate.get(Calendar.DAY_OF_WEEK)) {
+        if (calendarToday.get(Calendar.DAY_OF_WEEK) == calendarDate.get(Calendar.DAY_OF_WEEK)) {
             return new SimpleDateFormat("HH:mm", locale).format(date);
         } else {
             return new SimpleDateFormat("dd/MM", locale).format(date);
         }
+    }
+
+    public Document getParsedContent() {
+        if (parsedContent == null) {
+            parsedContent = Jsoup.parseBodyFragment(rawContent);
+        }
+        return parsedContent;
     }
 
     @Override

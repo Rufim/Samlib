@@ -31,6 +31,10 @@ public class Category implements Linkable, Serializable, Parsable {
     private String link;
     private boolean parsed = false;
 
+    public String getLink() {
+        return link != null ? author.getLink() + "/" + link : null;
+    }
+
     public void addLink(Linkable link) {
         this.links.add(link);
     }

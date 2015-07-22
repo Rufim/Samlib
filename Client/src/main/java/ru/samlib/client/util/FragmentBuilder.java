@@ -1,7 +1,6 @@
 package ru.samlib.client.util;
 
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
@@ -77,12 +76,13 @@ public class FragmentBuilder {
     }
 
 
-    private FragmentManager fragmentManager;
+    private FragmentManager manager;
     private Bundle bundle = new Bundle();
     private Map<String, Object> args = new HashMap<>();
+    private boolean toBackStack = false;
 
-    public FragmentBuilder(FragmentManager fragmentManager) {
-        this.fragmentManager = fragmentManager;
+    public FragmentBuilder(FragmentManager manager) {
+        this.manager = manager;
     }
 
 
@@ -190,9 +190,14 @@ public class FragmentBuilder {
         return this;
     }
 
+    public FragmentBuilder addToBackStack() {
+        toBackStack = true;
+        return this;
+    }
+
     public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
-        Fragment fr = fragmentManager.findFragmentByTag(fragmentClass.getSimpleName());
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment fr = manager.findFragmentByTag(fragmentClass.getSimpleName());
+        FragmentTransaction transaction = manager.beginTransaction();
         if (fr == null) {
             fr = newFragment(fragmentClass);
             transaction.replace(container, fr, fragmentClass.getSimpleName());
@@ -200,19 +205,27 @@ public class FragmentBuilder {
             fr.getArguments().putAll(bundle);
             transaction.replace(container, fr);
         }
+        if(toBackStack) transaction.addToBackStack(fragmentClass.getSimpleName());
         transaction.commitAllowingStateLoss();
         return (F) fr;
     }
 
     public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment) {
-        Fragment fr = fragmentManager.findFragmentByTag(fragment.getClass().getSimpleName());
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        fr.getArguments().putAll(bundle);
-        transaction.replace(container, fr);
+        FragmentTransaction transaction = manager.beginTransaction();
+        fragment.getArguments().putAll(bundle);
+        transaction.replace(container, fragment);
+        if (toBackStack) transaction.addToBackStack(fragment.getClass().getSimpleName());
         transaction.commitAllowingStateLoss();
-        return (F) fr;
+        return (F) fragment;
     }
 
+    public <F extends Fragment> F replaceFragment(Fragment fragment, Class<F> fragmentClass) {
+        return replaceFragment(fragment.getId(), fragmentClass);
+    }
+
+    public <F extends Fragment> F replaceFragment(Fragment fragment, Fragment newFragment) {
+        return replaceFragment(fragment.getId(), newFragment);
+    }
 
     //TODO: Caution!!!!!  work only one time
     public <F extends Fragment> F replaceFragment(View placeHolder, Class<F> fragmentClass) {
