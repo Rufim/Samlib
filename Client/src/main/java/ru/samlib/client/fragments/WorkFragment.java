@@ -46,7 +46,7 @@ public class WorkFragment extends ListFragment<Element> {
                 try {
                     work = new WorkParser(work).parse();
                     postEvent(new WorkParsedEvent(work));
-                    dds = work.getParsedContent().select("body > dd,pre,div");
+                    dds = work.getParsedContent().select("body > dd,pre,div,font");
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
