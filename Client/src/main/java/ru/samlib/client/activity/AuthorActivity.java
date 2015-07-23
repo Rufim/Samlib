@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.annimon.stream.Stream;
@@ -23,15 +25,14 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Created by 0shad on 12.07.2015.
  */
 public class AuthorActivity extends BaseActivity {
 
-    private ImageView authorAvatar;
-    private TextView drawerAuthorTitle;
-    private TextView drawerAuthorAnnotation;
-    private RelativeLayout drawerHeader;
+    private ViewGroup drawerHeader;
     private Author author;
     private Work work;
 
@@ -46,6 +47,7 @@ public class AuthorActivity extends BaseActivity {
             if (sectionFragment instanceof WorkFragment) {
                 initializeAuthor(((WorkFragment) sectionFragment).getWork().getAuthor());
             }
+            new FragmentBuilder(getSupportFragmentManager()).replaceFragment(R.id.container, sectionFragment);
         }
     }
 
@@ -77,11 +79,13 @@ public class AuthorActivity extends BaseActivity {
 
     private void initializeAuthor(Author author) {
         this.author = author;
+        navigationView.removeHeaderView(drawerHeader);
+        navigationView.getMenu().clear();
         actionBar.setTitle(author.getShortName());
-        drawerHeader = (RelativeLayout) getLayoutInflater().inflate(R.layout.author_header, navigationView, false);
-        authorAvatar = GuiUtils.getView(drawerHeader, R.id.drawer_author_avatar);
-        drawerAuthorTitle = GuiUtils.getView(drawerHeader, R.id.drawer_author_title);
-        drawerAuthorAnnotation = GuiUtils.getView(drawerHeader, R.id.drawer_author_annotation);
+        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.author_bar_header, navigationView, false);
+        ImageView authorAvatar = GuiUtils.getView(drawerHeader, R.id.drawer_author_avatar);
+        TextView drawerAuthorTitle = GuiUtils.getView(drawerHeader, R.id.drawer_author_title);
+        TextView drawerAuthorAnnotation = GuiUtils.getView(drawerHeader, R.id.drawer_author_annotation);
         drawerAuthorTitle.setText(author.getFullName());
         drawerAuthorAnnotation.setText(author.getAnnotation());
         if (author.isHasAvatar()) {
@@ -91,10 +95,29 @@ public class AuthorActivity extends BaseActivity {
         navigationView.addHeaderView(drawerHeader);
     }
 
+    private void initializeWork(Work work) {
+        this.work = work;
+        navigationView.removeHeaderView(drawerHeader);
+        navigationView.getMenu().clear();
+        actionBar.setTitle(work.getAuthor().getShortName());
+        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.work_bar_header, navigationView, false);
+        TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
+        TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
+        TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
+        TextView workGenres = GuiUtils.getView(drawerHeader, R.id.work_genres);
+        TextView workSeries = GuiUtils.getView(drawerHeader, R.id.work_series);
+        GuiUtils.setText(workTitle, work.getTitle());
+        GuiUtils.setText(workCreated, new SimpleDateFormat("dd MM yyyy").format(work.getCreateDate()));
+        GuiUtils.setText(workUpdated, new SimpleDateFormat("dd MM yyyy").format(work.getUpdateDate()));
+        GuiUtils.setText(workGenres, work.printGenres());
+        GuiUtils.setText(workSeries, work.getType().getTitle());
+        navigationView.addHeaderView(drawerHeader);
+    }
+
     private boolean validateIntent(Intent intent) {
         Uri data = getIntent().getData();
         return Intent.ACTION_VIEW.equals(intent.getAction())
-                && data.getPath().matches(".*/[a-z]/[a-z]+/?([a-z]+\\.shtml)?");
+                && data.getPath().matches("/*[a-z]/+[a-z_]+((/*)|(/+[a-z-_0-9]+\\.shtml))?");
     }
 
     @Override
@@ -129,6 +152,6 @@ public class AuthorActivity extends BaseActivity {
 
 
     public void onEventMainThread(WorkParsedEvent event) {
-        initializeAuthor(event.work.getAuthor());
+        initializeWork(event.work);
     }
 }

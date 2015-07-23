@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.SpannableStringBuilder;
 import android.widget.TextView;
@@ -13,6 +14,10 @@ import com.squareup.picasso.Transformation;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.entity.Link;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Created by Dmitry on 16.07.2015.
@@ -44,6 +49,12 @@ public class PicassoImageHandler extends TagNodeHandler {
                     if (meh.length > 0) {
                         TagNode tag = meh[0];
                         String src = tagNode.getAttributeByName("src");
+                        URL url;
+                        try {
+                            url = new URL(src);
+                        } catch (MalformedURLException ex) {
+                            url = new URL(Link.getBaseDomain() + src);
+                        }
                         if(src != null) {
                             int loc[] = new int[2];
                             textView.getLocationOnScreen(loc);
@@ -52,7 +63,7 @@ public class PicassoImageHandler extends TagNodeHandler {
                                     - loc[0];
                             int width = parseDimen(tagNode.getAttributeByName("width"));
                             int height = parseDimen(tagNode.getAttributeByName("height"));
-                            return picasso.load(src).transform(new PicassoTransformImage(width, height, maxWidth, density)).get();
+                            return picasso.load(url.toString()).transform(new PicassoTransformImage(width, height, maxWidth, density)).get();
                         }
                     }
                 } catch (Exception e) {

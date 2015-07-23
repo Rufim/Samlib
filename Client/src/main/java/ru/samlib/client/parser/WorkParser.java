@@ -1,6 +1,8 @@
 package ru.samlib.client.parser;
 
+import android.util.Log;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
 
@@ -24,7 +26,17 @@ public class WorkParser extends Parser {
     }
 
     public Work parse() {
-        work.setParsed(true);
-        return ParserUtils.parseWork(HtmlClient.executeRequest(request));
+        CachedResponse rawContent = null;
+        if (work.getRawContent() == null) {
+            rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
+        } else {
+            rawContent = HtmlClient.executeRequest(request);
+        }
+        work = ParserUtils.parseWork(rawContent, work);
+        if (rawContent.isDownloadOver) {
+            work.setParsed(true);
+        }
+        Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
+        return work;
     }
 }

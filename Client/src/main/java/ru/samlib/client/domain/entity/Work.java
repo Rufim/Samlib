@@ -2,12 +2,14 @@ package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
 import android.text.TextUtils;
+import com.koushikdutta.async.callback.ListenCallback;
 import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
+import ru.samlib.client.fragments.ListFragment;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,12 +25,13 @@ import java.util.*;
 public final class Work implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2705011939329628695L;
+    private static final String HTML_SUFFIX = ".shtml";
+    private static final String FB2_SUFFIX = ".fb2.zip";
 
     private String title;
     private String link;
     private Author author;
     private String imageLink;
-    private String categoryTitle;
     private Integer size;
     private BigDecimal rate;
     private Integer kudoed;
@@ -37,6 +40,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     @Setter(AccessLevel.NONE)
     private List<Genre> genres = new ArrayList<>();
     private Type type = Type.OTHER;
+    private Category category;
     @Setter(AccessLevel.NONE)
     private List<String> annotationBlocks = new ArrayList<>();
     private Date createDate;
@@ -44,17 +48,28 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private New state = New.EMPTY;
     private String rawContent;
     private String description;
-    private boolean hasIllustration;
+    private boolean hasIllustration = false;
+    private boolean hasComments = true;
     private boolean parsed = false;
     private Document parsedContent;
+    private List<Chapter> chapters = new ArrayList<>();
 
     public Work(String link) {
         setLink(link);
     }
 
+    public void addChapter(Chapter chapter) {
+        chapters.add(chapter);
+    }
+
+    public List<Chapter> getSortedChapters() {
+        Collections.sort(chapters, (lhs, rhs) -> (int) (lhs.getPercent() - rhs.getPercent()));
+        return chapters;
+    }
+
     public void setLink(String link) {
         if (link.contains("/")) {
-            if(author == null) {
+            if (author == null) {
                 author = new Author(link.substring(link.indexOf("/"), link.lastIndexOf("/")));
             }
             this.link = link.substring(link.lastIndexOf("/"));
@@ -68,8 +83,8 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     }
 
     public String getTypeName() {
-        if (categoryTitle != null) {
-            return categoryTitle;
+        if (category != null) {
+            return category.getTitle();
         } else {
             return type.getTitle();
         }
@@ -87,6 +102,12 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
             builder.append(genre.getTitle());
         }
         return builder.toString();
+    }
+
+    public void setGenres(String genres) {
+        for (String genre : genres.split(",")) {
+            addGenre(genre);
+        }
     }
 
     public void addGenre(String genre) {

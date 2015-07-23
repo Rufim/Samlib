@@ -5,7 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import ru.samlib.client.domain.Splitter;
+import ru.samlib.client.util.Splitter;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
@@ -52,7 +52,7 @@ public class CategoryParser extends Parser{
             Document headDoc;
             Elements elements;
             CachedResponse rawFile = HtmlClient.executeRequest(request);
-            String[] parts = ParserUtils.extractLines(rawFile, false,
+            String[] parts = Splitter.extractLines(rawFile, false,
                     new Splitter().addEnd("Первый блок ссылок"),
                     new Splitter("Блок шапки", "Блок управления разделом"),
                     new Splitter("Блок ссылок на произведения", "Подножие"));
@@ -84,7 +84,7 @@ public class CategoryParser extends Parser{
                     author.setAnnotation(headDoc.select("a[href=./]").text());
                 }
                 if (head.contains("Аннотация")) {
-                    String annotation = ParserUtils.extractLines(new ByteArrayInputStream(head.getBytes(request.getEncoding())),
+                    String annotation = Splitter.extractLines(new ByteArrayInputStream(head.getBytes(request.getEncoding())),
                             request.getEncoding(),
                             true,
                             new Splitter("<a href=\\./>", "<ul>"))[0];
@@ -112,7 +112,7 @@ public class CategoryParser extends Parser{
                                 Elements dl = lineDoc.select("DL");
                                 Work work = ParserUtils.parseWork(dl.first());
                                 work.setAuthor(author);
-                                work.setCategoryTitle(category.getTitle());
+                                work.setCategory(category);
                                 if (work.validate()) {
                                     category.addLink(work);
                                 } else {

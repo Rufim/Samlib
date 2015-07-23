@@ -51,7 +51,7 @@ public class AuthorFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_author, container, false);
+        View rootView = inflater.inflate(R.layout.author_list_header, container, false);
         Author newAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
         ButterKnife.bind(this, rootView);
         if (author == null || !author.equals(newAuthor)) {

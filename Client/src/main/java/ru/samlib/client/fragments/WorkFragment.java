@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.jsoup.nodes.Element;
@@ -17,9 +18,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.util.GuiUtils;
@@ -27,7 +26,6 @@ import ru.samlib.client.util.PicassoImageHandler;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Dmitry on 23.06.2015.
@@ -37,11 +35,9 @@ public class WorkFragment extends ListFragment<Element> {
     private static final String TAG = WorkFragment.class.getSimpleName();
 
     private Work work;
-    private HtmlSpanner spanner;
     private Elements dds;
 
     public WorkFragment() {
-        spanner = new HtmlSpanner();
         setLister(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(10);
@@ -50,7 +46,7 @@ public class WorkFragment extends ListFragment<Element> {
                 try {
                     work = new WorkParser(work).parse();
                     postEvent(new WorkParsedEvent(work));
-                    dds = work.getParsedContent().select("dd");
+                    dds = work.getParsedContent().select("body > dd,pre,div");
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
@@ -87,7 +83,7 @@ public class WorkFragment extends ListFragment<Element> {
     private class WorkFragmentAdaptor extends MultiItemListAdapter<Element> {
 
         public WorkFragmentAdaptor() {
-            super(true, R.layout.work_header, R.layout.indent_item);
+            super(true, R.layout.work_list_header, R.layout.indent_item);
         }
 
         @Override
@@ -103,13 +99,16 @@ public class WorkFragment extends ListFragment<Element> {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
            switch (holder.getItemViewType()){
-               case R.layout.work_header:
+               case R.layout.work_list_header:
+                   HtmlView htmlView = holder.getView(R.id.work_annotation_header);
+                   htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
                    break;
                case R.layout.indent_item:
                    Element indent = getItem(position);
                    TextView view = holder.getView(R.id.work_text_indent);
+                   HtmlSpanner spanner = new HtmlSpanner();
                    spanner.registerHandler("img", new PicassoImageHandler(view));
-                   GuiUtils.setTextOrHide(holder.getView(R.id.work_text_indent), "  " + spanner.fromHtml(indent.html()));
+                   view.setText(spanner.fromHtml(indent.outerHtml()));
                    break;
            }
         }

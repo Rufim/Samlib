@@ -2,7 +2,6 @@ package ru.samlib.client.fragments;
 
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.app.Fragment;
 import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -16,7 +15,6 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
-import org.apache.commons.lang3.ArrayUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
@@ -140,7 +138,7 @@ public class SectionFragment extends ListFragment<Linkable> {
     private class SectionFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public SectionFragmentAdaptor() {
-            super(true, R.layout.fragment_author, R.layout.section_item, R.layout.work_item);
+            super(true, R.layout.author_list_header, R.layout.section_item, R.layout.work_item);
         }
 
         @Override
@@ -160,7 +158,7 @@ public class SectionFragment extends ListFragment<Linkable> {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
-                case R.layout.fragment_author:
+                case R.layout.author_list_header:
                     initHeader(holder);
                     break;
                 case R.layout.section_item:
@@ -240,6 +238,13 @@ public class SectionFragment extends ListFragment<Linkable> {
                     }
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_rate_and_size), rate_and_size);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_subtitle), work.getTypeName());
+                    work_row.setOnClickListener(v -> {
+                        new FragmentBuilder(getFragmentManager())
+                                .putArg(Constants.ArgsName.LINK, v.getTag())
+                                .addToBackStack()
+                                .replaceFragment(SectionFragment.this, WorkFragment.class);
+                    });
+                    work_row.setTag(work.getLink());
                     authorSuggestions.addView(work_row);
                 });
                 authorSuggestionLayout.setVisibility(View.VISIBLE);
@@ -286,9 +291,6 @@ public class SectionFragment extends ListFragment<Linkable> {
                 TextView textContent = new TextView(new ContextThemeWrapper(authorGridInfo.getContext(), R.style.author_info_column_1));
                 textTitle.setText(title);
                 if (content instanceof Date) {
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime((Date) content);
-                    int month = cal.get(Calendar.MONTH);
                     content = new SimpleDateFormat("dd MM yyyy").format(content);
                 }
                 textContent.setText(content.toString());

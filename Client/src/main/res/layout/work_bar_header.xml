@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/Black">
+
+    <TextView
+            android:id="@+id/work_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/spacing_xlarge"
+            android:gravity="center"
+            android:textColor="@color/Snow"
+            android:textSize="@dimen/text_huge"
+            android:layout_margin="@dimen/spacing_small"
+            android:textStyle="bold"/>
+
+
+    <LinearLayout
+            android:id="@+id/work_created_layout"
+            android:layout_marginLeft="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:text="@string/work_created"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"
+                android:textColor="@color/red_dark"
+                style="@style/item_text"/>
+
+        <TextView
+                android:id="@+id/work_created"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/work_updated_layout"
+            android:layout_marginLeft="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:text="@string/work_updated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"
+                android:textColor="@color/red_dark"
+                style="@style/item_text"/>
+
+        <TextView
+                android:id="@+id/work_updated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+            android:id="@+id/work_genres_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:orientation="horizontal">
+
+        <TextView
+                android:text="@string/item_genres_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"
+                android:textColor="@color/red_dark"
+                style="@style/item_text"/>
+
+        <TextView
+                android:id="@+id/work_genres"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/work_series_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:orientation="horizontal">
+
+        <TextView
+                android:text="@string/work_series"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"
+                android:textColor="@color/red_dark"
+                style="@style/item_text"/>
+
+        <TextView
+                android:id="@+id/work_series"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_medium"/>
+    </LinearLayout>
+    <View style="@style/horizontal_border"
+          android:layout_below="@+id/drawer_author_annotation"/>
+</LinearLayout>

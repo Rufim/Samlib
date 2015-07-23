@@ -52,10 +52,7 @@ public class NewestParser extends Parser implements Lister<Work> {
                                 } else {
                                     work.setSize(Integer.parseInt(text.substring(work.getTitle().length() + 5, text.lastIndexOf("k "))));
                                 }
-                                String[] genres = text.substring(text.indexOf("k ") + 2, text.length()).split(",");
-                                for (String genre : genres) {
-                                    work.addGenre(genre);
-                                }
+                                work.setGenres(text.substring(text.indexOf("k ") + 2, text.length()));
                                 work.setLink(rowItems.get(j).select("a[href]").attr("href"));
                                 break;
                             case 1:

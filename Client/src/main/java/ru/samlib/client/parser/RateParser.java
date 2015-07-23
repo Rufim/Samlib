@@ -51,10 +51,7 @@ public class RateParser extends PageParser {
                         work.setKudoed(Integer.parseInt(rate[1]));
                     }
                     String ownText = item.ownText();
-                    String[] genres = ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim().split(",");
-                    for (String genre : genres) {
-                        work.addGenre(genre);
-                    }
+                    work.setGenres(ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim());
                     break;
             }
         }

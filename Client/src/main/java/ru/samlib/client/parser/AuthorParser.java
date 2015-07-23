@@ -5,7 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import ru.samlib.client.domain.Splitter;
+import ru.samlib.client.util.Splitter;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.net.CachedResponse;
@@ -39,8 +39,18 @@ public class AuthorParser extends Parser {
         try {
             Document headDoc;
             Elements elements;
-            CachedResponse rawFile = HtmlClient.executeRequest(request);
-            String[] parts = ParserUtils.extractLines(rawFile, false,
+            CachedResponse rawFile;
+            if(author.getCategories().isEmpty()) {
+                rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
+            } else {
+                rawFile = HtmlClient.executeRequest(request);
+                author.getCategories().clear();
+                author.getRecommendations().clear();
+            }
+            if (rawFile.isDownloadOver) {
+                author.setParsed(true);
+            }
+            String[] parts = Splitter.extractLines(rawFile, false,
                     new Splitter().addEnd("Первый блок ссылок"),
                     new Splitter("Блок шапки", "Блок управления разделом"),
                     new Splitter("Блок ссылок на произведения", "Подножие"));
@@ -70,22 +80,24 @@ public class AuthorParser extends Parser {
                 author.setHasAbout(head.contains("href=about.shtml"));
                 if (head.contains("Об авторе")) {
                     author.setAbout(
-                            Jsoup.parseBodyFragment(ParserUtils
+                            Jsoup.parseBodyFragment(Splitter
                                     .extractLines(new ByteArrayInputStream(head.getBytes(request.getEncoding())),
                                             request.getEncoding(),
                                             true,
                                             new Splitter("Об авторе", "(Аннотация к разделу)|(Начните знакомство с)"))[0]).text());
                 }
                 if (head.contains("Аннотация к разделу")) {
-                    author.setSectionAnnotation(ParserUtils.extractString(headDoc.text(),
+                    author.setSectionAnnotation(Splitter.extractString(headDoc.text(),
                             true,
                             new Splitter().addStart("Аннотация к разделу: "))[0]);
                 }
                 if (head.contains("Начните знакомство с")) {
-                    String[] rec = ParserUtils.extractString(head, true, new Splitter("<b>Начните знакомство с</b>:", "\\n"));
+                    String[] rec = Splitter.extractString(head, true, new Splitter("<b>Начните знакомство с</b>:", "\\n"));
                     Document recDoc = Jsoup.parseBodyFragment(rec[0]);
                     for (Element workEl : recDoc.select("li")) {
-                        author.addRecommendation(ParserUtils.parseWork(workEl));
+                        Work work = ParserUtils.parseWork(workEl);
+                        work.setAuthor(author);
+                        author.addRecommendation(work);
                     }
                 }
             }
@@ -102,6 +114,7 @@ public class AuthorParser extends Parser {
                             if (line.contains("<h3>")) {
                                 newCategory = new Category();
                                 newCategory.setTitle(lineDoc.select("h3").text());
+                                newCategory.setAuthor(author);
                                 author.addCategory(newCategory);
                             }
                             if (line.startsWith("</small>")) {
@@ -110,10 +123,10 @@ public class AuthorParser extends Parser {
                                 newCategory.setTitle(a.text());
                                 if (line.contains("href=index")) {
                                     newCategory.setLink(a.attr("href"));
-                                    newCategory.setAuthor(author);
                                 } else if (line.contains("href=/type")) {
                                     newCategory.setType(Type.parseType(a.attr("href")));
                                 }
+                                newCategory.setAuthor(author);
                                 scanner.nextLine();
                                 line = scanner.nextLine();
                                 if(line.startsWith("<font")) {
@@ -138,7 +151,7 @@ public class AuthorParser extends Parser {
                                 }
                                 Work work = ParserUtils.parseWork(dl.first());
                                 work.setAuthor(author);
-                                work.setCategoryTitle(newCategory.getTitle());
+                                work.setCategory(newCategory);
                                 if (work.validate()) {
                                     if (newCategory == null) {
                                         author.addRootLink(work);
@@ -160,7 +173,6 @@ public class AuthorParser extends Parser {
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
         }
-        author.setParsed(true);
         return author;
     }
 
