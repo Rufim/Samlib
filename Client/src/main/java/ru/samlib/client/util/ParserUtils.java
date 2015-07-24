@@ -78,23 +78,25 @@ public class ParserUtils {
         work.setCreateDate(parseData(data[0]));
         work.setUpdateDate(parseData(data[1]));
         work.setSize(Integer.parseInt(data[2]));
-        String typeGenre [] = lis.get(index++).text().split(":");
-        work.setType(Type.parseType(typeGenre[0]));
-        if(typeGenre.length > 1) {
-            work.setGenres(typeGenre[1]);
-        }
-        for (int i = index; i < lis.size(); i++) {
-            String text = lis.get(i).text();
-            if (text.contains("Иллюстрации")) {
-                work.setHasIllustration(true);
-            } else if(text.contains("Скачать")) {
-               break;
-            } else {
-                Category category = new Category();
-                category.setTitle(text);
-                category.setLink(lis.attr("href"));
-                category.setAuthor(work.getAuthor());
-                work.setCategory(category);
+        if(lis.size() > index) {
+            String typeGenre[] = lis.get(index++).text().split(":");
+            work.setType(Type.parseType(typeGenre[0]));
+            if (typeGenre.length > 1) {
+                work.setGenres(typeGenre[1]);
+            }
+            for (int i = index; i < lis.size(); i++) {
+                String text = lis.get(i).text();
+                if (text.contains("Иллюстрации")) {
+                    work.setHasIllustration(true);
+                } else if (text.contains("Скачать")) {
+                    break;
+                } else {
+                    Category category = new Category();
+                    category.setTitle(text);
+                    category.setLink(lis.attr("href"));
+                    category.setAuthor(work.getAuthor());
+                    work.setCategory(category);
+                }
             }
         }
         if(parts[2].contains("Аннотация")) {
