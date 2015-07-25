@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,17 +16,16 @@ import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.AuthorParsedEvent;
-import ru.samlib.client.domain.events.CategorySelectedEvent;
-import ru.samlib.client.domain.events.FragmentAttachedEvent;
-import ru.samlib.client.domain.events.WorkParsedEvent;
+import ru.samlib.client.domain.events.*;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 /**
  * Created by 0shad on 12.07.2015.
@@ -35,6 +35,7 @@ public class AuthorActivity extends BaseActivity {
     private ViewGroup drawerHeader;
     private Author author;
     private Work work;
+    private boolean isWork = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +66,7 @@ public class AuthorActivity extends BaseActivity {
             authorLink = intent.getData().getPath();
         }
         if (authorLink != null) {
-            if (authorLink.endsWith(".shtml")) {
+            if (authorLink.endsWith(Work.HTML_SUFFIX)) {
                 new FragmentBuilder(getSupportFragmentManager())
                         .putArg(Constants.ArgsName.LINK, authorLink)
                         .replaceFragment(R.id.container, WorkFragment.class);
@@ -79,6 +80,7 @@ public class AuthorActivity extends BaseActivity {
 
     private void initializeAuthor(Author author) {
         this.author = author;
+        isWork = false;
         navigationView.removeHeaderView(drawerHeader);
         navigationView.getMenu().clear();
         actionBar.setTitle(author.getShortName());
@@ -91,12 +93,20 @@ public class AuthorActivity extends BaseActivity {
         if (author.isHasAvatar()) {
             Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
         }
-        Stream.of(author.getLinkableCategory()).forEach(sec -> navigationView.getMenu().add(sec.getTitle()));
+        List<Category> categories = author.getLinkableCategory();
+        for (int i = 0; i < categories.size(); i++) {
+            String title = categories.get(i).getTitle();
+            if (title.length() > 22) {
+                title = title.substring(0, 19) + "...";
+            }
+            navigationView.getMenu().add(Menu.NONE, Menu.NONE, i, title);
+        }
         navigationView.addHeaderView(drawerHeader);
     }
 
     private void initializeWork(Work work) {
         this.work = work;
+        isWork = true;
         navigationView.removeHeaderView(drawerHeader);
         navigationView.getMenu().clear();
         actionBar.setTitle(work.getAuthor().getShortName());
@@ -111,6 +121,13 @@ public class AuthorActivity extends BaseActivity {
         GuiUtils.setText(workUpdated, new SimpleDateFormat("dd MM yyyy").format(work.getUpdateDate()));
         GuiUtils.setText(workGenres, work.printGenres());
         GuiUtils.setText(workSeries, work.getType().getTitle());
+        for (int i = 0; i < work.getChapters().size(); i++) {
+            String title = work.getChapters().get(i).getTitle();
+            if (title.length() > 22) {
+                title = title.substring(0, 19) + "...";
+            }
+            navigationView.getMenu().add(Menu.NONE, Menu.NONE, i, title);
+        }
         navigationView.addHeaderView(drawerHeader);
     }
 
@@ -122,11 +139,11 @@ public class AuthorActivity extends BaseActivity {
 
     @Override
     protected boolean onNavigationItemSelected(MenuItem item) {
-        postEvent(new CategorySelectedEvent(Stream
-                .of(author.getLinkableCategory())
-                .filter(cat -> cat.getTitle().equals(item.getTitle()))
-                .findFirst()
-                .get()));
+        if (isWork) {
+            postEvent(new ChapterSelectedEvent(work.getChapters().get(item.getOrder())));
+        } else {
+            postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
+        }
         return false;
     }
 

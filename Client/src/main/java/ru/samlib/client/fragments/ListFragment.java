@@ -40,7 +40,7 @@ public abstract class ListFragment<T> extends BaseFragment {
     protected Lister<T> lister;
 
     //
-    protected final int pageSize = 30;
+    protected int pageSize = 30;
     protected volatile boolean isLoading = false;
     protected volatile boolean isEnd = false;
     protected int absoluteCount = 0;
@@ -91,7 +91,7 @@ public abstract class ListFragment<T> extends BaseFragment {
         swipeRefresh.setRefreshing(false);
     }
 
-    private void loadElements(int count) {
+    protected void loadElements(int count) {
         if (isLoading || isEnd) {
             return;
         }

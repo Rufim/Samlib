@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -18,7 +19,10 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.domain.entity.Chapter;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.events.CategorySelectedEvent;
+import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.util.GuiUtils;
@@ -26,6 +30,7 @@ import ru.samlib.client.util.PicassoImageHandler;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Dmitry on 23.06.2015.
@@ -38,6 +43,7 @@ public class WorkFragment extends ListFragment<Element> {
     private Elements dds;
 
     public WorkFragment() {
+        pageSize = 100;
         setLister(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(10);
@@ -45,18 +51,57 @@ public class WorkFragment extends ListFragment<Element> {
             if (!work.isParsed()) {
                 try {
                     work = new WorkParser(work).parse();
+                    work.processChapters();
                     postEvent(new WorkParsedEvent(work));
-                    dds = work.getParsedContent().select("body > dd,pre,div,font");
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
                 }
             }
-            return Stream.of(dds)
+            return Stream.of(work.getRootElements())
                     .skip(skip)
                     .limit(size)
                     .collect(Collectors.toList());
         }));
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    public void onEvent(ChapterSelectedEvent event) {
+        if(adapter.getItemCount() > event.chapter.getIndex()) {
+            layoutManager.scrollToPositionWithOffset(event.chapter.getIndex(), 0);
+        } else {
+            loadElements(event.chapter.getIndex() + pageSize);
+            new AsyncTask<Chapter, Void, Chapter>(){
+
+                @Override
+                protected Chapter doInBackground(Chapter... params) {
+                    while (adapter.getItemCount() <= params[0].getIndex()) {
+                        SystemClock.sleep(100);
+                        if(!isLoading) {
+                            break;
+                        }
+                    }
+                    return params[0];
+                }
+
+                @Override
+                protected void onPostExecute(Chapter chapter) {
+                    layoutManager.scrollToPositionWithOffset(chapter.getIndex(), 0);
+                }
+            }.execute(event.chapter);
+
+        }
     }
 
     @Override

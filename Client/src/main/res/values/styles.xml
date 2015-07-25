@@ -91,9 +91,9 @@
         <item name="android:linksClickable">true</item>
     </style>
     <style name="work_content">
-        <item name="android:textSize">@dimen/text_medium</item>
+        <item name="android:textSize">@dimen/text_large</item>
         <item name="android:textColor">@color/Snow</item>
-        <item name="android:autoLink">email|web</item>
+        <item name="android:autoLink">email</item>
         <item name="android:linksClickable">true</item>
     </style>
 </resources>

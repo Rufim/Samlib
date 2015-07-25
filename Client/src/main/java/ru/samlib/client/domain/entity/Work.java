@@ -2,19 +2,21 @@ package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
 import android.text.TextUtils;
-import com.koushikdutta.async.callback.ListenCallback;
 import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.fragments.ListFragment;
+import ru.samlib.client.util.ParserUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by Rufim on 22.05.2014.
@@ -25,8 +27,8 @@ import java.util.*;
 public final class Work implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2705011939329628695L;
-    private static final String HTML_SUFFIX = ".shtml";
-    private static final String FB2_SUFFIX = ".fb2.zip";
+    public static final String HTML_SUFFIX = ".shtml";
+    public static final String FB2_SUFFIX = ".fb2.zip";
 
     private String title;
     private String link;
@@ -51,20 +53,34 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private boolean hasIllustration = false;
     private boolean hasComments = true;
     private boolean parsed = false;
-    private Document parsedContent;
+    private Elements rootElements;
     private List<Chapter> chapters = new ArrayList<>();
 
     public Work(String link) {
         setLink(link);
     }
 
-    public void addChapter(Chapter chapter) {
-        chapters.add(chapter);
-    }
-
-    public List<Chapter> getSortedChapters() {
-        Collections.sort(chapters, (lhs, rhs) -> (int) (lhs.getPercent() - rhs.getPercent()));
-        return chapters;
+    public void processChapters() {
+        rootElements = Jsoup.parseBodyFragment(rawContent).select("body > *");
+        chapters.clear();
+        Chapter currentChapter = new Chapter("Начало");
+        Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
+                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        for (int i = 0; i < rootElements.size(); i++) {
+            Element el = rootElements.get(i);
+            String text = el.text();
+            if(rootElements.size() > i) {
+                if (pattern.matcher(ParserUtils.trim(text)).find() && ParserUtils.trim(rootElements.get(i + 1).text()).isEmpty()) {
+                    Chapter newChapter = new Chapter(text);
+                    chapters.add(currentChapter);
+                    newChapter.setPercent(((float) i) / rootElements.size());
+                    newChapter.setIndex(i);
+                    currentChapter = newChapter;
+                }
+            }
+            currentChapter.addElement(el);
+        }
+        chapters.add(currentChapter);
     }
 
     public void setLink(String link) {
@@ -148,13 +164,6 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         } else {
             return new SimpleDateFormat("dd/MM", locale).format(date);
         }
-    }
-
-    public Document getParsedContent() {
-        if (parsedContent == null) {
-            parsedContent = Jsoup.parseBodyFragment(rawContent);
-        }
-        return parsedContent;
     }
 
     @Override

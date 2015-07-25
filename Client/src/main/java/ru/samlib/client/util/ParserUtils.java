@@ -75,9 +75,11 @@ public class ParserUtils {
                 new Splitter("Размещен: ", ","),
                 new Splitter("изменен: ", "\\."),
                 new Splitter(" ", "k"));
-        work.setCreateDate(parseData(data[0]));
-        work.setUpdateDate(parseData(data[1]));
-        work.setSize(Integer.parseInt(data[2]));
+        if(data.length == 3) {
+            work.setCreateDate(parseData(data[0]));
+            work.setUpdateDate(parseData(data[1]));
+            work.setSize(Integer.parseInt(data[2]));
+        }
         if(lis.size() > index) {
             String typeGenre[] = lis.get(index++).text().split(":");
             work.setType(Type.parseType(typeGenre[0]));
@@ -103,8 +105,7 @@ public class ParserUtils {
             work.getAnnotationBlocks().clear();
             work.addAnnotation(parts[2].substring(parts[2].indexOf("<i>"), parts[2].lastIndexOf("</i>") + 4));
         }
-        work.setRawContent(parts[3]);
-        work.setParsedContent(null);
+        work.setRawContent(parts[3]);;
         return work;
     }
 
