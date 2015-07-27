@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -69,7 +70,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         for (int i = 0; i < rootElements.size(); i++) {
             Element el = rootElements.get(i);
             String text = el.text();
-            if(rootElements.size() > i) {
+            if(rootElements.size() > i + 1) {
                 if (pattern.matcher(ParserUtils.trim(text)).find() && ParserUtils.trim(rootElements.get(i + 1).text()).isEmpty()) {
                     Chapter newChapter = new Chapter(text);
                     chapters.add(currentChapter);
@@ -78,6 +79,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
                     currentChapter = newChapter;
                 }
             }
+
             currentChapter.addElement(el);
         }
         chapters.add(currentChapter);

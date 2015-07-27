@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Work;
@@ -134,7 +135,7 @@ public class AuthorActivity extends BaseActivity {
     private boolean validateIntent(Intent intent) {
         Uri data = getIntent().getData();
         return Intent.ACTION_VIEW.equals(intent.getAction())
-                && data.getPath().matches("/*[a-z]/+[a-z_]+((/*)|(/+[a-z-_0-9]+\\.shtml))?");
+                && (Linkable.isAuthorLink(data.getPath()) || Linkable.isWorkLink(data.getPath()));
     }
 
     @Override

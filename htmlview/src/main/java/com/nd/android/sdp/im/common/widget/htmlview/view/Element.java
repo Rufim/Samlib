@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.net.Uri;
+import android.provider.Browser;
 import android.widget.TextView;
 import com.nd.android.sdp.im.common.widget.htmlview.css.CssUtils;
 import com.nd.android.sdp.im.common.widget.htmlview.css.Style;
@@ -868,9 +869,9 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
         htmlView.gotoLabel(href.substring(1));
       } else {
         if(!HtmlView.HtmlOptions.openLinksInside) {
-          Intent i = new Intent(Intent.ACTION_VIEW);
-          i.setData(Uri.parse(getAttributeValue("href")));
-          context.startActivity(i);
+          Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getAttributeValue("href")));
+          intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+          context.startActivity(intent);
         } else {
           htmlView.requestHandler.openLink(htmlView, this,
                   htmlView.getAbsoluteUrl(getAttributeValue("href")));

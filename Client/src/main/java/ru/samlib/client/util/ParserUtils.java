@@ -11,6 +11,8 @@ import ru.samlib.client.net.CachedResponse;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Rufim on 04.07.2015.
@@ -18,6 +20,16 @@ import java.util.Date;
 public class ParserUtils {
 
     protected static final String TAG = ParserUtils.class.getSimpleName();
+
+    public static final String urlRegex = "((https?|ftp)\\:\\/\\/)?\n" +  // SCHEME
+            "([a-z0-9+!*(),;?&=\\$_.-]+(\\:[a-z0-9+!*(),;?&=\\$_.-]+)?@)?\n" + // User and Pass
+            "([a-z0-9-.]*)\\.([a-z]{2,4})\n" +  // Host or IP
+            "(\\:[0-9]{2,5})?\n" +  // Port
+            "(\\/([a-z0-9+\\$_-]\\.?)+)*\\/?\n" +  // GET Query
+            "(\\?[a-z+&\\$_.-][a-z0-9;:@&%=+\\/\\$_.-]*)?\n" +
+            "(#[a-z_.-][a-z0-9+\\$_.-]*)?";  // Anchor
+    public static final Pattern urlPattern = Pattern.compile(urlRegex + "(?!\\s*<\\/a>)",
+            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
 
     public static String trim(String string) {
         return string.replaceAll("^\\s+|\\s+$", "");
@@ -60,6 +72,9 @@ public class ParserUtils {
                 new Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
                 new Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
                 new Splitter().addEnd("<!-------.*"));
+        if(parts.length == 0) {
+            return work;
+        }
         Document head = Jsoup.parseBodyFragment(parts[0]);
         if(work.getAuthor().getFullName() == null) {
             work.getAuthor().setFullName(head.select("div > h3").first().ownText());
@@ -107,6 +122,20 @@ public class ParserUtils {
         }
         work.setRawContent(parts[3]);;
         return work;
+    }
+
+
+    public String getLinkified(String text) {
+        Matcher matcher = urlPattern.matcher(text);
+        if (matcher.find()) {
+            if (matcher.group(1).startsWith("http")) {
+                return matcher.replaceAll("<a href=\"$1\">$1</a>");
+            } else {
+                return matcher.replaceAll("<a href=\"http://$1\">$1</a>");
+            }
+        } else {
+            return text;
+        }
     }
 
     public static String cleanupHtml(Element el) {

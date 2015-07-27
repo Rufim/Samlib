@@ -1,7 +1,10 @@
 package ru.samlib.client.fragments;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.Browser;
 import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -147,12 +150,22 @@ public class SectionFragment extends ListFragment<Linkable> {
                     R.id.work_item_layout,
                     R.id.work_item_title,
                     R.id.work_item_rate_and_size)) {
-                String link = getItem(position).getLink();
+                openLinkable(getItem(position));
+            }
+        }
+
+        public void openLinkable(Linkable linkable){
+            if(linkable.isWork()) {
                 new FragmentBuilder(getFragmentManager())
-                        .putArg(Constants.ArgsName.LINK, link)
+                        .putArg(Constants.ArgsName.LINK, linkable.getLink())
                         .addToBackStack()
                         .replaceFragment(SectionFragment.this, WorkFragment.class);
+            } else {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
+                intent.putExtra(Browser.EXTRA_APPLICATION_ID, getActivity().getPackageName());
+                getActivity().startActivity(intent);
             }
+
         }
 
         @Override

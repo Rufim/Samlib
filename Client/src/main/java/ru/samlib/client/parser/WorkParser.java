@@ -32,6 +32,9 @@ public class WorkParser extends Parser {
         } else {
             rawContent = HtmlClient.executeRequest(request);
         }
+        if(rawContent == null) {
+            return work;
+        }
         work = ParserUtils.parseWork(rawContent, work);
         if (rawContent.isDownloadOver) {
             work.setParsed(true);

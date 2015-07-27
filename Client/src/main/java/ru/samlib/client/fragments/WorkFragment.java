@@ -1,8 +1,16 @@
 package ru.samlib.client.fragments;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.Browser;
+import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +21,9 @@ import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import net.nightwhistler.htmlspanner.TagNodeHandler;
+import net.nightwhistler.htmlspanner.handlers.TableHandler;
+import org.htmlcleaner.TagNode;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.R;
@@ -153,6 +164,24 @@ public class WorkFragment extends ListFragment<Element> {
                    TextView view = holder.getView(R.id.work_text_indent);
                    HtmlSpanner spanner = new HtmlSpanner();
                    spanner.registerHandler("img", new PicassoImageHandler(view));
+               /*    spanner.registerHandler("a", new TagNodeHandler() {
+                       @Override
+                       public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end) {
+                           final String href = node.getAttributeByName("href");
+                           builder.setSpan(new ClickableSpan() {
+                               @Override
+                               public void onClick(View widget) {
+                                   Uri uri = Uri.parse(href);
+                                   Context context = widget.getContext();
+                                   Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                   intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+                                   context.startActivity(intent);
+                               }
+                           }, start, builder.length(), 33);
+                       }
+                   }); */
+
+                   view.setMovementMethod(LinkMovementMethod.getInstance());
                    view.setText(spanner.fromHtml(indent.outerHtml()));
                    break;
            }
