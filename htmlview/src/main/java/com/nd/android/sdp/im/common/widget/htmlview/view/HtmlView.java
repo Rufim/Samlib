@@ -337,7 +337,7 @@ public class HtmlView extends BlockElementView {
     }
 
     public void loadHtml(String html) {
-        loadData(HtmlUtils.getUtf8Bytes(html), null, null);
+        loadData(HtmlUtils.getUtf8Bytes(html), "utf-8", null);
     }
 
     /**

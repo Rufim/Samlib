@@ -79,8 +79,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
                     currentChapter = newChapter;
                 }
             }
-
-            currentChapter.addElement(el);
+          //  currentChapter.addElement(el);
         }
         chapters.add(currentChapter);
     }

@@ -21,14 +21,17 @@ public class ParserUtils {
 
     protected static final String TAG = ParserUtils.class.getSimpleName();
 
-    public static final String urlRegex = "((https?|ftp)\\:\\/\\/)?\n" +  // SCHEME
-            "([a-z0-9+!*(),;?&=\\$_.-]+(\\:[a-z0-9+!*(),;?&=\\$_.-]+)?@)?\n" + // User and Pass
-            "([a-z0-9-.]*)\\.([a-z]{2,4})\n" +  // Host or IP
-            "(\\:[0-9]{2,5})?\n" +  // Port
-            "(\\/([a-z0-9+\\$_-]\\.?)+)*\\/?\n" +  // GET Query
-            "(\\?[a-z+&\\$_.-][a-z0-9;:@&%=+\\/\\$_.-]*)?\n" +
-            "(#[a-z_.-][a-z0-9+\\$_.-]*)?";  // Anchor
-    public static final Pattern urlPattern = Pattern.compile(urlRegex + "(?!\\s*<\\/a>)",
+    public static final String urlRegex = "((https?|ftp)\\:\\/\\/)?" +  // SCHEME
+            "(([a-z0-9+!*(),;?&=\\$_.-]+(\\:[a-z0-9+!*(),;?&=\\$_.-]+)?@)?" + // User and Pass
+            "([a-z0-9-.]*)\\.([a-z]{2,4})" +  // Host or IP
+            "(\\:[0-9]{2,5})?" +  // Port
+            "(\\/([a-z0-9+\\$_-]\\.?)+)*\\/?" +  // GET Query
+            "(\\?[a-z+&\\$_.-][a-z0-9;:@&%=+\\/\\$_.-]*)?" +
+            "(#[a-z_.-][a-z0-9+\\$_.-]*)?)";  // Anchor
+    public static final String suspiciousByLink = "\\w+\\.\\w+";
+    public static final Pattern suspiciousPattern = Pattern.compile(suspiciousByLink,
+            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
+    public static final Pattern urlPattern = Pattern.compile(urlRegex,
             Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
 
     public static String trim(String string) {
@@ -118,29 +121,40 @@ public class ParserUtils {
         }
         if(parts[2].contains("Аннотация")) {
             work.getAnnotationBlocks().clear();
-            work.addAnnotation(parts[2].substring(parts[2].indexOf("<i>"), parts[2].lastIndexOf("</i>") + 4));
+            work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
         }
         work.setRawContent(parts[3]);;
         return work;
     }
 
 
-    public String getLinkified(String text) {
-        Matcher matcher = urlPattern.matcher(text);
-        if (matcher.find()) {
-            if (matcher.group(1).startsWith("http")) {
-                return matcher.replaceAll("<a href=\"$1\">$1</a>");
-            } else {
-                return matcher.replaceAll("<a href=\"http://$1\">$1</a>");
-            }
-        } else {
+    public static String linkify(String text) {
+        if (!suspiciousPattern.matcher(text).find()) {
             return text;
         }
+        Matcher matcher = urlPattern.matcher(text);
+        StringBuffer s = new StringBuffer();
+        while (matcher.find()) {
+            String scheme = matcher.group(1);
+            if (scheme != null && scheme.startsWith("http")) {
+                matcher.appendReplacement(s, "<a href=\"$0\">$0</a>");
+            } else {
+                matcher.appendReplacement(s, "<a href=\"http://$2\">$2</a>");
+            }
+        }
+        matcher.appendTail(s);
+        return s.toString();
     }
 
     public static String cleanupHtml(Element el) {
-        //TODO: FIX HtmlView to support inputs and tables
-        //
+        //Cleanup
+        for (Element elem : el.select("*")) {
+            if (elem.select("img").size() < 1) {
+                if (!elem.hasText()) {
+                    if (elem.parent() != null) elem.remove();
+                }
+            }
+        }
         Elements table = el.select("table");  // tablets not supported
         if (table.select("input").size() > 0) {
             table.remove();
@@ -149,12 +163,6 @@ public class ParserUtils {
                 table.wrap("<hr><hr>");
             }
             table.attr("border", "0");
-        }
-        //Cleanup
-        for (Element elem : el.select("*")) {
-            if (!elem.hasText() && elem.select("img").size() < 1) {
-                if (elem.parent() != null) elem.remove();
-            }
         }
         el.select("input").remove(); // inputs not supported
 
