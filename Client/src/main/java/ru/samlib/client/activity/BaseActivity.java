@@ -171,8 +171,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         SearchView searchView = null;
         if (searchItem != null) {
             searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-            // searchView.setOnQueryTextListener(this);
-            // MenuItemCompat.setOnActionExpandListener(searchItem, this);
+           // searchView.setOnQueryTextListener(this);
+           // MenuItemCompat.setOnActionExpandListener(searchItem, this);
         }
         if (searchView != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
@@ -204,15 +204,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         EventBus.getDefault().post(event);
     }
 
-
     protected String getResString(@StringRes int id) {
         return getResources().getString(id);
-    }
-
-    protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
-        new FragmentBuilder(getSupportFragmentManager())
-                .putArg(Constants.ArgsName.TITLE, title).
-                 replaceFragment(R.id.container, fragmentClass);
     }
 
     protected Fragment getLastFragment(Bundle savedInstanceState) {

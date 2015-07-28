@@ -37,7 +37,7 @@ public class MainActivity extends BaseActivity {
     }
 
     protected void handleIntent(Intent intent) {
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+       /* if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
@@ -45,7 +45,7 @@ public class MainActivity extends BaseActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, SearchFragment.newInstance(query))
                     .commit();
-        }
+        } */
     }
 
     @Override
@@ -78,5 +78,13 @@ public class MainActivity extends BaseActivity {
     public void onEvent(FragmentAttachedEvent fragmentAttached) {
         title = fragmentAttached.fragment.getArguments().getString(Constants.ArgsName.TITLE);
     }
+
+    protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
+        new FragmentBuilder(getSupportFragmentManager())
+                .putArg(Constants.ArgsName.TITLE, title).
+                replaceFragment(R.id.container, fragmentClass);
+        supportInvalidateOptionsMenu();
+    }
+
 
 }

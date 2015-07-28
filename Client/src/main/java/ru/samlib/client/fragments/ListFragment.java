@@ -2,13 +2,13 @@ package ru.samlib.client.fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.v7.widget.SearchView;
+import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.Bind;
@@ -17,12 +17,13 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.lister.Lister;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Rufim on 17.01.2015.
  */
-public abstract class ListFragment<T> extends BaseFragment {
+public abstract class ListFragment<I> extends BaseFragment implements SearchView.OnQueryTextListener {
 
     @Bind(R.id.load_progress)
     protected ProgressBar progressBar;
@@ -34,10 +35,10 @@ public abstract class ListFragment<T> extends BaseFragment {
     protected RecyclerView itemList;
     @Bind(R.id.refresh)
     protected SwipeRefreshLayout swipeRefresh;
-    protected ItemListAdapter<T> adapter;
+    protected ItemListAdapter<I> adapter;
     protected LinearLayoutManager layoutManager;
-    protected Lister<T> savedlister;
-    protected Lister<T> lister;
+    protected Lister<I> savedLister;
+    protected Lister<I> lister;
 
     //
     protected int pageSize = 30;
@@ -47,30 +48,81 @@ public abstract class ListFragment<T> extends BaseFragment {
     protected int pastVisiblesItems = 0;
     protected ListerTask task;
 
+    public interface Filterable {
+        boolean filter(String query);
+    }
+
     public ListFragment() {
     }
 
-    public ListFragment(Lister<T> lister) {
+    public ListFragment(Lister<I> lister) {
+        this.lister = lister;
+    }
+    
+    public void setLister(Lister<I> lister) {
         this.lister = lister;
     }
 
     public void saveLister() {
-        savedlister = lister;
+        savedLister = lister;
     }
 
     public boolean restoreLister() {
-        if(savedlister != null) {
-            lister = savedlister;
+        if(savedLister != null) {
+            lister = savedLister;
             refreshData();
-            savedlister = null;
+            savedLister = null;
             return true;
         } else {
             return false;
         }
     }
 
-    public void setLister(Lister<T> lister) {
-        this.lister = lister;
+    @Override
+    public boolean onQueryTextChange(String query) {
+        final List<I> filteredList = filter(query);
+        adapter.changeTo(filteredList);
+        itemList.scrollToPosition(0);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    protected List<I> filter(String query) {
+        query = query.toLowerCase();
+
+        final List<I> filteredList = new ArrayList<>();
+        for (I item : adapter.getItems()) {
+            if(item instanceof Filterable) {
+                if(!((Filterable) item).filter(query)) {
+                    filteredList.add(item);
+                }
+            } else {
+                final String text = item.toString().toLowerCase();
+                if (text.contains(query)) {
+                    filteredList.add(item);
+                }
+            }
+        }
+        return filteredList;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem searchItem = menu.findItem(R.id.search);
+        if (searchItem != null) {
+            final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            searchView.setOnQueryTextListener(this);
+        }
     }
 
     public void startLoading() {
@@ -101,7 +153,7 @@ public abstract class ListFragment<T> extends BaseFragment {
         }
     }
 
-    protected abstract ItemListAdapter<T> getAdapter();
+    protected abstract ItemListAdapter<I> getAdapter();
 
     public void refreshData(){
         absoluteCount = 0;
@@ -160,7 +212,7 @@ public abstract class ListFragment<T> extends BaseFragment {
         ButterKnife.unbind(this);
     }
 
-    public class ListerTask extends AsyncTask<Integer, Void, List<T>> {
+    public class ListerTask extends AsyncTask<Integer, Void, List<I>> {
 
         @Override
         protected void onPreExecute() {
@@ -168,12 +220,12 @@ public abstract class ListFragment<T> extends BaseFragment {
         }
 
         @Override
-        protected List<T> doInBackground(Integer... params) {
+        protected List<I> doInBackground(Integer... params) {
             return lister.getItems(params[0], params[1]);
         }
 
         @Override
-        protected void onPostExecute(List<T> result) {
+        protected void onPostExecute(List<I> result) {
             super.onPostExecute(result);
             if(itemList != null) {
                 if (result.size() == 0) {

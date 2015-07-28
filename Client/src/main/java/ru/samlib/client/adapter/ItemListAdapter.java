@@ -15,6 +15,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         View.OnLongClickListener {
 
     protected final List<I> items;
+    protected List<I> originalItems = null;
     protected final int layoutId;
 
     // Adapter's Constructor
@@ -58,12 +59,12 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return items != null ? items.size() : 0;
+        return this.items != null ? this.items.size() : 0;
     }
 
 
     public List<I> getItems() {
-        return items;
+        return this.items;
     }
 
     public void addItems(List<I> items) {
@@ -76,7 +77,58 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         notifyDataSetChanged();
     }
 
-    // Implement OnClick listener.
+
+    public void addItem(int position, I model) {
+        items.add(position, model);
+        notifyItemInserted(position);
+    }
+
+    public I removeItem(int position) {
+        final I item = this.items.remove(position);
+        notifyItemRemoved(position);
+        return item;
+    }
+
+    public void moveItem(int fromPosition, int toPosition) {
+        final I item = this.items.remove(fromPosition);
+        items.add(toPosition, item);
+        notifyItemMoved(fromPosition, toPosition);
+    }
+
+    public void changeTo(List<I> items) {
+        applyAndAnimateRemovals(items);
+        applyAndAnimateAdditions(items);
+        applyAndAnimateMovedItems(items);
+    }
+
+    private void applyAndAnimateRemovals(List<I> newItems) {
+        for (int i = items.size() - 1; i >= 0; i--) {
+            final I model = this.items.get(i);
+            if (!newItems.contains(model)) {
+                removeItem(i);
+            }
+        }
+    }
+
+    private void applyAndAnimateAdditions(List<I> newItems) {
+        for (int i = 0, count = newItems.size(); i < count; i++) {
+            final I model = newItems.get(i);
+            if (!this.items.contains(model)) {
+                addItem(i, model);
+            }
+        }
+    }
+
+    private void applyAndAnimateMovedItems(List<I> newItems) {
+        for (int toPosition = newItems.size() - 1; toPosition >= 0; toPosition--) {
+            final I model = newItems.get(toPosition);
+            final int fromPosition = this.items.indexOf(model);
+            if (fromPosition >= 0 && fromPosition != toPosition) {
+                moveItem(fromPosition, toPosition);
+            }
+        }
+    }
+
     @Override
     public void onClick(View view) {
         ViewHolder holder = (ViewHolder) view.getTag();
