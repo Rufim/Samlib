@@ -80,6 +80,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public boolean onQueryTextChange(String query) {
+        adapter.enterFilteringMode();
         final List<I> filteredList = filter(query);
         adapter.changeTo(filteredList);
         itemList.scrollToPosition(0);
@@ -93,9 +94,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     protected List<I> filter(String query) {
         query = query.toLowerCase();
-
         final List<I> filteredList = new ArrayList<>();
-        for (I item : adapter.getItems()) {
+        for (I item : adapter.getOriginalItems()) {
             if(item instanceof Filterable) {
                 if(!((Filterable) item).filter(query)) {
                     filteredList.add(item);
@@ -147,6 +147,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (isLoading || isEnd) {
             return;
         }
+        adapter.exitFilteringMode();
         startLoading();
         if(lister != null) {
             task = (ListerTask) new ListerTask().execute(absoluteCount, count);

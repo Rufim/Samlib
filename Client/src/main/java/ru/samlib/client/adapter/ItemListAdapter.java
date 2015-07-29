@@ -14,25 +14,23 @@ import java.util.*;
 public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAdapter.ViewHolder> implements View.OnClickListener,
         View.OnLongClickListener {
 
-    protected final List<I> items;
+    protected List<I> items = new ArrayList<>();
     protected List<I> originalItems = null;
     protected final int layoutId;
 
     // Adapter's Constructor
     public ItemListAdapter() {
-        this.items = new ArrayList<>();
         this.layoutId = -1;
     }
 
     // Adapter's Constructor
     public ItemListAdapter(int layoutId) {
-        this.items = new ArrayList<>();
         this.layoutId = layoutId;
     }
 
     // Adapter's Constructor
     public ItemListAdapter(List<I> items, int layoutId) {
-        this.items = items;
+        this.items.addAll(items);
         this.layoutId = layoutId;
     }
 
@@ -67,6 +65,23 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return this.items;
     }
 
+    public List<I> getOriginalItems() {
+        return this.originalItems;
+    }
+
+    public void enterFilteringMode(){
+        if(originalItems == null) {
+            this.originalItems = new ArrayList<>(items);
+        }
+    }
+
+    public void exitFilteringMode() {
+        if(originalItems != null) {
+            this.items = this.originalItems;
+            this.originalItems = null;
+        }
+    }
+
     public void addItems(List<I> items) {
         this.items.addAll(items);
         notifyDataSetChanged();
@@ -78,8 +93,8 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     }
 
 
-    public void addItem(int position, I model) {
-        items.add(position, model);
+    public void addItem(int position, I item) {
+        this.items.add(position, item);
         notifyItemInserted(position);
     }
 
@@ -91,7 +106,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
     public void moveItem(int fromPosition, int toPosition) {
         final I item = this.items.remove(fromPosition);
-        items.add(toPosition, item);
+        this.items.add(toPosition, item);
         notifyItemMoved(fromPosition, toPosition);
     }
 
@@ -102,27 +117,27 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     }
 
     private void applyAndAnimateRemovals(List<I> newItems) {
-        for (int i = items.size() - 1; i >= 0; i--) {
-            final I model = this.items.get(i);
-            if (!newItems.contains(model)) {
+        for (int i = this.items.size() - 1; i >= 0; i--) {
+            final I item = this.items.get(i);
+            if (!newItems.contains(item)) {
                 removeItem(i);
             }
         }
     }
 
     private void applyAndAnimateAdditions(List<I> newItems) {
-        for (int i = 0, count = newItems.size(); i < count; i++) {
-            final I model = newItems.get(i);
-            if (!this.items.contains(model)) {
-                addItem(i, model);
+        for (int i = 0; i < newItems.size(); i++) {
+            final I item = newItems.get(i);
+            if (!this.items.contains(item)) {
+                addItem(i, item);
             }
         }
     }
 
     private void applyAndAnimateMovedItems(List<I> newItems) {
         for (int toPosition = newItems.size() - 1; toPosition >= 0; toPosition--) {
-            final I model = newItems.get(toPosition);
-            final int fromPosition = this.items.indexOf(model);
+            final I item = newItems.get(toPosition);
+            final int fromPosition = this.items.indexOf(item);
             if (fromPosition >= 0 && fromPosition != toPosition) {
                 moveItem(fromPosition, toPosition);
             }

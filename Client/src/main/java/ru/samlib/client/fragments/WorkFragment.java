@@ -13,6 +13,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ import org.htmlcleaner.TagNode;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.R;
+import ru.samlib.client.activity.AuthorActivity;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
@@ -40,6 +42,7 @@ import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.PicassoImageHandler;
 
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +54,6 @@ public class WorkFragment extends ListFragment<Element> {
     private static final String TAG = WorkFragment.class.getSimpleName();
 
     private Work work;
-    private Elements dds;
 
     public WorkFragment() {
         pageSize = 100;
