@@ -108,13 +108,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (searchItem != null) {
             final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             searchView.setOnQueryTextListener(this);
-            searchView.setOnCloseListener(new SearchView.OnCloseListener() {
-                @Override
-                public boolean onClose() {
-                    lastQuery = null;
-                    adapter.exitFilteringMode();
-                    return false;
-                }
+            searchView.setOnCloseListener(() -> {
+                lastQuery = null;
+                adapter.exitFilteringMode();
+                return false;
             });
         }
     }
@@ -251,7 +248,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             if (lastQuery != null) {
                 onQueryTextChange(lastQuery);
             } else {
-                adapter.selectText(query, Color.RED);
                 if (adapter.getItemCount() < pageSize) {
                     loadElements(pageSize);
                 }

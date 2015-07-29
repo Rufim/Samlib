@@ -54,7 +54,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private boolean hasIllustration = false;
     private boolean hasComments = true;
     private boolean parsed = false;
-    private String rawContent;
+    private String rawContent = "";
     private Elements rootElements;
     private List<Chapter> chapters = new ArrayList<>();
 

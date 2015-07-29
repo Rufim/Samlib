@@ -52,17 +52,18 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
                 .inflate(layoutId, parent, false);
         ViewHolder holder = newHolder(itemView);
         holder.bindViews(ItemListAdapter.this);
-        currentHolders.add(holder);
         return holder;
     }
 
     protected ViewHolder newHolder(View item) {
-        return new ViewHolder(item) {
+        ViewHolder holder = new ViewHolder(item) {
             @Override
             public List<View> getViews(View itemView) {
                 return GuiUtils.getAllChildren(itemView);
             }
         };
+        currentHolders.add(holder);
+        return holder;
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -72,7 +73,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     }
 
     public int getAbsoluteItemCount() {
-        if(originalItems == null) {
+        if (originalItems == null) {
             return this.items != null ? this.items.size() : 0;
         } else {
             return this.originalItems != null ? this.originalItems.size() : 0;
@@ -87,14 +88,14 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return this.originalItems == null ? this.items : this.originalItems;
     }
 
-    public void enterFilteringMode(){
-        if(originalItems == null) {
+    public void enterFilteringMode() {
+        if (originalItems == null) {
             this.originalItems = new ArrayList<>(items);
         }
     }
 
     public void exitFilteringMode() {
-        if(originalItems != null) {
+        if (originalItems != null) {
             this.items = this.originalItems;
             this.originalItems = null;
             notifyDataSetChanged();
@@ -102,7 +103,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     }
 
     public void addItems(List<I> items) {
-        if(originalItems == null) {
+        if (originalItems == null) {
             this.items.addAll(items);
             notifyDataSetChanged();
         } else {
@@ -134,56 +135,45 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         notifyItemMoved(fromPosition, toPosition);
     }
 
-    public void selectText(String query, int color){
-        query = query.toLowerCase();
-        if(!query.isEmpty()) {
-            for (ViewHolder holder : currentHolders) {
-                for (TextView textView : holder.getAllTextViews()) {
-                    Spannable raw = new SpannableString(textView.getText());
-                    BackgroundColorSpan[] spans = raw.getSpans(0,
-                            raw.length(),
-                            BackgroundColorSpan.class);
+    public void selectText(ViewHolder holder, String query, int color) {
+        if (query != null) {
+            query = query.toLowerCase();
+            for (TextView textView : holder.getAllTextViews()) {
+                Spannable raw = new SpannableString(textView.getText());
+                BackgroundColorSpan[] spans = raw.getSpans(0,
+                        raw.length(),
+                        BackgroundColorSpan.class);
 
-                    for (BackgroundColorSpan span : spans) {
-                        raw.removeSpan(span);
-                    }
-
-                    int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
-
-                    while (index >= 0) {
-                        raw.setSpan(new BackgroundColorSpan(color), index, index
-                                + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
-                    }
-
-                    textView.setText(raw);
+                for (BackgroundColorSpan span : spans) {
+                    raw.removeSpan(span);
                 }
+
+                if(query.isEmpty()) {
+                    continue;
+                }
+
+                int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
+
+                while (index >= 0) {
+                    raw.setSpan(new BackgroundColorSpan(color), index, index
+                            + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
+                }
+
+                textView.setText(raw);
             }
         }
     }
 
-    public List<Integer> search(String query, boolean original) {
-        List<Integer> indexes = new ArrayList<>();
-        List<I> items = original ? getOriginalItems() : getItems();
-        for (int i = 0; i < items.size(); i++) {
-            I item = items.get(i);
-            if (item instanceof Findable) {
-                if (((Findable) item).find(query)) {
-                    indexes.add(i);
-                }
-            } else {
-                final String text = item.toString().toLowerCase();
-                if (text.contains(query)) {
-                    indexes.add(i);
-                }
-            }
+    public void selectText(String query, int color) {
+        for (ViewHolder holder : currentHolders) {
+            selectText(holder, query, color);
         }
-        return indexes;
     }
 
     public int filter(String query) {
         query = query.toLowerCase();
-        if(originalItems != null) {
+        if (originalItems != null) {
             changeTo(find(query, true));
         }
         lastQuery = query;
@@ -261,7 +251,8 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return false;
     }
 
-    public void onLongClick(View view, int position) {}
+    public void onLongClick(View view, int position) {
+    }
 
 
     // Create the ViewHolder class to keep references to your views
@@ -292,7 +283,8 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
         public abstract List<View> getViews(View itemView);
 
-        public void onCreateHolder(View itemView){}
+        public void onCreateHolder(View itemView) {
+        }
 
         protected ViewHolder bindViews(ItemListAdapter adapter) {
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
@@ -313,7 +305,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         }
 
         public View replaceView(int id, View newView) {
-           return views.put(id, newView);
+            return views.put(id, newView);
         }
 
         public View getItemView() {
@@ -324,7 +316,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
             List<TextView> textViews = new ArrayList<>();
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
                 View view = viewEntry.getValue();
-                if(view instanceof TextView) {
+                if (view instanceof TextView) {
                     textViews.add((TextView) view);
                 }
             }

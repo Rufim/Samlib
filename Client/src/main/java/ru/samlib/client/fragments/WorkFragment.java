@@ -1,59 +1,50 @@
 package ru.samlib.client.fragments;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.provider.Browser;
-import android.text.SpannableStringBuilder;
+import android.speech.tts.TextToSpeech;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
-import net.nightwhistler.htmlspanner.TagNodeHandler;
-import net.nightwhistler.htmlspanner.handlers.TableHandler;
-import org.htmlcleaner.TagNode;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.R;
-import ru.samlib.client.activity.AuthorActivity;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Chapter;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
-import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.PicassoImageHandler;
 
 import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Dmitry on 23.06.2015.
  */
-public class WorkFragment extends ListFragment<Element> {
+public class WorkFragment extends ListFragment<Element> implements TextToSpeech.OnInitListener {
 
     private static final String TAG = WorkFragment.class.getSimpleName();
 
     private Work work;
+    private Queue<Integer> searched = new ArrayDeque<>();
+    private AsyncTask moveToIndex;
+    private Integer lastIndex;
+    private TextToSpeech tts;
+    private int speakIndex = 0;
 
     public WorkFragment() {
         pageSize = 100;
@@ -81,46 +72,93 @@ public class WorkFragment extends ListFragment<Element> {
     @Override
     public void onStart() {
         super.onStart();
+        tts = new TextToSpeech(this.getActivity(), this);
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
         super.onStop();
+    }
+
+    public List<Integer> search(String query) {
+        List<Integer> indexes = new ArrayList<>();
+        Elements items = work.getRootElements();
+        for (int i = 0; i < items.size(); i++) {
+            Element item = items.get(i);
+            final String text = item.text().toLowerCase();
+            if (text.contains(query)) {
+                indexes.add(i);
+            }
+        }
+        return indexes;
     }
 
     @Override
     public boolean onQueryTextChange(String query) {
+        searched.clear();
+        searched.addAll(search(query));
+        adapter.selectText(query, Color.RED);
+        return true;
+    }
 
-      return false;
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        Integer index = searched.poll();
+        if (index != null) {
+            lastQuery = query;
+            moveToIndex(index);
+        }
+        return true;
+    }
+
+    private void moveToIndex(int index) {
+        if (adapter.getItemCount() > index) {
+            lastIndex = null;
+            layoutManager.scrollToPositionWithOffset(index, 0);
+            adapter.selectText(lastQuery, Color.RED);
+        } else {
+            if (moveToIndex == null) {
+                lastIndex = null;
+                loadElements(index + pageSize);
+                moveToIndex = new AsyncTask<Integer, Void, Integer>() {
+
+                    @Override
+                    protected Integer doInBackground(Integer... params) {
+                        while (adapter.getItemCount() <= params[0]) {
+                            SystemClock.sleep(100);
+                            if (!isLoading) {
+                                break;
+                            }
+                        }
+                        return params[0];
+                    }
+
+                    @Override
+                    protected void onPostExecute(Integer index) {
+                        layoutManager.scrollToPositionWithOffset(index, 0);
+                        if (lastQuery != null) {
+                            adapter.selectText(lastQuery, Color.RED);
+                        }
+                        moveToIndex = null;
+                        if (lastIndex != null) {
+                            moveToIndex(lastIndex);
+                        }
+                    }
+                }.execute(index);
+            } else {
+                lastIndex = index;
+            }
+        }
     }
 
     public void onEvent(ChapterSelectedEvent event) {
-        if(adapter.getItemCount() > event.chapter.getIndex()) {
-            layoutManager.scrollToPositionWithOffset(event.chapter.getIndex(), 0);
-        } else {
-            loadElements(event.chapter.getIndex() + pageSize);
-            new AsyncTask<Chapter, Void, Chapter>(){
-
-                @Override
-                protected Chapter doInBackground(Chapter... params) {
-                    while (adapter.getItemCount() <= params[0].getIndex()) {
-                        SystemClock.sleep(100);
-                        if(!isLoading) {
-                            break;
-                        }
-                    }
-                    return params[0];
-                }
-
-                @Override
-                protected void onPostExecute(Chapter chapter) {
-                    layoutManager.scrollToPositionWithOffset(chapter.getIndex(), 0);
-                }
-            }.execute(event.chapter);
-
-        }
+        moveToIndex(event.chapter.getIndex());
     }
 
     @Override
@@ -143,6 +181,28 @@ public class WorkFragment extends ListFragment<Element> {
         return work;
     }
 
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts.setOnUtteranceCompletedListener(utteranceId -> {
+                speakIndex++;
+                startSpeak();
+            });
+            tts.setLanguage(Locale.getDefault());
+        } else {
+            tts = null;
+            Toast.makeText(this.getActivity(), "Failed to initialize TTS engine.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void startSpeak() {
+        if(tts.isSpeaking() || speakIndex >= work.getRootElements().size()) {
+            tts.stop();
+        }
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "stringId");
+        tts.speak(work.getRootElements().get(speakIndex).text(), TextToSpeech.QUEUE_FLUSH, params);
+    }
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<Element> {
 
@@ -157,21 +217,26 @@ public class WorkFragment extends ListFragment<Element> {
 
         @Override
         public void onClick(View view, int position) {
-
+            if (tts.isSpeaking()) {
+                tts.stop();
+            } else {
+                speakIndex = position - firstIsHeader;
+                startSpeak();
+            }
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-           switch (holder.getItemViewType()){
-               case R.layout.work_list_header:
-                   HtmlView htmlView = holder.getView(R.id.work_annotation_header);
-                   htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
-                   break;
-               case R.layout.indent_item:
-                   Element indent = getItem(position);
-                   TextView view = holder.getView(R.id.work_text_indent);
-                   HtmlSpanner spanner = new HtmlSpanner();
-                   spanner.registerHandler("img", new PicassoImageHandler(view));
+            switch (holder.getItemViewType()) {
+                case R.layout.work_list_header:
+                    HtmlView htmlView = holder.getView(R.id.work_annotation_header);
+                    htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
+                    break;
+                case R.layout.indent_item:
+                    Element indent = getItem(position);
+                    TextView view = holder.getView(R.id.work_text_indent);
+                    HtmlSpanner spanner = new HtmlSpanner();
+                    spanner.registerHandler("img", new PicassoImageHandler(view));
                /*    spanner.registerHandler("a", new TagNodeHandler() {
                        @Override
                        public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end) {
@@ -189,10 +254,11 @@ public class WorkFragment extends ListFragment<Element> {
                        }
                    }); */
 
-                   view.setMovementMethod(LinkMovementMethod.getInstance());
-                   view.setText(spanner.fromHtml(indent.outerHtml()));
-                   break;
-           }
+                    view.setMovementMethod(LinkMovementMethod.getInstance());
+                    view.setText(spanner.fromHtml(indent.outerHtml()));
+                    selectText(holder, lastQuery, Color.RED);
+                    break;
+            }
         }
     }
 }
