@@ -1,16 +1,10 @@
 package ru.samlib.client.adapter;
 
 import android.support.annotation.LayoutRes;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import org.apache.commons.lang3.ArrayUtils;
-import ru.samlib.client.R;
-import ru.samlib.client.domain.Filterable;
-import ru.samlib.client.util.GuiUtils;
-import ru.samlib.client.util.SystemUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,6 +77,12 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     @Override
     public void addItems(List<I> items) {
         super.addItems(toFlatList(items));
+    }
+
+    @Override
+    public void addItem(I item) {
+        this.items.add(item);
+        notifyItemInserted(this.items.size() + firstIsHeader);
     }
 
     @Override

@@ -53,6 +53,7 @@ public class SectionFragment extends ListFragment<Linkable> {
     private Category category;
 
     public SectionFragment() {
+        pageSize = 10;
         setLister((skip, size) -> {
             while (author == null) {
                 SystemClock.sleep(10);

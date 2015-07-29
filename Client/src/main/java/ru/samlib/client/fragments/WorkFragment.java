@@ -90,6 +90,12 @@ public class WorkFragment extends ListFragment<Element> {
         super.onStop();
     }
 
+    @Override
+    public boolean onQueryTextChange(String query) {
+
+      return false;
+    }
+
     public void onEvent(ChapterSelectedEvent event) {
         if(adapter.getItemCount() > event.chapter.getIndex()) {
             layoutManager.scrollToPositionWithOffset(event.chapter.getIndex(), 0);

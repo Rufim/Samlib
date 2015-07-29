@@ -71,8 +71,8 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         for (int i = 0; i < rootElements.size(); i++) {
             Element el = rootElements.get(i);
             String text = el.text();
-            if(rootElements.size() > i + 1) {
-                if (pattern.matcher(ParserUtils.trim(text)).find() && ParserUtils.trim(rootElements.get(i + 1).text()).isEmpty()) {
+            if(rootElements.size() > i) {
+                if (pattern.matcher(ParserUtils.trim(text)).find()) {
                     Chapter newChapter = new Chapter(text);
                     chapters.add(currentChapter);
                     newChapter.setPercent(((float) i) / rootElements.size());
@@ -143,7 +143,6 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     }
 
     public String processAnnotationBloks(int color) {
-        ;
         Document an = Jsoup.parse(TextUtils.join("", annotationBlocks));
         an.select("font[color=#555555]").attr("color",
                 String.format("#%02x%02x%02x",

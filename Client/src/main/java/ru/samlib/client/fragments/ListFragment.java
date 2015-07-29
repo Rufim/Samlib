@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
@@ -15,11 +16,10 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.domain.Filterable;
 import ru.samlib.client.lister.Lister;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Rufim on 17.01.2015.
@@ -42,12 +42,15 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected Lister<I> lister;
 
     //
-    protected int pageSize = 30;
+    protected int pageSize = 50;
     protected volatile boolean isLoading = false;
     protected volatile boolean isEnd = false;
     protected int absoluteCount = 0;
     protected int pastVisiblesItems = 0;
-    protected ListerTask task;
+    protected ListerTask listerTask;
+    protected FilterTask filterTask;
+    protected String lastQuery;
+
 
     public ListFragment() {
     }
@@ -78,7 +81,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     @Override
     public boolean onQueryTextChange(String query) {
         adapter.enterFilteringMode();
-        itemList.scrollToPosition(adapter.filter(query));
+        if(filterTask == null) {
+            lastQuery = null;
+            filterTask = new FilterTask(query);
+            getActivity().runOnUiThread(filterTask);
+        } else {
+            lastQuery = query;
+        }
         return true;
     }
 
@@ -99,6 +108,14 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (searchItem != null) {
             final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             searchView.setOnQueryTextListener(this);
+            searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+                @Override
+                public boolean onClose() {
+                    lastQuery = null;
+                    adapter.exitFilteringMode();
+                    return false;
+                }
+            });
         }
     }
 
@@ -124,10 +141,9 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (isLoading || isEnd) {
             return;
         }
-        adapter.exitFilteringMode();
         startLoading();
         if(lister != null) {
-            task = (ListerTask) new ListerTask().execute(absoluteCount, count);
+            listerTask = (ListerTask) new ListerTask().execute(absoluteCount, count);
         }
     }
 
@@ -173,8 +189,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         });
 
         if (adapter != null) {
-            if (task == null && lister != null) {
-                task = (ListerTask) new ListerTask().execute(absoluteCount, pageSize);
+            if (listerTask == null && lister != null) {
+                listerTask = (ListerTask) new ListerTask().execute(absoluteCount, pageSize);
             } else {
                 stopLoading();
                 layoutManager.scrollToPositionWithOffset(pastVisiblesItems, 0);
@@ -211,8 +227,34 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 } else {
                     adapter.addItems(result);
                 }
-                absoluteCount = adapter.getItemCount();
+                absoluteCount = adapter.getAbsoluteItemCount();
                 stopLoading();
+                if (adapter.getItemCount() < pageSize && !isEnd) {
+                    loadElements(pageSize);
+                }
+            }
+        }
+    }
+
+    public class FilterTask implements Runnable {
+
+        private final String query;
+
+        public FilterTask(String query) {
+            this.query = query;
+        }
+
+        @Override
+        public void run() {
+            itemList.scrollToPosition(adapter.filter(query));
+            filterTask = null;
+            if (lastQuery != null) {
+                onQueryTextChange(lastQuery);
+            } else {
+                adapter.selectText(query, Color.RED);
+                if (adapter.getItemCount() < pageSize) {
+                    loadElements(pageSize);
+                }
             }
         }
     }

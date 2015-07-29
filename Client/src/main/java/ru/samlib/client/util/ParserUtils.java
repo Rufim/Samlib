@@ -149,13 +149,13 @@ public class ParserUtils {
     public static String cleanupHtml(Element el) {
         //Cleanup
         for (Element elem : el.select("*")) {
-            if (elem.select("img").size() < 1) {
+            if (elem.select("img").size() < 1 && !elem.tagName().equals("input")) {
                 if (!elem.hasText()) {
                     if (elem.parent() != null) elem.remove();
                 }
             }
         }
-        Elements table = el.select("table");  // tablets not supported
+        Elements table = el.select("table");
         if (table.select("input").size() > 0) {
             table.remove();
         } else {

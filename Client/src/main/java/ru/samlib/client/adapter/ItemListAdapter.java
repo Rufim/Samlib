@@ -1,10 +1,17 @@
 package ru.samlib.client.adapter;
 
+import android.graphics.Color;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
+import android.text.*;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import ru.samlib.client.domain.Filterable;
+import android.widget.TextView;
+import ru.samlib.client.domain.Findable;
 import ru.samlib.client.util.GuiUtils;
 
 import java.util.*;
@@ -17,7 +24,9 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
     protected List<I> items = new ArrayList<>();
     protected List<I> originalItems = null;
+    protected Set<ViewHolder> currentHolders = new HashSet<>();
     protected final int layoutId;
+    protected String lastQuery;
 
     // Adapter's Constructor
     public ItemListAdapter() {
@@ -43,6 +52,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
                 .inflate(layoutId, parent, false);
         ViewHolder holder = newHolder(itemView);
         holder.bindViews(ItemListAdapter.this);
+        currentHolders.add(holder);
         return holder;
     }
 
@@ -61,12 +71,20 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return this.items != null ? this.items.size() : 0;
     }
 
+    public int getAbsoluteItemCount() {
+        if(originalItems == null) {
+            return this.items != null ? this.items.size() : 0;
+        } else {
+            return this.originalItems != null ? this.originalItems.size() : 0;
+        }
+    }
+
     public List<I> getItems() {
         return this.items;
     }
 
     public List<I> getOriginalItems() {
-        return this.originalItems;
+        return this.originalItems == null ? this.items : this.originalItems;
     }
 
     public void enterFilteringMode(){
@@ -79,17 +97,23 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         if(originalItems != null) {
             this.items = this.originalItems;
             this.originalItems = null;
+            notifyDataSetChanged();
         }
     }
 
     public void addItems(List<I> items) {
-        this.items.addAll(items);
-        notifyDataSetChanged();
+        if(originalItems == null) {
+            this.items.addAll(items);
+            notifyDataSetChanged();
+        } else {
+            this.originalItems.addAll(items);
+            filter(lastQuery);
+        }
     }
 
     public void addItem(I item) {
         this.items.add(item);
-        notifyDataSetChanged();
+        notifyItemInserted(this.items.size());
     }
 
 
@@ -110,12 +134,67 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         notifyItemMoved(fromPosition, toPosition);
     }
 
+    public void selectText(String query, int color){
+        query = query.toLowerCase();
+        if(!query.isEmpty()) {
+            for (ViewHolder holder : currentHolders) {
+                for (TextView textView : holder.getAllTextViews()) {
+                    Spannable raw = new SpannableString(textView.getText());
+                    BackgroundColorSpan[] spans = raw.getSpans(0,
+                            raw.length(),
+                            BackgroundColorSpan.class);
+
+                    for (BackgroundColorSpan span : spans) {
+                        raw.removeSpan(span);
+                    }
+
+                    int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
+
+                    while (index >= 0) {
+                        raw.setSpan(new BackgroundColorSpan(color), index, index
+                                + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
+                    }
+
+                    textView.setText(raw);
+                }
+            }
+        }
+    }
+
+    public List<Integer> search(String query, boolean original) {
+        List<Integer> indexes = new ArrayList<>();
+        List<I> items = original ? getOriginalItems() : getItems();
+        for (int i = 0; i < items.size(); i++) {
+            I item = items.get(i);
+            if (item instanceof Findable) {
+                if (((Findable) item).find(query)) {
+                    indexes.add(i);
+                }
+            } else {
+                final String text = item.toString().toLowerCase();
+                if (text.contains(query)) {
+                    indexes.add(i);
+                }
+            }
+        }
+        return indexes;
+    }
+
     public int filter(String query) {
         query = query.toLowerCase();
+        if(originalItems != null) {
+            changeTo(find(query, true));
+        }
+        lastQuery = query;
+        return 0;
+    }
+
+    public List<I> find(String query, boolean original) {
         final List<I> filteredList = new ArrayList<>();
-        for (I item : getOriginalItems()) {
-            if (item instanceof Filterable) {
-                if (!((Filterable) item).filter(query)) {
+        for (I item : original ? getOriginalItems() : getItems()) {
+            if (item instanceof Findable) {
+                if (((Findable) item).find(query)) {
                     filteredList.add(item);
                 }
             } else {
@@ -125,8 +204,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
                 }
             }
         }
-        changeTo(filteredList);
-        return 0;
+        return filteredList;
     }
 
     public void changeTo(List<I> items) {
@@ -240,6 +318,33 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
         public View getItemView() {
             return super.itemView;
+        }
+
+        public List<TextView> getAllTextViews() {
+            List<TextView> textViews = new ArrayList<>();
+            for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
+                View view = viewEntry.getValue();
+                if(view instanceof TextView) {
+                    textViews.add((TextView) view);
+                }
+            }
+            return textViews;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ViewHolder)) return false;
+
+            ViewHolder that = (ViewHolder) o;
+
+            return !(views != null ? !views.equals(that.views) : that.views != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return views != null ? views.hashCode() : 0;
         }
     }
 }
