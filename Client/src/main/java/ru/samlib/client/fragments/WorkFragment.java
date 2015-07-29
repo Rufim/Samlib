@@ -45,6 +45,9 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
     private Integer lastIndex;
     private TextToSpeech tts;
     private int speakIndex = 0;
+    private int phraseIndex = 0;
+    private List<String> phrases;
+    private int maxPhraseSize = 200;
 
     public WorkFragment() {
         pageSize = 100;
@@ -185,10 +188,10 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceCompletedListener(utteranceId -> {
-                speakIndex++;
-                startSpeak();
+                nextPhrase();
             });
             tts.setLanguage(Locale.getDefault());
+            tts.setSpeechRate(1.3f);
         } else {
             tts = null;
             Toast.makeText(this.getActivity(), "Failed to initialize TTS engine.", Toast.LENGTH_SHORT).show();
@@ -199,10 +202,36 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
         if(tts.isSpeaking() || speakIndex >= work.getRootElements().size()) {
             tts.stop();
         }
+        phrases = new LinkedList<>(Arrays.asList(work.getRootElements().get(speakIndex).text().split("[.!?]")));
+        for (int i = 0; i < phrases.size(); i++) {
+            String phrase = phrases.get(i);
+            if(phrase.length() >= maxPhraseSize) {
+                List<String> newPhrases = new ArrayList<>();
+                while (phrase.length() >= maxPhraseSize) {
+                    newPhrases.add(phrase.substring(0, maxPhraseSize));
+                    phrase = phrase.substring(maxPhraseSize);
+                }
+                phrases.remove(i);
+                newPhrases.add(phrase);
+                phrases.addAll(i,newPhrases);
+            }
+        }
+        phraseIndex = 0;
+        nextPhrase();
+    }
+
+    public void nextPhrase() {
+        if(phraseIndex >= phrases.size()) {
+            speakIndex++;
+            startSpeak();
+            return;
+        }
         HashMap<String, String> params = new HashMap<String, String>();
         params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "stringId");
-        tts.speak(work.getRootElements().get(speakIndex).text(), TextToSpeech.QUEUE_FLUSH, params);
+        tts.speak(phrases.get(phraseIndex), TextToSpeech.QUEUE_FLUSH, params);
+        phraseIndex++;
     }
+
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<Element> {
 
