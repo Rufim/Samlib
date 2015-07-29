@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
+@ToString(exclude = {"rawContent", "rootElements", "chapters"})
 public final class Work implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2705011939329628695L;
@@ -49,11 +50,11 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private Date createDate;
     private Date updateDate;
     private New state = New.EMPTY;
-    private String rawContent;
     private String description;
     private boolean hasIllustration = false;
     private boolean hasComments = true;
     private boolean parsed = false;
+    private String rawContent;
     private Elements rootElements;
     private List<Chapter> chapters = new ArrayList<>();
 

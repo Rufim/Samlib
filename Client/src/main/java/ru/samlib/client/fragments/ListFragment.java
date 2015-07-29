@@ -15,6 +15,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
+import ru.samlib.client.domain.Filterable;
 import ru.samlib.client.lister.Lister;
 
 import java.util.ArrayList;
@@ -48,10 +49,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected int pastVisiblesItems = 0;
     protected ListerTask task;
 
-    public interface Filterable {
-        boolean filter(String query);
-    }
-
     public ListFragment() {
     }
 
@@ -81,33 +78,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     @Override
     public boolean onQueryTextChange(String query) {
         adapter.enterFilteringMode();
-        final List<I> filteredList = filter(query);
-        adapter.changeTo(filteredList);
-        itemList.scrollToPosition(0);
+        itemList.scrollToPosition(adapter.filter(query));
         return true;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
         return false;
-    }
-
-    protected List<I> filter(String query) {
-        query = query.toLowerCase();
-        final List<I> filteredList = new ArrayList<>();
-        for (I item : adapter.getOriginalItems()) {
-            if(item instanceof Filterable) {
-                if(!((Filterable) item).filter(query)) {
-                    filteredList.add(item);
-                }
-            } else {
-                final String text = item.toString().toLowerCase();
-                if (text.contains(query)) {
-                    filteredList.add(item);
-                }
-            }
-        }
-        return filteredList;
     }
 
     @Override

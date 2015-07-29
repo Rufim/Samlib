@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import ru.samlib.client.domain.Filterable;
 import ru.samlib.client.util.GuiUtils;
 
 import java.util.*;
@@ -60,7 +61,6 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return this.items != null ? this.items.size() : 0;
     }
 
-
     public List<I> getItems() {
         return this.items;
     }
@@ -108,6 +108,25 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         final I item = this.items.remove(fromPosition);
         this.items.add(toPosition, item);
         notifyItemMoved(fromPosition, toPosition);
+    }
+
+    public int filter(String query) {
+        query = query.toLowerCase();
+        final List<I> filteredList = new ArrayList<>();
+        for (I item : getOriginalItems()) {
+            if (item instanceof Filterable) {
+                if (!((Filterable) item).filter(query)) {
+                    filteredList.add(item);
+                }
+            } else {
+                final String text = item.toString().toLowerCase();
+                if (text.contains(query)) {
+                    filteredList.add(item);
+                }
+            }
+        }
+        changeTo(filteredList);
+        return 0;
     }
 
     public void changeTo(List<I> items) {

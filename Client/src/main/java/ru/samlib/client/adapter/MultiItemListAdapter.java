@@ -8,13 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import org.apache.commons.lang3.ArrayUtils;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.Filterable;
 import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.SystemUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -26,18 +24,16 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     private static final int EMPTY_HEADER = -1;
 
     private final int[] layoutIds;
-    private final boolean firstIsHeader;
-
-    private int itemsSize = 0;
+    private final int firstIsHeader;
 
     public MultiItemListAdapter(boolean firstIsHeader, @LayoutRes int... layoutIds) {
         this.layoutIds = layoutIds;
-        this.firstIsHeader = firstIsHeader;
+        this.firstIsHeader = firstIsHeader ? 1 : 0;
     }
 
     public MultiItemListAdapter(List<I> items, boolean firstIsHeader, @LayoutRes int... layoutIds) {
         this(firstIsHeader, layoutIds);
-        this.items.addAll(items);
+        addItems(items);
     }
 
     // Create new views. This is invoked by the layout manager.
@@ -71,19 +67,10 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
         return countItems();
     }
 
-    @Override
-    public void addItems(List<I> items) {
-        super.addItems(items);
-    }
-
-    @Override
-    public void addItem(I item) {
-        super.addItem(item);
-    }
 
     @Override
     public int getItemViewType(int position) {
-        if (hasHeader() && position == 0) {
+        if (firstIsHeader != 0 && position == 0) {
             return layoutIds[0];
         }
         I item = getItem(position);
@@ -93,8 +80,47 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
         return 0;
     }
 
+    @Override
+    public void addItems(List<I> items) {
+        super.addItems(toFlatList(items));
+    }
+
+    @Override
+    public void addItem(int position, I item) {
+        this.items.add(position, item);
+        notifyItemInserted(position + firstIsHeader);
+    }
+
+    @Override
+    public I removeItem(int position) {
+        final I item = this.items.remove(position);
+        notifyItemRemoved(position + firstIsHeader);
+        return item;
+    }
+
+    @Override
+    public void moveItem(int fromPosition, int toPosition) {
+        final I item = this.items.remove(fromPosition);
+        this.items.add(toPosition, item);
+        notifyItemMoved(fromPosition + firstIsHeader, toPosition + firstIsHeader);
+    }
+
+    private List<I> toFlatList(List<I> items) {
+        List<I> flatList = new ArrayList<>();
+        for (int i = 0; i < countItems(items); i++) {
+            flatList.add(i, getItem(items, i, new AtomicInteger(0)));
+        }
+        return flatList;
+    }
+
+    @Override
+    public int filter(String query) {
+        return super.filter(query) + firstIsHeader;
+    }
+
     public I getItem(int position) {
-        return getItem(items, position - (hasHeader() ? 1 : 0), new AtomicInteger(0));
+        return this.items.get(position - firstIsHeader);
+        //return getItem(items, position - firstIsHeader, new AtomicInteger(0));
     }
 
     private I getItem(List<I> items, int position, AtomicInteger countWrapper) {
@@ -119,12 +145,9 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
         return result;
     }
 
-    private boolean hasHeader() {
-        return firstIsHeader;
-    }
 
     private int countItems() {
-        return countItems(this.items) + (hasHeader() ? 1 : 0);
+        return super.getItemCount() + firstIsHeader;
     }
 
     private int countItems(List<I> items) {

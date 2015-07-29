@@ -63,4 +63,13 @@ public class Category implements Linkable, Serializable, Parsable {
         an.select("dd").unwrap();
         return an.body().html();
     }
+
+    @Override
+    public String toString() {
+        return "Category{" +
+                "title='" + title + '\'' +
+                ", annotation='" + annotation + '\'' +
+                ", type=" + type +
+                '}';
+    }
 }
