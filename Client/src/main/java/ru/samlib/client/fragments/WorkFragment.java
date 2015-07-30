@@ -1,15 +1,21 @@
 package ru.samlib.client.fragments;
 
+import android.app.SearchManager;
+import android.app.SearchableInfo;
+import android.content.ComponentName;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.SearchRecentSuggestions;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.widget.SearchView;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.annimon.stream.Collectors;
@@ -22,6 +28,7 @@ import org.jsoup.select.Elements;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
+import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -103,15 +110,27 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem searchItem = menu.findItem(R.id.search);
+        if (searchItem != null) {
+            final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            searchView.setOnQueryTextListener(this);
+            searchView.setQueryHint(getString(R.string.search_hint));
+        }
+    }
+
+    @Override
     public boolean onQueryTextChange(String query) {
         searched.clear();
-        searched.addAll(search(query));
         adapter.selectText(query, Color.RED);
         return true;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        if(searched.isEmpty()) {
+            searched.addAll(search(query));
+        }
         Integer index = searched.poll();
         if (index != null) {
             lastQuery = query;
@@ -285,9 +304,9 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
 
                     view.setMovementMethod(LinkMovementMethod.getInstance());
                     view.setText(spanner.fromHtml(indent.outerHtml()));
-                    selectText(holder, lastQuery, Color.RED);
                     break;
             }
+            selectText(holder, WorkFragment.this.lastQuery, Color.RED);
         }
     }
 }

@@ -61,6 +61,7 @@
     <string name="item_genres_label">Жанры:</string>
     <string name="item_form_label">Форма:</string>
     <string name="search_hint">Поиск...</string>
+    <string name="filter_hint">Фильтр...</string>
     <string name="search">Поиск</string>
     <string name="author_about">Об авторе:</string>
     <string name="author_suggestion">Начните знакомство с:</string>

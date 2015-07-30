@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -25,8 +26,8 @@ import java.util.regex.Pattern;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ToString(exclude = {"rawContent", "rootElements", "chapters"})
-public final class Work implements Serializable, Linkable, Validatable, Parsable {
+@ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks"})
+public final class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
@@ -170,5 +171,15 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     @Override
     public boolean validate() {
         return author != null && author.validate() && title != null && link != null;
+    }
+
+
+    @Override
+    public boolean find(String query) {
+        if(toString().toLowerCase().contains(query) ||
+                Jsoup.parseBodyFragment(TextUtils.join("", annotationBlocks)).text().toLowerCase().contains(query)) {
+            return true;
+        }
+        return false;
     }
 }

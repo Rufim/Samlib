@@ -75,8 +75,8 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     }
 
     @Override
-    public void addItems(List<I> items) {
-        super.addItems(toFlatList(items));
+    public List<I> addItems(List<I> items) {
+        return super.addItems(toFlatList(items));
     }
 
     @Override
@@ -111,11 +111,6 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
             flatList.add(i, getItem(items, i, new AtomicInteger(0)));
         }
         return flatList;
-    }
-
-    @Override
-    public int filter(String query) {
-        return super.filter(query) + firstIsHeader;
     }
 
     public I getItem(int position) {

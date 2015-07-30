@@ -161,7 +161,11 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         View rootView = inflater.inflate(R.layout.fragment_loading_list, container,
                 false);
         ButterKnife.bind(this, rootView);
-        swipeRefresh.setOnRefreshListener(() -> refreshData());
+        swipeRefresh.setOnRefreshListener(() -> {
+            if(!isLoading) {
+                refreshData();
+            }
+        });
         if (adapter == null) {
             adapter = getAdapter();
         }
@@ -187,6 +191,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         if (adapter != null) {
             if (listerTask == null && lister != null) {
+                isLoading = true;
                 listerTask = (ListerTask) new ListerTask().execute(absoluteCount, pageSize);
             } else {
                 stopLoading();
@@ -205,6 +210,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public class ListerTask extends AsyncTask<Integer, Void, List<I>> {
 
+        private int count = 0;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -212,7 +219,20 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         @Override
         protected List<I> doInBackground(Integer... params) {
-            return lister.getItems(params[0], params[1]);
+            List<I> items = lister.getItems(params[0], params[1]);
+            if(items.size() == 0) {
+                return items;
+            }
+            List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
+            while (params[1] > foundItems.size()) {
+                foundItems = lister.getItems(params[0] + items.size(), params[1]);
+                if(foundItems.size() == 0) {
+                    break;
+                }
+                items.addAll(foundItems);
+                foundItems = adapter.find(adapter.getLastQuery(), items);
+            }
+            return items;
         }
 
         @Override
@@ -226,9 +246,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 }
                 absoluteCount = adapter.getAbsoluteItemCount();
                 stopLoading();
-                if (adapter.getItemCount() < pageSize && !isEnd) {
-                    loadElements(pageSize);
-                }
             }
         }
     }
@@ -243,13 +260,16 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         @Override
         public void run() {
-            itemList.scrollToPosition(adapter.filter(query));
-            filterTask = null;
-            if (lastQuery != null) {
-                onQueryTextChange(lastQuery);
-            } else {
-                if (adapter.getItemCount() < pageSize) {
-                    loadElements(pageSize);
+            if(itemList != null) {
+                itemList.scrollToPosition(adapter.getItemCount() - adapter.getItems().size());
+                adapter.filter(query);
+                filterTask = null;
+                if (lastQuery != null) {
+                    onQueryTextChange(lastQuery);
+                } else {
+                    if (adapter.getItemCount() < pageSize) {
+                        loadElements(pageSize);
+                    }
                 }
             }
         }

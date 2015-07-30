@@ -96,20 +96,26 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
     public void exitFilteringMode() {
         if (originalItems != null) {
-            this.items = this.originalItems;
+            changeTo(originalItems);
             this.originalItems = null;
-            notifyDataSetChanged();
         }
     }
 
-    public void addItems(List<I> items) {
+    public List<I> addItems(List<I> items) {
         if (originalItems == null) {
             this.items.addAll(items);
             notifyDataSetChanged();
+            return items;
         } else {
             this.originalItems.addAll(items);
-            filter(lastQuery);
+            List<I> added = new ArrayList<>(items);
+            added.retainAll(filter(lastQuery));
+            return added;
         }
+    }
+
+    public String getLastQuery() {
+        return lastQuery;
     }
 
     public void addItem(I item) {
@@ -136,32 +142,39 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     }
 
     public void selectText(ViewHolder holder, String query, int color) {
-        if (query != null) {
-            query = query.toLowerCase();
-            for (TextView textView : holder.getAllTextViews()) {
-                Spannable raw = new SpannableString(textView.getText());
-                BackgroundColorSpan[] spans = raw.getSpans(0,
-                        raw.length(),
-                        BackgroundColorSpan.class);
+        if (query == null) {
+            query = "";
+        }
+        query = query.toLowerCase();
+        for (TextView textView : holder.getAllTextViews()) {
+            Spannable raw = new SpannableString(textView.getText());
+            BackgroundColorSpan[] spans = raw.getSpans(0,
+                    raw.length(),
+                    BackgroundColorSpan.class);
 
+            if (spans.length > 0) {
                 for (BackgroundColorSpan span : spans) {
                     raw.removeSpan(span);
                 }
-
-                if(query.isEmpty()) {
+                if (query.isEmpty()) {
+                    textView.setText(raw);
                     continue;
                 }
-
-                int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
-
-                while (index >= 0) {
-                    raw.setSpan(new BackgroundColorSpan(color), index, index
-                            + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
-                }
-
-                textView.setText(raw);
             }
+
+            if (query.isEmpty()) {
+                continue;
+            }
+
+            int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
+
+            while (index >= 0) {
+                raw.setSpan(new BackgroundColorSpan(color), index, index
+                        + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
+            }
+
+            textView.setText(raw);
         }
     }
 
@@ -171,18 +184,28 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         }
     }
 
-    public int filter(String query) {
+    public List<I> filter(String query) {
+        if (query == null) {
+            return items;
+        }
         query = query.toLowerCase();
+        List<I> founded = null;
         if (originalItems != null) {
-            changeTo(find(query, true));
+            founded = find(query, true);
+            changeTo(founded);
         }
         lastQuery = query;
-        return 0;
+        return founded;
     }
 
     public List<I> find(String query, boolean original) {
+        return find(query, original ? getOriginalItems() : getItems());
+    }
+
+    public List<I> find(String query, List<I> items) {
+        if (query == null) return items;
         final List<I> filteredList = new ArrayList<>();
-        for (I item : original ? getOriginalItems() : getItems()) {
+        for (I item : items) {
             if (item instanceof Findable) {
                 if (((Findable) item).find(query)) {
                     filteredList.add(item);
@@ -197,7 +220,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return filteredList;
     }
 
-    public void changeTo(List<I> items) {
+    public synchronized void changeTo(List<I> items) {
         applyAndAnimateRemovals(items);
         applyAndAnimateAdditions(items);
         applyAndAnimateMovedItems(items);
@@ -216,7 +239,10 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         for (int i = 0; i < newItems.size(); i++) {
             final I item = newItems.get(i);
             if (!this.items.contains(item)) {
-                addItem(i, item);
+                if (this.items.size() > i)
+                    addItem(i, item);
+                else
+                    addItem(item);
             }
         }
     }
@@ -226,7 +252,10 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
             final I item = newItems.get(toPosition);
             final int fromPosition = this.items.indexOf(item);
             if (fromPosition >= 0 && fromPosition != toPosition) {
-                moveItem(fromPosition, toPosition);
+                if (this.items.size() > toPosition)
+                    moveItem(fromPosition, toPosition);
+                else
+                    moveItem(fromPosition, this.items.size() - 1);
             }
         }
     }

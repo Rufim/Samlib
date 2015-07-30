@@ -13,6 +13,7 @@
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:id="@+id/top_authors_autor_body"
+                  android:background="@android:drawable/list_selector_background"
                   android:gravity="center_vertical">
         <TextView
                 android:layout_width="wrap_content"
