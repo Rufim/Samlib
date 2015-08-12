@@ -9,8 +9,10 @@ import android.content.res.TypedArray;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
@@ -526,6 +528,44 @@ public class GuiUtils {
         }
     }
 
+    public static void selectText(TextView textView, String query, int color) {
+        if(query == null) {
+            query = "";
+        }
+        if(textView == null) {
+            return;
+        }
+        query = query.trim().toLowerCase();
+        Spannable raw = new SpannableString(textView.getText());
+        BackgroundColorSpan[] spans = raw.getSpans(0,
+                raw.length(),
+                BackgroundColorSpan.class);
+
+        if (spans.length > 0) {
+            for (BackgroundColorSpan span : spans) {
+                raw.removeSpan(span);
+            }
+            if (query.isEmpty()) {
+                textView.setText(raw);
+                return;
+            }
+        }
+
+        if (query.isEmpty()) {
+            return;
+        }
+
+        int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
+
+        while (index >= 0) {
+            raw.setSpan(new BackgroundColorSpan(color), index, index
+                    + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
+        }
+
+        textView.setText(raw);
+    }
+
     public int getThemeColor(Context context, int id) {
         Resources.Theme theme = context.getTheme();
         TypedArray a = theme.obtainStyledAttributes(new int[]{id});
@@ -544,6 +584,21 @@ public class GuiUtils {
                 android.R.attr.orientation,
                 android.R.attr.text};
         return context.obtainStyledAttributes(attrs);
+    }
+
+    public interface RunUIThread {
+        void run();
+    }
+
+    public static void runInUI(final Context context, final RunUIThread uiThread) {
+        Handler mainHandler = new Handler(context.getMainLooper());
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                uiThread.run();
+            }
+        };
+        mainHandler.post(myRunnable);
     }
 
 }

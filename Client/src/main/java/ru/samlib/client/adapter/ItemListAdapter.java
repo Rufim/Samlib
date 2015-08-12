@@ -24,7 +24,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
     protected List<I> items = new ArrayList<>();
     protected List<I> originalItems = null;
-    protected Set<ViewHolder> currentHolders = new HashSet<>();
+    protected Set<ViewHolder> currentHolders = Collections.newSetFromMap(new WeakHashMap<>());
     protected final int layoutId;
     protected String lastQuery;
 
@@ -64,6 +64,19 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         };
         currentHolders.add(holder);
         return holder;
+    }
+
+    public Set<ViewHolder> getCurrentHolders() {
+        return currentHolders;
+    }
+
+    public ViewHolder getHolder(int itemIndex) {
+        for (ItemListAdapter.ViewHolder holder : getCurrentHolders()) {
+            if (holder.getAdapterPosition() == itemIndex) {
+                return holder;
+            }
+        }
+        return null;
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -147,34 +160,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         }
         query = query.toLowerCase();
         for (TextView textView : holder.getAllTextViews()) {
-            Spannable raw = new SpannableString(textView.getText());
-            BackgroundColorSpan[] spans = raw.getSpans(0,
-                    raw.length(),
-                    BackgroundColorSpan.class);
-
-            if (spans.length > 0) {
-                for (BackgroundColorSpan span : spans) {
-                    raw.removeSpan(span);
-                }
-                if (query.isEmpty()) {
-                    textView.setText(raw);
-                    continue;
-                }
-            }
-
-            if (query.isEmpty()) {
-                continue;
-            }
-
-            int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
-
-            while (index >= 0) {
-                raw.setSpan(new BackgroundColorSpan(color), index, index
-                        + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
-            }
-
-            textView.setText(raw);
+            GuiUtils.selectText(textView, query, color);
         }
     }
 

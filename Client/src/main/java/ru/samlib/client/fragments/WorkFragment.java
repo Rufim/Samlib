@@ -1,23 +1,15 @@
 package ru.samlib.client.fragments;
 
-import android.app.SearchManager;
-import android.app.SearchableInfo;
-import android.content.ComponentName;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.provider.SearchRecentSuggestions;
-import android.speech.tts.TextToSpeech;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.widget.SearchView;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
@@ -28,13 +20,14 @@ import org.jsoup.select.Elements;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
-import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
+import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.PicassoImageHandler;
+import ru.samlib.client.util.TTSPlayer;
 
 import java.net.MalformedURLException;
 import java.util.*;
@@ -42,7 +35,7 @@ import java.util.*;
 /**
  * Created by Dmitry on 23.06.2015.
  */
-public class WorkFragment extends ListFragment<Element> implements TextToSpeech.OnInitListener {
+public class WorkFragment extends ListFragment<Element> {
 
     private static final String TAG = WorkFragment.class.getSimpleName();
 
@@ -50,11 +43,10 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
     private Queue<Integer> searched = new ArrayDeque<>();
     private AsyncTask moveToIndex;
     private Integer lastIndex;
-    private TextToSpeech tts;
-    private int speakIndex = 0;
-    private int phraseIndex = 0;
-    private List<String> phrases;
-    private int maxPhraseSize = 200;
+    private TTSPlayer ttsPlayer;
+    private Integer lastIndent = 0;
+    private int colorSpeakingText;
+    private int colorFoundedText;
 
     public WorkFragment() {
         pageSize = 100;
@@ -82,17 +74,14 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
     @Override
     public void onStart() {
         super.onStart();
-        tts = new TextToSpeech(this.getActivity(), this);
+        ttsPlayer.onStart();
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
-        if (tts != null) {
-            tts.stop();
-            tts.shutdown();
-        }
+        ttsPlayer.onStop();
         super.onStop();
     }
 
@@ -122,13 +111,13 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
     @Override
     public boolean onQueryTextChange(String query) {
         searched.clear();
-        adapter.selectText(query, Color.RED);
+        adapter.selectText(query, colorFoundedText);
         return true;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if(searched.isEmpty()) {
+        if (searched.isEmpty()) {
             searched.addAll(search(query));
         }
         Integer index = searched.poll();
@@ -165,7 +154,7 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
                     protected void onPostExecute(Integer index) {
                         layoutManager.scrollToPositionWithOffset(index, 0);
                         if (lastQuery != null) {
-                            adapter.selectText(lastQuery, Color.RED);
+                            adapter.selectText(lastQuery, colorFoundedText);
                         }
                         moveToIndex = null;
                         if (lastIndex != null) {
@@ -188,6 +177,26 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
         String link = getArguments().getString(Constants.ArgsName.LINK);
         if (work == null || !work.getLink().equals(link)) {
             work = new Work(link);
+            if (ttsPlayer != null) {
+                ttsPlayer.onStop();
+            }
+            ttsPlayer = new TTSPlayer(work, getActivity());
+            ttsPlayer.setNextPhraseListener((speakIndex, phraseIndex, phrase) -> {
+                lastIndent = speakIndex;
+                ItemListAdapter.ViewHolder holder = adapter.getHolder(speakIndex);
+                if (holder != null) {
+                    GuiUtils.selectText(holder.getView(R.id.work_text_indent), phrase, colorSpeakingText);
+                }
+
+            });
+            ttsPlayer.setIndexSpeakFinished(speakIndex -> {
+                ItemListAdapter.ViewHolder holder = adapter.getHolder(speakIndex);
+                if (holder != null) {
+                    GuiUtils.selectText(holder.getView(R.id.work_text_indent), null, colorSpeakingText);
+                }
+            });
+            colorFoundedText = getResources().getColor(R.color.red_dark);
+            colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
         } else {
             EventBus.getDefault().post(new WorkParsedEvent(work));
         }
@@ -203,55 +212,6 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
         return work;
     }
 
-    @Override
-    public void onInit(int status) {
-        if (status == TextToSpeech.SUCCESS) {
-            tts.setOnUtteranceCompletedListener(utteranceId -> {
-                nextPhrase();
-            });
-            tts.setLanguage(Locale.getDefault());
-            tts.setSpeechRate(1.3f);
-        } else {
-            tts = null;
-            Toast.makeText(this.getActivity(), "Failed to initialize TTS engine.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void startSpeak() {
-        if(tts.isSpeaking() || speakIndex >= work.getRootElements().size()) {
-            tts.stop();
-        }
-        phrases = new LinkedList<>(Arrays.asList(work.getRootElements().get(speakIndex).text().split("[.!?]")));
-        for (int i = 0; i < phrases.size(); i++) {
-            String phrase = phrases.get(i);
-            if(phrase.length() >= maxPhraseSize) {
-                List<String> newPhrases = new ArrayList<>();
-                while (phrase.length() >= maxPhraseSize) {
-                    newPhrases.add(phrase.substring(0, maxPhraseSize));
-                    phrase = phrase.substring(maxPhraseSize);
-                }
-                phrases.remove(i);
-                newPhrases.add(phrase);
-                phrases.addAll(i,newPhrases);
-            }
-        }
-        phraseIndex = 0;
-        nextPhrase();
-    }
-
-    public void nextPhrase() {
-        if(phraseIndex >= phrases.size()) {
-            speakIndex++;
-            startSpeak();
-            return;
-        }
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "stringId");
-        tts.speak(phrases.get(phraseIndex), TextToSpeech.QUEUE_FLUSH, params);
-        phraseIndex++;
-    }
-
-
     private class WorkFragmentAdaptor extends MultiItemListAdapter<Element> {
 
         public WorkFragmentAdaptor() {
@@ -265,11 +225,18 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
 
         @Override
         public void onClick(View view, int position) {
-            if (tts.isSpeaking()) {
-                tts.stop();
+            if (ttsPlayer.isSpeaking()) {
+                if(lastIndent != position - firstIsHeader) {
+                    ttsPlayer.stop();
+                } else {
+                    ttsPlayer.pause();
+                }
             } else {
-                speakIndex = position - firstIsHeader;
-                startSpeak();
+                if (lastIndent == position - firstIsHeader && ttsPlayer.getState() == TTSPlayer.STATE.PAUSE) {
+                    ttsPlayer.resume();
+                } else {
+                    ttsPlayer.startSpeak(position - firstIsHeader);
+                }
             }
         }
 
@@ -285,7 +252,7 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
                     TextView view = holder.getView(R.id.work_text_indent);
                     HtmlSpanner spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
-               /*    spanner.registerHandler("a", new TagNodeHandler() {
+               /*   spanner.registerHandler("a", new TagNodeHandler() {
                        @Override
                        public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end) {
                            final String href = node.getAttributeByName("href");
@@ -306,7 +273,7 @@ public class WorkFragment extends ListFragment<Element> implements TextToSpeech.
                     view.setText(spanner.fromHtml(indent.outerHtml()));
                     break;
             }
-            selectText(holder, WorkFragment.this.lastQuery, Color.RED);
+            selectText(holder, WorkFragment.this.lastQuery, colorFoundedText);
         }
     }
 }

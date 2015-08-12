@@ -30,6 +30,20 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
         addItems(items);
     }
 
+    public int getFirstIsHeader() {
+        return firstIsHeader;
+    }
+
+    @Override
+    public ViewHolder getHolder(int itemIndex) {
+        for (ItemListAdapter.ViewHolder holder : getCurrentHolders()) {
+            if (holder.getAdapterPosition() - firstIsHeader == itemIndex) {
+                return holder;
+            }
+        }
+        return null;
+    }
+
     // Create new views. This is invoked by the layout manager.
     @Override
     public ItemListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

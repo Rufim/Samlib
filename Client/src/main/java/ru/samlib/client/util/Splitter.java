@@ -3,6 +3,7 @@ package ru.samlib.client.util;
 import android.annotation.SuppressLint;
 import android.util.Log;
 import org.intellij.lang.annotations.Language;
+import org.intellij.lang.annotations.RegExp;
 import ru.samlib.client.net.CachedResponse;
 
 import java.io.*;
@@ -16,6 +17,11 @@ import java.util.regex.Pattern;
  */
 @SuppressLint("NewApi")
 public class Splitter {
+
+    @RegExp
+    public static final String WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
+    @RegExp
+    public static final String INCLUDE_DELIMITER = "(?<=%1)";
     public Queue<String> start = new ArrayDeque<>();
     public Queue<String> end = new ArrayDeque<>();
     public Integer skipStart = 0;
@@ -25,12 +31,12 @@ public class Splitter {
     public Splitter() {
     }
 
-    public Splitter(@Language("RegExp") String start, @Language("RegExp") String end) {
+    public Splitter(@RegExp String start, @RegExp String end) {
         this.start.add(start);
         this.end.add(end);
     }
 
-    public Splitter(@Language("RegExp") String start, @Language("RegExp") String end, Integer skipStart, Integer skipEnd) {
+    public Splitter(@RegExp String start, @RegExp String end, Integer skipStart, Integer skipEnd) {
         this.start.add(start);
         this.end.add(end);
         this.skipStart = skipStart;
@@ -41,12 +47,12 @@ public class Splitter {
         this.flag = flag;
     }
 
-    public Splitter addStart(@Language("RegExp") String start) {
+    public Splitter addStart(@RegExp String start) {
         this.start.add(start);
         return this;
     }
 
-    public Splitter addEnd(@Language("RegExp") String end) {
+    public Splitter addEnd(@RegExp String end) {
         this.end.add(end);
         return this;
     }
@@ -174,7 +180,7 @@ public class Splitter {
         return parts;
     }
 
-    public static String extractLines(CachedResponse file, boolean notInclude, String startReg, String endReg) {
+    public static String extractLines(CachedResponse file, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
         Pattern start = Pattern.compile(startReg, Pattern.CASE_INSENSITIVE);
         Pattern end = Pattern.compile(endReg, Pattern.CASE_INSENSITIVE);
         final StringBuilder builder = new StringBuilder();
@@ -201,6 +207,14 @@ public class Splitter {
             Log.w(ParserUtils.TAG, e);
         }
         return builder.toString();
+    }
+
+    public String[] splitWithDelimiter(String str, String delimiter) {
+        return str.split(String.format(WITH_DELIMITER, delimiter));
+    }
+
+    public String[] splitIncludeDelimiter(String str, String delimiter) {
+        return str.split(String.format(INCLUDE_DELIMITER, delimiter));
     }
 }
 
