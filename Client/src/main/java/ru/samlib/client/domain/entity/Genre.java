@@ -63,6 +63,10 @@ public enum Genre implements Linkable {
         return null;
     }
 
+    public String getAnnotation() {
+        return "";
+    }
+
     @Override
     public String toString() {
         return title;

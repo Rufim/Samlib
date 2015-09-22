@@ -25,7 +25,10 @@
             android:launchMode="singleInstance"
             android:label="@string/app_name" >
             <meta-data android:name="android.app.searchable"
-                       android:resource="@xml/filterable"/>
+                       android:resource="@xml/searchable"/>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH"/>
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -36,7 +39,7 @@
                 android:name=".activity.AuthorActivity"
                 android:launchMode="singleInstance">
             <meta-data android:name="android.app.searchable"
-                       android:resource="@xml/filterable"/>
+                       android:resource="@xml/searchable"/>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -47,7 +50,23 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name="ru.samlib.client.service.TTSService"
+            android:exported="true"
+            android:enabled="true"/>
 
+        <receiver android:name=".receiver.TTSNotificationBroadcast">
+            <intent-filter>
+                <action android:name="ru.samlib.client.delete"/>
+                <action android:name="ru.samlib.client.pause"/>
+                <action android:name="ru.samlib.client.next"/>
+                <action android:name="ru.samlib.client.play"/>
+                <action android:name="ru.samlib.client.stop"/>
+                <action android:name="ru.samlib.client.position"/>
+                <action android:name="ru.samlib.client.previous"/>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

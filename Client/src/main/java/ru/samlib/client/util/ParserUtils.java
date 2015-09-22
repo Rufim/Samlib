@@ -4,6 +4,8 @@ import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
@@ -123,7 +125,12 @@ public class ParserUtils {
             work.getAnnotationBlocks().clear();
             work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
         }
-        work.setRawContent(parts[3]);;
+        if (parts[3].contains("<!--Section Begins-->")) {
+            work.setRawContent(Splitter.extractLines(file, true,
+                    new Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+        } else {
+            work.setRawContent(parts[3]);
+        }
         return work;
     }
 
@@ -167,6 +174,12 @@ public class ParserUtils {
         el.select("input").remove(); // inputs not supported
 
         return el.html().replaceAll("\\s<br>\\s\\n", "").replace("\n", "");
+    }
+
+    public static String cleanHtml(String str) {
+        Document.OutputSettings settings = new Document.OutputSettings();
+        settings.escapeMode(Entities.EscapeMode.xhtml);
+        return Jsoup.clean(str, "", Whitelist.none(), settings);
     }
 
     public static void parseType(Element el, Work work) {
@@ -250,7 +263,7 @@ public class ParserUtils {
         switch (element.select("b").text()) {
             case "WWW:":
                 Element a = element.select("a").first();
-                author.setSite(new Link(a.ownText(), a.attr("href")));
+                author.setSite(new Link(a.ownText(), a.attr("href"), ""));
                 break;
             case "Aдpeс:":
                 author.setEmail(element.select("u").text());

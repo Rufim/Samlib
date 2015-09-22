@@ -308,4 +308,14 @@ public class SystemUtils {
         return exec.function();
     }
 
+    public static int parseInt(String intValue) {
+        if(intValue == null) return -1;
+        try {
+            return Integer.parseInt(intValue);
+        } catch (NumberFormatException ex) {
+            return -1;
+        }
+
+    }
+
 }

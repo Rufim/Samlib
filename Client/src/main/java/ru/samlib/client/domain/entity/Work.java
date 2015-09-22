@@ -6,12 +6,14 @@ import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.util.ParserUtils;
+import ru.samlib.client.util.Splitter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -32,6 +34,8 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
     public static final String FB2_SUFFIX = ".fb2.zip";
+
+    private List<String> indentsTag = Arrays.asList("dd", "div", "p", "br", "pre");
 
     private String title;
     private String link;
@@ -56,8 +60,9 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private boolean hasComments = true;
     private boolean parsed = false;
     private String rawContent = "";
-    private Elements rootElements;
-    private List<Chapter> chapters = new ArrayList<>();
+    private List<String> indents = new ArrayList<>();
+    private transient Elements rootElements;
+    private transient List<Chapter> chapters = new ArrayList<>();
 
     public Work(String link) {
         setLink(link);
@@ -65,14 +70,35 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
 
     public void processChapters() {
         rootElements = Jsoup.parseBodyFragment(rawContent).select("body > *");
+        Elements elements = rootElements.select("xxx7");
+        if (elements.size() > 0) {
+            rootElements = elements.first().select("> *");
+        }
+        while (rootElements.size() > 0
+                && rootElements.first().tagName() == "font"
+                && rootElements.size() == 1) {
+            rootElements = rootElements.first().select("> *");
+        }
         chapters.clear();
+        indents.clear();
         Chapter currentChapter = new Chapter("Начало");
-        Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
+        Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         for (int i = 0; i < rootElements.size(); i++) {
             Element el = rootElements.get(i);
-            String text = el.text();
-            if(rootElements.size() > i) {
+            if (indentsTag.contains(el.tagName().toLowerCase())) {
+                indents.add(el.outerHtml());
+            } else {
+                if (indents.isEmpty()) {
+                    indents.add(el.outerHtml());
+                } else {
+                    indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
+                }
+            }
+        }
+        for (int i = 0; i < indents.size(); i++) {
+            String text = ParserUtils.cleanHtml(indents.get(i));
+            if (rootElements.size() > i) {
                 if (pattern.matcher(ParserUtils.trim(text)).find()) {
                     Chapter newChapter = new Chapter(text);
                     chapters.add(currentChapter);
@@ -81,7 +107,6 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
                     currentChapter = newChapter;
                 }
             }
-          //  currentChapter.addElement(el);
         }
         chapters.add(currentChapter);
     }
@@ -143,8 +168,12 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         genres.add(genre);
     }
 
+    public String getAnnotation() {
+        return TextUtils.join("", annotationBlocks);
+    }
+
     public String processAnnotationBloks(int color) {
-        Document an = Jsoup.parse(TextUtils.join("", annotationBlocks));
+        Document an = Jsoup.parse(getAnnotation());
         an.select("font[color=#555555]").attr("color",
                 String.format("#%02x%02x%02x",
                         Color.red(color),
@@ -176,10 +205,12 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
 
     @Override
     public boolean find(String query) {
-        if(toString().toLowerCase().contains(query) ||
+        if (toString().toLowerCase().contains(query) ||
                 Jsoup.parseBodyFragment(TextUtils.join("", annotationBlocks)).text().toLowerCase().contains(query)) {
             return true;
         }
         return false;
     }
+
+
 }

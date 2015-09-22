@@ -48,6 +48,10 @@ public enum Type implements Linkable {
         return OTHER;
     }
 
+    public String getAnnotation() {
+        return "";
+    }
+
     @Override
     public String toString() {
         return getTitle();

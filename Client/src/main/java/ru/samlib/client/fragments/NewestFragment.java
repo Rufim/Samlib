@@ -3,6 +3,10 @@ package ru.samlib.client.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import ru.samlib.client.R;
@@ -21,6 +25,7 @@ public class NewestFragment extends ListFragment {
 
     public NewestFragment() {
         super(new NewestParser());
+        enableFiltering = true;
     }
 
     /**

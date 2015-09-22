@@ -1,5 +1,7 @@
 package ru.samlib.client.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,6 +27,9 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
+import ru.samlib.client.receiver.TTSNotificationBroadcast;
+import ru.samlib.client.service.TTSService;
+import ru.samlib.client.util.AndroidSystemUtils;
 import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.TTSPlayer;
@@ -35,7 +40,7 @@ import java.util.*;
 /**
  * Created by Dmitry on 23.06.2015.
  */
-public class WorkFragment extends ListFragment<Element> {
+public class WorkFragment extends ListFragment<String> {
 
     private static final String TAG = WorkFragment.class.getSimpleName();
 
@@ -43,7 +48,6 @@ public class WorkFragment extends ListFragment<Element> {
     private Queue<Integer> searched = new ArrayDeque<>();
     private AsyncTask moveToIndex;
     private Integer lastIndex;
-    private TTSPlayer ttsPlayer;
     private Integer lastIndent = 0;
     private int colorSpeakingText;
     private int colorFoundedText;
@@ -64,7 +68,7 @@ public class WorkFragment extends ListFragment<Element> {
                     return new ArrayList<>();
                 }
             }
-            return Stream.of(work.getRootElements())
+            return Stream.of(work.getIndents())
                     .skip(skip)
                     .limit(size)
                     .collect(Collectors.toList());
@@ -74,14 +78,12 @@ public class WorkFragment extends ListFragment<Element> {
     @Override
     public void onStart() {
         super.onStart();
-        ttsPlayer.onStart();
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
-        ttsPlayer.onStop();
         super.onStop();
     }
 
@@ -104,14 +106,13 @@ public class WorkFragment extends ListFragment<Element> {
         if (searchItem != null) {
             final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             searchView.setOnQueryTextListener(this);
-            searchView.setQueryHint(getString(R.string.search_hint));
         }
     }
 
     @Override
     public boolean onQueryTextChange(String query) {
         searched.clear();
-        adapter.selectText(query, colorFoundedText);
+        adapter.selectText(query, true, colorFoundedText);
         return true;
     }
 
@@ -123,20 +124,20 @@ public class WorkFragment extends ListFragment<Element> {
         Integer index = searched.poll();
         if (index != null) {
             lastQuery = query;
-            moveToIndex(index);
+            scrollToIndex(index);
         }
         return true;
     }
 
-    private void moveToIndex(int index) {
+    private void scrollToIndex(int index) {
         if (adapter.getItemCount() > index) {
             lastIndex = null;
             layoutManager.scrollToPositionWithOffset(index, 0);
-            adapter.selectText(lastQuery, Color.RED);
+            adapter.selectText(lastQuery, false, Color.RED);
         } else {
             if (moveToIndex == null) {
                 lastIndex = null;
-                loadElements(index + pageSize);
+                loadElements(index + pageSize, true);
                 moveToIndex = new AsyncTask<Integer, Void, Integer>() {
 
                     @Override
@@ -154,11 +155,11 @@ public class WorkFragment extends ListFragment<Element> {
                     protected void onPostExecute(Integer index) {
                         layoutManager.scrollToPositionWithOffset(index, 0);
                         if (lastQuery != null) {
-                            adapter.selectText(lastQuery, colorFoundedText);
+                            adapter.selectText(lastQuery, false, colorFoundedText);
                         }
                         moveToIndex = null;
                         if (lastIndex != null) {
-                            moveToIndex(lastIndex);
+                            scrollToIndex(lastIndex);
                         }
                     }
                 }.execute(index);
@@ -169,7 +170,7 @@ public class WorkFragment extends ListFragment<Element> {
     }
 
     public void onEvent(ChapterSelectedEvent event) {
-        moveToIndex(event.chapter.getIndex());
+        scrollToIndex(event.chapter.getIndex());
     }
 
     @Override
@@ -177,23 +178,13 @@ public class WorkFragment extends ListFragment<Element> {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         if (work == null || !work.getLink().equals(link)) {
             work = new Work(link);
-            if (ttsPlayer != null) {
-                ttsPlayer.onStop();
-            }
-            ttsPlayer = new TTSPlayer(work, getActivity());
-            ttsPlayer.setNextPhraseListener((speakIndex, phraseIndex, phrase) -> {
+            TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
                 lastIndent = speakIndex;
-                ItemListAdapter.ViewHolder holder = adapter.getHolder(speakIndex);
-                if (holder != null) {
-                    GuiUtils.selectText(holder.getView(R.id.work_text_indent), phrase, colorSpeakingText);
-                }
-
+                selectText(speakIndex, phrases.get(phraseIndex));
+                scrollToVisible(speakIndex);
             });
-            ttsPlayer.setIndexSpeakFinished(speakIndex -> {
-                ItemListAdapter.ViewHolder holder = adapter.getHolder(speakIndex);
-                if (holder != null) {
-                    GuiUtils.selectText(holder.getView(R.id.work_text_indent), null, colorSpeakingText);
-                }
+            TTSService.setIndexSpeakFinished(speakIndex -> {
+                selectText(speakIndex, null);
             });
             colorFoundedText = getResources().getColor(R.color.red_dark);
             colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
@@ -203,8 +194,24 @@ public class WorkFragment extends ListFragment<Element> {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
+    private void scrollToVisible(int index) {
+        index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
+        int first = findFirstVisibleItemPosition(true) ;
+        int last = findLastVisibleItemPosition(true);
+        if(first > index || index > last) {
+            scrollToIndex(index);
+        }
+    }
+
+    private void selectText(int index, String text) {
+        ItemListAdapter.ViewHolder holder = adapter.getHolder(index);
+        if (holder != null) {
+            GuiUtils.selectText(holder.getView(R.id.work_text_indent), true, text, colorSpeakingText);
+        }
+    }
+
     @Override
-    protected ItemListAdapter<Element> getAdapter() {
+    protected ItemListAdapter<String> getAdapter() {
         return new WorkFragmentAdaptor();
     }
 
@@ -212,30 +219,40 @@ public class WorkFragment extends ListFragment<Element> {
         return work;
     }
 
-    private class WorkFragmentAdaptor extends MultiItemListAdapter<Element> {
+    private class WorkFragmentAdaptor extends MultiItemListAdapter<String> {
 
         public WorkFragmentAdaptor() {
             super(true, R.layout.work_list_header, R.layout.indent_item);
         }
 
         @Override
-        public int getLayoutId(Element item) {
+        public int getLayoutId(String item) {
             return R.layout.indent_item;
         }
 
         @Override
         public void onClick(View view, int position) {
-            if (ttsPlayer.isSpeaking()) {
-                if(lastIndent != position - firstIsHeader) {
-                    ttsPlayer.stop();
-                } else {
-                    ttsPlayer.pause();
-                }
+            position -= firstIsHeader;
+            if(!TTSService.isReady(work)) {
+                WorkFragment.this.selectText(lastIndent, null);
+                Intent i = new Intent(getActivity(), TTSService.class);
+                i.putExtra(Constants.ArgsName.WORK, work);
+                i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position);
+                getActivity().startService(i);
             } else {
-                if (lastIndent == position - firstIsHeader && ttsPlayer.getState() == TTSPlayer.STATE.PAUSE) {
-                    ttsPlayer.resume();
+                if (TTSService.getInstance().getPlayer().isSpeaking()) {
+                    if (lastIndent != position) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+                    } else {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.PAUSE);
+                    }
                 } else {
-                    ttsPlayer.startSpeak(position - firstIsHeader);
+                    if (lastIndent == position && TTSService.getInstance().getState() == TTSPlayer.State.PAUSE) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.PLAY);
+                    } else {
+                        WorkFragment.this.selectText(lastIndent, null);
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.POSITION, position);
+                    }
                 }
             }
         }
@@ -248,32 +265,15 @@ public class WorkFragment extends ListFragment<Element> {
                     htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
                     break;
                 case R.layout.indent_item:
-                    Element indent = getItem(position);
+                    String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     HtmlSpanner spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
-               /*   spanner.registerHandler("a", new TagNodeHandler() {
-                       @Override
-                       public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end) {
-                           final String href = node.getAttributeByName("href");
-                           builder.setSpan(new ClickableSpan() {
-                               @Override
-                               public void onClick(View widget) {
-                                   Uri uri = Uri.parse(href);
-                                   Context context = widget.getContext();
-                                   Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                                   intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-                                   context.startActivity(intent);
-                               }
-                           }, start, builder.length(), 33);
-                       }
-                   }); */
-
                     view.setMovementMethod(LinkMovementMethod.getInstance());
-                    view.setText(spanner.fromHtml(indent.outerHtml()));
+                    view.setText(spanner.fromHtml(indent));
                     break;
             }
-            selectText(holder, WorkFragment.this.lastQuery, colorFoundedText);
+            selectText(holder, true, WorkFragment.this.lastQuery, colorFoundedText);
         }
     }
 }

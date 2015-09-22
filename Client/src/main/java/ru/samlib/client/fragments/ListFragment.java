@@ -5,10 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+import android.support.v7.widget.*;
 import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -50,6 +47,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected ListerTask listerTask;
     protected FilterTask filterTask;
     protected String lastQuery;
+    protected boolean enableFiltering = false;
 
 
     public ListFragment() {
@@ -70,7 +68,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     public boolean restoreLister() {
         if(savedLister != null) {
             lister = savedLister;
-            refreshData();
+            refreshData(true);
             savedLister = null;
             return true;
         } else {
@@ -97,23 +95,26 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    public void onPrepareOptionsMenu(Menu menu) {
+        if(enableFiltering) {
+            MenuItem searchItem = menu.findItem(R.id.search);
+            if (searchItem != null) {
+                final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+                searchView.setOnQueryTextListener(this);
+                searchView.setQueryHint(getString(R.string.filter_hint));
+                searchView.setOnCloseListener(() -> {
+                    lastQuery = null;
+                    adapter.exitFilteringMode();
+                    return false;
+                });
+            }
+        }
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        if (searchItem != null) {
-            final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-            searchView.setOnQueryTextListener(this);
-            searchView.setOnCloseListener(() -> {
-                lastQuery = null;
-                adapter.exitFilteringMode();
-                return false;
-            });
-        }
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     public void startLoading() {
@@ -134,11 +135,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         swipeRefresh.setRefreshing(false);
     }
 
-    protected void loadElements(int count) {
+    protected void loadElements(int count, boolean showProgress) {
         if (isLoading || isEnd) {
             return;
         }
-        startLoading();
+        if(showProgress) {
+            startLoading();
+        }
         if(lister != null) {
             listerTask = (ListerTask) new ListerTask().execute(absoluteCount, count);
         }
@@ -146,13 +149,56 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     protected abstract ItemListAdapter<I> getAdapter();
 
-    public void refreshData(){
+    public void refreshData(boolean showProgress){
         absoluteCount = 0;
         pastVisiblesItems = 0;
         isEnd = false;
         adapter.getItems().clear();
         adapter.notifyDataSetChanged();
-        loadElements(pageSize);
+        loadElements(pageSize, showProgress);
+    }
+
+
+    public int findFirstVisibleItemPosition(boolean completelyVisible) {
+        final View child = findOneVisibleChild(0, layoutManager.getChildCount(), completelyVisible, !completelyVisible);
+        return child == null ? RecyclerView.NO_POSITION : itemList.getChildAdapterPosition(child);
+    }
+
+    public int findLastVisibleItemPosition(boolean completelyVisible) {
+        final View child = findOneVisibleChild(layoutManager.getChildCount() - 1, -1, completelyVisible, !completelyVisible);
+        return child == null ? RecyclerView.NO_POSITION : itemList.getChildAdapterPosition(child);
+    }
+
+    protected View findOneVisibleChild(int fromIndex, int toIndex, boolean completelyVisible,
+                             boolean acceptPartiallyVisible) {
+        OrientationHelper helper;
+        if (layoutManager.canScrollVertically()) {
+            helper = OrientationHelper.createVerticalHelper(layoutManager);
+        } else {
+            helper = OrientationHelper.createHorizontalHelper(layoutManager);
+        }
+
+        final int start = helper.getStartAfterPadding();
+        final int end = helper.getEndAfterPadding();
+        final int next = toIndex > fromIndex ? 1 : -1;
+        View partiallyVisible = null;
+        for (int i = fromIndex; i != toIndex; i += next) {
+            final View child = layoutManager.getChildAt(i);
+            final int childStart = helper.getDecoratedStart(child);
+            final int childEnd = helper.getDecoratedEnd(child);
+            if (childStart < end && childEnd > start) {
+                if (completelyVisible) {
+                    if (childStart >= start && childEnd <= end) {
+                        return child;
+                    } else if (acceptPartiallyVisible && partiallyVisible == null) {
+                        partiallyVisible = child;
+                    }
+                } else {
+                    return child;
+                }
+            }
+        }
+        return partiallyVisible;
     }
 
     @Override
@@ -163,7 +209,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         ButterKnife.bind(this, rootView);
         swipeRefresh.setOnRefreshListener(() -> {
             if(!isLoading) {
-                refreshData();
+                refreshData(false);
             }
         });
         if (adapter == null) {
@@ -184,7 +230,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 totalItemCount = mLayoutManager.getItemCount();
                 pastVisiblesItems = layoutManager.findFirstVisibleItemPosition();
                 if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                    loadElements(pageSize);
+                    loadElements(pageSize, true);
                 }
             }
         });
@@ -268,7 +314,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                     onQueryTextChange(lastQuery);
                 } else {
                     if (adapter.getItemCount() < pageSize) {
-                        loadElements(pageSize);
+                        loadElements(pageSize, true);
                     }
                 }
             }

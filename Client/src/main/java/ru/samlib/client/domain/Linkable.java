@@ -12,6 +12,8 @@ public interface Linkable {
 
     public String getTitle();
 
+    public String getAnnotation();
+
     public default String getFullLink() {
         return Link.getBaseDomain() + cleanupSlashes(getLink());
     }

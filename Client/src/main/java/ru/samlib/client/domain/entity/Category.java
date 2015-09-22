@@ -41,7 +41,7 @@ public class Category implements Linkable, Serializable, Parsable {
 
     public Linkable getLinkable() {
         if (type == type.OTHER && link != null) {
-            return new Link(title, author.getLink() + "/" +link);
+            return new Link(title, author.getLink() + "/" +link, annotation);
         } else {
             return type;
         }
@@ -62,6 +62,10 @@ public class Category implements Linkable, Serializable, Parsable {
                         Color.blue(color)));
         an.select("dd").unwrap();
         return an.body().html();
+    }
+
+    public String getTitle() {
+        return getLinkable().getTitle();
     }
 
     @Override

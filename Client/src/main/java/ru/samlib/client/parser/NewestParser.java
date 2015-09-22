@@ -47,12 +47,10 @@ public class NewestParser extends Parser implements Lister<Work> {
                         switch (j) {
                             case 0:
                                 work.setTitle(ParserUtils.trim(text.substring(1, text.lastIndexOf("\"")).replace("\n", "")));
-                                if (text.contains("и др.")) {
-                                    work.setSize(Integer.parseInt(text.substring(work.getTitle().length() + 11, text.lastIndexOf("k "))));
-                                } else {
-                                    work.setSize(Integer.parseInt(text.substring(work.getTitle().length() + 5, text.lastIndexOf("k "))));
-                                }
-                                work.setGenres(text.substring(text.indexOf("k ") + 2, text.length()));
+                                Element info = rowItems.select("small").first();
+                                String workSize = info.select("b").first().ownText();
+                                work.setSize(Integer.parseInt(workSize.substring(0, workSize.lastIndexOf("k"))));
+                                work.setGenres(info.ownText());
                                 work.setLink(rowItems.get(j).select("a[href]").attr("href"));
                                 break;
                             case 1:

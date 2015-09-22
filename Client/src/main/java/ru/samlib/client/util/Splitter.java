@@ -2,12 +2,12 @@ package ru.samlib.client.util;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
-import org.intellij.lang.annotations.Language;
 import org.intellij.lang.annotations.RegExp;
 import ru.samlib.client.net.CachedResponse;
 
 import java.io.*;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,15 +18,11 @@ import java.util.regex.Pattern;
 @SuppressLint("NewApi")
 public class Splitter {
 
-    @RegExp
-    public static final String WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
-    @RegExp
-    public static final String INCLUDE_DELIMITER = "(?<=%1)";
     public Queue<String> start = new ArrayDeque<>();
     public Queue<String> end = new ArrayDeque<>();
     public Integer skipStart = 0;
     public Integer skipEnd = 0;
-    public int flag = 0;
+    public int flags = 0;
 
     public Splitter() {
     }
@@ -43,8 +39,8 @@ public class Splitter {
         this.skipEnd = skipEnd;
     }
 
-    public void setFlag(int flag) {
-        this.flag = flag;
+    public void setFlags(int flags) {
+        this.flags = flags;
     }
 
     public Splitter addStart(@RegExp String start) {
@@ -69,7 +65,7 @@ public class Splitter {
 
     public Pattern nextStart() {
         if (!start.isEmpty()) {
-            return Pattern.compile(start.remove(), flag);
+            return Pattern.compile(start.remove(), flags);
         }
         return null;
     }
@@ -77,7 +73,7 @@ public class Splitter {
 
     public Pattern nextEnd() {
         if (!end.isEmpty()) {
-            return Pattern.compile(end.remove(), flag);
+            return Pattern.compile(end.remove(), flags);
         }
         return null;
     }
@@ -180,7 +176,7 @@ public class Splitter {
         return parts;
     }
 
-    public static String extractLines(CachedResponse file, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
+    public static String extractLine(CachedResponse file, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
         Pattern start = Pattern.compile(startReg, Pattern.CASE_INSENSITIVE);
         Pattern end = Pattern.compile(endReg, Pattern.CASE_INSENSITIVE);
         final StringBuilder builder = new StringBuilder();
@@ -209,12 +205,33 @@ public class Splitter {
         return builder.toString();
     }
 
-    public String[] splitWithDelimiter(String str, String delimiter) {
-        return str.split(String.format(WITH_DELIMITER, delimiter));
-    }
+    public enum DelimiterMode {NONE, TO_END, FROM_START, SEPARATE}
 
-    public String[] splitIncludeDelimiter(String str, String delimiter) {
-        return str.split(String.format(INCLUDE_DELIMITER, delimiter));
+    public static ArrayList<String> split(String str, @RegExp String delimiter, DelimiterMode mode) {
+        Matcher matcher = Pattern.compile(delimiter).matcher(str);
+        ArrayList<String> split = new ArrayList<>();
+        int lastFound = 0;
+        String previous = "";
+        while (matcher.find()) {
+            switch (mode) {
+                case NONE:
+                    split.add(str.substring(lastFound, matcher.start()));
+                    break;
+                case TO_END:
+                    split.add(str.substring(lastFound, matcher.end()));
+                    break;
+                case FROM_START:
+                    split.add(previous + str.substring(lastFound, matcher.start()));
+                    previous = str.substring(matcher.start(), matcher.end());
+                    break;
+                case SEPARATE:
+                    split.add(str.substring(lastFound, matcher.start()));
+                    split.add(str.substring(matcher.start(), matcher.end()));
+                    break;
+            }
+            lastFound = matcher.end();
+        }
+        return split;
     }
 }
 

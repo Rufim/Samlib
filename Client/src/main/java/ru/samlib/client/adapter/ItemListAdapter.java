@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import org.apache.commons.beanutils.BeanAccessLanguageException;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.util.GuiUtils;
 
@@ -154,19 +155,18 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         notifyItemMoved(fromPosition, toPosition);
     }
 
-    public void selectText(ViewHolder holder, String query, int color) {
-        if (query == null) {
-            query = "";
+    public void selectText(ViewHolder holder, boolean erase, String query, int color) {
+        if ("".equals(query)) {
+            query = null;
         }
-        query = query.toLowerCase();
         for (TextView textView : holder.getAllTextViews()) {
-            GuiUtils.selectText(textView, query, color);
+            GuiUtils.selectText(textView, erase, query, color);
         }
     }
 
-    public void selectText(String query, int color) {
+    public void selectText(String query, boolean erase,  int color) {
         for (ViewHolder holder : currentHolders) {
-            selectText(holder, query, color);
+            selectText(holder, erase, query, color);
         }
     }
 

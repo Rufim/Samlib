@@ -1,5 +1,6 @@
 package ru.samlib.client.util;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -227,4 +228,36 @@ public class AndroidSystemUtils {
         context.startActivity(intent);
     }
 
+    public static boolean currentVersionSupportBigNotification() {
+        int sdkVersion = android.os.Build.VERSION.SDK_INT;
+        if (sdkVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean currentVersionSupportLockScreenControls() {
+        int sdkVersion = android.os.Build.VERSION.SDK_INT;
+        if (sdkVersion >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if service is running or not
+     *
+     * @param serviceName
+     * @param context
+     * @return
+     */
+    public static boolean isServiceRunning(String serviceName, Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceName.equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

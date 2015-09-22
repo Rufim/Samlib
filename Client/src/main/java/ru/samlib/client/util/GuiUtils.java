@@ -528,41 +528,46 @@ public class GuiUtils {
         }
     }
 
-    public static void selectText(TextView textView, String query, int color) {
-        if(query == null) {
-            query = "";
-        }
+    public static void selectText(TextView textView, boolean erase, String query, int color) {
         if(textView == null) {
             return;
         }
-        query = query.trim().toLowerCase();
-        Spannable raw = new SpannableString(textView.getText());
-        BackgroundColorSpan[] spans = raw.getSpans(0,
-                raw.length(),
-                BackgroundColorSpan.class);
+        if(query != null) {
+            query = query.trim().toLowerCase();
+        }
 
-        if (spans.length > 0) {
-            for (BackgroundColorSpan span : spans) {
-                raw.removeSpan(span);
-            }
-            if (query.isEmpty()) {
-                textView.setText(raw);
-                return;
+        Spannable raw = new SpannableString(textView.getText());
+
+        if(erase) {
+            BackgroundColorSpan[] spans = raw.getSpans(0,
+                    raw.length(),
+                    BackgroundColorSpan.class);
+
+            if (spans.length > 0) {
+                for (BackgroundColorSpan span : spans) {
+                    raw.removeSpan(span);
+                }
+                if (query == null) {
+                    textView.setText(raw);
+                    return;
+                }
             }
         }
 
-        if (query.isEmpty()) {
+        if (query == null) {
             return;
         }
 
-        int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
-
-        while (index >= 0) {
-            raw.setSpan(new BackgroundColorSpan(color), index, index
+        if(query.isEmpty()) {
+            raw.setSpan(new BackgroundColorSpan(color), 0, raw.length()
                     + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
+        } else {
+            int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
+            while (index >= 0) {
+                raw.setSpan(new BackgroundColorSpan(color), index, index + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                index = TextUtils.indexOf(raw.toString().toLowerCase(), query, index + query.length());
+            }
         }
-
         textView.setText(raw);
     }
 
@@ -587,18 +592,18 @@ public class GuiUtils {
     }
 
     public interface RunUIThread {
-        void run();
+        void run(Object ... var);
     }
 
-    public static void runInUI(final Context context, final RunUIThread uiThread) {
+    public static void runInUI(final Context context, final RunUIThread uiThread, final  Object ... var) {
         Handler mainHandler = new Handler(context.getMainLooper());
         Runnable myRunnable = new Runnable() {
             @Override
             public void run() {
-                uiThread.run();
+                uiThread.run(var);
             }
         };
-        mainHandler.post(myRunnable);
+        mainHandler.postAtFrontOfQueue(myRunnable);
     }
 
 }

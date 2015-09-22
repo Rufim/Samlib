@@ -20,6 +20,7 @@ public class Link implements Validatable, Linkable, Serializable {
 
     protected String title;
     protected String link;
+    protected String annotation;
 
 
     public static void setBaseDomain(String baseDomain) {

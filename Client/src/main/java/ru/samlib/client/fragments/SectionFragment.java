@@ -114,7 +114,7 @@ public class SectionFragment extends ListFragment<Linkable> {
             });
         }
         category = event.category;
-        refreshData();
+        refreshData(true);
     }
 
     @Override

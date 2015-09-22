@@ -2,6 +2,13 @@ package ru.samlib.client.net;
 
 import android.util.Log;
 import com.google.gson.Gson;
+import org.jsoup.helper.W3CDom;
+import ru.samlib.client.domain.entity.Link;
+import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.google.ResponseData;
+import ru.samlib.client.domain.google.Result;
+import ru.samlib.client.lister.Lister;
+import ru.samlib.client.util.SystemUtils;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -9,23 +16,32 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Rufim on 07.07.2015.
  */
-public class GoogleSearchClient {
+public class GoogleSearchClient implements Lister<Link> {
 
- //   private static final String HIDDEN_GOOGLE_URL = "http://www.google.com/uds/GwebSearch?v=1.0";
+    private static final Integer page_size = 10;
+    private final String query;
+
+    //   private static final String HIDDEN_GOOGLE_URL = "http://www.google.com/uds/GwebSearch?v=1.0";
     private static final String TAG = GoogleSearchClient.class.getSimpleName();
     private static final String GOOGLE_URL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=";
     private static final String CHARSET = "UTF-8";
 
+    public GoogleSearchClient(String query) {
+        this.query = query;
+    }
+
     public GoogleResults search(String query, String site, int page) {
         URL url = null;
         try {
-            query = "site:" + site + " " + query + "&start=" + page;
-            url = new URL(GOOGLE_URL + URLEncoder.encode(query, CHARSET));
+            query = URLEncoder.encode(query, CHARSET);
+            query = "site:" + site + "+" + query + "&start=" + page;
+            url = new URL(GOOGLE_URL + query);
             Reader reader = new InputStreamReader(url.openStream(), CHARSET);
             return new Gson().fromJson(reader, GoogleResults.class);
         } catch (Exception e) {
@@ -33,6 +49,33 @@ public class GoogleSearchClient {
             Log.w(TAG, e);
         }
         return null;
+    }
+
+    @Override
+    public List<Link> getItems(int skip, int size) {
+        List<Link> links = new ArrayList<>();
+        while (links.size() < size) {
+            int index = skip / page_size;
+            GoogleResults results = search(query, Link.getBaseDomain(), index);
+            if(results.getResponseData().getCursor() != null) {
+                String count = results.getResponseData().getCursor().getResultCount();
+                if (SystemUtils.parseInt(count) <= index) {
+                    break;
+                }
+                List<Result> resultList = results.getResponseData().getResults();
+                if (resultList == null || resultList.isEmpty()) {
+                    break;
+                } else {
+                    for (Result result : resultList) {
+                        links.add(new Link(result.getTitle(), result.getUrl(), result.getContent()));
+                    }
+                }
+                skip += links.size();
+            } else {
+                break;
+            }
+        }
+        return links;
     }
 
     public static class GoogleResults {
@@ -49,47 +92,6 @@ public class GoogleSearchClient {
 
         public String toString() {
             return "ResponseData[" + responseData + "]";
-        }
-
-        static class ResponseData {
-            private List<Result> results;
-
-            public List<Result> getResults() {
-                return results;
-            }
-
-            public void setResults(List<Result> results) {
-                this.results = results;
-            }
-
-            public String toString() {
-                return "Results[" + results + "]";
-            }
-        }
-
-        public static class Result {
-            private String url;
-            private String title;
-
-            public String getUrl() {
-                return url;
-            }
-
-            public String getTitle() {
-                return title;
-            }
-
-            public void setUrl(String url) {
-                this.url = url;
-            }
-
-            public void setTitle(String title) {
-                this.title = title;
-            }
-
-            public String toString() {
-                return "Result[url:" + url + ",title:" + title + "]";
-            }
         }
 
     }
