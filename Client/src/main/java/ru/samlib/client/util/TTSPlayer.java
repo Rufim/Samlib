@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
+import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.domain.entity.Work;
 
 import java.util.*;
@@ -21,19 +22,26 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     public static int maxPhraseSize = 800;
 
     private int indentIndex = 0;
+    private int offset = 0;
     private int phraseIndex = 0;
-    private List<String> phrases;
+    private List<Phrase> phrases;
     private Work work;
     private final Context context;
     private TextToSpeech tts;
     private boolean playOnStart = false;
     private State state = State.UNAVAILABLE;
 
+    public static class Phrase {
+        public String text;
+        public int start;
+        public int end;
+    }
+
     private OnIndexSpeakFinished indexSpeakFinished;
     private OnNextPhraseListener nextPhraseListener;
 
     public interface OnNextPhraseListener {
-        void onNextPhrase(int indentIndex, int phraseIndex, List<String> phrases);
+        void onNextPhrase(int indentIndex, int phraseIndex, List<Phrase> phrases);
     }
 
     public interface OnIndexSpeakFinished {
@@ -69,37 +77,58 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         this.indexSpeakFinished = indexSpeakFinished;
     }
 
-    private List<String> splitByPhrases(String indent) {
-        List<String> phrases = Splitter.split(ParserUtils.cleanHtml(indent), "[.!?]++",
+    private List<Phrase> splitByPhrases(String indent, int offset) {
+        String clearIndent = new HtmlSpanner().fromHtml(indent).toString();
+        List<String> rawPhrases = Splitter.split(clearIndent.substring(offset), "[.!?]++",
                 Splitter.DelimiterMode.TO_END);
-        for (int i = 0; i < phrases.size(); i++) {
-            String phrase = phrases.get(i);
+        List<Phrase> phrases = new ArrayList<>(rawPhrases.size());
+        for (int i = 0; i < rawPhrases.size(); i++) {
+            String phrase = rawPhrases.get(i);
             if (phrase.length() >= maxPhraseSize) {
                 List<String> newPhrases = new ArrayList<>();
                 while (phrase.length() >= maxPhraseSize) {
                     newPhrases.add(phrase.substring(0, maxPhraseSize));
                     phrase = phrase.substring(maxPhraseSize);
                 }
-                phrases.remove(i);
+                rawPhrases.remove(i);
                 newPhrases.add(phrase);
-                phrases.addAll(i, newPhrases);
+                rawPhrases.addAll(i, newPhrases);
             }
+        }
+        int start = offset;
+        for (String rawPhrase : rawPhrases) {
+            Phrase phrase = new Phrase();
+            phrase.text = rawPhrase;
+            phrase.start = start;
+            start += rawPhrase.length();
+            phrase.end = start;
+            phrases.add(phrase);
         }
         return phrases;
     }
 
-    public void startSpeak(int indentIndex) {
+    public void startSpeak(int index) {
+        startSpeak(index, 0, 0);
+    }
+
+    public void startSpeak(int index, int offset) {
+        startSpeak(index, 0, offset);
+    }
+
+    public void startSpeak(int index, int phrase, int offset) {
         if (tts == null) return;
-        if (tts.isSpeaking() || indentIndex >= work.getIndents().size()) {
+        if(work.getIndents().isEmpty()) return;
+        if (index >= work.getIndents().size()) {
             tts.stop();
             state = State.END;
+            return;
         }
-        if(indentIndex < 0) {
-            indentIndex = 0;
+        if (index < 0) {
+            index = 0;
         }
-        phrases = splitByPhrases(work.getIndents().get(indentIndex));
-        phraseIndex = 0;
-        this.indentIndex = indentIndex;
+        phrases = splitByPhrases(work.getIndents().get(index), offset);
+        phraseIndex = phrase;
+        this.indentIndex = index;
         nextPhrase();
         state = State.SPEAKING;
     }
@@ -108,9 +137,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         return tts.isSpeaking() || State.SPEAKING == state;
     }
 
-
     public void resume() {
-        if(phrases != null) {
+        if (phrases != null) {
             nextPhrase();
         } else {
             startSpeak(indentIndex);
@@ -151,11 +179,11 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
 
     private void nextPhrase() {
         if (phraseIndex >= phrases.size()) {
-            if(indexSpeakFinished != null) {
+            if (indexSpeakFinished != null) {
                 GuiUtils.runInUI(context, new GuiUtils.RunUIThread() {
                     @Override
                     public void run(Object... var) {
-                      indexSpeakFinished.onNextPhrase((int) var[0]);
+                        indexSpeakFinished.onNextPhrase((int) var[0]);
                     }
                 }, indentIndex);
             }
@@ -164,16 +192,16 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         }
         HashMap<String, String> params = new HashMap<String, String>();
         params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "stringId");
-        String phrase = phrases.get(phraseIndex);
+        Phrase phrase = phrases.get(phraseIndex);
         if (nextPhraseListener != null) {
             GuiUtils.runInUI(context, new GuiUtils.RunUIThread() {
                 @Override
-                public void run(Object ... var) {
-                    nextPhraseListener.onNextPhrase((int)var[0],(int) var[1], (List<String>) var[2]);
+                public void run(Object... var) {
+                    nextPhraseListener.onNextPhrase((int) var[0], (int) var[1], (List<Phrase>) var[2]);
                 }
             }, indentIndex, phraseIndex, phrases);
         }
-        tts.speak(phrase, TextToSpeech.QUEUE_FLUSH, params);
+        tts.speak(phrase.text, TextToSpeech.QUEUE_FLUSH, params);
         phraseIndex++;
     }
 
@@ -188,9 +216,9 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             tts.setLanguage(Locale.getDefault());
             tts.setSpeechRate(1.3f);
             state = State.IDLE;
-            if(playOnStart) {
+            if (playOnStart) {
                 playOnStart = false;
-                startSpeak(indentIndex);
+                startSpeak(indentIndex, offset);
             }
         } else {
             tts = null;
@@ -207,10 +235,11 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         tts = new TextToSpeech(context, this);
     }
 
-    public void playOnStart(Work work, int index) {
+    public void playOnStart(Work work, int index, int offset) {
         playOnStart = true;
         this.work = work;
         indentIndex = index;
+        this.offset = offset;
     }
 
     public void onStop() {
@@ -221,10 +250,4 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         state = State.UNAVAILABLE;
     }
 
-    public static class Phrase {
-        public int indentIndex;
-        public int start;
-        public int end;
-        public String phrase;
-    }
 }

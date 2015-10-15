@@ -1,13 +1,19 @@
 package ru.samlib.client.fragments;
 
-import android.content.BroadcastReceiver;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.text.Layout;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.*;
@@ -29,13 +35,16 @@ import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.TTSService;
-import ru.samlib.client.util.AndroidSystemUtils;
+import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.TTSPlayer;
 
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by Dmitry on 23.06.2015.
@@ -47,10 +56,15 @@ public class WorkFragment extends ListFragment<String> {
     private Work work;
     private Queue<Integer> searched = new ArrayDeque<>();
     private AsyncTask moveToIndex;
-    private Integer lastIndex;
     private Integer lastIndent = 0;
     private int colorSpeakingText;
     private int colorFoundedText;
+    private PowerManager.WakeLock screenLock;
+    private Mode mode = Mode.NORMAL;
+
+    private enum Mode {
+        SEARCH, SPEAK, NORMAL
+    }
 
     public WorkFragment() {
         pageSize = 100;
@@ -87,6 +101,20 @@ public class WorkFragment extends ListFragment<String> {
         super.onStop();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        screenLock.release();
+    }
+
+    @Override
+    public boolean allowBackPress() {
+        new FragmentBuilder(getFragmentManager())
+                .putArg(Constants.ArgsName.LINK, work.getAuthor().getLink())
+                .replaceFragment(WorkFragment.this, SectionFragment.class);
+        return false;
+    }
+
     public List<Integer> search(String query) {
         List<Integer> indexes = new ArrayList<>();
         Elements items = work.getRootElements();
@@ -106,6 +134,11 @@ public class WorkFragment extends ListFragment<String> {
         if (searchItem != null) {
             final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             searchView.setOnQueryTextListener(this);
+            searchView.setOnCloseListener(() -> {
+                lastQuery = null;
+                mode = Mode.NORMAL;
+                return false;
+            });
         }
     }
 
@@ -113,11 +146,12 @@ public class WorkFragment extends ListFragment<String> {
     public boolean onQueryTextChange(String query) {
         searched.clear();
         adapter.selectText(query, true, colorFoundedText);
-        return true;
+        return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        mode = Mode.SEARCH;
         if (searched.isEmpty()) {
             searched.addAll(search(query));
         }
@@ -130,42 +164,59 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     private void scrollToIndex(int index) {
-        if (adapter.getItemCount() > index) {
-            lastIndex = null;
-            layoutManager.scrollToPositionWithOffset(index, 0);
-            adapter.selectText(lastQuery, false, Color.RED);
+        scrollToIndex(index, 0);
+    }
+
+    private void toIndex(int index, int offsetLines) {
+        TextView textView = getTextViewIndent(index);
+        index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
+        if (textView != null) {
+            layoutManager.scrollToPositionWithOffset(index, - offsetLines * textView.getLineHeight());
         } else {
-            if (moveToIndex == null) {
-                lastIndex = null;
-                loadElements(index + pageSize, true);
-                moveToIndex = new AsyncTask<Integer, Void, Integer>() {
+            layoutManager.scrollToPosition(index);
+        }
+        if (Mode.SEARCH == mode) {
+            adapter.selectText(lastQuery, false, colorFoundedText);
+        }
+    }
 
-                    @Override
-                    protected Integer doInBackground(Integer... params) {
-                        while (adapter.getItemCount() <= params[0]) {
-                            SystemClock.sleep(100);
-                            if (!isLoading) {
-                                break;
-                            }
-                        }
-                        return params[0];
-                    }
-
-                    @Override
-                    protected void onPostExecute(Integer index) {
-                        layoutManager.scrollToPositionWithOffset(index, 0);
-                        if (lastQuery != null) {
-                            adapter.selectText(lastQuery, false, colorFoundedText);
-                        }
-                        moveToIndex = null;
-                        if (lastIndex != null) {
-                            scrollToIndex(lastIndex);
-                        }
-                    }
-                }.execute(index);
-            } else {
-                lastIndex = index;
+    //TODO: smoothscrool
+    public void smoothScrollToPosition(int position, int offset) {
+        LinearSmoothScroller linearSmoothScroller = new LinearSmoothScroller(itemList.getContext()) {
+            public PointF computeScrollVectorForPosition(int targetPosition) {
+                PointF calculate = layoutManager.computeScrollVectorForPosition(targetPosition);
+                calculate.y += offset;
+                return calculate;
             }
+        };
+        linearSmoothScroller.setTargetPosition(position);
+        layoutManager.startSmoothScroll(linearSmoothScroller);
+    }
+
+    private void scrollToIndex(int index, int offsetLines) {
+        if (adapter.getItemCount() > index) {
+            toIndex(index, offsetLines);
+        } else {
+            moveToIndex = new AsyncTask<Integer, Void, Void>() {
+
+                int index = 0;
+                int offsetLines = 0;
+
+                @Override
+                protected Void doInBackground(Integer... params) {
+                    index = params[0];
+                    offsetLines = params[1];
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void empty) {
+                    if (this == moveToIndex) {
+                        toIndex(index, offsetLines);
+                    }
+                }
+            };
+            loadElements(index + pageSize, true, moveToIndex, index, offsetLines);
         }
     }
 
@@ -179,9 +230,19 @@ public class WorkFragment extends ListFragment<String> {
         if (work == null || !work.getLink().equals(link)) {
             work = new Work(link);
             TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
-                lastIndent = speakIndex;
-                selectText(speakIndex, phrases.get(phraseIndex));
-                scrollToVisible(speakIndex);
+                if (getActivity() != null) {
+                    TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
+                    lastIndent = speakIndex;
+                    TextView textView = getTextViewIndent(speakIndex);
+                    if (textView != null) {
+                        int visibleLines = getVisibleLines(textView);
+                        Layout layout = textView.getLayout();
+                        if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
+                            scrollToIndex(speakIndex, layout.getLineForOffset(phrase.start));
+                        }
+                        selectText(speakIndex, phrase.start, phrase.end);
+                    }
+                }
             });
             TTSService.setIndexSpeakFinished(speakIndex -> {
                 selectText(speakIndex, null);
@@ -191,22 +252,62 @@ public class WorkFragment extends ListFragment<String> {
         } else {
             EventBus.getDefault().post(new WorkParsedEvent(work));
         }
+        screenLock = ((PowerManager)getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG");
+        screenLock.acquire();
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
-    private void scrollToVisible(int index) {
+    private int getVisibleLines(TextView textView) {
+        int screenHeight = GuiUtils.getScreenSize(itemList.getContext()).y;
+        int scrolled = itemList.getScrollY();
+        int totalHeight = screenHeight + scrolled;
+        int lineHeight = textView.getLineHeight();
+        int[] location = new int[2];
+        textView.getLocationInWindow(location);
+        int height = textView.getHeight();
+        int difY = (int) (totalHeight - location[1] - height - lineHeight / 2d);  // + 1 lineHeight to save space
+        Layout layout = textView.getLayout();
+        int scrollY = textView.getScrollY();
+        int visibleLines;
+        if (difY >= 0) {
+            visibleLines = textView.getLineCount();
+        } else {
+            visibleLines = (height + difY) / lineHeight;
+        }
+        return visibleLines;
+    }
+
+    private boolean isIndentVisible(int index) {
         index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
-        int first = findFirstVisibleItemPosition(true) ;
+        int first = findFirstVisibleItemPosition(true);
         int last = findLastVisibleItemPosition(true);
-        if(first > index || index > last) {
-            scrollToIndex(index);
+        if (first > index || index > last) {
+            return false;
+        }
+        return true;
+    }
+
+    private TextView getTextViewIndent(int index) {
+        ItemListAdapter.ViewHolder holder = adapter.getHolder(index);
+        if (holder != null) {
+            return holder.getView(R.id.work_text_indent);
+        } else {
+            return null;
         }
     }
 
     private void selectText(int index, String text) {
+        TextView textView = getTextViewIndent(index);
+        if (textView != null) {
+            GuiUtils.selectText(textView, true, text, colorSpeakingText);
+        }
+    }
+
+    private void selectText(int index, int start, int end) {
         ItemListAdapter.ViewHolder holder = adapter.getHolder(index);
         if (holder != null) {
-            GuiUtils.selectText(holder.getView(R.id.work_text_indent), true, text, colorSpeakingText);
+            GuiUtils.selectText(holder.getView(R.id.work_text_indent), true, start, end, colorSpeakingText);
         }
     }
 
@@ -221,6 +322,8 @@ public class WorkFragment extends ListFragment<String> {
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<String> {
 
+        private int lastOffset = 0;
+
         public WorkFragmentAdaptor() {
             super(true, R.layout.work_list_header, R.layout.indent_item);
         }
@@ -232,26 +335,20 @@ public class WorkFragment extends ListFragment<String> {
 
         @Override
         public void onClick(View view, int position) {
-            position -= firstIsHeader;
-            if(!TTSService.isReady(work)) {
-                WorkFragment.this.selectText(lastIndent, null);
-                Intent i = new Intent(getActivity(), TTSService.class);
-                i.putExtra(Constants.ArgsName.WORK, work);
-                i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position);
-                getActivity().startService(i);
-            } else {
-                if (TTSService.getInstance().getPlayer().isSpeaking()) {
-                    if (lastIndent != position) {
+            if (mode == Mode.SPEAK) {
+                position -= firstIsHeader;
+                if (!TTSService.isReady(work)) {
+                    WorkFragment.this.selectText(lastIndent, null);
+                    Intent i = new Intent(getActivity(), TTSService.class);
+                    i.putExtra(Constants.ArgsName.WORK, work);
+                    i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
+                    getActivity().startService(i);
+                } else {
+                    if (TTSService.getInstance().getPlayer().isSpeaking()) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
                     } else {
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.PAUSE);
-                    }
-                } else {
-                    if (lastIndent == position && TTSService.getInstance().getState() == TTSPlayer.State.PAUSE) {
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.PLAY);
-                    } else {
                         WorkFragment.this.selectText(lastIndent, null);
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.POSITION, position);
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.POSITION, position + ":" + lastOffset);
                     }
                 }
             }
@@ -267,6 +364,20 @@ public class WorkFragment extends ListFragment<String> {
                 case R.layout.indent_item:
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
+                    view.setOnTouchListener((v, event) -> {
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            TextView textView = ((TextView) v);
+                            Layout layout = textView.getLayout();
+                            int x = (int) event.getX();
+                            int y = (int) event.getY();
+                            if (layout != null) {
+                                int line = layout.getLineForVertical(y);
+                                lastOffset = layout.getOffsetForHorizontal(line, x);
+                                v.performClick();
+                            }
+                        }
+                        return true;
+                    });
                     HtmlSpanner spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     view.setMovementMethod(LinkMovementMethod.getInstance());
@@ -275,5 +386,6 @@ public class WorkFragment extends ListFragment<String> {
             }
             selectText(holder, true, WorkFragment.this.lastQuery, colorFoundedText);
         }
+
     }
 }

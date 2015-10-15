@@ -212,24 +212,31 @@ public class Splitter {
         ArrayList<String> split = new ArrayList<>();
         int lastFound = 0;
         String previous = "";
-        while (matcher.find()) {
-            switch (mode) {
-                case NONE:
-                    split.add(str.substring(lastFound, matcher.start()));
-                    break;
-                case TO_END:
-                    split.add(str.substring(lastFound, matcher.end()));
-                    break;
-                case FROM_START:
-                    split.add(previous + str.substring(lastFound, matcher.start()));
-                    previous = str.substring(matcher.start(), matcher.end());
-                    break;
-                case SEPARATE:
-                    split.add(str.substring(lastFound, matcher.start()));
-                    split.add(str.substring(matcher.start(), matcher.end()));
-                    break;
+        while (true) {
+            if(matcher.find()) {
+                switch (mode) {
+                    case NONE:
+                        split.add(str.substring(lastFound, matcher.start()));
+                        break;
+                    case TO_END:
+                        split.add(str.substring(lastFound, matcher.end()));
+                        break;
+                    case FROM_START:
+                        split.add(previous + str.substring(lastFound, matcher.start()));
+                        previous = str.substring(matcher.start(), matcher.end());
+                        break;
+                    case SEPARATE:
+                        split.add(str.substring(lastFound, matcher.start()));
+                        split.add(str.substring(matcher.start(), matcher.end()));
+                        break;
+                }
+                lastFound = matcher.end();
+            } else {
+                if(lastFound < str.length() - 1) {
+                    split.add(str.substring(lastFound));
+                }
+                break;
             }
-            lastFound = matcher.end();
         }
         return split;
     }

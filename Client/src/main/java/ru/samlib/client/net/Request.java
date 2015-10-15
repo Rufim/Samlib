@@ -31,6 +31,7 @@ public class Request implements Cloneable {
     private String content = "";
     private Map<String, String> headers = new LinkedHashMap<>();
     private Method method = Method.GET;
+    private int reconnectCount = 3;
 
     enum Method {
         OPTIONS,
@@ -60,6 +61,19 @@ public class Request implements Cloneable {
             params.add(param);
         }
         return this;
+    }
+
+    public int getReconnectCount() {
+        return reconnectCount;
+    }
+
+    public void setReconnectCount(int reconnectCount) {
+        this.reconnectCount = reconnectCount;
+    }
+
+    public boolean canReconnect() {
+        reconnectCount -= 1;
+        return reconnectCount > 0;
     }
 
     public Method getMethod() {

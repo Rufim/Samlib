@@ -15,7 +15,6 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -528,6 +527,31 @@ public class GuiUtils {
         }
     }
 
+    public static void selectText(TextView textView, boolean erase, int start, int end, int color) {
+        if (textView == null) {
+            return;
+        }
+
+        Spannable raw = new SpannableString(textView.getText());
+
+        if (erase) {
+            BackgroundColorSpan[] spans = raw.getSpans(0,
+                    raw.length(),
+                    BackgroundColorSpan.class);
+
+            if (spans.length > 0) {
+                for (BackgroundColorSpan span : spans) {
+                    raw.removeSpan(span);
+                }
+            }
+        }
+        if(end > raw.length()) {
+            end = raw.length();
+        }
+        raw.setSpan(new BackgroundColorSpan(color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        textView.setText(raw);
+    }
+
     public static void selectText(TextView textView, boolean erase, String query, int color) {
         if(textView == null) {
             return;
@@ -559,8 +583,7 @@ public class GuiUtils {
         }
 
         if(query.isEmpty()) {
-            raw.setSpan(new BackgroundColorSpan(color), 0, raw.length()
-                    + query.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            raw.setSpan(new BackgroundColorSpan(color), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         } else {
             int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
             while (index >= 0) {
@@ -595,7 +618,7 @@ public class GuiUtils {
         void run(Object ... var);
     }
 
-    public static void runInUI(final Context context, final RunUIThread uiThread, final  Object ... var) {
+    public static void runInUI(final Context context, final RunUIThread uiThread, final Object... var) {
         Handler mainHandler = new Handler(context.getMainLooper());
         Runnable myRunnable = new Runnable() {
             @Override
@@ -605,5 +628,4 @@ public class GuiUtils {
         };
         mainHandler.postAtFrontOfQueue(myRunnable);
     }
-
 }

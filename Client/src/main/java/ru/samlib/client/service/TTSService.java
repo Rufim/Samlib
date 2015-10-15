@@ -118,7 +118,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             }
             ttsp.setIndexSpeakFinished(indexSpeakFinished);
             ttsp.setNextPhraseListener(nextPhraseListener);
-            playWork(work, intent.getIntExtra(Constants.ArgsName.TTS_PLAY_POSITION, 0));
+            playWork(work, intent.getStringExtra(Constants.ArgsName.TTS_PLAY_POSITION));
             TTSPlayer.TTS_HANDLER = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message msg) {
@@ -148,7 +148,8 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             if (currentVersionSupportLockScreenControls) {
                                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
                             }
-                            ttsp.startSpeak((int) msg.obj);
+                            String [] pos = ((String) msg.obj).split(":");
+                            ttsp.startSpeak(Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
                             break;
                         case NEXT:
                             if (ttsp.isOver()) {
@@ -248,14 +249,15 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
      * @param work
      */
     @SuppressLint("NewApi")
-    private void playWork(Work work, int index) {
+    private void playWork(Work work, String position) {
         if (currentVersionSupportLockScreenControls) {
             UpdateMetadata(work);
             remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
         }
         ttsp.onStop();
         ttsp.onStart();
-        ttsp.playOnStart(work, index);
+        String[] pos = position.split(":");
+        ttsp.playOnStart(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
         newNotification();
     }
 

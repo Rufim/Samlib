@@ -2,6 +2,7 @@ package ru.samlib.client.net;
 
 import android.util.Log;
 import ru.samlib.client.SamlibApplication;
+import ru.samlib.client.util.AndroidSystemUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -39,10 +40,12 @@ public class HtmlClient {
 
         @Override
         protected void configConnection(HttpURLConnection connection) {
+            connection.setConnectTimeout(1000);
+            connection.setUseCaches(false);
         }
 
         @Override
-        protected boolean prepareResponse() throws IOException {
+        protected CachedResponse prepareResponse() throws IOException {
             File cacheDir = SamlibApplication.getInstance().getExternalCacheDir();
             String fileName = request.getBaseUrl().getPath();
             if (fileName.endsWith("/")) {
@@ -61,8 +64,11 @@ public class HtmlClient {
                 cachedResponse.delete();
             }
             cachedResponse.getParentFile().mkdirs();
-            this.cachedResponse = cachedResponse;
-            return cachedResponse.createNewFile();
+            if(cachedResponse.createNewFile()) {
+                return cachedResponse;
+            } else {
+                return null;
+            }
         }
     }
 

@@ -1,17 +1,10 @@
 package ru.samlib.client.adapter;
 
-import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
-import android.text.*;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import org.apache.commons.beanutils.BeanAccessLanguageException;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.util.GuiUtils;
 
@@ -159,7 +152,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         if ("".equals(query)) {
             query = null;
         }
-        for (TextView textView : holder.getAllTextViews()) {
+        for (TextView textView : holder.getViews(TextView.class)) {
             GuiUtils.selectText(textView, erase, query, color);
         }
     }
@@ -327,12 +320,12 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
             return super.itemView;
         }
 
-        public List<TextView> getAllTextViews() {
-            List<TextView> textViews = new ArrayList<>();
+        public <V extends View>  List<V> getViews(Class<V> viewClass) {
+            List<V> textViews = new ArrayList<>();
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
                 View view = viewEntry.getValue();
-                if (view instanceof TextView) {
-                    textViews.add((TextView) view);
+                if (view.getClass().isAssignableFrom(viewClass)) {
+                    textViews.add((V) view);
                 }
             }
             return textViews;

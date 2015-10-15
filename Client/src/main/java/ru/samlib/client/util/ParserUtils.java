@@ -1,14 +1,17 @@
 package ru.samlib.client.util;
 
 import android.util.Log;
+import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities;
+import org.jsoup.safety.Cleaner;
 import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
+import ru.samlib.client.net.HtmlClient;
 
 import java.math.BigDecimal;
 import java.util.Calendar;

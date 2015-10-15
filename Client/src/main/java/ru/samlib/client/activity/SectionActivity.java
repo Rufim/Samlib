@@ -4,15 +4,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Linkable;
@@ -31,7 +29,9 @@ import java.util.List;
 /**
  * Created by 0shad on 12.07.2015.
  */
-public class AuthorActivity extends BaseActivity {
+public class SectionActivity extends BaseActivity {
+
+    private static final String TAG = SectionActivity.class.getSimpleName();
 
     private ViewGroup drawerHeader;
     private Author author;
@@ -47,7 +47,12 @@ public class AuthorActivity extends BaseActivity {
                 initializeAuthor(((SectionFragment) sectionFragment).getAuthor());
             }
             if (sectionFragment instanceof WorkFragment) {
-                initializeAuthor(((WorkFragment) sectionFragment).getWork().getAuthor());
+                WorkFragment workFragment = ((WorkFragment) sectionFragment);
+                if(workFragment.getWork().getAuthor() != null) {
+                    initializeAuthor(workFragment.getWork().getAuthor());
+                } else {
+                    Log.e(TAG, "Error ocurred unknovn author!! Work utl is: " + workFragment.getWork().getFullLink());
+                }
             }
             new FragmentBuilder(getSupportFragmentManager()).replaceFragment(R.id.container, sectionFragment);
         }

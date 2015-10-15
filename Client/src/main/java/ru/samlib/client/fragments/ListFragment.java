@@ -1,12 +1,14 @@
 package ru.samlib.client.fragments;
 
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
 import android.view.*;
+import android.view.animation.PathInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.Bind;
@@ -14,14 +16,16 @@ import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.lister.Lister;
+import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by Rufim on 17.01.2015.
  */
 public abstract class ListFragment<I> extends BaseFragment implements SearchView.OnQueryTextListener {
+
+    private final int filteringCooldown = 300;
 
     @Bind(R.id.load_progress)
     protected ProgressBar progressBar;
@@ -35,6 +39,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected SwipeRefreshLayout swipeRefresh;
     protected ItemListAdapter<I> adapter;
     protected LinearLayoutManager layoutManager;
+    protected VerticalRecyclerViewFastScroller scroller;
     protected Lister<I> savedLister;
     protected Lister<I> lister;
 
@@ -48,6 +53,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected FilterTask filterTask;
     protected String lastQuery;
     protected boolean enableFiltering = false;
+    protected long lastFilteringTime = 0;
 
 
     public ListFragment() {
@@ -78,20 +84,24 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public boolean onQueryTextChange(String query) {
-        adapter.enterFilteringMode();
-        if(filterTask == null) {
-            lastQuery = null;
-            filterTask = new FilterTask(query);
-            getActivity().runOnUiThread(filterTask);
-        } else {
-            lastQuery = query;
-        }
-        return true;
+        return enableFiltering;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        return false;
+        if(enableFiltering) {
+            adapter.enterFilteringMode();
+            if (filterTask == null) {
+                lastQuery = null;
+                filterTask = new FilterTask(query);
+                getActivity().runOnUiThread(filterTask);
+            } else {
+                lastQuery = query;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -107,6 +117,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                     adapter.exitFilteringMode();
                     return false;
                 });
+                searchView.setSuggestionsAdapter(null);
             }
         }
     }
@@ -135,7 +146,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         swipeRefresh.setRefreshing(false);
     }
 
-    protected void loadElements(int count, boolean showProgress) {
+    protected void loadElements(int count, boolean showProgress, AsyncTask onElementsLoadedTask, Object ... params) {
         if (isLoading || isEnd) {
             return;
         }
@@ -143,8 +154,16 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             startLoading();
         }
         if(lister != null) {
-            listerTask = (ListerTask) new ListerTask().execute(absoluteCount, count);
+            ListerTask listerTask = new ListerTask(count, onElementsLoadedTask, params);
+            if(this.listerTask == null) {
+                listerTask.execute();
+            }
+            this.listerTask = listerTask;
         }
+    }
+
+    protected void loadElements(int count, boolean showProgress) {
+        loadElements(count, showProgress, null, null);
     }
 
     protected abstract ItemListAdapter<I> getAdapter();
@@ -234,11 +253,19 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 }
             }
         });
+        scroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
+        scroller.setScrollbarFadingEnabled(true);
 
+        // Connect the recycler to the scroller (to let the scroller scroll the list)
+        scroller.setRecyclerView(itemList);
+
+        // Connect the scroller to the recycler (to let the recycler scroll the scroller's handle)
+        itemList.setOnScrollListener(scroller.getOnScrollListener());
         if (adapter != null) {
             if (listerTask == null && lister != null) {
                 isLoading = true;
-                listerTask = (ListerTask) new ListerTask().execute(absoluteCount, pageSize);
+                listerTask = new ListerTask(pageSize);
+                listerTask.execute();
             } else {
                 stopLoading();
                 layoutManager.scrollToPositionWithOffset(pastVisiblesItems, 0);
@@ -254,9 +281,21 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         ButterKnife.unbind(this);
     }
 
-    public class ListerTask extends AsyncTask<Integer, Void, List<I>> {
+    public class ListerTask extends AsyncTask<Void, Void, List<I>> {
 
         private int count = 0;
+        private AsyncTask onElementsLoadedTask;
+        private Object[] LoadedTaskParams;
+
+        public ListerTask(int count) {
+            this.count = count;
+        }
+
+        public ListerTask(int count, AsyncTask onElementsLoadedTask, Object [] LoadedTaskParams) {
+            this.count = count;
+            this.onElementsLoadedTask = onElementsLoadedTask;
+            this.LoadedTaskParams = LoadedTaskParams;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -264,14 +303,14 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
 
         @Override
-        protected List<I> doInBackground(Integer... params) {
-            List<I> items = lister.getItems(params[0], params[1]);
+        protected List<I> doInBackground(Void... params) {
+            List<I> items = lister.getItems(absoluteCount, count);
             if(items.size() == 0) {
                 return items;
             }
             List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
-            while (params[1] > foundItems.size()) {
-                foundItems = lister.getItems(params[0] + items.size(), params[1]);
+            while (count > foundItems.size()) {
+                foundItems = lister.getItems(absoluteCount + items.size(), count);
                 if(foundItems.size() == 0) {
                     break;
                 }
@@ -292,6 +331,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 }
                 absoluteCount = adapter.getAbsoluteItemCount();
                 stopLoading();
+                if(onElementsLoadedTask != null) {
+                    onElementsLoadedTask.execute(LoadedTaskParams);
+                }
+                if(this != listerTask) {
+                    listerTask.execute();
+                }
+                listerTask = null;
             }
         }
     }
@@ -311,11 +357,16 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 adapter.filter(query);
                 filterTask = null;
                 if (lastQuery != null) {
-                    onQueryTextChange(lastQuery);
-                } else {
-                    if (adapter.getItemCount() < pageSize) {
-                        loadElements(pageSize, true);
+                    long current = SystemClock.currentThreadTimeMillis();
+                    if (current - lastFilteringTime < filteringCooldown) {
+                        Handler mainHandler = new Handler(getActivity().getMainLooper());
+                        mainHandler.postDelayed(() -> onQueryTextChange(lastQuery), current - lastFilteringTime);
+                    } else {
+                        lastFilteringTime = current;
+                        onQueryTextChange(lastQuery);
                     }
+                } else if (adapter.getItemCount() < pageSize) {
+                    loadElements(pageSize, true);
                 }
             }
         }
