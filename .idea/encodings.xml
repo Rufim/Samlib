@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
-    <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/activity/AuthorActivity.java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/fragments/AuthorFragment.java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Client/src/main/res/drawable/ic_action_book.png" charset="windows-1251" />
-    <file url="PROJECT" charset="UTF-8" />
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/dialog/DirectoryChoosePreference.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/dialog/DirectoryChooserDialog.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/fragments/WorkFragment.java" charset="UTF-8" />
   </component>
 </project>

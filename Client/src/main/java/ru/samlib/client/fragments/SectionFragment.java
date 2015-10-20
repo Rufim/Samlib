@@ -38,7 +38,6 @@ import ru.samlib.client.util.SystemUtils;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -142,7 +141,7 @@ public class SectionFragment extends ListFragment<Linkable> {
     private class SectionFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public SectionFragmentAdaptor() {
-            super(true, R.layout.author_list_header, R.layout.section_item, R.layout.work_item);
+            super(true, R.layout.header_author_list, R.layout.item_section, R.layout.item_work);
         }
 
         @Override
@@ -172,10 +171,10 @@ public class SectionFragment extends ListFragment<Linkable> {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
-                case R.layout.author_list_header:
+                case R.layout.header_author_list:
                     initHeader(holder);
                     break;
-                case R.layout.section_item:
+                case R.layout.item_section:
                     Category category = (Category) getItem(position);
                     GuiUtils.setText(holder.getView(R.id.section_label), category.getTitle());
                     if (category.getAnnotation() != null) {
@@ -186,7 +185,7 @@ public class SectionFragment extends ListFragment<Linkable> {
                         holder.getView(R.id.section_annotation).setVisibility(View.GONE);
                     }
                     break;
-                case R.layout.work_item:
+                case R.layout.item_work:
                     Linkable linkable = getItem(position);
                     if (linkable.getClass() == Link.class) {
                         GuiUtils.setText(holder.getView(R.id.work_item_title), linkable.getTitle());
@@ -241,7 +240,7 @@ public class SectionFragment extends ListFragment<Linkable> {
                 authorSuggestions.removeAllViews();
                 Stream.of(author.getRecommendations()).forEach(work -> {
                     LinearLayout work_row = (LinearLayout) getLayoutInflater(null)
-                            .inflate(R.layout.work_item, authorSuggestions, false);
+                            .inflate(R.layout.item_work, authorSuggestions, false);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_title), work.getTitle());
                     String rate_and_size = "";
                     if (work.getSize() != null) {
@@ -316,9 +315,9 @@ public class SectionFragment extends ListFragment<Linkable> {
         @Override
         public int getLayoutId(Linkable item) {
             if (item.getClass() == Category.class) {
-                return R.layout.section_item;
+                return R.layout.item_section;
             } else {
-                return R.layout.work_item;
+                return R.layout.item_work;
             }
         }
 

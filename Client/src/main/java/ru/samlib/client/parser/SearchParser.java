@@ -1,6 +1,5 @@
 package ru.samlib.client.parser;
 
-import ru.samlib.client.util.Splitter;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.Valuable;
 import ru.samlib.client.domain.Validatable;
@@ -12,6 +11,7 @@ import ru.samlib.client.lister.ParserPageLister;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.samlib.client.util.TextUtils;
 
 import java.util.List;
 
@@ -91,7 +91,7 @@ public class SearchParser extends PageParser {
                 Elements p = tbodys.get(1).select("p");
                 if (p.size() > 1) {
                     String fullSubtext = p.get(1).text();
-                    work.setDescription(Splitter.extractString(p.html(), true, new Splitter("<br>", "<br>"))[0]);
+                    work.setDescription(TextUtils.Splitter.extractString(p.html(), true, new TextUtils.Splitter("<br>", "<br>"))[0]);
                 }
             }
         }

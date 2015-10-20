@@ -212,6 +212,9 @@ public class AndroidSystemUtils {
         } else if (url.toString().contains(".txt")) {
             // Text file
             intent.setDataAndType(uri, "text/plain");
+        } else if (url.toString().contains(".html")) {
+            // Html file
+            intent.setDataAndType(uri, "text/html");
         } else if (url.toString().contains(".3gp") || url.toString().contains(".mpg") || url.toString().contains(".mpeg") || url.toString().contains(".mpe") || url.toString().contains(".mp4") || url.toString().contains(".avi")) {
             // Video files
             intent.setDataAndType(uri, "video/*");
@@ -226,6 +229,28 @@ public class AndroidSystemUtils {
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
+    }
+
+    public static void shareText(Context context, String title, String subject,  String text, String mime) {
+        Intent share = new Intent(android.content.Intent.ACTION_SEND);
+        share.setType(mime);
+        share.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+        // Add data to the intent, the receiving app will decide
+        // what to do with it.
+        share.putExtra(Intent.EXTRA_SUBJECT, subject);
+        share.putExtra(Intent.EXTRA_TEXT, text);
+
+        context.startActivity(Intent.createChooser(share, title));
+    }
+
+    public static void shareFile(Context context, String title, String subject, String text, String mime, String path) {
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        sendIntent.setType(mime);
+        sendIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + path));
+        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+        context.startActivity(Intent.createChooser(sendIntent, title));
     }
 
     public static boolean currentVersionSupportBigNotification() {

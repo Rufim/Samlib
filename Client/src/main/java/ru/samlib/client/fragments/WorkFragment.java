@@ -2,16 +2,10 @@ package ru.samlib.client.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.PointF;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.PowerManager;
-import android.os.SystemClock;
+import android.os.*;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.method.LinkMovementMethod;
@@ -25,6 +19,7 @@ import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
@@ -35,11 +30,10 @@ import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.TTSService;
-import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.GuiUtils;
-import ru.samlib.client.util.PicassoImageHandler;
-import ru.samlib.client.util.TTSPlayer;
+import ru.samlib.client.util.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -104,15 +98,18 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onPause() {
         super.onPause();
-        screenLock.release();
-    }
-
-    @Override
-    public boolean allowBackPress() {
-        new FragmentBuilder(getFragmentManager())
-                .putArg(Constants.ArgsName.LINK, work.getAuthor().getLink())
-                .replaceFragment(WorkFragment.this, SectionFragment.class);
-        return false;
+        // sanity check for null as this is a public method
+        if (screenLock != null) {
+            Log.v(TAG, "Releasing wakelock");
+            try {
+                screenLock.release();
+            } catch (Throwable th) {
+                // ignoring this exception, probably wakeLock was already released
+            }
+        } else {
+            // should never happen during normal workflow
+            Log.e(TAG, "Wakelock reference is null");
+        }
     }
 
     public List<Integer> search(String query) {
@@ -129,6 +126,16 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.add(0, R.string.work_speaking, Menu.NONE, R.string.work_speaking).setCheckable(true);
+        menu.add(0, R.string.work_to_author, Menu.NONE, R.string.work_to_author);
+        menu.add(0, R.string.work_share, Menu.NONE, R.string.work_share);
+        menu.add(0, R.string.work_open_with, Menu.NONE, R.string.work_open_with);
+        menu.add(0, R.string.work_save, Menu.NONE, R.string.work_save);
+    }
+
+    @Override
     public void onPrepareOptionsMenu(Menu menu) {
         MenuItem searchItem = menu.findItem(R.id.search);
         if (searchItem != null) {
@@ -140,6 +147,56 @@ public class WorkFragment extends ListFragment<String> {
                 return false;
             });
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.string.work_speaking:
+                if(item.isChecked()) {
+                    mode = Mode.NORMAL;
+                    item.setChecked(false);
+                    if (TTSService.isReady(work)) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+                    }
+                    selectText(lastIndent, null);
+
+                } else {
+                    mode = Mode.SPEAK;
+                    item.setChecked(true);
+                }
+                return true;
+            case R.string.work_to_author:
+                new FragmentBuilder(getFragmentManager())
+                        .putArg(Constants.ArgsName.LINK, work.getAuthor().getLink())
+                        .replaceFragment(WorkFragment.this, SectionFragment.class);
+                return true;
+            case R.string.work_share:
+                AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");
+                return true;
+            case R.string.work_save:
+                DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), Environment.getExternalStorageDirectory().getAbsolutePath(), false);
+                chooserDialog.setTitle("Сохранить в...");
+                chooserDialog.setIcon(android.R.drawable.ic_menu_save);
+                chooserDialog.setAllowRootDir(true);
+                chooserDialog.setOnChooseFileListener(chosenFile -> {
+                    try {
+                        SystemUtils.copy(work.getCachedResponse(), new File(chosenFile, work.getTitle() + ".html"));
+                    } catch (IOException e) {
+                        Log.e(TAG, "Unknown exception", e);
+                    }
+                });
+                chooserDialog.show();
+                return true;
+            case R.string.work_open_with:
+                try {
+                    AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
+                } catch (IOException e) {
+                    Log.e(TAG, "Unknown exception", e);
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -229,31 +286,34 @@ public class WorkFragment extends ListFragment<String> {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         if (work == null || !work.getLink().equals(link)) {
             work = new Work(link);
-            TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
-                if (getActivity() != null) {
-                    TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
-                    lastIndent = speakIndex;
-                    TextView textView = getTextViewIndent(speakIndex);
-                    if (textView != null) {
-                        int visibleLines = getVisibleLines(textView);
-                        Layout layout = textView.getLayout();
-                        if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
-                            scrollToIndex(speakIndex, layout.getLineForOffset(phrase.start));
-                        }
-                        selectText(speakIndex, phrase.start, phrase.end);
-                    }
-                }
-            });
-            TTSService.setIndexSpeakFinished(speakIndex -> {
-                selectText(speakIndex, null);
-            });
-            colorFoundedText = getResources().getColor(R.color.red_dark);
-            colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
+            //TODO: enable only if sound option enabled
         } else {
-            EventBus.getDefault().post(new WorkParsedEvent(work));
+            postEvent(new WorkParsedEvent(work));
         }
+        TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
+            if (getActivity() != null && TTSService.isReady(work)) {
+                TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
+                lastIndent = speakIndex;
+                TextView textView = getTextViewIndent(speakIndex);
+                if (textView != null) {
+                    int visibleLines = getVisibleLines(textView);
+                    Layout layout = textView.getLayout();
+                    if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
+                        scrollToIndex(speakIndex, layout.getLineForOffset(phrase.start));
+                    }
+                    selectText(speakIndex, phrase.start, phrase.end);
+                }
+            }
+        });
+        TTSService.setIndexSpeakFinished(speakIndex -> {
+            if (getActivity() != null && TTSService.isReady(work)) {
+                selectText(speakIndex, null);
+            }
+        });
+        colorFoundedText = getResources().getColor(R.color.red_dark);
+        colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
         screenLock = ((PowerManager)getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG");
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -267,8 +327,6 @@ public class WorkFragment extends ListFragment<String> {
         textView.getLocationInWindow(location);
         int height = textView.getHeight();
         int difY = (int) (totalHeight - location[1] - height - lineHeight / 2d);  // + 1 lineHeight to save space
-        Layout layout = textView.getLayout();
-        int scrollY = textView.getScrollY();
         int visibleLines;
         if (difY >= 0) {
             visibleLines = textView.getLineCount();
@@ -325,12 +383,12 @@ public class WorkFragment extends ListFragment<String> {
         private int lastOffset = 0;
 
         public WorkFragmentAdaptor() {
-            super(true, R.layout.work_list_header, R.layout.indent_item);
+            super(true, R.layout.header_work_list, R.layout.item_indent);
         }
 
         @Override
         public int getLayoutId(String item) {
-            return R.layout.indent_item;
+            return R.layout.item_indent;
         }
 
         @Override
@@ -357,11 +415,11 @@ public class WorkFragment extends ListFragment<String> {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
-                case R.layout.work_list_header:
+                case R.layout.header_work_list:
                     HtmlView htmlView = holder.getView(R.id.work_annotation_header);
                     htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
                     break;
-                case R.layout.indent_item:
+                case R.layout.item_indent:
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {

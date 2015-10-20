@@ -33,10 +33,14 @@ public class SectionActivity extends BaseActivity {
 
     private static final String TAG = SectionActivity.class.getSimpleName();
 
+    enum SectionActivityState {
+        INIT, WORK, AUTHOR, COMMENTS, ILLUSTRATIONS
+    }
+
     private ViewGroup drawerHeader;
     private Author author;
     private Work work;
-    private boolean isWork = false;
+    private SectionActivityState state = SectionActivityState.INIT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,13 +88,21 @@ public class SectionActivity extends BaseActivity {
         }
     }
 
+    public SectionActivityState getState() {
+        return state;
+    }
+
+    public void setState(SectionActivityState state) {
+        this.state = state;
+    }
+
     private void initializeAuthor(Author author) {
         this.author = author;
-        isWork = false;
+        setState(SectionActivityState.AUTHOR);
         navigationView.removeHeaderView(drawerHeader);
         navigationView.getMenu().clear();
         actionBar.setTitle(author.getShortName());
-        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.author_bar_header, navigationView, false);
+        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.header_author_bar, navigationView, false);
         ImageView authorAvatar = GuiUtils.getView(drawerHeader, R.id.drawer_author_avatar);
         TextView drawerAuthorTitle = GuiUtils.getView(drawerHeader, R.id.drawer_author_title);
         TextView drawerAuthorAnnotation = GuiUtils.getView(drawerHeader, R.id.drawer_author_annotation);
@@ -112,11 +124,11 @@ public class SectionActivity extends BaseActivity {
 
     private void initializeWork(Work work) {
         this.work = work;
-        isWork = true;
+        setState(SectionActivityState.WORK);
         navigationView.removeHeaderView(drawerHeader);
         navigationView.getMenu().clear();
         actionBar.setTitle(work.getAuthor().getShortName());
-        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.work_bar_header, navigationView, false);
+        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.header_work_bar, navigationView, false);
         TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
         TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
         TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
@@ -149,10 +161,19 @@ public class SectionActivity extends BaseActivity {
 
     @Override
     protected boolean onNavigationItemSelected(MenuItem item) {
-        if (isWork) {
-            postEvent(new ChapterSelectedEvent(work.getChapters().get(item.getOrder())));
-        } else {
-            postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
+        switch (state) {
+            case INIT:
+                break;
+            case WORK:
+                postEvent(new ChapterSelectedEvent(work.getChapters().get(item.getOrder())));
+                break;
+            case AUTHOR:
+                postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
+                break;
+            case COMMENTS:
+                break;
+            case ILLUSTRATIONS:
+                break;
         }
         return false;
     }

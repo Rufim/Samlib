@@ -35,8 +35,7 @@
             android:id="@+id/fast_scroller"
             android:layout_width="16dp"
             android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            />
+            android:layout_alignParentRight="true"/>
 
     <ProgressBar
             android:layout_width="match_parent"

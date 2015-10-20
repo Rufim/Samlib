@@ -28,11 +28,11 @@ public class MainActivity extends BaseActivity {
         if (savedInstanceState != null) {
             Fragment fr = getLastFragment(savedInstanceState);
             if (!navigationView.isShown()) {
-                actionBar.setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
+                setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
             }
         } else {
             replaceFragment(getResString(R.string.drawer_new), NewestFragment.class);
-            actionBar.setTitle(R.string.drawer_new);
+            setTitle(R.string.drawer_new);
         }
     }
 
@@ -66,12 +66,12 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onDrawerClosed(View drawerView) {
-        actionBar.setTitle(title);
+        setTitle(title);
     }
 
     @Override
     protected void onDrawerOpened(View drawerView) {
-        actionBar.setTitle(getTitle());
+        setTitle(getTitle());
     }
 
 

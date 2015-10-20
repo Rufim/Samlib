@@ -1,22 +1,16 @@
 package ru.samlib.client.util;
 
 import android.util.Log;
-import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Entities;
-import org.jsoup.safety.Cleaner;
-import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
-import ru.samlib.client.net.HtmlClient;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -38,10 +32,6 @@ public class ParserUtils {
             Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
     public static final Pattern urlPattern = Pattern.compile(urlRegex,
             Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
-
-    public static String trim(String string) {
-        return string.replaceAll("^\\s+|\\s+$", "");
-    }
 
     public static Date parseData(String text) {
         Calendar calendar = Calendar.getInstance();
@@ -75,11 +65,11 @@ public class ParserUtils {
         if(work == null || work.getAuthor() == null) {
             work = new Work(file.getRequest().getBaseUrl().getPath());
         }
-        String[] parts = Splitter.extractLines(file, true,
-                new Splitter().addEnd("Первый блок ссылок"),
-                new Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
-                new Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
-                new Splitter().addEnd("<!-------.*"));
+        String[] parts = TextUtils.Splitter.extractLines(file, true,
+                new TextUtils.Splitter().addEnd("Первый блок ссылок"),
+                new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
+                new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
+                new TextUtils.Splitter().addEnd("<!-------.*"));
         if(parts.length == 0) {
             return work;
         }
@@ -94,10 +84,10 @@ public class ParserUtils {
             index--;
             work.setHasComments(false);
         }
-        String[] data = Splitter.extractString(lis.get(index++).text(), true,
-                new Splitter("Размещен: ", ","),
-                new Splitter("изменен: ", "\\."),
-                new Splitter(" ", "k"));
+        String[] data = TextUtils.Splitter.extractString(lis.get(index++).text(), true,
+                new TextUtils.Splitter("Размещен: ", ","),
+                new TextUtils.Splitter("изменен: ", "\\."),
+                new TextUtils.Splitter(" ", "k"));
         if(data.length == 3) {
             work.setCreateDate(parseData(data[0]));
             work.setUpdateDate(parseData(data[1]));
@@ -129,32 +119,15 @@ public class ParserUtils {
             work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
         }
         if (parts[3].contains("<!--Section Begins-->")) {
-            work.setRawContent(Splitter.extractLines(file, true,
-                    new Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+            work.setRawContent(TextUtils.Splitter.extractLines(file, true,
+                    new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
         } else {
             work.setRawContent(parts[3]);
         }
+        work.setCachedResponse(file);
         return work;
     }
 
-
-    public static String linkify(String text) {
-        if (!suspiciousPattern.matcher(text).find()) {
-            return text;
-        }
-        Matcher matcher = urlPattern.matcher(text);
-        StringBuffer s = new StringBuffer();
-        while (matcher.find()) {
-            String scheme = matcher.group(1);
-            if (scheme != null && scheme.startsWith("http")) {
-                matcher.appendReplacement(s, "<a href=\"$0\">$0</a>");
-            } else {
-                matcher.appendReplacement(s, "<a href=\"http://$2\">$2</a>");
-            }
-        }
-        matcher.appendTail(s);
-        return s.toString();
-    }
 
     public static String cleanupHtml(Element el) {
         //Cleanup
@@ -177,12 +150,6 @@ public class ParserUtils {
         el.select("input").remove(); // inputs not supported
 
         return el.html().replaceAll("\\s<br>\\s\\n", "").replace("\n", "");
-    }
-
-    public static String cleanHtml(String str) {
-        Document.OutputSettings settings = new Document.OutputSettings();
-        settings.escapeMode(Entities.EscapeMode.xhtml);
-        return Jsoup.clean(str, "", Whitelist.none(), settings);
     }
 
     public static void parseType(Element el, Work work) {

@@ -5,11 +5,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import ru.samlib.client.util.Splitter;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
@@ -52,10 +52,10 @@ public class CategoryParser extends Parser{
             Document headDoc;
             Elements elements;
             CachedResponse rawFile = HtmlClient.executeRequest(request);
-            String[] parts = Splitter.extractLines(rawFile, false,
-                    new Splitter().addEnd("Первый блок ссылок"),
-                    new Splitter("Блок шапки", "Блок управления разделом"),
-                    new Splitter("Блок ссылок на произведения", "Подножие"));
+            String[] parts = TextUtils.Splitter.extractLines(rawFile, false,
+                    new TextUtils.Splitter().addEnd("Первый блок ссылок"),
+                    new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
+                    new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Categury Info
             if (parts.length > 0) {
                 String title = parts[0];
@@ -84,10 +84,10 @@ public class CategoryParser extends Parser{
                     author.setAnnotation(headDoc.select("a[href=./]").text());
                 }
                 if (head.contains("Аннотация")) {
-                    String annotation = Splitter.extractLines(new ByteArrayInputStream(head.getBytes(request.getEncoding())),
+                    String annotation = TextUtils.Splitter.extractLines(new ByteArrayInputStream(head.getBytes(request.getEncoding())),
                             request.getEncoding(),
                             true,
-                            new Splitter("<a href=\\./>", "<ul>"))[0];
+                            new TextUtils.Splitter("<a href=\\./>", "<ul>"))[0];
                     category.setAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(annotation.substring(annotation.indexOf(":") + 1))));
                 }
                 if(hasNotAuthor) {

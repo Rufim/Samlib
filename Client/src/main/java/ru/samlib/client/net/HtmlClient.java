@@ -3,6 +3,7 @@ package ru.samlib.client.net;
 import android.util.Log;
 import ru.samlib.client.SamlibApplication;
 import ru.samlib.client.util.AndroidSystemUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -55,8 +56,11 @@ public class HtmlClient {
             if (request.isWithParams()) {
                 hash = "." + Integer.toHexString(request.hashCode());
             }
-            if (!fileName.endsWith(".shtml") || !fileName.endsWith(".html")) {
-                fileName += hash + ".shtml";
+            if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm")) {
+                fileName += hash + ".html";
+            }
+            if(fileName.endsWith(".shtml")) {
+                fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
             }
             CachedResponse cachedResponse = new CachedResponse(cacheDir, fileName, request);
             htmlfiles.put(request.hashCode(), cachedResponse);

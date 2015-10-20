@@ -5,11 +5,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import ru.samlib.client.util.Splitter;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.util.ParserUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
@@ -50,10 +50,10 @@ public class AuthorParser extends Parser {
             if (rawFile.isDownloadOver) {
                 author.setParsed(true);
             }
-            String[] parts = Splitter.extractLines(rawFile, false,
-                    new Splitter().addEnd("Первый блок ссылок"),
-                    new Splitter("Блок шапки", "Блок управления разделом"),
-                    new Splitter("Блок ссылок на произведения", "Подножие"));
+            String[] parts = TextUtils.Splitter.extractLines(rawFile, false,
+                    new TextUtils.Splitter().addEnd("Первый блок ссылок"),
+                    new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
+                    new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Author Info
             if(parts.length > 0) {
                 String title = parts[0];
@@ -80,19 +80,19 @@ public class AuthorParser extends Parser {
                 author.setHasAbout(head.contains("href=about.shtml"));
                 if (head.contains("Об авторе")) {
                     author.setAbout(
-                            Jsoup.parseBodyFragment(Splitter
+                            Jsoup.parseBodyFragment(TextUtils.Splitter
                                     .extractLines(new ByteArrayInputStream(head.getBytes(request.getEncoding())),
                                             request.getEncoding(),
                                             true,
-                                            new Splitter("Об авторе", "(Аннотация к разделу)|(Начните знакомство с)"))[0]).text());
+                                            new TextUtils.Splitter("Об авторе", "(Аннотация к разделу)|(Начните знакомство с)"))[0]).text());
                 }
                 if (head.contains("Аннотация к разделу")) {
-                    author.setSectionAnnotation(Splitter.extractString(headDoc.text(),
+                    author.setSectionAnnotation(TextUtils.Splitter.extractString(headDoc.text(),
                             true,
-                            new Splitter().addStart("Аннотация к разделу: "))[0]);
+                            new TextUtils.Splitter().addStart("Аннотация к разделу: "))[0]);
                 }
                 if (head.contains("Начните знакомство с")) {
-                    String[] rec = Splitter.extractString(head, true, new Splitter("<b>Начните знакомство с</b>:", "\\n"));
+                    String[] rec = TextUtils.Splitter.extractString(head, true, new TextUtils.Splitter("<b>Начните знакомство с</b>:", "\\n"));
                     Document recDoc = Jsoup.parseBodyFragment(rec[0]);
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);

@@ -1,21 +1,14 @@
 package ru.samlib.client.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.SearchView;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.parser.NewestParser;
 
-import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -46,7 +39,7 @@ public class NewestFragment extends ListFragment {
         private final Locale currentLocale = getResources().getConfiguration().locale;
 
         public NewestArrayAdapter() {
-            super(R.layout.newest_item);
+            super(R.layout.item_newest);
         }
 
         @Override
@@ -55,13 +48,15 @@ public class NewestFragment extends ListFragment {
             String link = null;
             switch (id) {
                 case R.id.newest_item_work:
+                case R.id.newest_item_work_layout:
                     link = getItems().get(position).getFullLink();
                     break;
                 case R.id.newest_item_author:
+                case R.id.newest_item_author_layout:
                     link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
                     break;
             }
-            if(link != null) {
+            if (link != null) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(link));
                 startActivity(i);

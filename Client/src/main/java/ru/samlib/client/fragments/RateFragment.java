@@ -10,7 +10,6 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.parser.RateParser;
-import ru.samlib.client.util.FragmentBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,7 @@ public class RateFragment extends ListFragment {
 
 
         public RateArrayAdapter(Context context, List<Work> items) {
-            super(R.layout.rate_item);
+            super(R.layout.item_rate);
         }
 
         @Override

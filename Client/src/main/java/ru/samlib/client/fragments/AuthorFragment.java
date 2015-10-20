@@ -51,7 +51,7 @@ public class AuthorFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.author_list_header, container, false);
+        View rootView = inflater.inflate(R.layout.header_author_list, container, false);
         Author newAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
         ButterKnife.bind(this, rootView);
         if (author == null || !author.equals(newAuthor)) {
@@ -62,7 +62,7 @@ public class AuthorFragment extends BaseFragment {
                 authorSuggestionLayout.setVisibility(View.VISIBLE);
                 Stream.of(author.getRecommendations()).forEach(work -> {
                     LinearLayout work_row = (LinearLayout) inflater
-                            .inflate(R.layout.work_item, authorSuggestions, false);
+                            .inflate(R.layout.item_work, authorSuggestions, false);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_title), work.getTitle());
                     String rate_and_size = "";
                     if (work.getSize() != null) {

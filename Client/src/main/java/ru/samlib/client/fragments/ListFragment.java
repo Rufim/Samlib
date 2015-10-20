@@ -1,9 +1,7 @@
 package ru.samlib.client.fragments;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.SystemClock;
+import android.graphics.Color;
+import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
@@ -16,6 +14,7 @@ import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.lister.Lister;
+import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import java.util.List;
@@ -253,14 +252,20 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 }
             }
         });
-        scroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
-        scroller.setScrollbarFadingEnabled(true);
-
-        // Connect the recycler to the scroller (to let the scroller scroll the list)
-        scroller.setRecyclerView(itemList);
-
-        // Connect the scroller to the recycler (to let the recycler scroll the scroller's handle)
-        itemList.setOnScrollListener(scroller.getOnScrollListener());
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            scroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
+            scroller.setRecyclerView(itemList);
+            GuiUtils.fadeOut(scroller, 0, 100);
+            itemList.addOnScrollListener(scroller.getOnScrollListener());
+            itemList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    GuiUtils.fadeIn(scroller, 0, 100);
+                    GuiUtils.fadeOut(scroller, 2000, 1000);
+                }
+            });
+        }
         if (adapter != null) {
             if (listerTask == null && lister != null) {
                 isLoading = true;

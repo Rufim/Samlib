@@ -79,8 +79,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
 
     private List<Phrase> splitByPhrases(String indent, int offset) {
         String clearIndent = new HtmlSpanner().fromHtml(indent).toString();
-        List<String> rawPhrases = Splitter.split(clearIndent.substring(offset), "[.!?]++",
-                Splitter.DelimiterMode.TO_END);
+        List<String> rawPhrases = TextUtils.Splitter.split(clearIndent.substring(offset), "[.!?]++",
+                TextUtils.Splitter.DelimiterMode.TO_END);
         List<Phrase> phrases = new ArrayList<>(rawPhrases.size());
         for (int i = 0; i < rawPhrases.size(); i++) {
             String phrase = rawPhrases.get(i);

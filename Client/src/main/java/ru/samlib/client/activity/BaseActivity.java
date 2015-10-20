@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -23,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -33,6 +35,7 @@ import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
+import ru.samlib.client.util.GuiUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 /**
@@ -65,6 +68,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+        toolbar.setTitle("");
         actionBar = getSupportActionBar();
         navigationView.setNavigationItemSelectedListener(menuItem -> {
             Snackbar.make(container, menuItem.getTitle() + " pressed", Snackbar.LENGTH_LONG).show();
@@ -200,6 +204,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(title);
+    }
+
     protected void postEvent(Event event) {
         EventBus.getDefault().post(event);
     }
@@ -219,4 +228,16 @@ public abstract class BaseActivity extends AppCompatActivity {
         return null;
     }
 
+    public NavigationView getNavigationView() {
+        return navigationView;
+    }
+
+    public Toolbar getToolbar() {
+        return toolbar;
+    }
+
+    @Nullable
+    public ActionBar getCurrentActionBar() {
+        return actionBar;
+    }
 }

@@ -8,6 +8,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.lister.Lister;
 import ru.samlib.client.util.ParserUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class NewestParser extends Parser implements Lister<Work> {
                         String text = rowItems.get(j).text();
                         switch (j) {
                             case 0:
-                                work.setTitle(ParserUtils.trim(text.substring(1, text.lastIndexOf("\"")).replace("\n", "")));
+                                work.setTitle(TextUtils.trim(text.substring(1, text.lastIndexOf("\"")).replace("\n", "")));
                                 Element info = rowItems.select("small").first();
                                 String workSize = info.select("b").first().ownText();
                                 work.setSize(Integer.parseInt(workSize.substring(0, workSize.lastIndexOf("k"))));

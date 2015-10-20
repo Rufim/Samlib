@@ -18,7 +18,10 @@ import android.text.style.BackgroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -449,6 +452,29 @@ public class GuiUtils {
         return size;
     }
 
+    public static void fadeOut(View view, int delay, int duration) {
+        Animation fadeOut = new AlphaAnimation(1, 0);
+        fadeOut.setInterpolator(new AccelerateInterpolator()); //and this
+        fadeOut.setStartOffset(delay);
+        fadeOut.setDuration(duration);
+        view.setAnimation(fadeOut);
+        view.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                view.setVisibility(View.INVISIBLE);
+            }
+        }, delay);
+    }
+
+    public static void fadeIn(View view, int delay, int duration) {
+        Animation fadeIn = new AlphaAnimation(0, 1);
+        fadeIn.setInterpolator(new DecelerateInterpolator()); //add this
+        fadeIn.setStartOffset(delay);
+        fadeIn.setDuration(duration);
+        view.setAnimation(fadeIn);
+        view.setVisibility(View.VISIBLE);
+    }
+
     public static int animatedHide(View view, boolean vertical) {
         Animation animation;
         int size = 0;
@@ -619,13 +645,17 @@ public class GuiUtils {
     }
 
     public static void runInUI(final Context context, final RunUIThread uiThread, final Object... var) {
-        Handler mainHandler = new Handler(context.getMainLooper());
-        Runnable myRunnable = new Runnable() {
-            @Override
-            public void run() {
-                uiThread.run(var);
-            }
-        };
-        mainHandler.postAtFrontOfQueue(myRunnable);
+        if(context != null ) {
+            Handler mainHandler = new Handler(context.getMainLooper());
+            Runnable myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    uiThread.run(var);
+                }
+            };
+            mainHandler.postAtFrontOfQueue(myRunnable);
+        } else {
+            Log.e(TAG, "Context is Null in method: runInUI");
+        }
     }
 }

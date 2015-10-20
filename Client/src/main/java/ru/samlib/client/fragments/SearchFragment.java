@@ -1,6 +1,5 @@
 package ru.samlib.client.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,10 +13,8 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
-import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.GoogleSearchClient;
-import ru.samlib.client.parser.SearchParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +46,7 @@ public class SearchFragment extends ListFragment {
 
 
         public SearchArrayAdapter() {
-            super(R.layout.search_item);
+            super(R.layout.item_search);
             setLister(new GoogleSearchClient(getArguments().getString(ARG_SEARCH_QUERY)));
         }
 

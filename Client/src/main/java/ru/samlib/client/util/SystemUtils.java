@@ -71,6 +71,21 @@ public class SystemUtils {
         }
     }
 
+    public static void copy(File src, File dst) throws IOException {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(src);
+            out = new FileOutputStream(dst);
+            copy(in, out);
+        } catch (IOException ex) {
+            throw ex;
+        } finally {
+            close(in);
+            close(out);
+        }
+    }
+
     public static byte[] toByteArray(InputStream input) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         copy(input, output);

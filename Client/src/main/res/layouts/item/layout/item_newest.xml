@@ -12,8 +12,10 @@
                   android:background="@android:drawable/list_selector_background"
                   android:weightSum="1">
         <LinearLayout android:orientation="vertical"
+                      android:background="@drawable/clickable"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
+                      android:id="@+id/newest_item_work_layout"
                       android:width="0dp"
                       android:layout_weight="1"
                       android:gravity="center_vertical"
@@ -44,15 +46,22 @@
                     />
         </LinearLayout>
         <View style="@style/vertical_border"/>
-        <TextView
-                android:layout_width="@dimen/newest_author_width"
-                android:layout_height="wrap_content"
-                android:id="@+id/newest_item_author"
-                android:layout_weight="1"
-                android:text="Сорокин В.А."
-                android:textSize="@dimen/text_medium"
-                android:gravity="center"
-                style="@style/item_text"/>
+        <LinearLayout android:orientation="horizontal"
+                      android:background="@android:drawable/list_selector_background"
+                      android:layout_width="wrap_content"
+                      android:layout_weight="1"
+                      android:gravity="center"
+                      android:layout_height="fill_parent"
+                      android:id="@+id/newest_item_author_layout">
+            <TextView
+                    android:layout_width="@dimen/newest_author_width"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/newest_item_author"
+                    android:text="Сорокин В.А."
+                    android:textSize="@dimen/text_medium"
+                    android:gravity="center"
+                    style="@style/item_text"/>
+        </LinearLayout>
         <View style="@style/vertical_border"/>
         <TextView
                 android:layout_width="@dimen/newest_date_width"

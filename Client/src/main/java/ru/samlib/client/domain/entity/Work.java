@@ -6,20 +6,17 @@ import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.util.ParserUtils;
-import ru.samlib.client.util.Splitter;
+import ru.samlib.client.net.CachedResponse;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -61,6 +58,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private boolean parsed = false;
     private String rawContent = "";
     private List<String> indents = new ArrayList<>();
+    private CachedResponse cachedResponse;
     private transient Elements rootElements;
     private transient List<Chapter> chapters = new ArrayList<>();
 
@@ -97,9 +95,9 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
             }
         }
         for (int i = 0; i < indents.size(); i++) {
-            String text = ParserUtils.cleanHtml(indents.get(i));
+            String text = ru.samlib.client.util.TextUtils.cleanHtml(indents.get(i));
             if (rootElements.size() > i) {
-                if (pattern.matcher(ParserUtils.trim(text)).find()) {
+                if (pattern.matcher(ru.samlib.client.util.TextUtils.trim(text)).find()) {
                     Chapter newChapter = new Chapter(text);
                     chapters.add(currentChapter);
                     newChapter.setPercent(((float) i) / rootElements.size());

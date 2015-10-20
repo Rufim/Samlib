@@ -269,6 +269,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         private static final String TAG = ViewHolder.class.getSimpleName();
 
         protected HashMap<Integer, View> views;
+        protected View rootView;
 
         /**
          * Constructor
@@ -282,6 +283,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
         private void cacheViews(View itemView) {
             List<View> views = getViews(itemView);
+            rootView = itemView;
             this.views = new HashMap<>(views.size());
             for (View view : views) {
                 this.views.put(view.getId(), view);
@@ -296,12 +298,18 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
         protected ViewHolder bindViews(ItemListAdapter adapter) {
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
-                View view = viewEntry.getValue();
-                view.setOnClickListener(adapter);
-                view.setOnLongClickListener(adapter);
-                view.setTag(ViewHolder.this);
+                if(viewEntry != rootView) {
+                    View view = viewEntry.getValue();
+                    view.setOnClickListener(adapter);
+                    view.setOnLongClickListener(adapter);
+                    view.setTag(ViewHolder.this);
+                }
             }
             return this;
+        }
+
+        public View getRootView() {
+            return rootView;
         }
 
         public <V extends View> V getView(int id) {
