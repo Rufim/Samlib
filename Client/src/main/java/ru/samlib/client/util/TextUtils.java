@@ -3,16 +3,10 @@ package ru.samlib.client.util;
 import android.annotation.SuppressLint;
 import android.util.Log;
 import org.intellij.lang.annotations.RegExp;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Entities;
-import org.jsoup.safety.Whitelist;
 import ru.samlib.client.net.CachedResponse;
 
 import java.io.*;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Queue;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,32 +15,95 @@ import java.util.regex.Pattern;
  */
 public class TextUtils {
 
+    // utl fll template: ((https?|ftp)\:\/\/)?([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?([a-z0-9-.]*)\.([a-z]{2,5})(\:[0-9]{2,5})?(\/([a-z0-9+\$_-]\.?)+)*\/?(\?[a-z+&\$_.-][a-z0-9;:@&%=+\/\$_.-]*)?(#[a-z_.-][a-z0-9+\$_.-]*)?
+
+    public static final String URL_REGEX
+            = "((https?|ftp)\\:\\/\\/)?" // SCHEME
+            + "([a-z0-9+!*(),;?&=\\$_.-]+(\\:[a-z0-9+!*(),;?&=\\$_.-]+)?@)?" // User and Pass
+            + "([a-z0-9-.]*)\\.([a-z]{2,5})" // Host or IP
+            + "(\\:[0-9]{2,5})?" // Port
+            + "(\\/([a-z0-9+\\$_-]\\.?)+)*\\/?" // Path
+            + "(\\?[a-z+&\\$_.-][a-z0-9;:@&%=+\\/\\$_.-]*)?" // GET Query
+            + "(#[a-z_.-][a-z0-9+\\$_.-]*)?"; // Anchor
+    public static final String SUSPICIOUS_BY_LINK = "\\w+\\.\\w+";
+    public static final String OUTSIDE_TAGS = "(?![^<\"]*(>|\")|[^<>]*(<|\")\\/)";
+    public static final Pattern suspiciousPattern = Pattern.compile(SUSPICIOUS_BY_LINK,
+            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
+    public static final Pattern urlPattern = Pattern.compile(URL_REGEX,
+            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
+
     public static String trim(String string) {
         return string.replaceAll("^\\s+|\\s+$", "");
     }
 
+    public static boolean isLink(String text, String scheme, String userAndPass, String hostOrIp, String path, String query, String anchor) {
+        return isLink(text, scheme, userAndPass, hostOrIp, path, query, anchor, null);
+    }
+
+    public static boolean isLink(String text, String hostOrIp, String path) {
+        return isLink(text, null, null, hostOrIp, path, null, null, null);
+    }
+
+    public static boolean isLink(String ... conditions) {
+        String text = conditions[0];
+        if(text == null) {
+            return false;
+        }
+        Matcher matcher = urlPattern.matcher(text);
+        boolean result = matcher.find();
+        if(!result) return false;
+        for (int i = 1; i < conditions.length; i++) {
+            if(conditions[i] == null) {
+                continue;
+            }
+            String group = matcher.group(i);
+            if(group == null && !group.equals(conditions[i])) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
     public static String linkify(String text) {
-        if (!ParserUtils.suspiciousPattern.matcher(text).find()) {
+        if (!suspiciousPattern.matcher(text).find()) {
             return text;
         }
-        Matcher matcher = ParserUtils.urlPattern.matcher(text);
+        Matcher matcher = urlPattern.matcher(text);
         StringBuffer s = new StringBuffer();
         while (matcher.find()) {
-            String scheme = matcher.group(1);
-            if (scheme != null && scheme.startsWith("http")) {
+            String scheme = matcher.group(2);
+            if (scheme != null) {
                 matcher.appendReplacement(s, "<a href=\"$0\">$0</a>");
             } else {
-                matcher.appendReplacement(s, "<a href=\"http://$2\">$2</a>");
+                matcher.appendReplacement(s, "<a href=\"http://$0\">$0</a>");
             }
         }
         matcher.appendTail(s);
         return s.toString();
     }
 
-    public static String cleanHtml(String str) {
-        Document.OutputSettings settings = new Document.OutputSettings();
-        settings.escapeMode(Entities.EscapeMode.xhtml);
-        return Jsoup.clean(str, "", Whitelist.none(), settings);
+    public static String linkifyHtml(String text) {
+        if (!suspiciousPattern.matcher(text).find()) {
+            return text;
+        }
+        Pattern pattern = Pattern.compile("(" + URL_REGEX + ")" + OUTSIDE_TAGS);
+        Matcher matcher = pattern.matcher(text);
+        StringBuffer s = new StringBuffer();
+        while (matcher.find()) {
+            String scheme = matcher.group(2);
+            if (scheme != null) {
+                matcher.appendReplacement(s, "<a href=\"$0\">$0</a>");
+            } else {
+                matcher.appendReplacement(s, "<a href=\"http://$0\">$0</a>");
+            }
+        }
+        matcher.appendTail(s);
+        return s.toString();
+    }
+
+    public static String replaceOutsideTags(String text, String template, String replacement) {
+        return text.replaceAll("(" + template + ")" + OUTSIDE_TAGS, replacement);
     }
 
     public static boolean contains(String str, boolean in, String... strs) {
@@ -58,6 +115,41 @@ public class TextUtils {
             }
         }
         return false;
+    }
+
+    public static List<Piece> searchAll(String source, @RegExp String template) {
+        List<Piece> pieces = new ArrayList<>();
+        Pattern pattern = Pattern.compile(template);
+        Matcher matcher = pattern.matcher(source);
+        while (matcher.find()) {
+            pieces.add(new Piece(source, matcher));
+        }
+        return pieces;
+    }
+
+    public static class Piece {
+        public String text;
+        public int start;
+        public int end;
+
+        public Piece(){}
+
+        public Piece(String source, Matcher matcher) {
+            this.start = matcher.start();
+            this.end = matcher.end();
+            this.text = source.substring(start, end);
+        }
+        
+        public Piece(String text, int start, int end) {
+            this.text = text;
+            this.start = start;
+            this.end = end;
+        }
+
+        public Piece(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
     }
 
     /**

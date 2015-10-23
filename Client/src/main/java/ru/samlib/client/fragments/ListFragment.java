@@ -1,12 +1,10 @@
 package ru.samlib.client.fragments;
 
-import android.graphics.Color;
 import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
 import android.view.*;
-import android.view.animation.PathInterpolator;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.Bind;
@@ -24,6 +22,8 @@ import java.util.List;
  */
 public abstract class ListFragment<I> extends BaseFragment implements SearchView.OnQueryTextListener {
 
+    private static final String TAG = ListFragment.class.getSimpleName();
+
     private final int filteringCooldown = 300;
 
     @Bind(R.id.load_progress)
@@ -36,6 +36,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected RecyclerView itemList;
     @Bind(R.id.refresh)
     protected SwipeRefreshLayout swipeRefresh;
+
+    protected SearchView searchView;
     protected ItemListAdapter<I> adapter;
     protected LinearLayoutManager layoutManager;
     protected VerticalRecyclerViewFastScroller scroller;
@@ -61,7 +63,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     public ListFragment(Lister<I> lister) {
         this.lister = lister;
     }
-    
+
     public void setLister(Lister<I> lister) {
         this.lister = lister;
     }
@@ -71,7 +73,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     }
 
     public boolean restoreLister() {
-        if(savedLister != null) {
+        if (savedLister != null) {
             lister = savedLister;
             refreshData(true);
             savedLister = null;
@@ -83,12 +85,17 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public boolean onQueryTextChange(String query) {
+        if (query.isEmpty() && !searchView.isIconified() && searchView.hasFocus()) {
+            searchView.clearFocus();
+            ;
+            onSearchViewClose(searchView);
+        }
         return enableFiltering;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if(enableFiltering) {
+        if (enableFiltering) {
             adapter.enterFilteringMode();
             if (filterTask == null) {
                 lastQuery = null;
@@ -103,22 +110,34 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        if(enableFiltering) {
-            MenuItem searchItem = menu.findItem(R.id.search);
-            if (searchItem != null) {
-                final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-                searchView.setOnQueryTextListener(this);
-                searchView.setQueryHint(getString(R.string.filter_hint));
+    protected void onSearchViewClose(SearchView searchView) {
+        if (searchView != null) {
+            if (enableFiltering) {
                 searchView.setOnCloseListener(() -> {
                     lastQuery = null;
                     adapter.exitFilteringMode();
                     return false;
                 });
-                searchView.setSuggestionsAdapter(null);
             }
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem searchItem = menu.findItem(R.id.search);
+        if (searchItem != null) {
+            searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            if (enableFiltering) {
+                searchView.setQueryHint(getString(R.string.filter_hint));
+                searchView.setSuggestionsAdapter(null);
+            }
+            searchView.setOnQueryTextListener(this);
+            searchView.setOnCloseListener(() -> {
+                onSearchViewClose(searchView);
+                return false;
+            });
+        }
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -145,16 +164,16 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         swipeRefresh.setRefreshing(false);
     }
 
-    protected void loadElements(int count, boolean showProgress, AsyncTask onElementsLoadedTask, Object ... params) {
+    protected void loadElements(int count, boolean showProgress, AsyncTask onElementsLoadedTask, Object... params) {
         if (isLoading || isEnd) {
             return;
         }
-        if(showProgress) {
+        if (showProgress) {
             startLoading();
         }
-        if(lister != null) {
+        if (lister != null) {
             ListerTask listerTask = new ListerTask(count, onElementsLoadedTask, params);
-            if(this.listerTask == null) {
+            if (this.listerTask == null) {
                 listerTask.execute();
             }
             this.listerTask = listerTask;
@@ -167,12 +186,19 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     protected abstract ItemListAdapter<I> getAdapter();
 
-    public void refreshData(boolean showProgress){
+
+    protected void clearData() {
         absoluteCount = 0;
         pastVisiblesItems = 0;
         isEnd = false;
-        adapter.getItems().clear();
-        adapter.notifyDataSetChanged();
+        if(adapter != null) {
+            adapter.getItems().clear();
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    public void refreshData(boolean showProgress) {
+        clearData();
         loadElements(pageSize, showProgress);
     }
 
@@ -188,7 +214,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     }
 
     protected View findOneVisibleChild(int fromIndex, int toIndex, boolean completelyVisible,
-                             boolean acceptPartiallyVisible) {
+                                       boolean acceptPartiallyVisible) {
         OrientationHelper helper;
         if (layoutManager.canScrollVertically()) {
             helper = OrientationHelper.createVerticalHelper(layoutManager);
@@ -226,7 +252,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 false);
         ButterKnife.bind(this, rootView);
         swipeRefresh.setOnRefreshListener(() -> {
-            if(!isLoading) {
+            if (!isLoading) {
                 refreshData(false);
             }
         });
@@ -267,8 +293,11 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             });
         }
         if (adapter != null) {
-            if (listerTask == null && lister != null) {
+            if (lister != null) {
                 isLoading = true;
+                if (listerTask != null) {
+                    listerTask.cancel(true);
+                }
                 listerTask = new ListerTask(pageSize);
                 listerTask.execute();
             } else {
@@ -296,7 +325,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             this.count = count;
         }
 
-        public ListerTask(int count, AsyncTask onElementsLoadedTask, Object [] LoadedTaskParams) {
+        public ListerTask(int count, AsyncTask onElementsLoadedTask, Object[] LoadedTaskParams) {
             this.count = count;
             this.onElementsLoadedTask = onElementsLoadedTask;
             this.LoadedTaskParams = LoadedTaskParams;
@@ -310,13 +339,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         @Override
         protected List<I> doInBackground(Void... params) {
             List<I> items = lister.getItems(absoluteCount, count);
-            if(items.size() == 0) {
+            if (items.size() == 0) {
                 return items;
             }
             List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
             while (count > foundItems.size()) {
                 foundItems = lister.getItems(absoluteCount + items.size(), count);
-                if(foundItems.size() == 0) {
+                if (foundItems.size() == 0) {
                     break;
                 }
                 items.addAll(foundItems);
@@ -328,7 +357,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         @Override
         protected void onPostExecute(List<I> result) {
             super.onPostExecute(result);
-            if(itemList != null) {
+            if (itemList != null) {
                 if (result.size() == 0) {
                     isEnd = true;
                 } else {
@@ -336,10 +365,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 }
                 absoluteCount = adapter.getAbsoluteItemCount();
                 stopLoading();
-                if(onElementsLoadedTask != null) {
+                if (onElementsLoadedTask != null) {
                     onElementsLoadedTask.execute(LoadedTaskParams);
                 }
-                if(this != listerTask) {
+                if (this != listerTask) {
                     listerTask.execute();
                 }
                 listerTask = null;
@@ -357,7 +386,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         @Override
         public void run() {
-            if(itemList != null) {
+            if (itemList != null) {
                 itemList.scrollToPosition(adapter.getItemCount() - adapter.getItems().size());
                 adapter.filter(query);
                 filterTask = null;

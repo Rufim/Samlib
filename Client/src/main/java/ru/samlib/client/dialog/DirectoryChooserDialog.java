@@ -203,7 +203,7 @@ public class DirectoryChooserDialog extends AlertDialog {
             }
         });
         changePath();
-        super.setView(contentView, 0, 0, 0, 0);
+        super.setView(contentView, 0, 10, 0, 0);
         super.show();
         checkPath(currentDir.getAbsolutePath());
         Button neutralButton = getButton(BUTTON_NEUTRAL);

@@ -6,9 +6,11 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.View;
 import com.google.gson.internal.Primitives;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.fragments.ErrorFragment;
 
 import java.io.Serializable;
@@ -20,6 +22,8 @@ import java.util.*;
 public class FragmentBuilder {
 
     private static final String TAG = FragmentBuilder.class.getSimpleName();
+
+    private static final int VIEW_ID_TAG = 101;
 
     public enum ClassType {
 
@@ -45,7 +49,7 @@ public class FragmentBuilder {
 
         private ClassType(Class<?> Clazz) {
             this.clazz = Clazz;
-            if(Primitives.isWrapperType(Clazz)) {
+            if (Primitives.isWrapperType(Clazz)) {
                 this.primitive = Primitives.unwrap(Clazz);
             }
         }
@@ -53,13 +57,13 @@ public class FragmentBuilder {
         public static ClassType cast(Class<?> cl) {
             if (null == cl) cl = Void.class;
             for (ClassType type : values()) {
-                if(Primitives.isPrimitive(cl) && type.primitive == cl) {
+                if (Primitives.isPrimitive(cl) && type.primitive == cl) {
                     return type;
                 } else if (type.clazz == cl) {
                     return type;
                 } else {
                     for (Class<?> intClass : cl.getInterfaces()) {
-                        if(type.clazz == intClass) {
+                        if (type.clazz == intClass) {
                             return type;
                         }
                     }
@@ -80,6 +84,8 @@ public class FragmentBuilder {
     private Bundle bundle = new Bundle();
     private Map<String, Object> args = new HashMap<>();
     private boolean toBackStack = false;
+    private boolean toBackStackIfNotFirst = true;
+    private boolean newFragment = true;
 
     public FragmentBuilder(FragmentManager manager) {
         this.manager = manager;
@@ -112,11 +118,11 @@ public class FragmentBuilder {
             arrayFlag = true;
             type = ClassType.cast(value.getClass().getComponentType());
         }
-        if(type == ClassType.ARRAYLIST) {
+        if (type == ClassType.ARRAYLIST) {
             listFlag = true;
             ArrayList list = (ArrayList) value;
             type = ClassType.cast(list.toArray().getClass().getComponentType());
-            if(type != ClassType.STRING || type != ClassType.CHARSEQUENCE) {
+            if (type != ClassType.STRING || type != ClassType.CHARSEQUENCE) {
                 type = ClassType.UNSUPPORTED;
             }
         }
@@ -126,8 +132,8 @@ public class FragmentBuilder {
                 bundle.putParcelable(key, (Parcelable) value);
                 return this;
             case CHARSEQUENCE:
-                if(arrayFlag) bundle.putCharSequenceArray(key, (CharSequence[]) value);
-                else if(listFlag) bundle.putCharSequenceArrayList(key, (ArrayList<CharSequence>) value);
+                if (arrayFlag) bundle.putCharSequenceArray(key, (CharSequence[]) value);
+                else if (listFlag) bundle.putCharSequenceArrayList(key, (ArrayList<CharSequence>) value);
                 else bundle.putCharSequence(key, (CharSequence) value);
                 return this;
             case BUNDLE:
@@ -140,39 +146,39 @@ public class FragmentBuilder {
                 else bundle.putString(key, (String) value);
                 return this;
             case CHAR:
-                if(arrayFlag) bundle.putCharArray(key, (char[]) value);
+                if (arrayFlag) bundle.putCharArray(key, (char[]) value);
                 else bundle.putChar(key, (char) value);
                 return this;
             case BYTE:
-                if(arrayFlag) bundle.putByteArray(key, (byte[]) value);
+                if (arrayFlag) bundle.putByteArray(key, (byte[]) value);
                 else bundle.putByte(key, (byte) value);
                 return this;
             case BOOLEAN:
-                if(arrayFlag) bundle.putBooleanArray(key, (boolean[]) value);
+                if (arrayFlag) bundle.putBooleanArray(key, (boolean[]) value);
                 else bundle.putBoolean(key, (boolean) value);
                 return this;
             case SHORT:
-                if(arrayFlag) bundle.putShortArray(key, (short[]) value);
+                if (arrayFlag) bundle.putShortArray(key, (short[]) value);
                 else bundle.putShort(key, (short) value);
                 return this;
             case INTEGER:
-                if(arrayFlag) bundle.putIntArray(key, (int[]) value);
+                if (arrayFlag) bundle.putIntArray(key, (int[]) value);
                 else bundle.putInt(key, (int) value);
                 return this;
             case LONG:
-                if(arrayFlag) bundle.putLongArray(key, (long[]) value);
+                if (arrayFlag) bundle.putLongArray(key, (long[]) value);
                 else bundle.putLong(key, (long) value);
                 return this;
             case FLOAT:
-                if(arrayFlag) bundle.putFloatArray(key, (float[]) value);
+                if (arrayFlag) bundle.putFloatArray(key, (float[]) value);
                 else bundle.putFloat(key, (float) value);
                 return this;
             case DOUBLE:
-                if(arrayFlag) bundle.putDoubleArray(key, (double[]) value);
+                if (arrayFlag) bundle.putDoubleArray(key, (double[]) value);
                 else bundle.putDouble(key, (double) value);
                 return this;
         }
-        if(baseType == ClassType.SERIALIZABLE) {
+        if (baseType == ClassType.SERIALIZABLE) {
             bundle.putSerializable(key, (Serializable) value);
         } else {
             throw new IllegalArgumentException("Unsupported type " + value.getClass().getSimpleName());
@@ -191,30 +197,56 @@ public class FragmentBuilder {
     }
 
     public FragmentBuilder addToBackStack() {
-        toBackStack = true;
+        this.toBackStack = true;
         return this;
     }
 
-    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
-        Fragment fr = manager.findFragmentByTag(fragmentClass.getSimpleName());
+    public FragmentBuilder addToBackStackIfNotFirst() {
+        this.toBackStackIfNotFirst = true;
+        return this;
+    }
+
+    public FragmentBuilder useOldFragment() {
+        this.newFragment = false;
+        return this;
+    }
+
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass, String tag) {
+        Fragment fr = manager.findFragmentByTag(tag);
         FragmentTransaction transaction = manager.beginTransaction();
-        if (fr == null) {
+        boolean first = false;
+        if (fr == null || newFragment) {
+            if (fr == null) first = true;
             fr = newFragment(fragmentClass);
-            transaction.replace(container, fr, fragmentClass.getSimpleName());
+            transaction.replace(container, fr, tag);
         } else {
             fr.getArguments().putAll(bundle);
-            transaction.replace(container, fr);
+            if (manager.findFragmentById(container) != fr) {
+                transaction.replace(container, fr);
+            } else {
+                transaction.remove(fr);
+                transaction.add(container, fr, tag);
+            }
         }
-        if(toBackStack) transaction.addToBackStack(fragmentClass.getSimpleName());
+        if (toBackStack || (toBackStackIfNotFirst && !first)) {
+            transaction.addToBackStack(null);
+        }
         transaction.commitAllowingStateLoss();
         return (F) fr;
+    }
+
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
+        String tag = fragmentClass.getSimpleName();
+        return replaceFragment(container, fragmentClass, tag);
     }
 
     public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment) {
         FragmentTransaction transaction = manager.beginTransaction();
         fragment.getArguments().putAll(bundle);
         transaction.replace(container, fragment);
-        if (toBackStack) transaction.addToBackStack(fragment.getClass().getSimpleName());
+        if (toBackStack) {
+            transaction.addToBackStack(null);
+        }
         transaction.commitAllowingStateLoss();
         return (F) fragment;
     }
@@ -227,11 +259,12 @@ public class FragmentBuilder {
         return replaceFragment(fragment.getId(), newFragment);
     }
 
-    //TODO: Caution!!!!!  work only one time
+    //TODO: need test
     public <F extends Fragment> F replaceFragment(View placeHolder, Class<F> fragmentClass) {
-        //TODO: generate unique id
-        if (placeHolder.getId() == View.NO_ID) {
-            placeHolder.setId(fragmentClass.getSimpleName().hashCode() + placeHolder.hashCode());
+        if (placeHolder.getId() == View.NO_ID || placeHolder.getTag(VIEW_ID_TAG) != null) {
+            int newId = placeHolder.hashCode();
+            placeHolder.setTag(VIEW_ID_TAG, newId);
+            placeHolder.setId(newId);
         }
         return replaceFragment(placeHolder.getId(), fragmentClass);
     }

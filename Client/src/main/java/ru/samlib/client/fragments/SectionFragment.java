@@ -119,7 +119,11 @@ public class SectionFragment extends ListFragment<Linkable> {
     @Override
     public boolean allowBackPress() {
         category = null;
-        return !restoreLister();
+        if (!restoreLister()) {
+            return super.allowBackPress();
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -132,6 +136,7 @@ public class SectionFragment extends ListFragment<Linkable> {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         if (author == null || !author.getLink().equals(link)) {
             author = new Author(link);
+            clearData();
         } else {
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
@@ -146,7 +151,7 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public void onClick(View view, int position) {
-            if(SystemUtils.contains(view.getId(),
+            if (SystemUtils.contains(view.getId(),
                     R.id.work_item_layout,
                     R.id.work_item_title,
                     R.id.work_item_rate_and_size)) {
@@ -154,8 +159,8 @@ public class SectionFragment extends ListFragment<Linkable> {
             }
         }
 
-        public void openLinkable(Linkable linkable){
-            if(linkable.isWork()) {
+        public void openLinkable(Linkable linkable) {
+            if (linkable.isWork()) {
                 new FragmentBuilder(getFragmentManager())
                         .putArg(Constants.ArgsName.LINK, linkable.getLink())
                         .addToBackStack()
@@ -180,7 +185,7 @@ public class SectionFragment extends ListFragment<Linkable> {
                     if (category.getAnnotation() != null) {
                         holder.getView(R.id.section_annotation).setVisibility(View.VISIBLE);
                         HtmlView htmlView = holder.getView(R.id.section_annotation);
-                        htmlView.loadHtml(category.processAnnotation(getResources().getColor(R.color.light_gold)));
+                        htmlView.loadHtml(category.processAnnotation(getResources().getColor(R.color.SeaGreen)));
                     } else {
                         holder.getView(R.id.section_annotation).setVisibility(View.GONE);
                     }

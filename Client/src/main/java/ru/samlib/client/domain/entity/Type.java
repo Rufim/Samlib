@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.util.SystemUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.util.Collection;
 
@@ -41,7 +42,7 @@ public enum Type implements Linkable {
             for (Type nextType : Type.values()) {
                 if (nextType.getTitle()
                         .toLowerCase()
-                        .equals(SystemUtils.trim(type.toLowerCase())))
+                        .equals(TextUtils.trim(type.toLowerCase())))
                     return nextType;
             }
         }

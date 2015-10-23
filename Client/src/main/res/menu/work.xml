@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_work_speaking"
+          android:title="@string/work_speaking"
+          android:checkable="true"
+          android:orderInCategory="1"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_work_to_author"
+          android:title="@string/work_to_author"
+          android:orderInCategory="2"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_work_share"
+          android:title="@string/work_share"
+          android:orderInCategory="3"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_work_open_with"
+          android:title="@string/work_open_with"
+          android:orderInCategory="4"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_work_save"
+          android:title="@string/work_save"
+          android:orderInCategory="5"
+          app:showAsAction="never"/>
 </menu>

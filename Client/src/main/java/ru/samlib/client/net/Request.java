@@ -4,6 +4,7 @@ import android.support.v4.util.Pair;
 import android.util.Log;
 import ru.samlib.client.domain.Valuable;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,7 +18,7 @@ import java.util.regex.Matcher;
 /**
  * Created by Dmitry on 29.06.2015.
  */
-public class Request implements Cloneable {
+public class Request implements Cloneable, Serializable {
 
     private static final String TAG = Request.class.getSimpleName();
 

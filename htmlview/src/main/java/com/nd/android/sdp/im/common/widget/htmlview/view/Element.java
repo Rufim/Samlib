@@ -29,6 +29,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.net.Uri;
 import android.provider.Browser;
+import android.util.Log;
 import android.widget.TextView;
 import com.nd.android.sdp.im.common.widget.htmlview.css.CssUtils;
 import com.nd.android.sdp.im.common.widget.htmlview.css.Style;
@@ -50,6 +51,8 @@ import uk.co.chrisjenx.calligraphy.*;
  * @author Stefan Haustein
  */
 public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css.StylableElement {
+
+  private static final String TAG = Element.class.getSimpleName();
 
   /**
    * Type constant for child elements.
@@ -460,7 +463,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
                       CssUtils.identifierToLowerCase(parser.getAttributeName(i)),
                       parser.getAttributeValue(i));
                 }
-                parser.nextToken();
+                nextTokenSafe(parser);
               }
               child.parseContent(parser);
             }
@@ -472,14 +475,14 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
             if ((flags & FLAG_IGNORE_CONTENT) == 0) {
               addText(parser.getText());
             }
-            parser.nextToken();
+            nextTokenSafe(parser);
             break;
 
           case XmlPullParser.END_TAG:
             String endName = CssUtils.identifierToLowerCase(parser.getName());
             if (endName.equals(name)) {
               // direct match -> advance and leave loop
-              parser.nextToken();
+              nextTokenSafe(parser);
               break loop;
             } else {
               Integer endFlags = (Integer) flagMap.get(endName);
@@ -492,7 +495,7 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
               }
             }
             // ignore unmatched end tags
-            parser.nextToken();
+            nextTokenSafe(parser);
             break;
 
           case XmlPullParser.END_DOCUMENT:
@@ -503,16 +506,12 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
             if ((flags & FLAG_ADD_COMMENTS) != 0) {
               addText(parser.getText());
             }
-            parser.nextToken();
+            nextTokenSafe(parser);
             break;
 
           default:
             // ignore other content (DTD, comments, PIs etc.)
-            try {
-              parser.nextToken();
-            } catch (Exception ex) {
-              // ignore errors
-            }
+            nextTokenSafe(parser);
         }
       }
     }
@@ -546,6 +545,14 @@ public class Element implements com.nd.android.sdp.im.common.widget.htmlview.css
             e.printStackTrace();
           }
         }
+    }
+  }
+
+  public void nextTokenSafe(XmlPullParser parser){
+    try {
+      parser.nextToken();
+    } catch (Exception ex) {
+      Log.w(TAG, ex.getMessage(), ex);
     }
   }
 

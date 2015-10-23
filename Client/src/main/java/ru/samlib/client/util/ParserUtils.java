@@ -20,18 +20,6 @@ public class ParserUtils {
 
     protected static final String TAG = ParserUtils.class.getSimpleName();
 
-    public static final String urlRegex = "((https?|ftp)\\:\\/\\/)?" +  // SCHEME
-            "(([a-z0-9+!*(),;?&=\\$_.-]+(\\:[a-z0-9+!*(),;?&=\\$_.-]+)?@)?" + // User and Pass
-            "([a-z0-9-.]*)\\.([a-z]{2,4})" +  // Host or IP
-            "(\\:[0-9]{2,5})?" +  // Port
-            "(\\/([a-z0-9+\\$_-]\\.?)+)*\\/?" +  // GET Query
-            "(\\?[a-z+&\\$_.-][a-z0-9;:@&%=+\\/\\$_.-]*)?" +
-            "(#[a-z_.-][a-z0-9+\\$_.-]*)?)";  // Anchor
-    public static final String suspiciousByLink = "\\w+\\.\\w+";
-    public static final Pattern suspiciousPattern = Pattern.compile(suspiciousByLink,
-            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
-    public static final Pattern urlPattern = Pattern.compile(urlRegex,
-            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
 
     public static Date parseData(String text) {
         Calendar calendar = Calendar.getInstance();

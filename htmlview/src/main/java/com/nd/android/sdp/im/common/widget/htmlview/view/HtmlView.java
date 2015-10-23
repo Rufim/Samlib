@@ -396,11 +396,11 @@ public class HtmlView extends BlockElementView {
                 }
             }
         } catch (XmlPullParserException e) {
-            // this should not happen since the pull parser must not throw exceptions in relaxed mode.
-            throw new RuntimeException(e);
+            Log.e(this.getClass().getSimpleName(), e.getMessage(), e);
+            return;
         } catch (IOException e) {
-            // this cannot happen since we read from a byte array.
-            throw new RuntimeException(e);
+            Log.e(this.getClass().getSimpleName(), e.getMessage(), e);
+            return;
         }
 
         // Remove reference to the dummy element that was created to simplify parsing

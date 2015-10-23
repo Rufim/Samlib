@@ -293,10 +293,6 @@ public class SystemUtils {
         }
     }
 
-    public static String trim(String string) {
-        return string.replaceAll("^\\s+|\\s+$", "");
-    }
-
     public interface IfNotNull<R,T> {
         R function(T ... obj);
     }
@@ -331,6 +327,14 @@ public class SystemUtils {
             return -1;
         }
 
+    }
+
+    public static <T extends Enum<T>> T parseEnum(String type, Class<T> enumClass) {
+        try {
+            return Enum.valueOf(enumClass, type);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
 }

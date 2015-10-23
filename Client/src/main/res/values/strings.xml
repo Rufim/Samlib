@@ -71,12 +71,14 @@
     <string name="work_created">Размёщн:</string>
     <string name="work_updated">Изменён:</string>
     <string name="work_series">Серия:</string>
-
+    <!-- Меню -->
     <string name="work_speaking">Режим чтения</string>
     <string name="work_to_author">К автору</string>
     <string name="work_save">Сохранть</string>
     <string name="work_share">Поделться</string>
     <string name="work_open_with">Открыть в...</string>
+    <string name="newest_filter">Фильтр по категориям</string>
+
 
     <string name="example_book_annotation">
         <![CDATA[

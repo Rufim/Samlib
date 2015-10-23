@@ -9,7 +9,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Created by Dmitry on 29.06.2015.
  */
-public class CachedResponse extends File {
+public class CachedResponse extends File implements Serializable {
     private final Request request;
     public boolean isDownloadOver = false;
     public boolean isCached = false;

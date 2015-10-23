@@ -1,11 +1,13 @@
 package ru.samlib.client.domain.entity;
 
+import android.widget.TextView;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.util.SystemUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.util.Timer;
 
@@ -56,7 +58,7 @@ public enum Genre implements Linkable {
             for (Genre tryGenre : Genre.values()) {
                 if (tryGenre.getTitle()
                         .toLowerCase()
-                        .equals(SystemUtils.trim(genre.toLowerCase())))
+                        .equals(TextUtils.trim(genre.toLowerCase())))
                     return tryGenre;
             }
         }

@@ -2,6 +2,9 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import ru.samlib.client.R;
@@ -19,6 +22,22 @@ public class NewestFragment extends ListFragment {
     public NewestFragment() {
         super(new NewestParser());
         enableFiltering = true;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.newest, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_newest_filter:
+
+                return true;
+        }
+        return false;
     }
 
     /**

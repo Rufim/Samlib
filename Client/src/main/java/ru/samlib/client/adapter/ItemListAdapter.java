@@ -1,5 +1,6 @@
 package ru.samlib.client.adapter;
 
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -244,6 +245,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         ViewHolder holder = (ViewHolder) view.getTag();
         if (holder.getView(view.getId()) != null) {
             onClick(view, holder.getPosition());
+
         }
     }
 
@@ -332,7 +334,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
             List<V> textViews = new ArrayList<>();
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
                 View view = viewEntry.getValue();
-                if (view.getClass().isAssignableFrom(viewClass)) {
+                if (viewClass.isAssignableFrom(view.getClass())) {
                     textViews.add((V) view);
                 }
             }

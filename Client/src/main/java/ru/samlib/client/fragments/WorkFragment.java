@@ -4,12 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.os.*;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
-import android.text.method.LinkMovementMethod;
+import android.text.SpannableString;
+import android.text.style.ClickableSpan;
 import android.util.Log;
+import android.util.Pair;
 import android.view.*;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
@@ -17,8 +18,6 @@ import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
@@ -35,10 +34,7 @@ import ru.samlib.client.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Created by Dmitry on 23.06.2015.
@@ -48,7 +44,7 @@ public class WorkFragment extends ListFragment<String> {
     private static final String TAG = WorkFragment.class.getSimpleName();
 
     private Work work;
-    private Queue<Integer> searched = new ArrayDeque<>();
+    private Queue<Pair<Integer, Integer>> searched = new ArrayDeque<>();
     private AsyncTask moveToIndex;
     private Integer lastIndent = 0;
     private int colorSpeakingText;
@@ -69,7 +65,6 @@ public class WorkFragment extends ListFragment<String> {
             if (!work.isParsed()) {
                 try {
                     work = new WorkParser(work).parse();
-                    work.processChapters();
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
@@ -112,14 +107,14 @@ public class WorkFragment extends ListFragment<String> {
         }
     }
 
-    public List<Integer> search(String query) {
-        List<Integer> indexes = new ArrayList<>();
-        Elements items = work.getRootElements();
-        for (int i = 0; i < items.size(); i++) {
-            Element item = items.get(i);
-            final String text = item.text().toLowerCase();
+    public List<Pair<Integer, Integer>> search(String query) {
+        List<Pair<Integer, Integer>> indexes = new ArrayList<>();
+        for (int i = 0; i < adapter.getItems().size(); i++) {
+            final String text = adapter.getItems().get(i).toLowerCase();
             if (text.contains(query)) {
-                indexes.add(i);
+                for (TextUtils.Piece piece : TextUtils.searchAll(text, query)) {
+                    indexes.add(new Pair(i, piece.start));
+                }
             }
         }
         return indexes;
@@ -128,53 +123,64 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        menu.add(0, R.string.work_speaking, Menu.NONE, R.string.work_speaking).setCheckable(true);
-        menu.add(0, R.string.work_to_author, Menu.NONE, R.string.work_to_author);
-        menu.add(0, R.string.work_share, Menu.NONE, R.string.work_share);
-        menu.add(0, R.string.work_open_with, Menu.NONE, R.string.work_open_with);
-        menu.add(0, R.string.work_save, Menu.NONE, R.string.work_save);
+        inflater.inflate(R.menu.work, menu);
+        searchView.setQueryHint(getString(R.string.search_hint));
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem searchItem = menu.findItem(R.id.search);
-        if (searchItem != null) {
-            final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-            searchView.setOnQueryTextListener(this);
-            searchView.setOnCloseListener(() -> {
-                lastQuery = null;
-                mode = Mode.NORMAL;
-                return false;
-            });
-        }
+    public void onSearchViewClose(SearchView searchView) {
+        lastQuery = null;
+        mode = Mode.NORMAL;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.string.work_speaking:
-                if(item.isChecked()) {
+            case R.id.action_work_speaking:
+                if (item.isChecked()) {
                     mode = Mode.NORMAL;
                     item.setChecked(false);
                     if (TTSService.isReady(work)) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
                     }
                     selectText(lastIndent, null);
-
                 } else {
                     mode = Mode.SPEAK;
                     item.setChecked(true);
+                    if (!TTSService.isReady(work)) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+                    }
+                    TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
+                        if (getActivity() != null && TTSService.isReady(work)) {
+                            TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
+                            lastIndent = speakIndex;
+                            TextView textView = getTextViewIndent(speakIndex);
+                            if (textView != null) {
+                                int visibleLines = getVisibleLines(textView);
+                                Layout layout = textView.getLayout();
+                                if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
+                                    scrollToIndex(speakIndex, phrase.start);
+                                }
+                                selectText(speakIndex, phrase.start, phrase.end);
+                            }
+                        }
+                    });
+                    TTSService.setIndexSpeakFinished(speakIndex -> {
+                        if (getActivity() != null && TTSService.isReady(work)) {
+                            selectText(speakIndex, null);
+                        }
+                    });
                 }
                 return true;
-            case R.string.work_to_author:
+            case R.id.action_work_to_author:
                 new FragmentBuilder(getFragmentManager())
                         .putArg(Constants.ArgsName.LINK, work.getAuthor().getLink())
                         .replaceFragment(WorkFragment.this, SectionFragment.class);
                 return true;
-            case R.string.work_share:
+            case R.id.action_work_share:
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");
                 return true;
-            case R.string.work_save:
+            case R.id.action_work_save:
                 DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), Environment.getExternalStorageDirectory().getAbsolutePath(), false);
                 chooserDialog.setTitle("Сохранить в...");
                 chooserDialog.setIcon(android.R.drawable.ic_menu_save);
@@ -188,7 +194,7 @@ public class WorkFragment extends ListFragment<String> {
                 });
                 chooserDialog.show();
                 return true;
-            case R.string.work_open_with:
+            case R.id.action_work_open_with:
                 try {
                     AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
                 } catch (IOException e) {
@@ -203,7 +209,8 @@ public class WorkFragment extends ListFragment<String> {
     public boolean onQueryTextChange(String query) {
         searched.clear();
         adapter.selectText(query, true, colorFoundedText);
-        return false;
+        super.onQueryTextChange(query);
+        return true;
     }
 
     @Override
@@ -212,10 +219,10 @@ public class WorkFragment extends ListFragment<String> {
         if (searched.isEmpty()) {
             searched.addAll(search(query));
         }
-        Integer index = searched.poll();
+        Pair<Integer, Integer> index = searched.poll();
         if (index != null) {
             lastQuery = query;
-            scrollToIndex(index);
+            scrollToIndex(index.first, index.second);
         }
         return true;
     }
@@ -224,11 +231,12 @@ public class WorkFragment extends ListFragment<String> {
         scrollToIndex(index, 0);
     }
 
-    private void toIndex(int index, int offsetLines) {
+    private void toIndex(int index, int textOffset) {
         TextView textView = getTextViewIndent(index);
         index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
         if (textView != null) {
-            layoutManager.scrollToPositionWithOffset(index, - offsetLines * textView.getLineHeight());
+            Layout layout = textView.getLayout();
+            layoutManager.scrollToPositionWithOffset(index, -(layout.getLineForOffset(textOffset)) * textView.getLineHeight());
         } else {
             layoutManager.scrollToPosition(index);
         }
@@ -250,9 +258,9 @@ public class WorkFragment extends ListFragment<String> {
         layoutManager.startSmoothScroll(linearSmoothScroller);
     }
 
-    private void scrollToIndex(int index, int offsetLines) {
+    private void scrollToIndex(int index, int textOffset) {
         if (adapter.getItemCount() > index) {
-            toIndex(index, offsetLines);
+            toIndex(index, textOffset);
         } else {
             moveToIndex = new AsyncTask<Integer, Void, Void>() {
 
@@ -273,7 +281,7 @@ public class WorkFragment extends ListFragment<String> {
                     }
                 }
             };
-            loadElements(index + pageSize, true, moveToIndex, index, offsetLines);
+            loadElements(index + pageSize, true, moveToIndex, index, textOffset);
         }
     }
 
@@ -286,33 +294,13 @@ public class WorkFragment extends ListFragment<String> {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         if (work == null || !work.getLink().equals(link)) {
             work = new Work(link);
-            //TODO: enable only if sound option enabled
+            clearData();
         } else {
             postEvent(new WorkParsedEvent(work));
         }
-        TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
-            if (getActivity() != null && TTSService.isReady(work)) {
-                TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
-                lastIndent = speakIndex;
-                TextView textView = getTextViewIndent(speakIndex);
-                if (textView != null) {
-                    int visibleLines = getVisibleLines(textView);
-                    Layout layout = textView.getLayout();
-                    if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
-                        scrollToIndex(speakIndex, layout.getLineForOffset(phrase.start));
-                    }
-                    selectText(speakIndex, phrase.start, phrase.end);
-                }
-            }
-        });
-        TTSService.setIndexSpeakFinished(speakIndex -> {
-            if (getActivity() != null && TTSService.isReady(work)) {
-                selectText(speakIndex, null);
-            }
-        });
         colorFoundedText = getResources().getColor(R.color.red_dark);
         colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
-        screenLock = ((PowerManager)getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
+        screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         return super.onCreateView(inflater, container, savedInstanceState);
@@ -393,21 +381,34 @@ public class WorkFragment extends ListFragment<String> {
 
         @Override
         public void onClick(View view, int position) {
-            if (mode == Mode.SPEAK) {
-                position -= firstIsHeader;
-                if (!TTSService.isReady(work)) {
-                    WorkFragment.this.selectText(lastIndent, null);
-                    Intent i = new Intent(getActivity(), TTSService.class);
-                    i.putExtra(Constants.ArgsName.WORK, work);
-                    i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
-                    getActivity().startService(i);
-                } else {
-                    if (TTSService.getInstance().getPlayer().isSpeaking()) {
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
-                    } else {
-                        WorkFragment.this.selectText(lastIndent, null);
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.POSITION, position + ":" + lastOffset);
-                    }
+            if (view instanceof TextView) {
+                TextView textView = (TextView) view;
+                switch (mode) {
+                    case SPEAK:
+                        position -= firstIsHeader;
+                        if (!TTSService.isReady(work)) {
+                            WorkFragment.this.selectText(lastIndent, null);
+                            Intent i = new Intent(getActivity(), TTSService.class);
+                            i.putExtra(Constants.ArgsName.WORK, work);
+                            i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
+                            getActivity().startService(i);
+                        } else {
+                            if (TTSService.getInstance().getPlayer().isSpeaking()) {
+                                TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+                            } else {
+                                WorkFragment.this.selectText(lastIndent, null);
+                                TTSNotificationBroadcast.sendMessage(TTSService.Action.POSITION, position + ":" + lastOffset);
+                            }
+                        }
+                        break;
+                    case SEARCH:
+                    case NORMAL:
+                        ClickableSpan[] link = new SpannableString(textView.getText()).getSpans(lastOffset, lastOffset, ClickableSpan.class);
+                        if (link.length != 0) {
+                            ClickableSpan span = link[0];
+                            span.onClick(textView);
+                        }
+                        break;
                 }
             }
         }
@@ -423,22 +424,31 @@ public class WorkFragment extends ListFragment<String> {
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
-                            Layout layout = textView.getLayout();
                             int x = (int) event.getX();
                             int y = (int) event.getY();
+
+                            x -= textView.getTotalPaddingLeft();
+                            y -= textView.getTotalPaddingTop();
+
+                            x += textView.getScrollX();
+                            y += textView.getScrollY();
+
+                            Layout layout = textView.getLayout();
+
                             if (layout != null) {
                                 int line = layout.getLineForVertical(y);
                                 lastOffset = layout.getOffsetForHorizontal(line, x);
-                                v.performClick();
                             }
+
+                            v.performClick();
                         }
                         return true;
                     });
                     HtmlSpanner spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
-                    view.setMovementMethod(LinkMovementMethod.getInstance());
+                    spanner.registerHandler("a", new LinkHandler(view));
                     view.setText(spanner.fromHtml(indent));
                     break;
             }

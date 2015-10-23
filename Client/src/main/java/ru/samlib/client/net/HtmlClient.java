@@ -41,7 +41,7 @@ public class HtmlClient {
 
         @Override
         protected void configConnection(HttpURLConnection connection) {
-            connection.setConnectTimeout(1000);
+            connection.setConnectTimeout(3000);
             connection.setUseCaches(false);
         }
 

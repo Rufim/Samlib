@@ -13,13 +13,21 @@ import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.util.FragmentBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
 /**
  * A placeholder fragment containing a simple view.
  */
 public class BaseFragment extends Fragment implements BaseActivity.BackCallback {
 
     private static BaseFragment lastFragment;
+    private Bundle argsCache;
 
+    private static final Map<String, Stack<Bundle>> argsStack = new HashMap<>();
+
+    protected static boolean isStackInstance = false;
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -47,6 +55,7 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         setRetainInstance(true);
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -61,8 +70,12 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     }
 
     public boolean allowBackPress() {
+        if(getFragmentManager().getBackStackEntryCount() > 0) {
+            isStackInstance = true;
+        }
         return true;
     }
+
 
     protected void postEvent(Event event) {
         EventBus.getDefault().post(event);

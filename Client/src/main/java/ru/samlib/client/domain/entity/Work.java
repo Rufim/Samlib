@@ -6,6 +6,8 @@ import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
@@ -31,8 +33,6 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
     public static final String FB2_SUFFIX = ".fb2.zip";
-
-    private List<String> indentsTag = Arrays.asList("dd", "div", "p", "br", "pre");
 
     private String title;
     private String link;
@@ -64,49 +64,6 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
 
     public Work(String link) {
         setLink(link);
-    }
-
-    public void processChapters() {
-        rootElements = Jsoup.parseBodyFragment(rawContent).select("body > *");
-        Elements elements = rootElements.select("xxx7");
-        if (elements.size() > 0) {
-            rootElements = elements.first().select("> *");
-        }
-        while (rootElements.size() > 0
-                && rootElements.first().tagName() == "font"
-                && rootElements.size() == 1) {
-            rootElements = rootElements.first().select("> *");
-        }
-        chapters.clear();
-        indents.clear();
-        Chapter currentChapter = new Chapter("Начало");
-        Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
-                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        for (int i = 0; i < rootElements.size(); i++) {
-            Element el = rootElements.get(i);
-            if (indentsTag.contains(el.tagName().toLowerCase())) {
-                indents.add(el.outerHtml());
-            } else {
-                if (indents.isEmpty()) {
-                    indents.add(el.outerHtml());
-                } else {
-                    indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
-                }
-            }
-        }
-        for (int i = 0; i < indents.size(); i++) {
-            String text = ru.samlib.client.util.TextUtils.cleanHtml(indents.get(i));
-            if (rootElements.size() > i) {
-                if (pattern.matcher(ru.samlib.client.util.TextUtils.trim(text)).find()) {
-                    Chapter newChapter = new Chapter(text);
-                    chapters.add(currentChapter);
-                    newChapter.setPercent(((float) i) / rootElements.size());
-                    newChapter.setIndex(i);
-                    currentChapter = newChapter;
-                }
-            }
-        }
-        chapters.add(currentChapter);
     }
 
     public void setLink(String link) {
