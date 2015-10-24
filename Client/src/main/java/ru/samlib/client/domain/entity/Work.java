@@ -166,6 +166,4 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         }
         return false;
     }
-
-
 }

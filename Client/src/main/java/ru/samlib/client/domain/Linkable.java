@@ -31,15 +31,15 @@ public interface Linkable {
     }
 
     public static boolean isSamlibLink(String link) {
-        return link.matches("/*[a-z]/+[a-z_]+((/*)|(/+[a-z-_0-9]+\\.shtml))?");
+        return link.matches("/*[a-z]/+[a-z_0-9]+((/*)|(/+[a-z-_0-9]+\\.shtml))?");
     }
 
     public static boolean isWorkLink(String link) {
-        return link.matches("/*[a-z]/+[a-z_]+/+[a-z-_0-9]+\\.shtml");
+        return link.matches("/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml");
     }
 
     public static boolean isAuthorLink(String link) {
-        return link.matches("/*[a-z]/+[a-z_]+(/*)");
+        return link.matches("/*[a-z]/+[a-z_0-9]+(/*)");
     }
 }
 

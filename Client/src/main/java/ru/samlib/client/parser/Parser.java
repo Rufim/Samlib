@@ -24,7 +24,7 @@ public abstract class Parser {
 
     protected static final String TAG = Parser.class.getSimpleName();
 
-    protected static final int MIN_BODY_SIZE = 1024 * 30;
+    protected static final int MIN_BODY_SIZE = 1024 * 50;
 
     private static final String ACCEPT_VALUE = "text/html";
     private static final String ACCEPT_ENCODING_VALUE = "gzip, deflate";

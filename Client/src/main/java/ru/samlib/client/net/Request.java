@@ -9,10 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -30,7 +27,7 @@ public class Request implements Cloneable, Serializable {
     private boolean withParams = false;
     private String encoding;
     private String content = "";
-    private Map<String, String> headers = new LinkedHashMap<>();
+    private Map<String, String> headers = new HashMap<>();
     private Method method = Method.GET;
     private int reconnectCount = 3;
 

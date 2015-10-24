@@ -329,10 +329,14 @@ public class SystemUtils {
 
     }
 
-    public static <T extends Enum<T>> T parseEnum(String type, Class<T> enumClass) {
-        try {
-            return Enum.valueOf(enumClass, type);
-        } catch (Exception ex) {
+    public static <T extends Enum<T>> T parseEnum(String value, Class<T> enumType) {
+        if (value != null && !value.isEmpty() && enumType != null) {
+            try {
+                return Enum.valueOf(enumType, value);
+            } catch (IllegalArgumentException ex) {
+                return null;
+            }
+        } else {
             return null;
         }
     }

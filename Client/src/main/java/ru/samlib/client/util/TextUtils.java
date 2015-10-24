@@ -117,6 +117,18 @@ public class TextUtils {
         return false;
     }
 
+    public static String putInString(String source, String placement, int gap) {
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        while (i + gap < source.length()) {
+            builder.append(source.substring(i, i + gap));
+            builder.append(placement);
+            i += gap;
+        }
+        builder.append(source.substring(i));
+        return builder.toString();
+    }
+
     public static List<Piece> searchAll(String source, @RegExp String template) {
         List<Piece> pieces = new ArrayList<>();
         Pattern pattern = Pattern.compile(template);

@@ -64,17 +64,22 @@ public class WorkFragment extends ListFragment<String> {
             }
             if (!work.isParsed()) {
                 try {
-                    work = new WorkParser(work).parse();
+                    work = new WorkParser(work).parse(false);
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
                 }
             }
-            return Stream.of(work.getIndents())
-                    .skip(skip)
-                    .limit(size)
-                    .collect(Collectors.toList());
+            if (work.isParsed()) {
+                return Stream.of(work.getIndents())
+                        .skip(skip)
+                        .limit(size)
+                        .collect(Collectors.toList());
+            }  else {
+                return new ArrayList<>();
+            }
+
         }));
     }
 

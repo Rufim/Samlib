@@ -42,9 +42,9 @@ public class WorkParser extends Parser {
         this.work = new Work(workLink);
     }
 
-    public Work parse() {
+    public Work parse(boolean fullDownload) {
         CachedResponse rawContent = null;
-        if (work.getRawContent() == null) {
+        if (work.getRawContent() == null && !fullDownload) {
             rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
         } else {
             rawContent = HtmlClient.executeRequest(request);
@@ -52,12 +52,17 @@ public class WorkParser extends Parser {
         if(rawContent == null) {
             return work;
         }
-        work = ParserUtils.parseWork(rawContent, work);
-        if (rawContent.isDownloadOver) {
-            work.setParsed(true);
+        try {
+            if (rawContent.isDownloadOver) {
+                work.setParsed(true);
+            }
+            work = ParserUtils.parseWork(rawContent, work);
+            Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
+            processChapters(work);
+        } catch (Exception ex)  {
+            work.setParsed(false);
+            Log.e(TAG, "Work NOT parsed using url " + request.getBaseUrl(), ex);
         }
-        Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
-        processChapters(work);
         return work;
     }
 

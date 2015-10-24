@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
+    <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_filter_switch_mode"
+            android:id="@+id/dialog_filter_switch_mode"
+            android:layout_gravity="center_horizontal"/>
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/scrollView" android:layout_gravity="center_horizontal">
+        <android.support.v7.widget.GridLayout android:layout_width="wrap_content"
+                                              android:layout_height="wrap_content"
+                                              android:id="@+id/dialog_filter_grid"
+                                              app:columnCount="3"
+                                              app:useDefaultMargins="true"
+                                              app:orientation="horizontal"/>
+    </ScrollView>
 </LinearLayout>
