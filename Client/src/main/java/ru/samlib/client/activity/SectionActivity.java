@@ -52,7 +52,7 @@ public class SectionActivity extends BaseActivity {
             }
             if (sectionFragment instanceof WorkFragment) {
                 WorkFragment workFragment = ((WorkFragment) sectionFragment);
-                if(workFragment.getWork().getAuthor() != null) {
+                if(workFragment.getWork() != null && workFragment.getWork().getAuthor() != null) {
                     initializeAuthor(workFragment.getWork().getAuthor());
                 } else {
                     Log.e(TAG, "Error ocurred unknovn author!! Work utl is: " + workFragment.getWork().getFullLink());

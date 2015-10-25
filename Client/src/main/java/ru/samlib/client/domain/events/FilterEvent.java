@@ -19,4 +19,9 @@ public class FilterEvent implements Event {
         this.excluding = excluding;
     }
 
+    public FilterEvent(String query) {
+        this.query = query;
+        this.genres = null;
+        this.excluding = false;
+    }
 }

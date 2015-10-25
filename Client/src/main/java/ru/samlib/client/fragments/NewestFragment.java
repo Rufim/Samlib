@@ -72,8 +72,7 @@ public class NewestFragment extends ListFragment {
             if (query != null && !query.isEmpty()) {
                 event.query = query;
             }
-            adapter.enterFilteringMode();
-            adapter.filter(event);
+            filter(event);
         }
     }
 

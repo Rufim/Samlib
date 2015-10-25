@@ -169,10 +169,12 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
             ArrayList<Genre> genres = ((FilterEvent) query).genres;
             stringQuery = ((FilterEvent) query).query;
             if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
-                if (((FilterEvent) query).excluding) {
-                    return Collections.disjoint(genres, this.genres);
-                } else {
-                    return genres.containsAll(this.genres);
+                if(genres != null) {
+                    if (((FilterEvent) query).excluding) {
+                        return Collections.disjoint(genres, this.genres);
+                    } else {
+                        return genres.containsAll(this.genres);
+                    }
                 }
             }
         } else {

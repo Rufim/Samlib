@@ -5,8 +5,8 @@ package ru.samlib.client.util;
  */
 public class GenderUtils {
 
-    public static final String MALE_REGEX = "(ова)|(ев)|(ин)|(ын)|(ой)|(цкий)|(ский)|(цкой)|(ской)|(цкий)";
-    public static final String FEMALE_REGEX = "(ова)|(ева)|(ина)|(ая)|(яя)|(екая)|(цкая)";
+    public static final String MALE_REGEX = "(РѕРІР°)|(РµРІ)|(РёРЅ)|(С‹РЅ)|(РѕР№)|(С†РєРёР№)|(СЃРєРёР№)|(С†РєРѕР№)|(СЃРєРѕР№)|(С†РєРёР№)";
+    public static final String FEMALE_REGEX = "(РѕРІР°)|(РµРІР°)|(РёРЅР°)|(Р°СЏ)|(СЏСЏ)|(РµРєР°СЏ)|(С†РєР°СЏ)";
 
 
 

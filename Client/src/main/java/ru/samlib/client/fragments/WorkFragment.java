@@ -134,7 +134,7 @@ public class WorkFragment extends ListFragment<String> {
 
     @Override
     public void onSearchViewClose(SearchView searchView) {
-        lastQuery = null;
+        lastSearchQuery = null;
         mode = Mode.NORMAL;
     }
 
@@ -226,7 +226,7 @@ public class WorkFragment extends ListFragment<String> {
         }
         Pair<Integer, Integer> index = searched.poll();
         if (index != null) {
-            lastQuery = query;
+            lastSearchQuery = query;
             scrollToIndex(index.first, index.second);
         }
         return true;
@@ -246,7 +246,7 @@ public class WorkFragment extends ListFragment<String> {
             layoutManager.scrollToPosition(index);
         }
         if (Mode.SEARCH == mode) {
-            adapter.selectText(lastQuery, false, colorFoundedText);
+            adapter.selectText(lastSearchQuery, false, colorFoundedText);
         }
     }
 
@@ -457,7 +457,7 @@ public class WorkFragment extends ListFragment<String> {
                     view.setText(spanner.fromHtml(indent));
                     break;
             }
-            selectText(holder, true, WorkFragment.this.lastQuery, colorFoundedText);
+            selectText(holder, true, WorkFragment.this.lastSearchQuery, colorFoundedText);
         }
 
     }

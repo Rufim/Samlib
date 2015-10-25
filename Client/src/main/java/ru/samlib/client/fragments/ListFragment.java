@@ -52,7 +52,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected int pastVisiblesItems = 0;
     protected ListerTask listerTask;
     protected FilterTask filterTask;
-    protected String lastQuery;
+    protected String lastSearchQuery;
+    protected Object lastFilterQuery;
     protected boolean enableFiltering = false;
     protected long lastFilteringTime = 0;
 
@@ -95,18 +96,23 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        lastSearchQuery = query;
         if (enableFiltering) {
-            adapter.enterFilteringMode();
-            if (filterTask == null) {
-                lastQuery = null;
-                filterTask = new FilterTask(query);
-                getActivity().runOnUiThread(filterTask);
-            } else {
-                lastQuery = query;
-            }
+            filter(query);
             return true;
         } else {
             return false;
+        }
+    }
+
+    public void filter(Object obj) {
+        adapter.enterFilteringMode();
+        if (filterTask == null) {
+            lastFilterQuery = null;
+            filterTask = new FilterTask(obj);
+            getActivity().runOnUiThread(filterTask);
+        } else {
+            lastFilterQuery = obj;
         }
     }
 
@@ -114,7 +120,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (searchView != null) {
             if (enableFiltering) {
                 searchView.setOnCloseListener(() -> {
-                    lastQuery = null;
+                    lastSearchQuery = null;
                     adapter.exitFilteringMode();
                     return false;
                 });
@@ -372,9 +378,9 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public class FilterTask implements Runnable {
 
-        private final String query;
+        private final Object query;
 
-        public FilterTask(String query) {
+        public FilterTask(Object query) {
             this.query = query;
         }
 
@@ -384,14 +390,14 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 itemList.scrollToPosition(adapter.getItemCount() - adapter.getItems().size());
                 adapter.filter(query);
                 filterTask = null;
-                if (lastQuery != null) {
+                if (lastFilterQuery != null) {
                     long current = SystemClock.currentThreadTimeMillis();
                     if (current - lastFilteringTime < filteringCooldown) {
                         Handler mainHandler = new Handler(getActivity().getMainLooper());
-                        mainHandler.postDelayed(() -> onQueryTextChange(lastQuery), current - lastFilteringTime);
+                        mainHandler.postDelayed(() -> filter(lastFilterQuery), current - lastFilteringTime);
                     } else {
                         lastFilteringTime = current;
-                        onQueryTextChange(lastQuery);
+                        filter(lastFilterQuery);
                     }
                 } else if (adapter.getItemCount() < pageSize) {
                     loadElements(pageSize, true);
