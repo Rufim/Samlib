@@ -7,11 +7,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
+import ru.samlib.client.dialog.FilterDialog;
+import ru.samlib.client.domain.Findable;
+import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.events.CategorySelectedEvent;
+import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.parser.NewestParser;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -34,10 +41,40 @@ public class NewestFragment extends ListFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_newest_filter:
-
+                FilterDialog dialog = (FilterDialog) getFragmentManager().findFragmentByTag(FilterDialog.class.getSimpleName());
+                if(dialog == null) {
+                    dialog = new FilterDialog();
+                    dialog.setState((FilterEvent) adapter.getLastQuery());
+                    dialog.show(getFragmentManager(), FilterDialog.class.getSimpleName());
+                }
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    public void onEvent(FilterEvent event) {
+        if(event.genres == null) {
+            adapter.exitFilteringMode();
+        } else {
+            String query = searchView.getQuery().toString();
+            if (query != null && !query.isEmpty()) {
+                event.query = query;
+            }
+            adapter.enterFilteringMode();
+            adapter.filter(event);
+        }
     }
 
     /**

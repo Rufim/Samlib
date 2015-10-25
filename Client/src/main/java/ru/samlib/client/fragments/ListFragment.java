@@ -309,12 +309,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         return rootView;
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        ButterKnife.unbind(this);
-    }
-
     public class ListerTask extends AsyncTask<Void, Void, List<I>> {
 
         private int count = 0;

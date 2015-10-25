@@ -4,5 +4,5 @@ package ru.samlib.client.domain;
  * Created by Dmitry on 29.07.2015.
  */
 public interface Findable {
-    boolean find(String query);
+    boolean find(Object query);
 }

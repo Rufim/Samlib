@@ -1,6 +1,5 @@
 package ru.samlib.client.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
@@ -9,8 +8,6 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.parser.TopAuthorsParser;
-
-import java.util.ArrayList;
 
 /**
  * Created by Rufim on 16.01.2015.
@@ -38,7 +35,7 @@ public class TopAuthorsFragment extends ListFragment {
     protected class TopAuthorsAdapter extends ItemListAdapter<Author> {
 
         public TopAuthorsAdapter() {
-            super(R.layout.top_authors_item);
+            super(R.layout.item_top_authors);
         }
 
         @Override

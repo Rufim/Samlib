@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.BaseActivity;
@@ -21,13 +22,6 @@ import java.util.Stack;
  * A placeholder fragment containing a simple view.
  */
 public class BaseFragment extends Fragment implements BaseActivity.BackCallback {
-
-    private static BaseFragment lastFragment;
-    private Bundle argsCache;
-
-    private static final Map<String, Stack<Bundle>> argsStack = new HashMap<>();
-
-    protected static boolean isStackInstance = false;
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -70,9 +64,6 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     }
 
     public boolean allowBackPress() {
-        if(getFragmentManager().getBackStackEntryCount() > 0) {
-            isStackInstance = true;
-        }
         return true;
     }
 
@@ -80,5 +71,13 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     protected void postEvent(Event event) {
         EventBus.getDefault().post(event);
     }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
 
 }

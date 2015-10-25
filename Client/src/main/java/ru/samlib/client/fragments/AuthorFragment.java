@@ -131,16 +131,4 @@ public class AuthorFragment extends BaseFragment {
             authorGridInfo.addView(textContent);
         }
     }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        ButterKnife.unbind(this);
-    }
 }

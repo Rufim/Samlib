@@ -48,7 +48,8 @@ public enum Genre implements Linkable {
     FAIRY_TALES("Сказки", "/janr/index_janr_16-1.shtml"),
     DRAMATURGY("Драматургия", "/janr/index_janr_6-1.shtml>"),
     POSTMODERNISM("Постмодернизм", "/janr/index_janr_33-1.shtml"),
-    FOREIGN_TRANSLAT("Foreign+Translat", "/janr/index_janr_34-1.shtml");
+    FOREIGN_TRANSLAT("Foreign+Translat", "/janr/index_janr_34-1.shtml"),
+    EMPTY("Без жанра","");
 
     private @Getter String title;
     private @Getter String link;

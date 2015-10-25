@@ -79,7 +79,7 @@
     <string name="work_open_with">Открыть в...</string>
     <string name="newest_filter">Фильтр по категориям</string>
     <string name="dialog_filter_switch_mode">Исключающий фильтр</string>
-
+    <string name="dialog_filter_clear">Сбросить фильтр</string>
 
     <string name="example_book_annotation">
         <![CDATA[

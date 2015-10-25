@@ -13,12 +13,14 @@ import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
+import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.net.CachedResponse;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Filter;
 import java.util.regex.Pattern;
 
 /**
@@ -113,6 +115,8 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         Genre tryGenre = Genre.parseGenre(genre);
         if (tryGenre != null) {
             genres.add(tryGenre);
+        } else {
+            genres.add(Genre.EMPTY);
         }
     }
 
@@ -159,10 +163,23 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
 
 
     @Override
-    public boolean find(String query) {
-        if (toString().toLowerCase().contains(query) ||
-                Jsoup.parseBodyFragment(TextUtils.join("", annotationBlocks)).text().toLowerCase().contains(query)) {
-            return true;
+    public boolean find(Object query) {
+        String stringQuery;
+        if (query.getClass() == FilterEvent.class) {
+            ArrayList<Genre> genres = ((FilterEvent) query).genres;
+            stringQuery = ((FilterEvent) query).query;
+            if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
+                if (((FilterEvent) query).excluding) {
+                    return Collections.disjoint(genres, this.genres);
+                } else {
+                    return genres.containsAll(this.genres);
+                }
+            }
+        } else {
+            stringQuery = query.toString().toLowerCase();
+            if (toString().toLowerCase().contains(stringQuery)) {
+                return true;
+            }
         }
         return false;
     }

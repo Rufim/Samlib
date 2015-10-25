@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="newest_author_width">100sp</dimen>
+    <integer name="newest_filter_grid_count">3</integer>
 </resources>

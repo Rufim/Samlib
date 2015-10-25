@@ -21,7 +21,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     protected List<I> originalItems = null;
     protected Set<ViewHolder> currentHolders = Collections.newSetFromMap(new WeakHashMap<>());
     protected final int layoutId;
-    protected String lastQuery;
+    protected Object lastQuery;
 
     // Adapter's Constructor
     public ItemListAdapter() {
@@ -122,7 +122,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         }
     }
 
-    public String getLastQuery() {
+    public Object getLastQuery() {
         return lastQuery;
     }
 
@@ -164,11 +164,10 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         }
     }
 
-    public List<I> filter(String query) {
+    public List<I> filter(Object query) {
         if (query == null) {
             return items;
         }
-        query = query.toLowerCase();
         List<I> founded = null;
         if (originalItems != null) {
             founded = find(query, true);
@@ -178,11 +177,11 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return founded;
     }
 
-    public List<I> find(String query, boolean original) {
+    public List<I> find(Object query, boolean original) {
         return find(query, original ? getOriginalItems() : getItems());
     }
 
-    public List<I> find(String query, List<I> items) {
+    public List<I> find(Object query, List<I> items) {
         if (query == null) return items;
         final List<I> filteredList = new ArrayList<>();
         for (I item : items) {
@@ -192,7 +191,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
                 }
             } else {
                 final String text = item.toString().toLowerCase();
-                if (text.contains(query)) {
+                if (text.contains(query.toString().toLowerCase())) {
                     filteredList.add(item);
                 }
             }

@@ -10,6 +10,8 @@
     <dimen name="newest_author_width">80sp</dimen>
     <dimen name="newest_date_width">55dp</dimen>
 
+    <integer name="newest_filter_grid_count">2</integer>
+
     <dimen name="author_avatar_width">160sp</dimen>
     <dimen name="author_avatar_height">180sp</dimen>
 
