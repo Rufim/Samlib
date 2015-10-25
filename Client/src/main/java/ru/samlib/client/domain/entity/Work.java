@@ -166,16 +166,25 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     public boolean find(Object query) {
         String stringQuery;
         if (query.getClass() == FilterEvent.class) {
-            ArrayList<Genre> genres = ((FilterEvent) query).genres;
-            stringQuery = ((FilterEvent) query).query;
+            FilterEvent filterQuery = (FilterEvent) query;
+            ArrayList<Genre> genres = filterQuery.genres;
+            stringQuery = filterQuery.query;
+            boolean result = false;
             if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
                 if(genres != null) {
-                    if (((FilterEvent) query).excluding) {
-                        return Collections.disjoint(genres, this.genres);
-                    } else {
-                        return genres.containsAll(this.genres);
-                    }
+                    if (filterQuery.excluding) result = Collections.disjoint(genres, this.genres);
+                    else result = genres.containsAll(this.genres);
                 }
+                if(!result) return result;
+                if(filterQuery.genders != null && filterQuery.genders.size() != Gender.values().length) {
+                    Author author = getAuthor();
+                    Gender gender;
+                    if(author == null) gender = Gender.UNDEFINED;
+                    else gender = author.getGender();
+                    if(filterQuery.excluding) result = !filterQuery.genders.contains(gender);
+                    else result = filterQuery.genders.contains(gender);
+                }
+                return result;
             }
         } else {
             stringQuery = query.toString().toLowerCase();

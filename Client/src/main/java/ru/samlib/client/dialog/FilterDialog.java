@@ -6,13 +6,16 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayout;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.events.FilterEvent;
 
@@ -30,8 +33,15 @@ public class FilterDialog extends BaseDialog {
     GridLayout dialogFilterGrid;
     @Bind(R.id.scrollView)
     ScrollView scrollView;
+    @Bind(R.id.dialog_filter_male)
+    CheckBox dialogFilterMale;
+    @Bind(R.id.dialog_filter_female)
+    CheckBox dialogFilterFemale;
+    @Bind(R.id.dialog_filter_undefined)
+    CheckBox dialogFilterUndefined;
     View rootView;
     ArrayList<Genre> genreList;
+    EnumSet<Gender> genderSet = EnumSet.allOf(Gender.class);
     boolean excluding = false;
 
 
@@ -42,10 +52,23 @@ public class FilterDialog extends BaseDialog {
         ButterKnife.bind(this, rootView);
         dialogFilterSwitchMode.setChecked(excluding);
         for (Genre genre : Genre.values()) {
-            if(genreList == null) {
+            if (genreList == null) {
                 addToGrid(genre, false);
             } else {
                 addToGrid(genre, genreList.contains(genre));
+            }
+        }
+        for (Gender gender : genderSet) {
+            switch (gender) {
+                case MALE:
+                    dialogFilterMale.setChecked(true);
+                    break;
+                case FEMALE:
+                    dialogFilterFemale.setChecked(true);
+                    break;
+                case UNDEFINED:
+                    dialogFilterUndefined.setChecked(true);
+                    break;
             }
         }
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
@@ -58,9 +81,10 @@ public class FilterDialog extends BaseDialog {
     }
 
     public void setState(FilterEvent filterEvent) {
-        if(filterEvent != null) {
+        if (filterEvent != null) {
             this.excluding = filterEvent.excluding;
             this.genreList = filterEvent.genres;
+            this.genderSet = filterEvent.genders;
         }
     }
 
@@ -68,7 +92,7 @@ public class FilterDialog extends BaseDialog {
     public void onButtonPositive(DialogInterface dialog) {
         super.onButtonPositive(dialog);
         saveState();
-        postEvent(new FilterEvent(genreList, excluding));
+        postEvent(new FilterEvent(genreList, genderSet, excluding));
     }
 
     private void saveState() {
@@ -81,6 +105,14 @@ public class FilterDialog extends BaseDialog {
         }
         genreList = genres;
         excluding = dialogFilterSwitchMode.isChecked();
+        if(!dialogFilterMale.isChecked()) genderSet.remove(Gender.MALE);
+        else genderSet.add(Gender.MALE);
+
+        if (!dialogFilterFemale.isChecked()) genderSet.remove(Gender.FEMALE);
+        else genderSet.add(Gender.FEMALE);
+
+        if (!dialogFilterUndefined.isChecked()) genderSet.remove(Gender.UNDEFINED);
+        else genderSet.add(Gender.UNDEFINED);
     }
 
     @Override
@@ -103,5 +135,4 @@ public class FilterDialog extends BaseDialog {
         saveState();
         super.onDestroyView();
     }
-
 }

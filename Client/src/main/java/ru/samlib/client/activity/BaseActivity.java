@@ -141,6 +141,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+
     }
 
     protected abstract void handleIntent(Intent intent);

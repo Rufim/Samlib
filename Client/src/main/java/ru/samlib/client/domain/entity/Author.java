@@ -28,6 +28,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     private String shortName;
     private String email;
     private String annotation;
+    private Gender gender;
     private Date dateBirth;
     private String address;
     private Link site;
@@ -58,6 +59,21 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     public Author(String link) {
         this.link = link;
+    }
+
+    public Gender getGender(){
+        if(gender != null) return gender;
+        String lastName = null;
+        if (shortName == null && fullName != null) {
+            String names[] = fullName.split(" ");
+            lastName = names[0];
+        }
+        if (shortName != null && fullName == null) {
+            String names[] = shortName.split(" ");
+            lastName = names[0];
+        }
+        gender = Gender.parseLastName(lastName);
+        return gender;
     }
 
     public String getShortName() {
