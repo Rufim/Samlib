@@ -60,7 +60,7 @@ public class WorkFragment extends ListFragment<String> {
 
     public WorkFragment() {
         pageSize = 100;
-        setLister(((skip, size) -> {
+        setDataSource(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(10);
             }
@@ -78,7 +78,7 @@ public class WorkFragment extends ListFragment<String> {
                         .skip(skip)
                         .limit(size)
                         .collect(Collectors.toList());
-            }  else {
+            } else {
                 return new ArrayList<>();
             }
 

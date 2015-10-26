@@ -9,6 +9,7 @@ import ru.samlib.client.fragments.BaseFragment;
 import ru.samlib.client.util.FragmentBuilder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,9 +18,16 @@ import java.util.List;
 public abstract class FragmentPagerAdapter<I,F extends BaseFragment> extends FragmentStatePagerAdapter {
     protected List<I> items = new ArrayList<>();
 
-    public FragmentPagerAdapter(FragmentManager fm, ArrayList<I> items) {
+    public FragmentPagerAdapter(FragmentManager fm) {
         super(fm);
-        this.items= items;
+    }
+
+    public List<I> getItems(){
+        return items;
+    }
+
+    public void addItems(Collection<I> newItems) {
+        items.addAll(newItems);
     }
 
     @Override

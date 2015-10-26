@@ -2,20 +2,15 @@ package ru.samlib.client.net;
 
 import android.util.Log;
 import com.google.gson.Gson;
-import org.jsoup.helper.W3CDom;
 import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.google.ResponseData;
 import ru.samlib.client.domain.google.Result;
-import ru.samlib.client.lister.Lister;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.SystemUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -24,7 +19,7 @@ import java.util.List;
 /**
  * Created by Rufim on 07.07.2015.
  */
-public class GoogleSearchClient implements Lister<Link> {
+public class GoogleSearchClient implements DataSource<Link> {
 
     private static final Integer page_size = 10;
     private final String query;

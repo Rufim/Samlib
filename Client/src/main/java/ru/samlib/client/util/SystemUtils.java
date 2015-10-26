@@ -1,7 +1,6 @@
 package ru.samlib.client.util;
 
 import android.util.Log;
-import ru.samlib.client.lister.Lister;
 
 import java.io.*;
 import java.math.BigDecimal;

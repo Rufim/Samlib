@@ -47,7 +47,7 @@ public class SearchFragment extends ListFragment {
 
         public SearchArrayAdapter() {
             super(R.layout.item_search);
-            setLister(new GoogleSearchClient(getArguments().getString(ARG_SEARCH_QUERY)));
+            setDataSource(new GoogleSearchClient(getArguments().getString(ARG_SEARCH_QUERY)));
         }
 
         @Override

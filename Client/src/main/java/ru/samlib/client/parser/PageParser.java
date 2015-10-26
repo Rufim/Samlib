@@ -4,7 +4,7 @@ import android.util.Log;
 
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.lister.Lister;
+import ru.samlib.client.lister.DataSource;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,7 +12,6 @@ import org.jsoup.select.Elements;
 import ru.samlib.client.lister.ParserPageLister;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.List;
 /**
  * Created by Rufim on 29.06.2015.
  */
-public abstract class PageParser<E extends Validatable> extends Parser implements Lister<E> {
+public abstract class PageParser<E extends Validatable> extends Parser implements DataSource<E> {
 
     protected final int pageSize;
 

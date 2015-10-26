@@ -201,8 +201,8 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder addToBackStackIfNotFirst() {
-        this.toBackStackIfNotFirst = true;
+    public FragmentBuilder notAddToBackStackIfNotFirst() {
+        this.toBackStackIfNotFirst = false;
         return this;
     }
 
@@ -212,6 +212,9 @@ public class FragmentBuilder {
     }
 
     public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass, String tag) {
+        if(fragmentClass == null && tag == null) {
+            return null;
+        }
         Fragment fr = manager.findFragmentByTag(tag);
         FragmentTransaction transaction = manager.beginTransaction();
         boolean first = false;
@@ -219,7 +222,11 @@ public class FragmentBuilder {
             if (fr == null) {
                 first = true;
                 if(fragmentClass == null) {
-                    return null;
+                    try {
+                        fragmentClass = (Class<F>) Class.forName(tag);
+                    } catch (ClassNotFoundException e) {
+                        return null;
+                    }
                 }
             }
             fr = newFragment(fragmentClass);

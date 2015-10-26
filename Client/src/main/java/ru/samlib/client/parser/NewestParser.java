@@ -6,12 +6,11 @@ import ru.samlib.client.domain.entity.Work;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import ru.samlib.client.lister.Lister;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 /**
  * Created by Rufim on 22.05.2014.
  */
-public class NewestParser extends Parser implements Lister<Work> {
+public class NewestParser extends Parser implements DataSource<Work> {
 
     public NewestParser() {
         try {

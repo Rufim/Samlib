@@ -3,7 +3,6 @@ package ru.samlib.client.fragments;
 import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.*;
 import android.util.Log;
 import android.view.*;
@@ -13,7 +12,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.lister.Lister;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
@@ -44,43 +43,42 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected ItemListAdapter<I> adapter;
     protected LinearLayoutManager layoutManager;
     protected VerticalRecyclerViewFastScroller scroller;
-    protected Lister<I> savedLister;
-    protected Lister<I> lister;
+    protected DataSource<I> savedDataSource;
+    protected DataSource<I> dataSource;
 
     //
     protected int pageSize = 50;
     protected volatile boolean isLoading = false;
     protected volatile boolean isEnd = false;
-    protected int absoluteCount = 0;
+    protected int currentCount = 0;
     protected int pastVisiblesItems = 0;
-    protected ListerTask listerTask;
+    protected DataTask dataTask;
     protected FilterTask filterTask;
     protected String lastSearchQuery;
     protected Object lastFilterQuery;
     protected boolean enableFiltering = false;
     protected long lastFilteringTime = 0;
 
-
     public ListFragment() {
     }
 
-    public ListFragment(Lister<I> lister) {
-        this.lister = lister;
+    public ListFragment(DataSource<I> dataSource) {
+        this.dataSource = dataSource;
     }
 
-    public void setLister(Lister<I> lister) {
-        this.lister = lister;
+    public void setDataSource(DataSource<I> dataSource) {
+        this.dataSource = dataSource;
     }
 
     public void saveLister() {
-        savedLister = lister;
+        savedDataSource = dataSource;
     }
 
     public boolean restoreLister() {
-        if (savedLister != null) {
-            lister = savedLister;
+        if (savedDataSource != null) {
+            dataSource = savedDataSource;
             refreshData(true);
-            savedLister = null;
+            savedDataSource = null;
             return true;
         } else {
             return false;
@@ -91,7 +89,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     public boolean onQueryTextChange(String query) {
         if (query.isEmpty() && !searchView.isIconified() && searchView.hasFocus()) {
             searchView.clearFocus();
-            ;
             onSearchViewClose(searchView);
         }
         return enableFiltering;
@@ -180,12 +177,12 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (showProgress) {
             startLoading();
         }
-        if (lister != null) {
-            ListerTask listerTask = new ListerTask(count, onElementsLoadedTask, params);
-            if (this.listerTask == null) {
-                listerTask.execute();
+        if (dataSource != null) {
+            DataTask dataTask = new DataTask(count, onElementsLoadedTask, params);
+            if (this.dataTask == null) {
+                dataTask.execute();
             }
-            this.listerTask = listerTask;
+            this.dataTask = dataTask;
         }
     }
 
@@ -196,8 +193,9 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected abstract ItemListAdapter<I> getAdapter();
 
 
+
     protected void clearData() {
-        absoluteCount = 0;
+        currentCount = 0;
         pastVisiblesItems = 0;
         isEnd = false;
         if (adapter != null) {
@@ -302,13 +300,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             });
         }
         if (adapter != null) {
-            if (lister != null) {
+            if (dataSource != null) {
                 isLoading = true;
-                if (listerTask != null) {
-                    listerTask.cancel(true);
+                if (dataTask != null) {
+                    dataTask.cancel(true);
                 }
-                listerTask = new ListerTask(pageSize);
-                listerTask.execute();
+                dataTask = new DataTask(pageSize);
+                dataTask.execute();
             } else {
                 stopLoading();
                 layoutManager.scrollToPositionWithOffset(pastVisiblesItems, 0);
@@ -318,17 +316,17 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         return rootView;
     }
 
-    public class ListerTask extends AsyncTask<Void, Void, List<I>> {
+    public class DataTask extends AsyncTask<Void, Void, List<I>> {
 
         private int count = 0;
         private AsyncTask onElementsLoadedTask;
         private Object[] LoadedTaskParams;
 
-        public ListerTask(int count) {
+        public DataTask(int count) {
             this.count = count;
         }
 
-        public ListerTask(int count, AsyncTask onElementsLoadedTask, Object[] LoadedTaskParams) {
+        public DataTask(int count, AsyncTask onElementsLoadedTask, Object[] LoadedTaskParams) {
             this.count = count;
             this.onElementsLoadedTask = onElementsLoadedTask;
             this.LoadedTaskParams = LoadedTaskParams;
@@ -343,13 +341,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         protected List<I> doInBackground(Void... params) {
             List<I> items = null;
             try {
-                items = lister.getItems(absoluteCount, count);
+                items = dataSource.getItems(currentCount, count);
                 if (items.size() == 0) {
                     return items;
                 }
                 List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
                 while (count > foundItems.size()) {
-                    foundItems = lister.getItems(absoluteCount + items.size(), count);
+                    foundItems = dataSource.getItems(currentCount + items.size(), count);
                     if (foundItems.size() == 0) {
                         break;
                     }
@@ -358,7 +356,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Cant get new Items", e);
-                ErrorFragment.show(ListFragment.this, R.string.error);
+                ErrorFragment.show(ListFragment.this, R.string.error_network);
             }
             return items;
         }
@@ -372,15 +370,15 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 } else {
                     adapter.addItems(result);
                 }
-                absoluteCount = adapter.getAbsoluteItemCount();
+                currentCount = adapter.getAbsoluteItemCount();
                 stopLoading();
                 if (onElementsLoadedTask != null) {
                     onElementsLoadedTask.execute(LoadedTaskParams);
                 }
-                if (this != listerTask) {
-                    listerTask.execute();
+                if (this != dataTask) {
+                    dataTask.execute();
                 }
-                listerTask = null;
+                dataTask = null;
             }
         }
     }

@@ -31,7 +31,7 @@ public class IllustrationFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_illustration, container, false);
+        View rootView = inflater.inflate(R.layout.item_illustration, container, false);
         bind(rootView);
         imageLink = getArguments().getString(Constants.ArgsName.LINK);
         Picasso.with(getActivity()).load(imageLink).into(illustration, new Callback() {

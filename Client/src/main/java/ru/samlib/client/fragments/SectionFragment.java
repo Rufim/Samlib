@@ -55,7 +55,7 @@ public class SectionFragment extends ListFragment<Linkable> {
 
     public SectionFragment() {
         pageSize = 10;
-        setLister((skip, size) -> {
+        setDataSource((skip, size) -> {
             while (author == null) {
                 SystemClock.sleep(10);
             }
@@ -95,7 +95,7 @@ public class SectionFragment extends ListFragment<Linkable> {
     public void onEvent(CategorySelectedEvent event) {
         if (category == null) {
             saveLister();
-            setLister((skip, size) -> {
+            setDataSource((skip, size) -> {
                 if (category != null) {
                     if (!category.isParsed()) {
                         try {
