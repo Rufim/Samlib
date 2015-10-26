@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.util.TextUtils;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -62,7 +63,7 @@ public class SearchParser extends PageParser {
     }
 
     //TODO: Need to be implemented with filters
-    public List search(String string, int skip, int size) {
+    public List search(String string, int skip, int size) throws IOException {
         request.setParam(SearchParams.FIND, string);
         return getItems(skip, size);
     }

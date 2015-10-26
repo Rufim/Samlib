@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.support.annotation.IdRes;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -141,6 +143,10 @@ public class SectionFragment extends ListFragment<Linkable> {
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    public static void show(FragmentManager manager, @IdRes int container, String link) {
+        show(manager, container, SectionFragment.class, Constants.ArgsName.LINK, link);
     }
 
     private class SectionFragmentAdaptor extends MultiItemListAdapter<Linkable> {

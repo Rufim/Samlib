@@ -28,6 +28,7 @@
     <string name="app_name">Самлиб</string>
     <string name="loading">Загрузка...</string>
     <string name="error">Произошла ошибка!</string>
+    <string name="error_network">Проврьте соединение с\nинтернетом...</string>
 
     <string-array name="main_menu">
         <item>Новинки</item>

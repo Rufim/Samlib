@@ -216,13 +216,18 @@ public class FragmentBuilder {
         FragmentTransaction transaction = manager.beginTransaction();
         boolean first = false;
         if (fr == null || newFragment) {
-            if (fr == null) first = true;
+            if (fr == null) {
+                first = true;
+                if(fragmentClass == null) {
+                    return null;
+                }
+            }
             fr = newFragment(fragmentClass);
             transaction.replace(container, fr, tag);
         } else {
             fr.getArguments().putAll(bundle);
             if (manager.findFragmentById(container) != fr) {
-                transaction.replace(container, fr);
+                transaction.replace(container, fr, tag);
             } else {
                 transaction.remove(fr);
                 transaction.add(container, fr, tag);

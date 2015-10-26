@@ -10,6 +10,8 @@ import ru.samlib.client.lister.Lister;
 import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.TextUtils;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ public class NewestParser extends Parser implements Lister<Work> {
         }
     }
 
-    public List<Work> getItems(int skip, int size) {
+    public List<Work> getItems(int skip, int size) throws IOException {
 
         List<Work> works = new ArrayList<>();
         try {
@@ -78,10 +80,10 @@ public class NewestParser extends Parser implements Lister<Work> {
 
         } catch (Exception | Error e) {
             Log.e(TAG,e.getMessage() , e);
+            if (e instanceof IOException) {
+                throw e;
+            }
         }
-        //      for (Work update : works) {
-        //          Log.e("Parser", update.toString());
-        //      }
         Log.e(TAG, "Works parsed: " + works.size() + " skip is " + skip);
         if (works.size() > 0 && size > works.size()) {
             works.addAll(getItems(skip + size, size - works.size()));

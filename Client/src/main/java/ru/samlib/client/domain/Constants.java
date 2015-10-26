@@ -18,6 +18,7 @@ public class Constants {
         public static final String LINK = "link";
         public static final String TITLE = "title";
         public static final String WORK = "work";
+        public static final String MESSAGE = "message";
         public static final String TTS_PLAY_POSITION = "position";
     }
 

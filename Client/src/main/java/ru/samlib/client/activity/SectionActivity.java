@@ -68,22 +68,18 @@ public class SectionActivity extends BaseActivity {
         if (args != null) {
             author = (Author) args.getSerializable(Constants.ArgsName.AUTHOR);
         }
-        String authorLink = null;
+        String link = null;
         if (author != null) {
-            authorLink = author.getLink();
+            link = author.getLink();
         }
         if (validateIntent(intent)) {
-            authorLink = intent.getData().getPath();
+            link = intent.getData().getPath();
         }
-        if (authorLink != null) {
-            if (authorLink.endsWith(Work.HTML_SUFFIX)) {
-                new FragmentBuilder(getSupportFragmentManager())
-                        .putArg(Constants.ArgsName.LINK, authorLink)
-                        .replaceFragment(R.id.container, WorkFragment.class);
+        if (link != null) {
+            if (link.endsWith(Work.HTML_SUFFIX)) {
+                WorkFragment.show(getSupportFragmentManager(), R.id.container, link);
             } else {
-                new FragmentBuilder(getSupportFragmentManager())
-                        .putArg(Constants.ArgsName.LINK, authorLink)
-                        .replaceFragment(R.id.container, SectionFragment.class);
+                SectionFragment.show(getSupportFragmentManager(), R.id.container, link);
             }
         }
     }

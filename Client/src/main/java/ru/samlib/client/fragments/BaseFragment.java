@@ -2,7 +2,9 @@ package ru.samlib.client.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.BaseActivity;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.util.FragmentBuilder;
@@ -35,6 +38,14 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         return FragmentBuilder.newInstance(fragmentClass);
     }
 
+    public static <F extends BaseFragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass) {
+        return new FragmentBuilder(manager).replaceFragment(container, fragmentClass);
+    }
+
+    public static <F extends BaseFragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
+        return new FragmentBuilder(manager).putArg(key, obj).replaceFragment(container, fragmentClass);
+    }
+
     public BaseFragment() {
     }
 
@@ -57,6 +68,18 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         return rootView;
     }
 
+    public BaseFragment show(FragmentManager manager, @IdRes int container) {
+        return show(manager, container, this.getClass());
+    }
+
+    public BaseFragment show(FragmentManager manager, @IdRes int container, String key, Object obj) {
+        return show(manager, container, this.getClass(), key, obj);
+    }
+
+    public int getContainerId() {
+        return ((ViewGroup) getView().getParent()).getId();
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -72,6 +95,9 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         EventBus.getDefault().post(event);
     }
 
+    public void bind(View view) {
+        ButterKnife.bind(this, view);
+    }
 
     @Override
     public void onDestroyView() {

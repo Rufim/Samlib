@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.os.*;
+import android.support.annotation.IdRes;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
@@ -309,6 +311,10 @@ public class WorkFragment extends ListFragment<String> {
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    public static void show(FragmentManager manager, @IdRes int container, String link) {
+        show(manager, container, WorkFragment.class, Constants.ArgsName.LINK, link);
     }
 
     private int getVisibleLines(TextView textView) {

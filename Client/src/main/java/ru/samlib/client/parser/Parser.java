@@ -12,6 +12,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -65,7 +66,7 @@ public abstract class Parser {
                 doc = Jsoup.parse(htmlFile, request.getEncoding(), request.getUrl().toString());
             } catch (Exception ex) {
                 Log.w(TAG, "Url is not exist or not have valid content: " + request);
-                return null;
+                throw new IOException("Network is not available", ex);
             }
             if (isOver) {
                 if (!htmlFile.isCached) {
@@ -75,6 +76,8 @@ public abstract class Parser {
             } else {
                 executor.submit(new continueToParse(htmlFile));
             }
+        } else {
+            throw new IOException("Network is not available");
         }
         return doc;
     }

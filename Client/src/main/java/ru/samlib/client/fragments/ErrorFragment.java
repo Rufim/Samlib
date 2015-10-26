@@ -1,19 +1,58 @@
 package ru.samlib.client.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import com.nd.android.sdp.im.common.widget.htmlview.view.RequestHandler;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.Constants;
+import ru.samlib.client.util.FragmentBuilder;
 
 /**
  * Created by 0shad on 13.07.2015.
  */
 public class ErrorFragment extends BaseFragment {
 
+    private static final String TAG = ErrorFragment.class.getSimpleName();
+
+    @Bind(R.id.error_text)
+    TextView errorMessage;
+    @Bind(R.id.refresh)
+    SwipeRefreshLayout swipeRefresh;
+    String previousFragmentTag;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_error, container, false);
+        ButterKnife.bind(this, rootView);
+        previousFragmentTag = getArguments().getString(Constants.ArgsName.LAST_FRAGMENT_TAG);
+        swipeRefresh.setOnRefreshListener(() -> {
+            new FragmentBuilder(getFragmentManager())
+                    .useOldFragment()
+                    .replaceFragment(getContainerId(), null, previousFragmentTag);
+        });
+        String message = getArguments().getString(Constants.ArgsName.MESSAGE);
+        errorMessage.setText(message);
         return rootView;
+    }
+
+    public static void show(BaseFragment fragment, @StringRes int message) {
+         new FragmentBuilder(fragment.getFragmentManager())
+                .putArg(Constants.ArgsName.MESSAGE, fragment.getString(message))
+                .putArg(Constants.ArgsName.LAST_FRAGMENT_TAG, fragment.getClass().getSimpleName())
+                .replaceFragment(fragment.getContainerId(), ErrorFragment.class);;
     }
 }

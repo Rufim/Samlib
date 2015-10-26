@@ -3,7 +3,9 @@ package ru.samlib.client.fragments;
 import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.*;
+import android.util.Log;
 import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,6 +17,7 @@ import ru.samlib.client.lister.Lister;
 import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -28,10 +31,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Bind(R.id.load_progress)
     protected ProgressBar progressBar;
-    @Bind(R.id.load_more)
-    protected ProgressBar loadMoreBar;
     @Bind(R.id.loading_text)
     protected TextView loadingText;
+    @Bind(R.id.load_more)
+    protected ProgressBar loadMoreBar;
     @Bind(R.id.items)
     protected RecyclerView itemList;
     @Bind(R.id.refresh)
@@ -197,7 +200,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         absoluteCount = 0;
         pastVisiblesItems = 0;
         isEnd = false;
-        if(adapter != null) {
+        if (adapter != null) {
             adapter.getItems().clear();
             adapter.notifyDataSetChanged();
         }
@@ -338,18 +341,24 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         @Override
         protected List<I> doInBackground(Void... params) {
-            List<I> items = lister.getItems(absoluteCount, count);
-            if (items.size() == 0) {
-                return items;
-            }
-            List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
-            while (count > foundItems.size()) {
-                foundItems = lister.getItems(absoluteCount + items.size(), count);
-                if (foundItems.size() == 0) {
-                    break;
+            List<I> items = null;
+            try {
+                items = lister.getItems(absoluteCount, count);
+                if (items.size() == 0) {
+                    return items;
                 }
-                items.addAll(foundItems);
-                foundItems = adapter.find(adapter.getLastQuery(), items);
+                List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
+                while (count > foundItems.size()) {
+                    foundItems = lister.getItems(absoluteCount + items.size(), count);
+                    if (foundItems.size() == 0) {
+                        break;
+                    }
+                    items.addAll(foundItems);
+                    foundItems = adapter.find(adapter.getLastQuery(), items);
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Cant get new Items", e);
+                ErrorFragment.show(ListFragment.this, R.string.error);
             }
             return items;
         }

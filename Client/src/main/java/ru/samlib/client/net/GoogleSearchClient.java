@@ -10,9 +10,11 @@ import ru.samlib.client.domain.google.Result;
 import ru.samlib.client.lister.Lister;
 import ru.samlib.client.util.SystemUtils;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -52,11 +54,14 @@ public class GoogleSearchClient implements Lister<Link> {
     }
 
     @Override
-    public List<Link> getItems(int skip, int size) {
+    public List<Link> getItems(int skip, int size) throws IOException {
         List<Link> links = new ArrayList<>();
         while (links.size() < size) {
             int index = skip / page_size;
             GoogleResults results = search(query, Link.getBaseDomain(), index);
+            if(results == null) {
+                throw new IOException("Google Service is not available");
+            }
             if(results.getResponseData().getCursor() != null) {
                 String count = results.getResponseData().getCursor().getResultCount();
                 if (SystemUtils.parseInt(count) <= index) {

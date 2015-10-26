@@ -11,6 +11,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.lister.ParserPageLister;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +39,14 @@ public abstract class PageParser<E extends Validatable> extends Parser implement
     }
 
     @Override
-    public List<E> getItems(int skip, int size) {
+    public List<E> getItems(int skip, int size) throws IOException {
             List<E> elementList = new ArrayList<>();
             try {
-                Document doc;
                 Elements elements;
                 index = skip / pageSize;
                 if (lastPage > 0 && index > lastPage) return elementList;
                 lister.setPage(request, index);
-                doc = getDocument(request);
+                Document doc = getDocument(request);
                 if (lastPage < 0) {
                     lastPage = lister.getLastPage(doc);
                 }
@@ -61,6 +62,9 @@ public abstract class PageParser<E extends Validatable> extends Parser implement
                 Log.e(TAG, "Elements parsed: " + elementList.size() + " skip is " + skip);
             } catch (Exception | ExceptionInInitializerError e) {
                 Log.e(TAG, e.getMessage(), e);
+                if(e instanceof IOException) {
+                    throw e;
+                }
             }
             //  for (Element element : elementList) {
             //      Log.e(TAG, element.toString());
