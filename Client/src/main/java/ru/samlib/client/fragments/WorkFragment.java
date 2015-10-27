@@ -288,7 +288,7 @@ public class WorkFragment extends ListFragment<String> {
                     }
                 }
             };
-            loadElements(index + pageSize, true, moveToIndex, index, textOffset);
+            loadItems(index + pageSize, true, moveToIndex, index, textOffset);
         }
     }
 
@@ -299,11 +299,17 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
-        if (work == null || !work.getLink().equals(link)) {
-            work = new Work(link);
-            clearData();
-        } else {
-            postEvent(new WorkParsedEvent(work));
+        Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
+        if(incomingWork != null && incomingWork.equals(work)) {
+            work = incomingWork;
+        }
+        if(link != null) {
+            if (work == null || !work.getLink().equals(link)) {
+                work = new Work(link);
+                clearData();
+            } else {
+                postEvent(new WorkParsedEvent(work));
+            }
         }
         colorFoundedText = getResources().getColor(R.color.red_dark);
         colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);

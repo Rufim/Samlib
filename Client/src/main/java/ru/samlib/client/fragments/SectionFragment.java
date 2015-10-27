@@ -30,6 +30,7 @@ import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
+import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.domain.Constants;
@@ -136,11 +137,17 @@ public class SectionFragment extends ListFragment<Linkable> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
-        if (author == null || !author.getLink().equals(link)) {
-            author = new Author(link);
-            clearData();
-        } else {
-            EventBus.getDefault().post(new AuthorParsedEvent(author));
+        Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);;
+        if (incomingAuthor!= null && incomingAuthor.equals(author)) {
+            author = incomingAuthor;
+        }
+        if (link != null) {
+            if (author == null || !author.getLink().equals(link)) {
+                author = new Author(link);
+                clearData();
+            } else {
+                EventBus.getDefault().post(new AuthorParsedEvent(author));
+            }
         }
         return super.onCreateView(inflater, container, savedInstanceState);
     }

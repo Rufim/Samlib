@@ -102,6 +102,11 @@ public class TextUtils {
         return s.toString();
     }
 
+    public static String cleanupSlashes(String link) {
+        return link.replaceAll("/+", "/");
+    }
+
+
     public static String replaceOutsideTags(String text, String template, String replacement) {
         return text.replaceAll("(" + template + ")" + OUTSIDE_TAGS, replacement);
     }

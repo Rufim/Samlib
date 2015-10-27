@@ -28,6 +28,12 @@ public abstract class FragmentPagerAdapter<I,F extends BaseFragment> extends Fra
 
     public void addItems(Collection<I> newItems) {
         items.addAll(newItems);
+        notifyDataSetChanged();
+    }
+
+    public void addItem(I item) {
+        items.add(item);
+        notifyDataSetChanged();
     }
 
     @Override

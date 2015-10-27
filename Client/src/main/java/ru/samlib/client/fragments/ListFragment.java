@@ -170,7 +170,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         swipeRefresh.setRefreshing(false);
     }
 
-    protected void loadElements(int count, boolean showProgress, AsyncTask onElementsLoadedTask, Object... params) {
+    protected void loadItems(int count, boolean showProgress, AsyncTask onElementsLoadedTask, Object... params) {
         if (isLoading || isEnd) {
             return;
         }
@@ -186,8 +186,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
-    protected void loadElements(int count, boolean showProgress) {
-        loadElements(count, showProgress, null, null);
+    protected void loadItems(int count, boolean showProgress) {
+        loadItems(count, showProgress, null, null);
     }
 
     protected abstract ItemListAdapter<I> getAdapter();
@@ -206,7 +206,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public void refreshData(boolean showProgress) {
         clearData();
-        loadElements(pageSize, showProgress);
+        loadItems(pageSize, showProgress);
     }
 
 
@@ -257,7 +257,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_loading_list, container,
                 false);
-        ButterKnife.bind(this, rootView);
+        bind(rootView);
         swipeRefresh.setOnRefreshListener(() -> {
             if (!isLoading) {
                 refreshData(false);
@@ -281,7 +281,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 totalItemCount = mLayoutManager.getItemCount();
                 pastVisiblesItems = layoutManager.findFirstVisibleItemPosition();
                 if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                    loadElements(pageSize, true);
+                    loadItems(pageSize, true);
                 }
             }
         });
@@ -407,7 +407,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                         filter(lastFilterQuery);
                     }
                 } else if (adapter.getItemCount() < pageSize) {
-                    loadElements(pageSize, true);
+                    loadItems(pageSize, true);
                 }
             }
         }

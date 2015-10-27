@@ -3,6 +3,7 @@ package ru.samlib.client.domain;
 import android.content.Context;
 import com.nd.android.sdp.im.common.widget.htmlview.css.StylableElement;
 import ru.samlib.client.domain.entity.Link;
+import ru.samlib.client.util.TextUtils;
 
 /**
  * Created by Rufim on 02.07.2015.
@@ -15,7 +16,7 @@ public interface Linkable {
     public String getAnnotation();
 
     public default String getFullLink() {
-        return Link.getBaseDomain() + cleanupSlashes(getLink());
+        return Link.getBaseDomain() + TextUtils.cleanupSlashes(getLink());
     }
 
     public default boolean isWork() {
@@ -26,9 +27,6 @@ public interface Linkable {
         return isAuthorLink(getLink());
     }
 
-    public static String cleanupSlashes(String link) {
-        return link.replaceAll("/+", "/");
-    }
 
     public static boolean isSamlibLink(String link) {
         return link.matches("/*[a-z]/+[a-z_0-9]+((/*)|(/+[a-z-_0-9]+\\.shtml))?");

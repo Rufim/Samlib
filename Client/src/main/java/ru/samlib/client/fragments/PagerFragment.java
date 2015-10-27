@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import butterknife.Bind;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.FragmentPagerAdapter;
@@ -23,16 +24,19 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
 
     private static final String TAG = PagerFragment.class.getSimpleName();
 
+    @Bind(R.id.load_more)
+    protected ProgressBar loadMoreBar;
     @Bind(R.id.pager_header)
     protected PagerTabStrip pagerHeader;
     @Bind(R.id.pager)
     protected ViewPager pager;
     protected FragmentPagerAdapter<I, F> adapter;
     protected DataSource<I> dataSource;
-    protected boolean isEnd = false;
+    protected volatile boolean isLoading = false;
+    protected volatile boolean isEnd = false;
     protected int pageSize = 50;
     protected int currentCount = 0;
-    protected DataTask dataTask;
+    protected PagerDataTask dataTask;
 
     public PagerFragment() {
     }
@@ -68,8 +72,69 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
                 PagerFragment.this.onPageScrollStateChanged(state);
             }
         });
+        if (adapter != null) {
+            if (dataSource != null) {
+                isLoading = true;
+                if (dataTask != null) {
+                    dataTask.cancel(true);
+                }
+                dataTask = new PagerDataTask(pageSize);
+                dataTask.execute();
+            } else {
+                stopLoading();
+            }
+        }
         return rootView;
     }
+
+    public void startLoading() {
+        isLoading = true;
+        if (loadMoreBar != null) {
+            loadMoreBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void stopLoading() {
+        isLoading = false;
+        if (loadMoreBar != null) {
+            loadMoreBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    protected void loadItems(int count, boolean showProgress, AsyncTask onElementsLoadedTask, Object... params) {
+        if (isLoading || isEnd) {
+            return;
+        }
+        if (showProgress) {
+            startLoading();
+        }
+        if (dataSource != null) {
+            PagerDataTask dataTask = new PagerDataTask(count, onElementsLoadedTask, params);
+            if (this.dataTask == null) {
+                dataTask.execute();
+            }
+            this.dataTask = dataTask;
+        }
+    }
+
+    protected void loadItems(int count, boolean showProgress) {
+        loadItems(count, showProgress, null, null);
+    }
+
+    protected void clearData() {
+        currentCount = 0;
+        isEnd = false;
+        if (adapter != null) {
+            adapter.getItems().clear();
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    public void refreshData(boolean showProgress) {
+        clearData();
+        loadItems(pageSize, showProgress);
+    }
+
 
     public abstract FragmentPagerAdapter<I, F> getAdapter();
 
@@ -78,24 +143,26 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     }
 
     public void onPageSelected(int position) {
-
+        if(position == currentCount - 1) {
+            loadItems(pageSize, true);
+        }
     }
 
     public void onPageScrollStateChanged(int state) {
 
     }
 
-    public class DataTask extends AsyncTask<Void, Void, List<I>> {
+    public class PagerDataTask extends AsyncTask<Void, Void, List<I>> {
 
         private int count = 0;
         private AsyncTask onElementsLoadedTask;
         private Object[] LoadedTaskParams;
 
-        public DataTask(int count) {
+        public PagerDataTask(int count) {
             this.count = count;
         }
 
-        public DataTask(int count, AsyncTask onElementsLoadedTask, Object[] LoadedTaskParams) {
+        public PagerDataTask(int count, AsyncTask onElementsLoadedTask, Object[] LoadedTaskParams) {
             this.count = count;
             this.onElementsLoadedTask = onElementsLoadedTask;
             this.LoadedTaskParams = LoadedTaskParams;
@@ -131,7 +198,6 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
                     adapter.addItems(result);
                 }
                 currentCount = adapter.getCount();
-               // stopLoading();
                 if (onElementsLoadedTask != null) {
                     onElementsLoadedTask.execute(LoadedTaskParams);
                 }
