@@ -1,6 +1,7 @@
 package ru.samlib.client.util;
 
 import android.util.Log;
+import ru.samlib.client.R;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -305,17 +306,17 @@ public class SystemUtils {
         return exec.function(obj);
     }
 
-    public interface IfNotNullNoArgs<R, T> {
-        R function();
+    public interface IfNotNullNoArgs {
+        void function();
     }
 
-    public static <T, R> R nn(IfNotNullNoArgs<R, T> exec, T... obj) {
+    public static <T, R> void nn(IfNotNullNoArgs exec, T... obj) {
         for (T t : obj) {
             if (t == null) {
-                return null;
+                return;
             }
         }
-        return exec.function();
+        exec.function();
     }
 
     public static int parseInt(String intValue) {

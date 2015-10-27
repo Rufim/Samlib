@@ -14,6 +14,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.util.SystemUtils;
 
 /**
  * Created by Dmitry on 26.10.2015.
@@ -34,14 +35,14 @@ public class IllustrationFragment extends BaseFragment {
         View rootView = inflater.inflate(R.layout.item_illustration, container, false);
         bind(rootView);
         imageLink = getArguments().getString(Constants.ArgsName.LINK);
-        Picasso.with(getActivity()).load(imageLink).into(illustration, new Callback() {
+        Picasso.with(getActivity()).load(imageLink).into(illustration, new ImageCallback(progressBar, loadingText, illustration) {
             @Override
             public void onSuccess() {
-                if(illustration != null) {
+                SystemUtils.nn(() -> {
                     illustration.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
                     loadingText.setVisibility(View.GONE);
-                }
+                }, illustration, progressBar, loadingText);
             }
 
             @Override
@@ -50,6 +51,33 @@ public class IllustrationFragment extends BaseFragment {
             }
         });
         return rootView;
+    }
+
+    class ImageCallback implements Callback {
+
+        ProgressBar progressBar;
+        TextView loadingText;
+        ImageView illustration;
+
+        public ImageCallback(ProgressBar progressBar, TextView loadingText, ImageView illustration) {
+            this.progressBar = progressBar;
+            this.loadingText = loadingText;
+            this.illustration = illustration;
+        }
+
+        @Override
+        public void onSuccess() {
+            if (illustration != null) {
+                illustration.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+                loadingText.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        public void onError() {
+            ErrorFragment.show(IllustrationFragment.this, R.string.error_network);
+        }
     }
 
 }
