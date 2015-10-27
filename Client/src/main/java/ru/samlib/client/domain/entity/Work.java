@@ -80,7 +80,15 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     }
 
     public String getLink() {
-        return author.getLink() + "/" + link;
+        return author.getLink() + link;
+    }
+
+    public String getIllustrationsLink() {
+        return "/img" + author.getLink() + link.replace(HTML_SUFFIX, "/index"+ HTML_SUFFIX);
+    }
+
+    public String getCommentsLink() {
+        return "/comment" + author.getLink() + link.replace(HTML_SUFFIX, "");
     }
 
     public String getTypeName() {

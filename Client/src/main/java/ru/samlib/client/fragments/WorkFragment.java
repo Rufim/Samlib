@@ -58,6 +58,18 @@ public class WorkFragment extends ListFragment<String> {
         SEARCH, SPEAK, NORMAL
     }
 
+    public static void show(FragmentManager manager, @IdRes int container, String link) {
+        show(manager, container, WorkFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(BaseFragment fragment, String link) {
+        show(fragment, WorkFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(BaseFragment fragment, Work work) {
+        show(fragment, WorkFragment.class, Constants.ArgsName.WORK, work);
+    }
+
     public WorkFragment() {
         pageSize = 100;
         setDataSource(((skip, size) -> {
@@ -180,9 +192,7 @@ public class WorkFragment extends ListFragment<String> {
                 }
                 return true;
             case R.id.action_work_to_author:
-                new FragmentBuilder(getFragmentManager())
-                        .putArg(Constants.ArgsName.LINK, work.getAuthor().getLink())
-                        .replaceFragment(WorkFragment.this, SectionFragment.class);
+                SectionFragment.show(this, work.getAuthor());
                 return true;
             case R.id.action_work_share:
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");
@@ -317,10 +327,6 @@ public class WorkFragment extends ListFragment<String> {
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    public static void show(FragmentManager manager, @IdRes int container, String link) {
-        show(manager, container, WorkFragment.class, Constants.ArgsName.LINK, link);
     }
 
     private int getVisibleLines(TextView textView) {

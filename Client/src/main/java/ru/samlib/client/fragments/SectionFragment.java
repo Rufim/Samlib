@@ -54,6 +54,18 @@ public class SectionFragment extends ListFragment<Linkable> {
     private Author author;
     private Category category;
 
+    public static void show(FragmentManager manager, @IdRes int container, String link) {
+        show(manager, container, SectionFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(BaseFragment fragment, String link) {
+        show(fragment, SectionFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(BaseFragment fragment, Author author) {
+        show(fragment, SectionFragment.class, Constants.ArgsName.AUTHOR, author);
+    }
+
     public SectionFragment() {
         pageSize = 10;
         setDataSource((skip, size) -> {
@@ -137,8 +149,9 @@ public class SectionFragment extends ListFragment<Linkable> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
-        Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);;
-        if (incomingAuthor!= null && incomingAuthor.equals(author)) {
+        Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
+        ;
+        if (incomingAuthor != null && incomingAuthor.equals(author)) {
             author = incomingAuthor;
         }
         if (link != null) {
@@ -152,10 +165,6 @@ public class SectionFragment extends ListFragment<Linkable> {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
-    public static void show(FragmentManager manager, @IdRes int container, String link) {
-        show(manager, container, SectionFragment.class, Constants.ArgsName.LINK, link);
-    }
-
     private class SectionFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public SectionFragmentAdaptor() {
@@ -164,20 +173,20 @@ public class SectionFragment extends ListFragment<Linkable> {
 
         @Override
         public void onClick(View view, int position) {
-            if (SystemUtils.contains(view.getId(),
-                    R.id.work_item_layout,
-                    R.id.work_item_title,
-                    R.id.work_item_rate_and_size)) {
-                openLinkable(getItem(position));
+            switch (view.getId()) {
+                case R.id.work_item_layout:
+                case R.id.work_item_title:
+                case R.id.work_item_rate_and_size:
+                    openLinkable(getItem(position));
+                    break;
+                case R.id.illustration_button:
+                    IllustrationPagerFragment.show(SectionFragment.this, (Work) getItem(position));
             }
         }
 
         public void openLinkable(Linkable linkable) {
             if (linkable.isWork()) {
-                new FragmentBuilder(getFragmentManager())
-                        .putArg(Constants.ArgsName.LINK, linkable.getLink())
-                        .addToBackStack()
-                        .replaceFragment(SectionFragment.this, WorkFragment.class);
+                WorkFragment.show(SectionFragment.this, linkable.getLink());
             } else {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
                 intent.putExtra(Browser.EXTRA_APPLICATION_ID, getActivity().getPackageName());

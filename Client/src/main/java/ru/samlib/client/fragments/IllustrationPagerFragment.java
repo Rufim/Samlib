@@ -1,7 +1,9 @@
 package ru.samlib.client.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,19 +31,29 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
     private Work work;
 
+    public static void show(FragmentManager manager, @IdRes int container, String link) {
+        show(manager, container, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(BaseFragment fragment, String link) {
+        show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(BaseFragment fragment, Work work) {
+        show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.WORK, work);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        if (incomingWork != null && incomingWork.equals(work)) {
+        if (incomingWork != null && !incomingWork.equals(work)) {
             work = incomingWork;
         }
         if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 clearData();
-            } else {
-                postEvent(new WorkParsedEvent(work));
             }
         }
         try {
@@ -61,6 +73,11 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
                 return new FragmentBuilder(getFragmentManager())
                         .putArg(Constants.ArgsName.LINK, items.get(position).getFullLink())
                         .newFragment(IllustrationFragment.class);
+            }
+
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return items.get(position).getTitle();
             }
         };
     }

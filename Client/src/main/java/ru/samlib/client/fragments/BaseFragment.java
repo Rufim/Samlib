@@ -38,12 +38,12 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         return FragmentBuilder.newInstance(fragmentClass);
     }
 
-    public static <F extends BaseFragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass) {
-        return new FragmentBuilder(manager).replaceFragment(container, fragmentClass);
+    protected static <F extends BaseFragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
+        return new FragmentBuilder(manager).putArg(key, obj).replaceFragment(container, fragmentClass);
     }
 
-    public static <F extends BaseFragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
-        return new FragmentBuilder(manager).putArg(key, obj).replaceFragment(container, fragmentClass);
+    protected static <F extends BaseFragment> F show(BaseFragment fragment, Class<F> fragmentClass, String key, Object obj) {
+        return new FragmentBuilder(fragment.getFragmentManager()).putArg(key, obj).addToBackStack().replaceFragment(fragment.getContainerId(), fragmentClass);
     }
 
     public BaseFragment() {
@@ -66,10 +66,6 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         return rootView;
-    }
-
-    public BaseFragment show(FragmentManager manager, @IdRes int container) {
-        return show(manager, container, this.getClass());
     }
 
     public BaseFragment show(FragmentManager manager, @IdRes int container, String key, Object obj) {

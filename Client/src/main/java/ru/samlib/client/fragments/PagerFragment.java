@@ -36,6 +36,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     protected volatile boolean isEnd = false;
     protected int pageSize = 50;
     protected int currentCount = 0;
+    protected int currentPage = 0;
     protected PagerDataTask dataTask;
 
     public PagerFragment() {
@@ -56,6 +57,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
         bind(rootView);
         adapter = getAdapter();
         pager.setAdapter(adapter);
+        pager.setCurrentItem(currentPage);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -143,9 +145,10 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     }
 
     public void onPageSelected(int position) {
-        if(position == currentCount - 1) {
+        if(!isEnd && position == currentCount - 1) {
             loadItems(pageSize, true);
         }
+        currentPage = position;
     }
 
     public void onPageScrollStateChanged(int state) {

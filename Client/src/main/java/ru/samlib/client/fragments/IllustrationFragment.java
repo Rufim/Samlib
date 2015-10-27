@@ -37,9 +37,11 @@ public class IllustrationFragment extends BaseFragment {
         Picasso.with(getActivity()).load(imageLink).into(illustration, new Callback() {
             @Override
             public void onSuccess() {
-                illustration.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                loadingText.setVisibility(View.GONE);
+                if(illustration != null) {
+                    illustration.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    loadingText.setVisibility(View.GONE);
+                }
             }
 
             @Override
@@ -50,7 +52,4 @@ public class IllustrationFragment extends BaseFragment {
         return rootView;
     }
 
-    public static void show(FragmentManager manager, @IdRes int container, String link) {
-        show(manager, container, IllustrationFragment.class, Constants.ArgsName.LINK, link);
-    }
 }

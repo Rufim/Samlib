@@ -21,7 +21,7 @@ import java.util.List;
 public class IllustrationsParser extends Parser implements DataSource<Image> {
 
     public IllustrationsParser(Work work) throws MalformedURLException {
-        setPath("/img/" + work.getLink());
+        setPath(work.getIllustrationsLink());
     }
 
     @Override
