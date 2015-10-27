@@ -62,7 +62,7 @@ public class ErrorFragment extends BaseFragment {
                 .putArg(Constants.ArgsName.FRAGMENT_CLASS, fragment.getClass())
                 .putArg(Constants.ArgsName.FRAGMENT_ARGS, fragment.getArguments())
                 .putArg(Constants.ArgsName.RESOURCE_ID, icon_id)
-                .replaceFragment(fragment.getContainerId(), ErrorFragment.class);
+                .replaceFragment(fragment, ErrorFragment.class);
     }
 
     public static void show(BaseFragment fragment, @StringRes int message) {
@@ -70,6 +70,6 @@ public class ErrorFragment extends BaseFragment {
                 .putArg(Constants.ArgsName.MESSAGE, fragment.getString(message))
                 .putArg(Constants.ArgsName.FRAGMENT_CLASS, fragment.getClass())
                 .putArg(Constants.ArgsName.FRAGMENT_ARGS, fragment.getArguments())
-                .replaceFragment(fragment.getContainerId(), ErrorFragment.class);
+                .replaceFragment(fragment, ErrorFragment.class);
     }
 }

@@ -106,8 +106,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(Constants.ArgsName.LAST_FRAGMENT_TAG,
-                getSupportFragmentManager().findFragmentById(R.id.container).getTag());
+        outState.putString(Constants.ArgsName.LAST_FRAGMENT_TAG, getSupportFragmentManager().findFragmentById(R.id.container).getTag());
         super.onSaveInstanceState(outState);
     }
 

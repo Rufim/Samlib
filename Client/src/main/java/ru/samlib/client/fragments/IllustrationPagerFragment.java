@@ -71,7 +71,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
             @Override
             public Fragment getItem(int position) {
                 return new FragmentBuilder(getFragmentManager())
-                        .putArg(Constants.ArgsName.LINK, items.get(position).getFullLink())
+                        .putArg(Constants.ArgsName.IMAGE, items.get(position))
                         .newFragment(IllustrationFragment.class);
             }
 

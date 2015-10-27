@@ -14,6 +14,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.util.SystemUtils;
 
 /**
@@ -28,14 +29,16 @@ public class IllustrationFragment extends BaseFragment {
     @Bind(R.id.illustration)
     ImageView illustration;
     String imageLink = "";
+    Image image;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.item_illustration, container, false);
         bind(rootView);
-        imageLink = getArguments().getString(Constants.ArgsName.LINK);
-        Picasso.with(getActivity()).load(imageLink).into(illustration, new ImageCallback(progressBar, loadingText, illustration) {
+        image = (Image) getArguments().getSerializable(Constants.ArgsName.IMAGE);
+        Picasso.with(getActivity()).load(image.getFullLink()).resize(image.getWidth(), image.getHeight()).into(illustration, new ImageCallback(progressBar, loadingText, illustration) {
             @Override
             public void onSuccess() {
                 SystemUtils.nn(() -> {

@@ -43,7 +43,7 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     }
 
     protected static <F extends BaseFragment> F show(BaseFragment fragment, Class<F> fragmentClass, String key, Object obj) {
-        return new FragmentBuilder(fragment.getFragmentManager()).putArg(key, obj).addToBackStack().replaceFragment(fragment.getContainerId(), fragmentClass);
+        return new FragmentBuilder(fragment.getFragmentManager()).putArg(key, obj).replaceFragment(fragment, fragmentClass);
     }
 
     public BaseFragment() {
@@ -83,7 +83,12 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     }
 
     public boolean allowBackPress() {
-        return true;
+        if(getFragmentManager().getBackStackEntryCount() == 0) {
+            return true;
+        } else {
+            getFragmentManager().popBackStack();
+            return false;
+        }
     }
 
 
