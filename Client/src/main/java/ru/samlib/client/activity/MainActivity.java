@@ -81,8 +81,9 @@ public class MainActivity extends BaseActivity {
 
     protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
         new FragmentBuilder(getSupportFragmentManager())
-                .putArg(Constants.ArgsName.TITLE, title).
-                replaceFragment(R.id.container, fragmentClass);
+                .putArg(Constants.ArgsName.TITLE, title)
+                .onOrientationChange()
+                .replaceFragment(R.id.container, fragmentClass);
         supportInvalidateOptionsMenu();
     }
 

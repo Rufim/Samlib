@@ -22,7 +22,7 @@ import java.net.URL;
 /**
  * Created by Dmitry on 16.07.2015.
  */
-public class PicassoImageHandler extends TagNodeHandler {
+public class  PicassoImageHandler extends TagNodeHandler {
 
     final TextView textView;
     final Picasso picasso;

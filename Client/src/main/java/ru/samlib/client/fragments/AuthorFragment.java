@@ -20,6 +20,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
+import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
@@ -35,6 +36,8 @@ import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
+import ru.samlib.client.util.LinkHandler;
+import ru.samlib.client.util.PicassoImageHandler;
 
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -248,9 +251,18 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                     if (!work.getAnnotationBlocks().isEmpty()) {
                         holder.getView(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
-                        HtmlView htmlView = holder.getView(R.id.work_annotation);
-                        String testTable = "<table border=\"1\" cellpadding=\"4\" cellspacing=\"1\">    <tbody><tr><td width=\"400\"><img src=\"http://budclub.ru/img/p/plotnikow_sergej_aleksandrowich/podpiskairassylka/facebook.png\" alt=\"лого_фейсбук\" width=\"30\"><a href=\"https://www.facebook.com/plotnikovs.ru\" target=\"_blank\">Задать вопрос или поболтать на ФЕЙСБУКЕ</a> </td></tr>  </tbody></table>";
-                        htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
+                        View annotation_view = holder.getView(R.id.work_annotation);
+                        if(annotation_view instanceof  HtmlView) {
+                            HtmlView htmlView = (HtmlView) annotation_view;
+                            String testTable = "<table border=\"1\" cellpadding=\"4\" cellspacing=\"1\">    <tbody><tr><td width=\"400\"><img src=\"http://budclub.ru/img/p/plotnikow_sergej_aleksandrowich/podpiskairassylka/facebook.png\" alt=\"лого_фейсбук\" width=\"30\"><a href=\"https://www.facebook.com/plotnikovs.ru\" target=\"_blank\">Задать вопрос или поболтать на ФЕЙСБУКЕ</a> </td></tr>  </tbody></table>";
+                            htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
+                        } else {
+                            TextView textView = (TextView) annotation_view;
+                            HtmlSpanner spanner = new HtmlSpanner();
+                            spanner.registerHandler("img", new PicassoImageHandler(textView));
+                            spanner.registerHandler("a", new LinkHandler(textView));
+                            textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+                        }
                     } else {
                         holder.getView(R.id.work_annotation).setVisibility(View.GONE);
                     }
@@ -284,12 +296,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_rate_and_size), rate_and_size);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_subtitle), work.getTypeName());
                     work_row.setOnClickListener(v -> {
-                        new FragmentBuilder(getFragmentManager())
-                                .putArg(Constants.ArgsName.LINK, v.getTag())
-                                .addToBackStack()
-                                .replaceFragment(AuthorFragment.this, WorkFragment.class);
+                        WorkFragment.show(AuthorFragment.this, (Work) v.getTag());
                     });
-                    work_row.setTag(work.getLink());
+                    work_row.setTag(work);
                     authorSuggestions.addView(work_row);
                 });
                 authorSuggestionLayout.setVisibility(View.VISIBLE);

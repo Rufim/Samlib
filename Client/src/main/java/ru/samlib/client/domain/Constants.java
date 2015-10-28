@@ -14,6 +14,7 @@ public class Constants {
 
     public static class ArgsName {
         public static final String LAST_FRAGMENT_TAG = "last_fragment_tag";
+        public static final String LAST_FRAGMENT = "last_fragment";
         public static final String FRAGMENT_CLASS = "fragment_class";
         public static final String FRAGMENT_ARGS = "fragment_args";
         public static final String AUTHOR = "author";
@@ -22,7 +23,7 @@ public class Constants {
         public static final String TITLE = "title";
         public static final String WORK = "work";
         public static final String MESSAGE = "message";
-        public static final String RESOURCE_ID = "message";
+        public static final String RESOURCE_ID = "resource_id";
         public static final String TTS_PLAY_POSITION = "position";
     }
 

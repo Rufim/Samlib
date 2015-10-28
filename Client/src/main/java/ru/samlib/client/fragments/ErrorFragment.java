@@ -52,6 +52,9 @@ public class ErrorFragment extends BaseFragment {
                     .replaceFragment(getId(), fragmentClass);
         });
         String message = getArguments().getString(Constants.ArgsName.MESSAGE);
+        if(message == null) {
+            message = getString(R.string.error);
+        }
         errorMessage.setText(message);
         return rootView;
     }
@@ -68,6 +71,13 @@ public class ErrorFragment extends BaseFragment {
     public static void show(BaseFragment fragment, @StringRes int message) {
         new FragmentBuilder(fragment.getFragmentManager())
                 .putArg(Constants.ArgsName.MESSAGE, fragment.getString(message))
+                .putArg(Constants.ArgsName.FRAGMENT_CLASS, fragment.getClass())
+                .putArg(Constants.ArgsName.FRAGMENT_ARGS, fragment.getArguments())
+                .replaceFragment(fragment, ErrorFragment.class);
+    }
+
+    public static void show(BaseFragment fragment) {
+        new FragmentBuilder(fragment.getFragmentManager())
                 .putArg(Constants.ArgsName.FRAGMENT_CLASS, fragment.getClass())
                 .putArg(Constants.ArgsName.FRAGMENT_ARGS, fragment.getArguments())
                 .replaceFragment(fragment, ErrorFragment.class);

@@ -85,6 +85,7 @@ public class FragmentBuilder {
     private Map<String, Object> args = new HashMap<>();
     private boolean toBackStack = false;
     private boolean newFragment = false;
+    private boolean onOrientationChange = false;
 
     public FragmentBuilder(FragmentManager manager) {
         this.manager = manager;
@@ -205,6 +206,10 @@ public class FragmentBuilder {
         return this;
     }
 
+    public FragmentBuilder onOrientationChange() {
+        this.onOrientationChange = true;
+        return this;
+    }
 
     public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
         String tag = fragmentClass.getSimpleName();
@@ -229,7 +234,7 @@ public class FragmentBuilder {
             transaction.replace(container, fr, tag);
         } else {
             fr.getArguments().putAll(bundle);
-            if (manager.findFragmentById(container) != fr) {
+            if (manager.findFragmentById(container) != fr || onOrientationChange) {
                 transaction.replace(container, fr, tag);
             } else {
                 transaction.remove(fr);
@@ -247,7 +252,7 @@ public class FragmentBuilder {
     public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment, String tag) {
         FragmentTransaction transaction = manager.beginTransaction();
         fragment.getArguments().putAll(bundle);
-        if (manager.findFragmentById(container) != fragment) {
+        if (manager.findFragmentById(container) != fragment || onOrientationChange) {
             transaction.replace(container, fragment, tag);
         } else {
             transaction.remove(fragment);

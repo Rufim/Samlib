@@ -114,7 +114,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(Constants.ArgsName.LAST_FRAGMENT_TAG, getSupportFragmentManager().findFragmentById(R.id.container).getTag());
+        outState.putString(Constants.ArgsName.LAST_FRAGMENT_TAG, getCurrentFragment().getTag());
         super.onSaveInstanceState(outState);
     }
 
@@ -142,7 +142,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Fragment fr = getSupportFragmentManager().findFragmentById(R.id.container);
+        Fragment fr = getCurrentFragment();
         if (fr instanceof BackCallback) {
             if (((BackCallback) fr).allowBackPress()) super.onBackPressed();
         } else {
