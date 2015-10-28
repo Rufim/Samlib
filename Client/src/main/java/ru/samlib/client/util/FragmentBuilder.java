@@ -84,8 +84,7 @@ public class FragmentBuilder {
     private Bundle bundle = new Bundle();
     private Map<String, Object> args = new HashMap<>();
     private boolean toBackStack = false;
-    private boolean toBackStackIfNotFirst = true;
-    private boolean newFragment = true;
+    private boolean newFragment = false;
 
     public FragmentBuilder(FragmentManager manager) {
         this.manager = manager;
@@ -201,32 +200,29 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder notAddToBackStackIfNotFirst() {
-        this.toBackStackIfNotFirst = false;
+    public FragmentBuilder newFragment() {
+        this.newFragment = true;
         return this;
     }
 
-    public FragmentBuilder useOldFragment() {
-        this.newFragment = false;
-        return this;
+
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
+        String tag = fragmentClass.getSimpleName();
+        return replaceFragment(container, fragmentClass, tag);
     }
 
     public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass, String tag) {
-        if(fragmentClass == null && tag == null) {
+        if (fragmentClass == null && tag == null) {
             return null;
         }
         Fragment fr = manager.findFragmentByTag(tag);
         FragmentTransaction transaction = manager.beginTransaction();
-        boolean first = false;
         if (fr == null || newFragment) {
-            if (fr == null) {
-                first = true;
-                if(fragmentClass == null) {
-                    try {
-                        fragmentClass = (Class<F>) Class.forName(tag);
-                    } catch (ClassNotFoundException e) {
-                        return null;
-                    }
+            if (fragmentClass == null) {
+                try {
+                    fragmentClass = (Class<F>) Class.forName(tag);
+                } catch (ClassNotFoundException e) {
+                    return null;
                 }
             }
             fr = newFragment(fragmentClass);
@@ -240,27 +236,32 @@ public class FragmentBuilder {
                 transaction.add(container, fr, tag);
             }
         }
-        if (toBackStack || (toBackStackIfNotFirst && !first)) {
+        if (toBackStack) {
             transaction.addToBackStack(null);
         }
         transaction.commitAllowingStateLoss();
         return (F) fr;
     }
 
-    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
-        String tag = fragmentClass.getSimpleName();
-        return replaceFragment(container, fragmentClass, tag);
-    }
 
-    public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment) {
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment, String tag) {
         FragmentTransaction transaction = manager.beginTransaction();
         fragment.getArguments().putAll(bundle);
-        transaction.replace(container, fragment);
+        if (manager.findFragmentById(container) != fragment) {
+            transaction.replace(container, fragment, tag);
+        } else {
+            transaction.remove(fragment);
+            transaction.add(container, fragment, tag);
+        }
         if (toBackStack) {
             transaction.addToBackStack(null);
         }
         transaction.commitAllowingStateLoss();
         return (F) fragment;
+    }
+
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment) {
+        return replaceFragment(container, fragment, fragment.getClass().getSimpleName());
     }
 
     public <F extends Fragment> F replaceFragment(Fragment fragment, Class<F> fragmentClass) {

@@ -49,7 +49,7 @@ public class ErrorFragment extends BaseFragment {
             getFragmentManager().executePendingTransactions();
             new FragmentBuilder(getFragmentManager())
                     .putArgs(fragmentArgs)
-                    .replaceFragment(getContainerId(), fragmentClass);
+                    .replaceFragment(getId(), fragmentClass);
         });
         String message = getArguments().getString(Constants.ArgsName.MESSAGE);
         errorMessage.setText(message);

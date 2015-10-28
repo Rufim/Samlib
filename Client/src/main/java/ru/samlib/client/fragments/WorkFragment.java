@@ -58,8 +58,12 @@ public class WorkFragment extends ListFragment<String> {
         SEARCH, SPEAK, NORMAL
     }
 
-    public static void show(FragmentManager manager, @IdRes int container, String link) {
-        show(manager, container, WorkFragment.class, Constants.ArgsName.LINK, link);
+    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
+        show(builder, container, WorkFragment.class, Constants.ArgsName.LINK, link);
+    }
+
+    public static void show(FragmentBuilder builder, @IdRes int container, Work work) {
+        show(builder, container, WorkFragment.class, Constants.ArgsName.WORK, work);
     }
 
     public static void show(BaseFragment fragment, String link) {
@@ -192,7 +196,7 @@ public class WorkFragment extends ListFragment<String> {
                 }
                 return true;
             case R.id.action_work_to_author:
-                SectionFragment.show(this, work.getAuthor());
+                AuthorFragment.show(this, work.getAuthor());
                 return true;
             case R.id.action_work_share:
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");

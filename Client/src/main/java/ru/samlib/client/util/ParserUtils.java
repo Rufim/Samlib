@@ -66,20 +66,35 @@ public class ParserUtils {
             work.getAuthor().setFullName(head.select("div > h3").first().ownText());
         }
         work.setTitle(head.select("center > h2").text());
-        Elements lis = Jsoup.parseBodyFragment(parts[1]).select("ul > li");
+        Elements lis = Jsoup.parseBodyFragment(parts[1]).select("li");
         int index = 2;
         if(lis.get(0).text().contains("Copyright"))  {
             index--;
             work.setHasComments(false);
         }
-        String[] data = TextUtils.Splitter.extractString(lis.get(index++).text(), true,
-                new TextUtils.Splitter("Размещен: ", ","),
-                new TextUtils.Splitter("изменен: ", "\\."),
-                new TextUtils.Splitter(" ", "k"));
-        if(data.length == 3) {
-            work.setCreateDate(parseData(data[0]));
-            work.setUpdateDate(parseData(data[1]));
-            work.setSize(Integer.parseInt(data[2]));
+        String info = lis.get(index++).text();
+        String[] data = new String[0];
+        if(info.contains("Размещен")) {
+            data = TextUtils.Splitter.extractString(info, true,
+                    new TextUtils.Splitter("Размещен: ", ","),
+                    new TextUtils.Splitter("изменен: ", "\\."),
+                    new TextUtils.Splitter(" ", "k"));
+        }
+        if (info.contains("Обновлено")) {
+            data = TextUtils.Splitter.extractString(info, true,
+                    new TextUtils.Splitter("Обновлено: ", "\\."),
+                    new TextUtils.Splitter(" ", "k"));
+        }
+        if(data.length > 0) {
+            if (data.length == 2) {
+                work.setUpdateDate(parseData(data[0]));
+                work.setSize(Integer.parseInt(data[1]));
+            }
+            if(data.length == 3) {
+                work.setCreateDate(parseData(data[0]));
+                work.setUpdateDate(parseData(data[1]));
+                work.setSize(Integer.parseInt(data[2]));
+            }
         }
         if(lis.size() > index) {
             String typeGenre[] = lis.get(index++).text().split(":");

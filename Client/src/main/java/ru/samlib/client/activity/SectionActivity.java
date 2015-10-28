@@ -41,14 +41,17 @@ public class SectionActivity extends BaseActivity {
     private Author author;
     private Work work;
     private SectionActivityState state = SectionActivityState.INIT;
+    private boolean onOrientationChange = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fragment sectionFragment = getLastFragment(savedInstanceState);
         if (sectionFragment != null) {
-            if (sectionFragment instanceof SectionFragment) {
-                initializeAuthor(((SectionFragment) sectionFragment).getAuthor());
+            onOrientationChange = true;
+            FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
+            if (sectionFragment instanceof AuthorFragment) {
+                initializeAuthor(((AuthorFragment) sectionFragment).getAuthor());
             }
             if (sectionFragment instanceof WorkFragment) {
                 WorkFragment workFragment = ((WorkFragment) sectionFragment);
@@ -58,30 +61,46 @@ public class SectionActivity extends BaseActivity {
                     Log.e(TAG, "Error ocurred unknovn author!! Work utl is: " + workFragment.getWork().getFullLink());
                 }
             }
-            new FragmentBuilder(getSupportFragmentManager()).replaceFragment(R.id.container, sectionFragment);
+            builder.replaceFragment(R.id.container, sectionFragment);
         }
     }
 
     @Override
     protected void handleIntent(Intent intent) {
         Bundle args = intent.getExtras();
-        if (args != null) {
-            author = (Author) args.getSerializable(Constants.ArgsName.AUTHOR);
+        FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
+        int id = R.id.container;
+        if(current != null) {
+            id = current.getId();
+            builder.addToBackStack();
         }
-        String link = null;
-        if (author != null) {
-            link = author.getLink();
-        }
-        if (validateIntent(intent)) {
-            link = intent.getData().getPath();
-        }
-        if (link != null) {
-            if (link.endsWith(Work.HTML_SUFFIX)) {
-                WorkFragment.show(getSupportFragmentManager(), R.id.container, link);
-            } else {
-                SectionFragment.show(getSupportFragmentManager(), R.id.container, link);
+        if(!onOrientationChange) {
+            if (args != null) {
+                author = (Author) args.getSerializable(Constants.ArgsName.AUTHOR);
+                if (author != null) {
+                    AuthorFragment.show(builder, id, author);
+                    return;
+                }
+                work = (Work) args.getSerializable(Constants.ArgsName.WORK);
+                if (work != null) {
+                    WorkFragment.show(builder, id, work);
+                    return;
+                }
+            }
+            String link = null;
+            if (validateIntent(intent)) {
+                link = intent.getData().getPath();
+            }
+            if (link != null) {
+                if (link.endsWith(Work.HTML_SUFFIX)) {
+                    WorkFragment.show(builder, id, link);
+                } else {
+                    AuthorFragment.show(builder, id, link);
+                }
             }
         }
+        onOrientationChange = false;
     }
 
     public SectionActivityState getState() {

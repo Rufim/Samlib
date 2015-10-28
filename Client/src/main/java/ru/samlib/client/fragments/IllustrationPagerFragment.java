@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.FragmentPagerAdapter;
 import ru.samlib.client.domain.Constants;
@@ -19,6 +20,7 @@ import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.IllustrationsParser;
 import ru.samlib.client.util.FragmentBuilder;
+import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
 
@@ -77,7 +79,9 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
             @Override
             public CharSequence getPageTitle(int position) {
-                return items.get(position).getTitle();
+                String title = items.get(position).getTitle();
+                if(!TextUtils.isEmpty(title)) return title;
+                return  String.valueOf(position);
             }
         };
     }

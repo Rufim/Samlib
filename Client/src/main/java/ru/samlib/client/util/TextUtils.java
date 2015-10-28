@@ -65,6 +65,10 @@ public class TextUtils {
         return result;
     }
 
+    public static boolean isEmpty(String string) {
+        return string == null || string.length() == 0;
+    }
+
     public static String linkify(String text) {
         if (!suspiciousPattern.matcher(text).find()) {
             return text;

@@ -3,6 +3,7 @@ package ru.samlib.client.activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
@@ -72,7 +74,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         actionBar = getSupportActionBar();
         navigationView.setNavigationItemSelectedListener(menuItem -> {
             Snackbar.make(container, menuItem.getTitle() + " pressed", Snackbar.LENGTH_LONG).show();
-            if (!menuItem.isChecked())  menuItem.setChecked(true);
+            if (!menuItem.isChecked()) menuItem.setChecked(true);
             drawerLayout.closeDrawers();
             onNavigationItemSelected(menuItem);
             return true;
@@ -88,6 +90,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 super.onDrawerClosed(drawerView);
                 BaseActivity.this.onDrawerClosed(drawerView);
             }
+
             @Override
             public void onDrawerOpened(View drawerView) {
                 // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
@@ -101,6 +104,11 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         //calling sync state is necessay or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
         handleIntent(getIntent());
     }
 
@@ -135,8 +143,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Fragment fr = getSupportFragmentManager().findFragmentById(R.id.container);
-        if(fr instanceof BackCallback) {
-            if(((BackCallback) fr).allowBackPress()) super.onBackPressed();
+        if (fr instanceof BackCallback) {
+            if (((BackCallback) fr).allowBackPress()) super.onBackPressed();
         } else {
             super.onBackPressed();
         }
@@ -175,8 +183,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         SearchView searchView = null;
         if (searchItem != null) {
             searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-           // searchView.setOnQueryTextListener(this);
-           // MenuItemCompat.setOnActionExpandListener(searchItem, this);
+            // searchView.setOnQueryTextListener(this);
+            // MenuItemCompat.setOnActionExpandListener(searchItem, this);
         }
         if (searchView != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
@@ -215,6 +223,10 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected String getResString(@StringRes int id) {
         return getResources().getString(id);
+    }
+
+    protected Fragment getCurrentFragment() {
+        return getSupportFragmentManager().findFragmentById(R.id.container);
     }
 
     protected Fragment getLastFragment(Bundle savedInstanceState) {
