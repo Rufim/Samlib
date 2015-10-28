@@ -1,5 +1,6 @@
 package ru.samlib.client.adapter;
 
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -23,6 +24,11 @@ public abstract class FragmentPagerAdapter<I,F extends BaseFragment> extends Fra
 
     public FragmentPagerAdapter(FragmentManager fm) {
         super(fm);
+    }
+
+    public FragmentPagerAdapter(FragmentManager fm, List<I> items) {
+        super(fm);
+        this.items = items;
     }
 
     public List<I> getItems(){
@@ -55,6 +61,11 @@ public abstract class FragmentPagerAdapter<I,F extends BaseFragment> extends Fra
     public void destroyItem(ViewGroup container, int position, Object object) {
         registeredFragments.remove(position);
         super.destroyItem(container, position, object);
+    }
+
+    @Override
+    public void restoreState(Parcelable arg0, ClassLoader arg1) {
+        //do nothing here! no call to super.restoreState(arg0, arg1);
     }
 
     public F getRegisteredFragment(int position) {

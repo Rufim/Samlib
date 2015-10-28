@@ -23,6 +23,8 @@ import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by 0shad on 26.10.2015.
@@ -68,8 +70,8 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
     }
 
     @Override
-    public FragmentPagerAdapter<Image, IllustrationFragment> getAdapter() {
-        return new FragmentPagerAdapter<Image, IllustrationFragment>(getChildFragmentManager()) {
+    public FragmentPagerAdapter<Image, IllustrationFragment> getAdapter(List<Image> currentItems) {
+        return new FragmentPagerAdapter<Image, IllustrationFragment>(getChildFragmentManager(), currentItems) {
             @Override
             public Fragment getItem(int position) {
                 return new FragmentBuilder(null)
@@ -80,8 +82,8 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
             @Override
             public CharSequence getPageTitle(int position) {
                 String title = items.get(position).getTitle();
-                if(!TextUtils.isEmpty(title)) return title;
-                return  String.valueOf(position);
+                if (!TextUtils.isEmpty(title)) return title;
+                return String.valueOf(position);
             }
         };
     }

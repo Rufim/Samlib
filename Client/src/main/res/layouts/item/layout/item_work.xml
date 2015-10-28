@@ -32,18 +32,7 @@
                 android:paddingLeft="0dp"
                 android:textStyle="bold"
                 style="@style/item_text"/>
-        <Button android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:id="@+id/illustration_button"
-                android:visibility="gone"
-                android:text="@string/illustration"
-                style="@style/item_text"
-                android:textAllCaps="false"
-                android:gravity="center"
-                android:textColor="@color/light_blue"
-                android:textSize="@dimen/text_small"
-                android:layout_margin="0dp"
-                android:padding="6dp"/>
+
     </LinearLayout>
     <LinearLayout
             android:orientation="horizontal"
@@ -61,5 +50,35 @@
                 android:maxLines="2"
                 android:textStyle="italic"/>
     </LinearLayout>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left">
+                <Button android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:id="@+id/illustration_button"
+                        android:visibility="gone"
+                        android:text="@string/illustration"
+                        style="@style/item_text"
+                        android:textAllCaps="false"
+                        android:gravity="center"
+                        android:textColor="@color/light_blue"
+                        android:textSize="@dimen/text_small"
+                        android:layout_margin="0dp"
+                        android:padding="6dp"/>
+                <Button android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:id="@+id/comments_button"
+                        android:visibility="gone"
+                        android:text="@string/comments"
+                        style="@style/item_text"
+                        android:textAllCaps="false"
+                        android:gravity="center"
+                        android:textColor="@color/light_blue"
+                        android:textSize="@dimen/text_small"
+                        android:layout_margin="0dp"
+                        android:padding="6dp"/>
+        </LinearLayout>
     <include layout="@layout/item_work_annotation"/>
 </LinearLayout>
