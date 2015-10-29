@@ -152,9 +152,9 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         setHasOptionsMenu(true);
     }
 
-    public void startLoading() {
+    public void startLoading(boolean showProgress) {
         isLoading = true;
-        if (loadMoreBar != null) {
+        if (loadMoreBar != null && showProgress) {
             loadMoreBar.setVisibility(View.VISIBLE);
         }
     }
@@ -174,9 +174,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (isLoading || isEnd) {
             return;
         }
-        if (showProgress) {
-            startLoading();
-        }
+        startLoading(showProgress);
         if (dataSource != null) {
             DataTask dataTask = new DataTask(count, onElementsLoadedTask, params);
             if (this.dataTask == null) {

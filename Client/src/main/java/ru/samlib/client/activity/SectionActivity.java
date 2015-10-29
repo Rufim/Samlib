@@ -61,6 +61,7 @@ public class SectionActivity extends BaseActivity {
                     Log.e(TAG, "Error ocurred unknovn author!! Work utl is: " + workFragment.getWork().getFullLink());
                 }
             }
+            builder.onOrientationChange();
             builder.replaceFragment(R.id.container, sectionFragment);
         }
     }

@@ -15,6 +15,7 @@ import ru.samlib.client.adapter.FragmentPagerAdapter;
 import ru.samlib.client.lister.DataSource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,6 +39,9 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     protected int currentCount = 0;
     protected PagerDataTask dataTask;
 
+    protected int currentItem = 0;
+    protected List<I> currentItems;
+
     public PagerFragment() {
     }
 
@@ -54,9 +58,11 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_pager, container, false);
         bind(rootView);
-        if(adapter == null) {
-            adapter = getAdapter();
+        if (currentItems == null) {
+            currentItems = new ArrayList<>();
         }
+        adapter = getAdapter(currentItems);
+        currentItems = adapter.getItems();
         pager.setAdapter(adapter);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -76,12 +82,10 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
         });
         if (adapter != null) {
             if (dataSource != null) {
-                isLoading = true;
                 if (dataTask != null) {
                     dataTask.cancel(true);
                 }
-                dataTask = new PagerDataTask(pageSize);
-                dataTask.execute();
+                loadItems(pageSize, true);
             } else {
                 stopLoading();
             }
@@ -89,9 +93,15 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
         return rootView;
     }
 
-    public void startLoading() {
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        pager.setCurrentItem(currentItem);
+    }
+
+    public void startLoading(boolean showProgress) {
         isLoading = true;
-        if (loadMoreBar != null) {
+        if (loadMoreBar != null && showProgress) {
             loadMoreBar.setVisibility(View.VISIBLE);
         }
     }
@@ -107,9 +117,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
         if (isLoading || isEnd) {
             return;
         }
-        if (showProgress) {
-            startLoading();
-        }
+        startLoading(showProgress);
         if (dataSource != null) {
             PagerDataTask dataTask = new PagerDataTask(count, onElementsLoadedTask, params);
             if (this.dataTask == null) {
@@ -138,7 +146,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     }
 
 
-    public abstract FragmentPagerAdapter<I, F> getAdapter();
+    public abstract FragmentPagerAdapter<I, F> getAdapter(List<I> currentItems);
 
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -148,6 +156,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
         if(!isEnd && position == currentCount - 1) {
             loadItems(pageSize, true);
         }
+        currentItem = position;
     }
 
     public void onPageScrollStateChanged(int state) {
@@ -199,6 +208,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
                 } else {
                     adapter.addItems(result);
                 }
+                stopLoading();
                 currentCount = adapter.getCount();
                 if (onElementsLoadedTask != null) {
                     onElementsLoadedTask.execute(LoadedTaskParams);

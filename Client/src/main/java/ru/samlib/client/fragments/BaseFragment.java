@@ -50,6 +50,8 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         return new FragmentBuilder(fragment.getFragmentManager()).newFragment().addToBackStack().putArg(key, obj).replaceFragment(fragment, fragmentClass);
     }
 
+    protected boolean retainInstance = true;
+
     public BaseFragment() {
     }
 
@@ -61,7 +63,7 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Retain this fragment across configuration changes.
-        setRetainInstance(true);
+        setRetainInstance(retainInstance);
     }
 
 
