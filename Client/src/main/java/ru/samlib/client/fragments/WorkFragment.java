@@ -75,7 +75,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public WorkFragment() {
-        pageSize = 100;
+        pageSize = 250;
         setDataSource(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(10);
@@ -90,6 +90,7 @@ public class WorkFragment extends ListFragment<String> {
                 }
             }
             if (work.isParsed()) {
+                pageSize += pageSize;
                 return Stream.of(work.getIndents())
                         .skip(skip)
                         .limit(size)
@@ -283,15 +284,15 @@ public class WorkFragment extends ListFragment<String> {
         if (adapter.getItemCount() > index) {
             toIndex(index, textOffset);
         } else {
-            moveToIndex = new AsyncTask<Integer, Void, Void>() {
+            moveToIndex = new AsyncTask<Object, Void, Void>() {
 
                 int index = 0;
                 int offsetLines = 0;
 
                 @Override
-                protected Void doInBackground(Integer... params) {
-                    index = params[0];
-                    offsetLines = params[1];
+                protected Void doInBackground(Object... params) {
+                    index = (int) params[0];
+                    offsetLines = (int) params[1];
                     return null;
                 }
 
