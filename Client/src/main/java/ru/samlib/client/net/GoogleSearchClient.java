@@ -6,7 +6,7 @@ import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.google.ResponseData;
 import ru.samlib.client.domain.google.Result;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.util.SystemUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,7 +59,7 @@ public class GoogleSearchClient implements DataSource<Link> {
             }
             if(results.getResponseData().getCursor() != null) {
                 String count = results.getResponseData().getCursor().getResultCount();
-                if (SystemUtils.parseInt(count) <= index) {
+                if (TextUtils.parseInt(count) <= index) {
                     break;
                 }
                 List<Result> resultList = results.getResponseData().getResults();

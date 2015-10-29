@@ -319,16 +319,6 @@ public class SystemUtils {
         exec.function();
     }
 
-    public static int parseInt(String intValue) {
-        if(intValue == null) return -1;
-        try {
-            return Integer.parseInt(intValue);
-        } catch (NumberFormatException ex) {
-            return -1;
-        }
-
-    }
-
     public static <T extends Enum<T>> T parseEnum(String value, Class<T> enumType) {
         if (value != null && !value.isEmpty() && enumType != null) {
             try {

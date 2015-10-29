@@ -153,23 +153,23 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
-        ;
-        if (incomingAuthor != null && incomingAuthor.equals(author)) {
-            author = incomingAuthor;
-        }
-        if (link != null) {
+        if (incomingAuthor != null) {
+            if(!incomingAuthor.equals(author)) {
+                author = incomingAuthor;
+            }
+            if (author.isParsed()) {
+                EventBus.getDefault().post(new AuthorParsedEvent(author));
+            }
+        } else if (link != null) {
             if (author == null || !author.getLink().equals(link)) {
                 author = new Author(link);
                 clearData();
-            } else {
-                EventBus.getDefault().post(new AuthorParsedEvent(author));
             }
         }
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
-
 
 
         public AuthorFragmentAdaptor() {

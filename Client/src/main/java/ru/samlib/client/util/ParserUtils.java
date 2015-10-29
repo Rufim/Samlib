@@ -9,9 +9,6 @@ import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.regex.Pattern;
 
 /**
  * Created by Rufim on 04.07.2015.
@@ -21,36 +18,8 @@ public class ParserUtils {
     protected static final String TAG = ParserUtils.class.getSimpleName();
 
 
-    public static Date parseData(String text) {
-        Calendar calendar = Calendar.getInstance();
-        if (text.contains(":")) {
-            String[] time = text.split(":");
-            int hours = Integer.parseInt(time[0]);
-            calendar.set(Calendar.MINUTE, Integer.parseInt(time[1]));
-            calendar.set(Calendar.HOUR_OF_DAY, hours);
-            return calendar.getTime();
-        } else if (text.contains("/")) {
-            String[] date = text.split("/");
-            if (date.length == 3) {
-                calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
-                calendar.set(Calendar.MONTH, Integer.parseInt(date[1]) - 1);
-                calendar.set(Calendar.YEAR, Integer.parseInt(date[2]));
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                return calendar.getTime();
-            } else if (date.length == 2) {
-                calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
-                calendar.set(Calendar.MONTH, Integer.parseInt(date[1]) - 1);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                return calendar.getTime();
-            }
-        }
-        return null;
-    }
-
     public static Work parseWork(CachedResponse file, Work work) {
-        if(work == null || work.getAuthor() == null) {
+        if(work == null) {
             work = new Work(file.getRequest().getBaseUrl().getPath());
         }
         String[] parts = TextUtils.Splitter.extractLines(file, true,
@@ -87,12 +56,12 @@ public class ParserUtils {
         }
         if(data.length > 0) {
             if (data.length == 2) {
-                work.setUpdateDate(parseData(data[0]));
+                work.setUpdateDate(TextUtils.parseData(data[0]));
                 work.setSize(Integer.parseInt(data[1]));
             }
             if(data.length == 3) {
-                work.setCreateDate(parseData(data[0]));
-                work.setUpdateDate(parseData(data[1]));
+                work.setCreateDate(TextUtils.parseData(data[0]));
+                work.setUpdateDate(TextUtils.parseData(data[1]));
                 work.setSize(Integer.parseInt(data[2]));
             }
         }
@@ -242,13 +211,13 @@ public class ParserUtils {
                 author.setEmail(element.select("u").text());
                 break;
             case "Родился:":
-                author.setDateBirth(ParserUtils.parseData(content));
+                author.setDateBirth(TextUtils.parseData(content));
                 break;
             case "Живет:":
                 author.setAddress(content);
                 break;
             case "Обновлялось:":
-                author.setLastUpdateDate(ParserUtils.parseData(content));
+                author.setLastUpdateDate(TextUtils.parseData(content));
                 break;
             case "Объем:":
                 split = content.split("/");

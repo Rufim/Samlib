@@ -71,11 +71,11 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     public void setLink(String link) {
         if (link.contains("/")) {
             if (author == null) {
-                author = new Author(link.substring(link.indexOf("/"), link.lastIndexOf("/")));
+                author = new Author(link.substring(0, link.lastIndexOf("/")));
             }
             this.link = link.substring(link.lastIndexOf("/"));
         } else {
-            this.link = link;
+            this.link = "/" + link;
         }
     }
 

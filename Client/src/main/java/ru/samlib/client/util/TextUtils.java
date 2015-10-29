@@ -6,6 +6,7 @@ import org.intellij.lang.annotations.RegExp;
 import ru.samlib.client.net.CachedResponse;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +28,7 @@ public class TextUtils {
             + "(#[a-z_.-][a-z0-9+\\$_.-]*)?"; // Anchor
     public static final String SUSPICIOUS_BY_LINK = "\\w+\\.\\w+";
     public static final String OUTSIDE_TAGS = "(?![^<\"]*(>|\")|[^<>]*(<|\")\\/)";
+    public static final String DATA_PATTERN = "((\\d{4}%1$c)?\\d{2}%1$c\\d{2}\\s+\\d{2}%2$c\\d{2})|((\\d{4}%1$c)?\\d{2}%1$c\\d{2})|(\\d{2}%2$c\\d{2})";
     public static final Pattern suspiciousPattern = Pattern.compile(SUSPICIOUS_BY_LINK,
             Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
     public static final Pattern urlPattern = Pattern.compile(URL_REGEX,
@@ -115,6 +117,24 @@ public class TextUtils {
         return text.replaceAll("(" + template + ")" + OUTSIDE_TAGS, replacement);
     }
 
+    public static int parseInt(String intValue) {
+        if(intValue == null) return -1;
+        try {
+            return Integer.parseInt(intValue);
+        } catch (NumberFormatException ex) {
+            return -1;
+        }
+
+    }
+
+    public static Integer extractInt(String string) {
+        Matcher matcher = Pattern.compile("\\d").matcher(string);
+        if(matcher.find()){
+            return TextUtils.parseInt(string.substring(matcher.start(), matcher.end()));
+        }
+        return null;
+    }
+
     public static boolean contains(String str, boolean in, String... strs) {
         for (String s : strs) {
             if (in) {
@@ -146,6 +166,34 @@ public class TextUtils {
             pieces.add(new Piece(source, matcher));
         }
         return pieces;
+    }
+
+    public static Date parseData(String text) {
+        Calendar calendar = Calendar.getInstance();
+        if (text.contains(":")) {
+            String[] time = text.split(":");
+            int hours = Integer.parseInt(time[0]);
+            calendar.set(Calendar.MINUTE, Integer.parseInt(time[1]));
+            calendar.set(Calendar.HOUR_OF_DAY, hours);
+            return calendar.getTime();
+        } else if (text.contains("/")) {
+            String[] date = text.split("/");
+            if (date.length == 3) {
+                calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
+                calendar.set(Calendar.MONTH, Integer.parseInt(date[1]) - 1);
+                calendar.set(Calendar.YEAR, Integer.parseInt(date[2]));
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                return calendar.getTime();
+            } else if (date.length == 2) {
+                calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
+                calendar.set(Calendar.MONTH, Integer.parseInt(date[1]) - 1);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                return calendar.getTime();
+            }
+        }
+        return null;
     }
 
     public static class Piece {
@@ -366,6 +414,7 @@ public class TextUtils {
             return builder.toString();
         }
 
+        //Where to place delimiter in array strings
         public enum DelimiterMode {NONE, TO_END, FROM_START, SEPARATE}
 
         public static ArrayList<String> split(String str, @RegExp String delimiter, DelimiterMode mode) {

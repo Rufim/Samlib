@@ -7,7 +7,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
@@ -62,7 +61,7 @@ public class NewestParser extends Parser implements DataSource<Work> {
                                 work.setAuthor(author);
                                 break;
                             case 2:
-                                work.setUpdateDate(ParserUtils.parseData(text));
+                                work.setUpdateDate(TextUtils.parseData(text));
                                 break;
                         }
                     }

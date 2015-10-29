@@ -5,10 +5,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Image;
-import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.util.SystemUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -34,14 +33,14 @@ public class IllustrationsParser extends Parser implements DataSource<Image> {
                 Image image = new Image();
                 Element img = imageElement.select("img").first();
                 image.setLink(img.attr("src"));
-                image.setHeight(SystemUtils.parseInt(img.attr("height")));
-                image.setWidth(SystemUtils.parseInt(img.attr("width")));
+                image.setHeight(TextUtils.parseInt(img.attr("height")));
+                image.setWidth(TextUtils.parseInt(img.attr("width")));
                 image.setTitle(imageElement.select("b").text());
                 image.setAnnotation(imageElement.select("i").text());
                 String desc = imageElement.select("small").text();
                 int start = desc.lastIndexOf(", ");
                 if(start != -1) {
-                    image.setSize(SystemUtils.parseInt(desc.substring(start, desc.lastIndexOf("k"))));
+                    image.setSize(TextUtils.parseInt(desc.substring(start, desc.lastIndexOf("k"))));
                 }
                 imageList.add(image);
             }

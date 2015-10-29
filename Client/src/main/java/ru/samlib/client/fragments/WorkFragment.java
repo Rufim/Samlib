@@ -25,7 +25,9 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
@@ -314,15 +316,17 @@ public class WorkFragment extends ListFragment<String> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        if(incomingWork != null && incomingWork.equals(work)) {
-            work = incomingWork;
-        }
-        if(link != null) {
+        if (incomingWork != null) {
+            if (!incomingWork.equals(work)) {
+                work = incomingWork;
+            }
+            if (work.isParsed()) {
+                EventBus.getDefault().post(new WorkParsedEvent(work));
+            }
+        } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 clearData();
-            } else {
-                postEvent(new WorkParsedEvent(work));
             }
         }
         colorFoundedText = getResources().getColor(R.color.red_dark);

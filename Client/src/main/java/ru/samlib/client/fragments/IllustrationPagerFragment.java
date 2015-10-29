@@ -51,8 +51,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         if (incomingWork != null && !incomingWork.equals(work)) {
             work = incomingWork;
-        }
-        if (link != null) {
+        } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 clearData();
