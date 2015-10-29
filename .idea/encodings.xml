@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding">
+  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
     <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/dialog/DirectoryChoosePreference.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/dialog/DirectoryChooserDialog.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/domain/entity/Gender.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/fragments/WorkFragment.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/parser/CommentsParser.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Client/src/main/java/ru/samlib/client/parser/WorkParser.java" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

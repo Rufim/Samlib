@@ -15,7 +15,9 @@ public class Comment implements Validatable {
     private String rawContent;
     private Author author;
     private String nickName;
+    private String email;
     private Date data;
+    private boolean userComment = false;
 
     @Override
     public boolean validate() {

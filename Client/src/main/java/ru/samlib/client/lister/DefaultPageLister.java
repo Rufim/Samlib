@@ -7,7 +7,7 @@ import org.jsoup.select.Elements;
 /**
  * Created by Rufim on 29.06.2015.
  */
-public class DefaultPageLister implements ParserPageLister {
+public class DefaultPageLister extends JsoupPageLister {
 
     @Override
     public void setPage(Request request, int index) {

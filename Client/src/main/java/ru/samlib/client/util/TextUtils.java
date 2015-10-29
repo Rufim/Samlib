@@ -1,6 +1,7 @@
 package ru.samlib.client.util;
 
 import android.annotation.SuppressLint;
+import android.os.Bundle;
 import android.util.Log;
 import org.intellij.lang.annotations.RegExp;
 import ru.samlib.client.net.CachedResponse;
@@ -27,12 +28,11 @@ public class TextUtils {
             + "(\\?[a-z+&\\$_.-][a-z0-9;:@&%=+\\/\\$_.-]*)?" // GET Query
             + "(#[a-z_.-][a-z0-9+\\$_.-]*)?"; // Anchor
     public static final String SUSPICIOUS_BY_LINK = "\\w+\\.\\w+";
+    public static final int DEFAULT_FLAGS = Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE;
     public static final String OUTSIDE_TAGS = "(?![^<\"]*(>|\")|[^<>]*(<|\")\\/)";
     public static final String DATA_PATTERN = "((\\d{4}%1$c)?\\d{2}%1$c\\d{2}\\s+\\d{2}%2$c\\d{2})|((\\d{4}%1$c)?\\d{2}%1$c\\d{2})|(\\d{2}%2$c\\d{2})";
-    public static final Pattern suspiciousPattern = Pattern.compile(SUSPICIOUS_BY_LINK,
-            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
-    public static final Pattern urlPattern = Pattern.compile(URL_REGEX,
-            Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
+    public static final Pattern suspiciousPattern = Pattern.compile(SUSPICIOUS_BY_LINK, DEFAULT_FLAGS);
+    public static final Pattern urlPattern = Pattern.compile(URL_REGEX, DEFAULT_FLAGS);
 
     public static String trim(String string) {
         return string.replaceAll("^\\s+|\\s+$", "");
@@ -46,20 +46,20 @@ public class TextUtils {
         return isLink(text, null, null, hostOrIp, path, null, null, null);
     }
 
-    public static boolean isLink(String ... conditions) {
+    public static boolean isLink(String... conditions) {
         String text = conditions[0];
-        if(text == null) {
+        if (text == null) {
             return false;
         }
         Matcher matcher = urlPattern.matcher(text);
         boolean result = matcher.find();
-        if(!result) return false;
+        if (!result) return false;
         for (int i = 1; i < conditions.length; i++) {
-            if(conditions[i] == null) {
+            if (conditions[i] == null) {
                 continue;
             }
             String group = matcher.group(i);
-            if(group == null && !group.equals(conditions[i])) {
+            if (group == null && !group.equals(conditions[i])) {
                 result = false;
                 break;
             }
@@ -118,7 +118,7 @@ public class TextUtils {
     }
 
     public static int parseInt(String intValue) {
-        if(intValue == null) return -1;
+        if (intValue == null) return -1;
         try {
             return Integer.parseInt(intValue);
         } catch (NumberFormatException ex) {
@@ -129,7 +129,7 @@ public class TextUtils {
 
     public static Integer extractInt(String string) {
         Matcher matcher = Pattern.compile("\\d").matcher(string);
-        if(matcher.find()){
+        if (matcher.find()) {
             return TextUtils.parseInt(string.substring(matcher.start(), matcher.end()));
         }
         return null;
@@ -144,6 +144,10 @@ public class TextUtils {
             }
         }
         return false;
+    }
+
+    public static String eraseHost(String link) {
+        return link.replaceAll("https?\\:\\/\\/([a-z0-9-.]*)\\.([a-z]{2,5})", "");
     }
 
     public static String putInString(String source, String placement, int gap) {
@@ -201,14 +205,15 @@ public class TextUtils {
         public int start;
         public int end;
 
-        public Piece(){}
+        public Piece() {
+        }
 
         public Piece(String source, Matcher matcher) {
             this.start = matcher.start();
             this.end = matcher.end();
             this.text = source.substring(start, end);
         }
-        
+
         public Piece(String text, int start, int end) {
             this.text = text;
             this.start = start;
@@ -415,40 +420,91 @@ public class TextUtils {
         }
 
         //Where to place delimiter in array strings
-        public enum DelimiterMode {NONE, TO_END, FROM_START, SEPARATE}
+        public enum DelimiterMode {
+            NONE, TO_END, FROM_START, SEPARATE
+        }
 
-        public static ArrayList<String> split(String str, @RegExp String delimiter, DelimiterMode mode) {
-            Matcher matcher = Pattern.compile(delimiter).matcher(str);
-            ArrayList<String> split = new ArrayList<>();
+        public static ArrayList<String> split(String source, @RegExp String delimiter, DelimiterMode mode) {
+            Matcher matcher = Pattern.compile(delimiter).matcher(source);
+            ArrayList<String> parts = new ArrayList<>();
             int lastFound = 0;
             String previous = "";
             while (true) {
                 if (matcher.find()) {
                     switch (mode) {
                         case NONE:
-                            split.add(str.substring(lastFound, matcher.start()));
+                            parts.add(source.substring(lastFound, matcher.start()));
                             break;
                         case TO_END:
-                            split.add(str.substring(lastFound, matcher.end()));
+                            parts.add(source.substring(lastFound, matcher.end()));
                             break;
                         case FROM_START:
-                            split.add(previous + str.substring(lastFound, matcher.start()));
-                            previous = str.substring(matcher.start(), matcher.end());
+                            parts.add(previous + source.substring(lastFound, matcher.start()));
+                            previous = source.substring(matcher.start(), matcher.end());
                             break;
                         case SEPARATE:
-                            split.add(str.substring(lastFound, matcher.start()));
-                            split.add(str.substring(matcher.start(), matcher.end()));
+                            parts.add(source.substring(lastFound, matcher.start()));
+                            parts.add(source.substring(matcher.start(), matcher.end()));
                             break;
                     }
                     lastFound = matcher.end();
                 } else {
-                    if (lastFound < str.length() - 1) {
-                        split.add(str.substring(lastFound));
+                    if (lastFound < source.length() - 1) {
+                        parts.add(source.substring(lastFound));
                     }
                     break;
                 }
             }
-            return split;
+            return parts;
+        }
+
+        public static ArrayList<String> extractLines(CachedResponse source, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
+            try {
+                if (source != null)
+                    return extractLines(new FileInputStream(source), source.getEncoding(), notInclude, startReg, endReg);
+            } catch (FileNotFoundException e) {
+                Log.e(ParserUtils.TAG, "File not found");
+                Log.w(FileNotFoundException.class.getSimpleName(), e);
+            }
+            return new ArrayList<>();
+        }
+
+        public static ArrayList<String> extractLines(InputStream source, String encoding, boolean notInclude,  @RegExp String startReg, @RegExp String endReg) {
+            ArrayList<String> parts = new ArrayList<>();
+            try (final InputStream is = source;
+                 final InputStreamReader isr = new InputStreamReader(is, encoding);
+                 final BufferedReader reader = new BufferedReader(isr)) {
+                int i = 0;
+                String line;
+                boolean putStrings = false;
+                StringBuilder builder = null;
+                Pattern start = Pattern.compile(startReg);
+                Pattern end = Pattern.compile(endReg);
+                while ((line = reader.readLine()) != null) {
+                    if(putStrings) {
+                        if (end.matcher(line).find() && builder != null) {
+                            putStrings = false;
+                            if (!notInclude) builder.append(line + "\n");
+                            parts.add(0, builder.toString());
+                            continue;
+                        }
+                    } else {
+                        if (start.matcher(line).find()) {
+                            builder = new StringBuilder();
+                            putStrings = true;
+                            if (!notInclude) builder.append(line + "\n");
+                            continue;
+                        }
+                    }
+                    if(putStrings) {
+                        builder.append(line + "\n");
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(ParserUtils.TAG, "File not parsable");
+                Log.w(ParserUtils.TAG, e);
+            }
+            return parts;
         }
     }
 }

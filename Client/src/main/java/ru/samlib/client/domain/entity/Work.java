@@ -5,9 +5,6 @@ import android.text.TextUtils;
 import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
@@ -20,8 +17,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Filter;
-import java.util.regex.Pattern;
+
 
 /**
  * Created by Rufim on 22.05.2014.
@@ -69,6 +65,8 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     }
 
     public void setLink(String link) {
+        if(link == null) return;
+        link = ru.samlib.client.util.TextUtils.eraseHost(link);
         if (link.contains("/")) {
             if (author == null) {
                 author = new Author(link.substring(0, link.lastIndexOf("/")));

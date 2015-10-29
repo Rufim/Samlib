@@ -5,8 +5,9 @@ import ru.samlib.client.domain.Valuable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.lister.JsoupPageLister;
 import ru.samlib.client.net.Request;
-import ru.samlib.client.lister.ParserPageLister;
+import ru.samlib.client.lister.PageLister;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,7 +40,7 @@ public class SearchParser extends PageParser {
     }
 
     public SearchParser() {
-        super("/cgi-bin/seek", 59, new ParserPageLister() {
+        super("/cgi-bin/seek", 59, new JsoupPageLister() {
             @Override
             public void setPage(Request request, int index) {
                 request.setParam(SearchParams.PAGE, index + 1);

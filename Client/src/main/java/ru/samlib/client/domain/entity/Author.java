@@ -1,5 +1,6 @@
 package ru.samlib.client.domain.entity;
 
+import android.net.Uri;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import lombok.*;
@@ -58,7 +59,19 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     private Integer friendsOf;
 
     public Author(String link) {
-        this.link = link;
+        setLink(link);
+    }
+
+    public void setLink(String link) {
+        if (link == null) return;
+        link = ru.samlib.client.util.TextUtils.eraseHost(link);
+        if (link.contains("/")) {
+            if(link.contains(Work.HTML_SUFFIX)) {
+                this.link = new Work(link).getAuthor().getLink();
+            } else {
+                this.link = link;
+            }
+        }
     }
 
     public Gender getGender(){

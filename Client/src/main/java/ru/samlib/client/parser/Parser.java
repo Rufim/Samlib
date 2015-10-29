@@ -12,7 +12,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
-import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +34,7 @@ public abstract class Parser {
     protected ExecutorService executor = Executors.newSingleThreadExecutor();
 
     protected Request request;
+    protected CachedResponse htmlFile;
 
     public void setPath(String path) throws MalformedURLException {
         if (path == null) {
@@ -51,7 +51,7 @@ public abstract class Parser {
     }
 
     public Document getDocument(Request request, long minBodySize) throws IOException {
-        CachedResponse htmlFile = HtmlClient.executeRequest(request, minBodySize);
+        htmlFile = HtmlClient.executeRequest(request, minBodySize);
 
         Document doc = null;
 
@@ -74,7 +74,7 @@ public abstract class Parser {
                     htmlFile.isCached = true;
                 }
             } else {
-                executor.submit(new continueToParse(htmlFile));
+                executor.submit(new PendingParse(htmlFile));
             }
         } else {
             throw new IOException("Network is not available");
@@ -86,11 +86,11 @@ public abstract class Parser {
         parserCache.evictAll();
     }
 
-    private class continueToParse implements Callable<Boolean> {
+    private class PendingParse implements Callable<Boolean> {
 
         private CachedResponse htmlFile;
 
-        public continueToParse(CachedResponse htmlFile) {
+        public PendingParse(CachedResponse htmlFile) {
             this.htmlFile = htmlFile;
         }
 
