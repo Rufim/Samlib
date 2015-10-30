@@ -172,6 +172,53 @@ public class TextUtils {
         return pieces;
     }
 
+    public static Date extractData(String source, String date, String time) {
+        Calendar calendar = Calendar.getInstance();
+        Pattern pattern = Pattern.compile(String.format(DATA_PATTERN, date, time));
+        Matcher matcher = pattern.matcher(source);
+        if (matcher.find()) {
+            String group = null;
+            int i = 1;
+            while (group == null || i <= matcher.groupCount()) {
+                group = matcher.group(i);
+                i++;
+            }
+            String d[] = group.split("\\s+");
+            String dates[] = null;
+            String times[] = null;
+            switch (i) {
+                case 1:
+                    dates = d[0].split(date);
+                    times = d[1].split(time);
+                    break;
+                case 3:
+                    dates = d[0].split(date);
+                    break;
+                case 5:
+                    times = d[0].split(time);
+                    break;
+            }
+            if (dates != null) {
+                if (dates.length == 3) {
+                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[0]));
+                    calendar.set(Calendar.MONTH, Integer.parseInt(dates[1]) - 1);
+                    calendar.set(Calendar.YEAR, Integer.parseInt(dates[2]));
+                } else if (dates.length == 2) {
+                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[0]));
+                    calendar.set(Calendar.MONTH, Integer.parseInt(dates[1]) - 1);
+                }
+            }
+            if (time != null) {
+                calendar.set(Calendar.MINUTE, Integer.parseInt(times[1]));
+                calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(times[0]));
+            } else {
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+            }
+        }
+        return calendar.getTime();
+    }
+
     public static Date parseData(String text) {
         Calendar calendar = Calendar.getInstance();
         if (text.contains(":")) {
@@ -469,7 +516,7 @@ public class TextUtils {
             return new ArrayList<>();
         }
 
-        public static ArrayList<String> extractLines(InputStream source, String encoding, boolean notInclude,  @RegExp String startReg, @RegExp String endReg) {
+        public static ArrayList<String> extractLines(InputStream source, String encoding, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
             ArrayList<String> parts = new ArrayList<>();
             try (final InputStream is = source;
                  final InputStreamReader isr = new InputStreamReader(is, encoding);
@@ -481,7 +528,7 @@ public class TextUtils {
                 Pattern start = Pattern.compile(startReg);
                 Pattern end = Pattern.compile(endReg);
                 while ((line = reader.readLine()) != null) {
-                    if(putStrings) {
+                    if (putStrings) {
                         if (end.matcher(line).find() && builder != null) {
                             putStrings = false;
                             if (!notInclude) builder.append(line + "\n");
@@ -496,7 +543,7 @@ public class TextUtils {
                             continue;
                         }
                     }
-                    if(putStrings) {
+                    if (putStrings) {
                         builder.append(line + "\n");
                     }
                 }

@@ -2,6 +2,7 @@ package ru.samlib.client.parser;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.PageLister;
@@ -47,6 +48,10 @@ public class CommentsParser extends PageParser<Comment> {
     @Override
     protected Comment parseRow(Element row) {
         Comment comment = new Comment();
+        Elements smalls = row.select("small");
+        comment.setNumber(TextUtils.extractInt(smalls.first().text()));
+        comment.setData(TextUtils.extractData(smalls.get(1).select("i").text(), "/", ":"));
+
 
         return comment;
     }
