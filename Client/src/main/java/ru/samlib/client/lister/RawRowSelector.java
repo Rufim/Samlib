@@ -6,7 +6,7 @@ import ru.samlib.client.util.TextUtils;
 /**
  * Created by 0shad on 29.10.2015.
  */
-public abstract class RawPageLister implements PageLister {
+public abstract class RawRowSelector implements RowSelector {
     public abstract @RegExp String getRowStartDelimiter();
 
     public abstract @RegExp String getRowEndDelimiter();

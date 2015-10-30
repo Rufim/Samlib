@@ -44,13 +44,13 @@ public class ParserUtils {
         String info = lis.get(index++).text();
         String[] data = new String[0];
         if(info.contains("Размещен")) {
-            data = TextUtils.Splitter.extractString(info, true,
+            data = TextUtils.Splitter.extractStrings(info, true,
                     new TextUtils.Splitter("Размещен: ", ","),
                     new TextUtils.Splitter("изменен: ", "\\."),
                     new TextUtils.Splitter(" ", "k"));
         }
         if (info.contains("Обновлено")) {
-            data = TextUtils.Splitter.extractString(info, true,
+            data = TextUtils.Splitter.extractStrings(info, true,
                     new TextUtils.Splitter("Обновлено: ", "\\."),
                     new TextUtils.Splitter(" ", "k"));
         }

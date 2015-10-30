@@ -3,6 +3,7 @@ package ru.samlib.client.parser;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.lister.DefaultJsoupSelector;
 import ru.samlib.client.lister.DefaultPageLister;
 
 import org.jsoup.nodes.Element;
@@ -16,7 +17,7 @@ import java.math.BigDecimal;
 public class RateParser extends PageParser {
 
     public RateParser() {
-        super("/rating/expert/", 250, new DefaultPageLister());
+        super("/rating/expert/", 250, new DefaultJsoupSelector(), new DefaultPageLister());
     }
 
     @Override

@@ -7,18 +7,13 @@ import org.jsoup.select.Elements;
 /**
  * Created by Rufim on 29.06.2015.
  */
-public class DefaultPageLister extends JsoupPageLister {
+public class DefaultPageLister extends PageLister {
 
     @Override
     public void setPage(Request request, int index) {
         if (index != 0) {
             request.setSuffix("index-" + (index + 1) + ".shtml");
         }
-    }
-
-    @Override
-    public String getRowSelector() {
-        return "dl";
     }
 
     @Override

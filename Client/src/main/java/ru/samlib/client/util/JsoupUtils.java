@@ -8,7 +8,7 @@ import org.jsoup.safety.Whitelist;
 /**
  * Created by Dmitry on 20.10.2015.
  */
-public class JsoupUtills {
+public class JsoupUtils {
 
     public static String cleanHtml(String str) {
         Document.OutputSettings settings = new Document.OutputSettings();

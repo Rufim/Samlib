@@ -5,26 +5,21 @@ import android.util.Log;
 import org.jsoup.Jsoup;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.lister.*;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import ru.samlib.client.lister.JsoupPageLister;
-import ru.samlib.client.lister.PageLister;
-import ru.samlib.client.lister.RawPageLister;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by Rufim on 29.06.2015.
  */
-public abstract class PageParser<E extends Validatable> extends Parser implements DataSource<E> {
+public abstract class PageParser<E extends Validatable> extends RowParser<E> implements DataSource<E> {
 
     protected final int pageSize;
 
@@ -32,12 +27,8 @@ public abstract class PageParser<E extends Validatable> extends Parser implement
     protected int lastPage = -1;
     protected PageLister lister;
 
-    public PageParser(String path, int pageSize, PageLister lister) {
-        try {
-            setPath(path);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "Wrong url " + Link.getBaseDomain() + path, e);
-        }
+    public PageParser(String path, int pageSize, RowSelector selector, PageLister lister) {
+        super(path, selector);
         this.pageSize = pageSize;
         this.lister = lister;
     }
@@ -55,13 +46,7 @@ public abstract class PageParser<E extends Validatable> extends Parser implement
                 lastPage = lister.getLastPage(doc);
             }
             if (doc != null) {
-                List elements = new ArrayList<>();
-                if (lister instanceof JsoupPageLister) {
-                    elements = doc.select(((JsoupPageLister) lister).getRowSelector());
-                } else if (lister instanceof RawPageLister) {
-                    RawPageLister rawPageLister = ((RawPageLister) lister);
-                    elements = TextUtils.Splitter.extractLines(htmlFile, false, rawPageLister.getRowStartDelimiter(), rawPageLister.getRowEndDelimiter());
-                }
+                List elements = selectRows(document, selector);
                 if (elements.size() == 0) {
                     return elementList;
                 }
@@ -81,30 +66,5 @@ public abstract class PageParser<E extends Validatable> extends Parser implement
         //  }
         return elementList;
     }
-
-    protected void parseElements(List elements, int skip, int size, List<E> elementList) {
-        for (int i = skip; i < elements.size() && elementList.size() < size; i++) {
-            Object row = elements.get(i);
-            Element element;
-            try {
-                if (row instanceof Element) {
-                    element = (Element) row;
-                } else {
-                    element = Jsoup.parseBodyFragment(row.toString());
-                }
-                E item = parseRow(element);
-                if (item.validate()) {
-                    elementList.add(item);
-                } else {
-                    throw new Exception("Invalid data parsed");
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "Invalid row: " + elementList.size() + " skip is " + skip + " index is " + i + "" +
-                        "\n row html content: " + row, ex);
-            }
-        }
-    }
-
-    protected abstract E parseRow(Element row);
 
 }

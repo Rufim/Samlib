@@ -87,12 +87,12 @@ public class AuthorParser extends Parser {
                                             new TextUtils.Splitter("Об авторе", "(Аннотация к разделу)|(Начните знакомство с)"))[0]).text());
                 }
                 if (head.contains("Аннотация к разделу")) {
-                    author.setSectionAnnotation(TextUtils.Splitter.extractString(headDoc.text(),
+                    author.setSectionAnnotation(TextUtils.Splitter.extractStrings(headDoc.text(),
                             true,
                             new TextUtils.Splitter().addStart("Аннотация к разделу: "))[0]);
                 }
                 if (head.contains("Начните знакомство с")) {
-                    String[] rec = TextUtils.Splitter.extractString(head, true, new TextUtils.Splitter("<b>Начните знакомство с</b>:", "\\n"));
+                    String[] rec = TextUtils.Splitter.extractStrings(head, true, new TextUtils.Splitter("<b>Начните знакомство с</b>:", "\\n"));
                     Document recDoc = Jsoup.parseBodyFragment(rec[0]);
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);

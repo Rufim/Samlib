@@ -35,6 +35,7 @@ public abstract class Parser {
 
     protected Request request;
     protected CachedResponse htmlFile;
+    protected Document document;
 
     public void setPath(String path) throws MalformedURLException {
         if (path == null) {
@@ -53,24 +54,24 @@ public abstract class Parser {
     public Document getDocument(Request request, long minBodySize) throws IOException {
         htmlFile = HtmlClient.executeRequest(request, minBodySize);
 
-        Document doc = null;
+        document = null;
 
         if (htmlFile != null) {
 
-            if (htmlFile.isCached && (doc = parserCache.get(request)) != null) {
-                return doc;
+            if (htmlFile.isCached && (document = parserCache.get(request)) != null) {
+                return document;
             }
 
             boolean isOver = htmlFile.isDownloadOver;
             try {
-                doc = Jsoup.parse(htmlFile, request.getEncoding(), request.getUrl().toString());
+                document = Jsoup.parse(htmlFile, request.getEncoding(), request.getUrl().toString());
             } catch (Exception ex) {
                 Log.w(TAG, "Url is not exist or not have valid content: " + request);
                 throw new IOException("Network is not available", ex);
             }
             if (isOver) {
                 if (!htmlFile.isCached) {
-                    parserCache.put(request, doc);
+                    parserCache.put(request, document);
                     htmlFile.isCached = true;
                 }
             } else {
@@ -79,7 +80,7 @@ public abstract class Parser {
         } else {
             throw new IOException("Network is not available");
         }
-        return doc;
+        return document;
     }
 
     public static void dropCache() {

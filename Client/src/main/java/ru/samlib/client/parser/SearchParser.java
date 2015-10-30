@@ -5,9 +5,10 @@ import ru.samlib.client.domain.Valuable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.JsoupPageLister;
-import ru.samlib.client.net.Request;
+import ru.samlib.client.lister.DefaultPageLister;
+import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.PageLister;
+import ru.samlib.client.net.Request;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -40,15 +41,17 @@ public class SearchParser extends PageParser {
     }
 
     public SearchParser() {
-        super("/cgi-bin/seek", 59, new JsoupPageLister() {
-            @Override
-            public void setPage(Request request, int index) {
-                request.setParam(SearchParams.PAGE, index + 1);
-            }
+        super("/cgi-bin/seek", 59, new JsoupRowSelector() {
 
             @Override
             public String getRowSelector() {
                 return "table[width=640][border=0]";
+            }
+
+        }, new PageLister() {
+            @Override
+            public void setPage(Request request, int index) {
+                request.setParam(SearchParams.PAGE, index + 1);
             }
 
             @Override
@@ -93,7 +96,7 @@ public class SearchParser extends PageParser {
                 Elements p = tbodys.get(1).select("p");
                 if (p.size() > 1) {
                     String fullSubtext = p.get(1).text();
-                    work.setDescription(TextUtils.Splitter.extractString(p.html(), true, new TextUtils.Splitter("<br>", "<br>"))[0]);
+                    work.setDescription(TextUtils.Splitter.extractStrings(p.html(), true, new TextUtils.Splitter("<br>", "<br>"))[0]);
                 }
             }
         }

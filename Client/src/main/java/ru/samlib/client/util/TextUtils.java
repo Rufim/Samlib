@@ -30,7 +30,7 @@ public class TextUtils {
     public static final String SUSPICIOUS_BY_LINK = "\\w+\\.\\w+";
     public static final int DEFAULT_FLAGS = Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE;
     public static final String OUTSIDE_TAGS = "(?![^<\"]*(>|\")|[^<>]*(<|\")\\/)";
-    public static final String DATA_PATTERN = "((\\d{4}%1$c)?\\d{2}%1$c\\d{2}\\s+\\d{2}%2$c\\d{2})|((\\d{4}%1$c)?\\d{2}%1$c\\d{2})|(\\d{2}%2$c\\d{2})";
+    public static final String DATA_PATTERN = "((\\d{4}%1$s)?\\d{2}%1$s\\d{2}\\s+\\d{2}%2$s\\d{2})|((\\d{4}%1$s)?\\d{2}%1$s\\d{2})|(\\d{2}%2$s\\d{2})";
     public static final Pattern suspiciousPattern = Pattern.compile(SUSPICIOUS_BY_LINK, DEFAULT_FLAGS);
     public static final Pattern urlPattern = Pattern.compile(URL_REGEX, DEFAULT_FLAGS);
 
@@ -128,7 +128,7 @@ public class TextUtils {
     }
 
     public static Integer extractInt(String string) {
-        Matcher matcher = Pattern.compile("\\d").matcher(string);
+        Matcher matcher = Pattern.compile("\\d+").matcher(string);
         if (matcher.find()) {
             return TextUtils.parseInt(string.substring(matcher.start(), matcher.end()));
         }
@@ -178,10 +178,10 @@ public class TextUtils {
         Matcher matcher = pattern.matcher(source);
         if (matcher.find()) {
             String group = null;
-            int i = 1;
-            while (group == null || i <= matcher.groupCount()) {
-                group = matcher.group(i);
+            int i = 0;
+            while (group == null && i <= matcher.groupCount()) {
                 i++;
+                group = matcher.group(i);
             }
             String d[] = group.split("\\s+");
             String dates[] = null;
@@ -339,7 +339,7 @@ public class TextUtils {
             return null;
         }
 
-        public static String[] extractString(final String source, boolean notInclude, Splitter... splitters) {
+        public static String[] extractStrings(final String source, boolean notInclude, Splitter... splitters) {
             String[] parts = new String[splitters.length];
             int i = 0;
             String line = new String(source);
@@ -532,7 +532,7 @@ public class TextUtils {
                         if (end.matcher(line).find() && builder != null) {
                             putStrings = false;
                             if (!notInclude) builder.append(line + "\n");
-                            parts.add(0, builder.toString());
+                            parts.add(builder.toString());
                             continue;
                         }
                     } else {
@@ -550,6 +550,28 @@ public class TextUtils {
             } catch (Exception e) {
                 Log.e(ParserUtils.TAG, "File not parsable");
                 Log.w(ParserUtils.TAG, e);
+            }
+            return parts;
+        }
+
+        public static ArrayList<String> extractStrings(final String source, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
+            ArrayList<String> parts = new ArrayList<>();
+            Matcher startMatcher = Pattern.compile(startReg).matcher(source);
+            Matcher endMatcher = Pattern.compile(endReg).matcher(source);
+            while (startMatcher.find()) {
+                int startPos = notInclude ? startMatcher.end() : startMatcher.start();
+                int endPos = -1;
+                while (endMatcher.find()) {
+                    endPos = notInclude ? endMatcher.start() : endMatcher.end();
+                    if(endPos > startPos) {
+                        break;
+                    }
+                }
+                if(endPos != -1) {
+                    parts.add(source.substring(startPos, endPos));
+                } else {
+                    parts.add(source.substring(startPos));
+                }
             }
             return parts;
         }

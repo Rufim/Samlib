@@ -9,13 +9,12 @@ import ru.samlib.client.domain.entity.Chapter;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.util.JsoupUtills;
+import ru.samlib.client.util.JsoupUtils;
 import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.SystemUtils;
 import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -92,7 +91,7 @@ public class WorkParser extends Parser {
         Chapter currentChapter = new Chapter("Начало");
         Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        indents.addAll(Arrays.asList(JsoupUtills.ownText(document.body()).split("\\n")));
+        indents.addAll(Arrays.asList(JsoupUtils.ownText(document.body()).split("\\n")));
         for (int i = 0; i < rootElements.size(); i++) {
             Element el = rootElements.get(i);
             if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
@@ -106,7 +105,7 @@ public class WorkParser extends Parser {
             }
         }
         for (int i = 0; i < indents.size(); i++) {
-            String text = JsoupUtills.cleanHtml(indents.get(i));
+            String text = JsoupUtils.cleanHtml(indents.get(i));
             if (rootElements.size() > i) {
                 if (pattern.matcher(TextUtils.trim(text)).find()) {
                     Chapter newChapter = new Chapter(text);
