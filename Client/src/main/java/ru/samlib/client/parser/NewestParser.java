@@ -30,10 +30,6 @@ public class NewestParser extends Parser implements DataSource<Work> {
 
         List<Work> works = new ArrayList<>();
         try {
-
-            CommentsParser parser = new CommentsParser(new Work("http://samlib.ru/r/romanow_a_o/kill1.shtml"), 45, false);
-            parser.getItems(0, 45);
-
             Document doc = getDocument(request, MIN_BODY_SIZE);
             Elements tableElements = doc.select("table tbody td[width=600] table tbody");
             Elements tableRowElements = tableElements.select("tr");
