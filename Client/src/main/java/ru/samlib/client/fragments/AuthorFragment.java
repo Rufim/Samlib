@@ -159,6 +159,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (incomingAuthor != null) {
             if(!incomingAuthor.equals(author)) {
                 author = incomingAuthor;
+                clearData();
             }
             if (author.isParsed()) {
                 EventBus.getDefault().post(new AuthorParsedEvent(author));
@@ -189,6 +190,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     break;
                 case R.id.illustration_button:
                     IllustrationPagerFragment.show(AuthorFragment.this, (Work) getItem(position));
+                case R.id.comments_button:
+                    CommentsFragment.show(AuthorFragment.this, (Work) getItem(position));
             }
         }
 
@@ -240,8 +243,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     Button illustrationButton = holder.getView(R.id.illustration_button);
                     if (work.isHasIllustration()) {
                         illustrationButton.setVisibility(View.VISIBLE);
-                    } else {
-                        illustrationButton.setVisibility(View.GONE);
+                    }
+                    Button commentsButton = holder.getView(R.id.comments_button);
+                    if(work.isHasComments()) {
+                       commentsButton.setVisibility(View.VISIBLE);
                     }
                     if (!work.getGenres().isEmpty()) {
                         GuiUtils.setTextOrHide(holder.getView(R.id.work_item_subtitle),
@@ -345,7 +350,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 TextView textContent = new TextView(new ContextThemeWrapper(authorGridInfo.getContext(), R.style.author_info_column_1));
                 textTitle.setText(title);
                 if (content instanceof Date) {
-                    content = new SimpleDateFormat("dd MM yyyy").format(content);
+                    content = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(content);
                 }
                 textContent.setText(content.toString());
                 authorGridInfo.addView(textTitle);

@@ -3,6 +3,7 @@ package ru.samlib.client.parser;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.lister.DefaultJsoupSelector;
 import ru.samlib.client.lister.DefaultPageLister;
 
@@ -10,18 +11,19 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 
 /**
  * Created by Rufim on 07.01.2015.
  */
-public class RateParser extends PageParser {
+public class RateParser extends PageParser<Work> {
 
-    public RateParser() {
+    public RateParser() throws MalformedURLException {
         super("/rating/expert/", 250, new DefaultJsoupSelector(), new DefaultPageLister());
     }
 
     @Override
-    protected Validatable parseRow(Element row) {
+    protected Work parseRow(Element row) {
         Elements rowItems = row.select("li").first().children();
         Work work = new Work();
         for (int j = 0; j < rowItems.size(); j++) {

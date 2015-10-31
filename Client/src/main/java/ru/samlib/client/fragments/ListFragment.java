@@ -13,10 +13,12 @@ import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.parser.CommentsParser;
 import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 
 /**
@@ -190,7 +192,9 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     protected abstract ItemListAdapter<I> getAdapter();
 
-
+    protected DataSource<I> getDataSource() throws Exception {
+        return dataSource;
+    }
 
     protected void clearData() {
         currentCount = 0;
@@ -263,6 +267,12 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         });
         if (adapter == null) {
             adapter = getAdapter();
+        }
+        try {
+            setDataSource(getDataSource());
+        } catch (Exception e) {
+            Log.e(TAG, "Unknown exception", e);
+            ErrorFragment.show(ListFragment.this, R.string.error);
         }
         layoutManager = new LinearLayoutManager(rootView.getContext());
         itemList.setLayoutManager(layoutManager);
@@ -343,14 +353,16 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 if (items.size() == 0) {
                     return items;
                 }
-                List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
-                while (count > foundItems.size()) {
-                    foundItems = dataSource.getItems(currentCount + items.size(), count);
-                    if (foundItems.size() == 0) {
-                        break;
+                if(adapter.getLastQuery() != null) {
+                    List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
+                    while (count > foundItems.size()) {
+                        foundItems = dataSource.getItems(currentCount + items.size(), count);
+                        if (foundItems.size() == 0) {
+                            break;
+                        }
+                        items.addAll(foundItems);
+                        foundItems = adapter.find(adapter.getLastQuery(), items);
                     }
-                    items.addAll(foundItems);
-                    foundItems = adapter.find(adapter.getLastQuery(), items);
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Cant get new Items", e);

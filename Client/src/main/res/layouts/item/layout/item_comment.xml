@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/material_blue_grey_950">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*Дмитриев Александр"
+                android:id="@+id/comment_author"
+                android:textSize="@dimen/text_medium"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/spacing_small"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="beria.dmitriev@yandex.ru"
+                android:textSize="@dimen/text_small"
+                android:textStyle="bold"
+                android:autoLink="email"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:id="@+id/comment_email"/>
+
+    </LinearLayout>
+    <View android:layout_width="match_parent"
+          android:layout_height="3dp"
+          android:background="@drawable/shadow"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_small"
+            android:text="  > > 963.Rufim
+  >Фу ***. ГГ какой-то очередной моральный уродец. С каких пор это стало круто хз. Ладно, урод, а еще паинькой притворяется. Таких тварей давить надо в зародыше.
+  А точно не вас давить, тупых моралефагов? Люди они разные, а не как в сказках"
+            android:id="@+id/comment_content"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_nano"
+            android:text="2015-10-31 13:19"
+            android:layout_gravity="right"
+            android:textColor="@color/red_light"
+            android:padding="@dimen/spacing_xsmall"
+            android:id="@+id/comment_data"/>
+</LinearLayout>

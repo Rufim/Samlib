@@ -24,12 +24,8 @@ public abstract class RowParser<E extends Validatable> extends Parser implements
 
     protected RowSelector selector;
 
-    public RowParser(String path, RowSelector selector) {
-        try {
-            setPath(path);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "Wrong url " + Link.getBaseDomain() + path, e);
-        }
+    public RowParser(String path, RowSelector selector) throws MalformedURLException {
+        setPath(path);
         this.selector = selector;
     }
 

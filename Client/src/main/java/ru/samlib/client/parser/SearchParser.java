@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public class SearchParser extends PageParser {
         }
     }
 
-    public SearchParser() {
+    public SearchParser() throws MalformedURLException {
         super("/cgi-bin/seek", 59, new JsoupRowSelector() {
 
             @Override

@@ -27,7 +27,7 @@ public abstract class PageParser<E extends Validatable> extends RowParser<E> imp
     protected int lastPage = -1;
     protected PageLister lister;
 
-    public PageParser(String path, int pageSize, RowSelector selector, PageLister lister) {
+    public PageParser(String path, int pageSize, RowSelector selector, PageLister lister) throws MalformedURLException {
         super(path, selector);
         this.pageSize = pageSize;
         this.lister = lister;

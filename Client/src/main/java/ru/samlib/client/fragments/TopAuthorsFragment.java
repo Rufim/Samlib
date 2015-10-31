@@ -2,29 +2,36 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.parser.IllustrationsParser;
+import ru.samlib.client.parser.RateParser;
 import ru.samlib.client.parser.TopAuthorsParser;
+
+import java.net.MalformedURLException;
 
 /**
  * Created by Rufim on 16.01.2015.
  */
-public class TopAuthorsFragment extends ListFragment {
-
-    public TopAuthorsFragment() {
-        super(new TopAuthorsParser());
-    }
+public class TopAuthorsFragment extends ListFragment<Author> {
 
 
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
     public static TopAuthorsFragment newInstance() {
         return newInstance(TopAuthorsFragment.class);
+    }
+
+    @Override
+    protected DataSource<Author> getDataSource() throws Exception {
+        return new TopAuthorsParser();
     }
 
     @Override

@@ -45,4 +45,10 @@ public class Constants {
         public static final int APP_VERSION = 1;
     }
 
+    public static class Pattern {
+        public static final String TIME_PATTERN = "HH:mm";
+        public static final String DATA_PATTERN = "dd-MM-yyyy";
+        public static final String DATA_TIME_PATTERN = "dd-MM-yyyy HH:mm";
+    }
+
 }

@@ -9,27 +9,25 @@ import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.RateParser;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Rufim on 07.01.2015.
  */
-public class RateFragment extends ListFragment {
+public class RateFragment extends ListFragment<Work> {
 
-    public RateFragment() {
-        super(new RateParser());
-    }
-
-
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
     public static RateFragment newInstance() {
         return newInstance(RateFragment.class);
+    }
+
+    @Override
+    protected DataSource<Work> getDataSource() throws Exception {
+        return new RateParser();
     }
 
     @Override

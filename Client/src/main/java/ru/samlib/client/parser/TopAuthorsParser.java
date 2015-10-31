@@ -8,12 +8,14 @@ import ru.samlib.client.lister.DefaultPageLister;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.net.MalformedURLException;
+
 /**
  * Created by Rufim on 16.01.2015.
  */
 public class TopAuthorsParser extends PageParser {
 
-    public TopAuthorsParser() {
+    public TopAuthorsParser() throws MalformedURLException {
         super("/rating/hits/", 100, new DefaultJsoupSelector(),  new DefaultPageLister());
     }
 

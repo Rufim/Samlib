@@ -1,8 +1,10 @@
 package ru.samlib.client.domain.entity;
 
 import lombok.Data;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Validatable;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -18,6 +20,11 @@ public class Comment implements Validatable {
     private String email;
     private Date data;
     private boolean userComment = false;
+
+    public String getFormattedData() {
+        return new SimpleDateFormat(Constants.Pattern.DATA_TIME_PATTERN).format(data);
+    }
+
 
     @Override
     public boolean validate() {

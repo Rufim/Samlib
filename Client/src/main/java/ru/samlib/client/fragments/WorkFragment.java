@@ -320,6 +320,7 @@ public class WorkFragment extends ListFragment<String> {
         if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
                 work = incomingWork;
+                clearData();
             }
             if (work.isParsed()) {
                 EventBus.getDefault().post(new WorkParsedEvent(work));

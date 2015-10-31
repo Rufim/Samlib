@@ -1,5 +1,6 @@
 package ru.samlib.client.adapter;
 
+import android.support.annotation.LayoutRes;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,21 +21,21 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     protected List<I> items = new ArrayList<>();
     protected List<I> originalItems = null;
     protected Set<ViewHolder> currentHolders = Collections.newSetFromMap(new WeakHashMap<>());
-    protected final int layoutId;
+    protected final  int layoutId;
     protected Object lastQuery;
 
     // Adapter's Constructor
-    public ItemListAdapter() {
+    protected ItemListAdapter() {
         this.layoutId = -1;
     }
 
     // Adapter's Constructor
-    public ItemListAdapter(int layoutId) {
+    public ItemListAdapter(@LayoutRes int layoutId) {
         this.layoutId = layoutId;
     }
 
     // Adapter's Constructor
-    public ItemListAdapter(List<I> items, int layoutId) {
+    public ItemListAdapter(List<I> items, @LayoutRes int layoutId) {
         this.items.addAll(items);
         this.layoutId = layoutId;
     }

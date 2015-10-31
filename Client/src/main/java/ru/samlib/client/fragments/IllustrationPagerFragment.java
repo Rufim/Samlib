@@ -49,21 +49,27 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        boolean newWork = false;
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         if (incomingWork != null && !incomingWork.equals(work)) {
             work = incomingWork;
+            clearData();
+            newWork = true;
         } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 clearData();
+                newWork = true;
             }
         }
-        try {
-            setDataSource(new IllustrationsParser(work));
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "Unknown exception", e);
-            ErrorFragment.show(IllustrationPagerFragment.this, R.string.error);
+        if(newWork) {
+            try {
+                setDataSource(new IllustrationsParser(work));
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "Unknown exception", e);
+                ErrorFragment.show(IllustrationPagerFragment.this, R.string.error);
+            }
         }
         return super.onCreateView(inflater, container, savedInstanceState);
     }

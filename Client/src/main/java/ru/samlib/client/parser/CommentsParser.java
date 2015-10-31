@@ -11,6 +11,8 @@ import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.net.Request;
 import ru.samlib.client.util.TextUtils;
 
+import java.net.MalformedURLException;
+
 /**
  * Created by Dmitry on 29.10.2015.
  */
@@ -19,8 +21,8 @@ public class CommentsParser extends PageParser<Comment> {
     private boolean reverse;
 
 
-    public CommentsParser(Work work, int pageSize, boolean reverse) {
-        super(!reverse ? work.getCommentsLink() : work.getCommentsLink() + "?ORDER=reverse", pageSize, new RawRowSelector() {
+    public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
+        super(!reverse ? work.getCommentsLink() : work.getCommentsLink() + "?ORDER=reverse", -1, new RawRowSelector() {
 
             @Override
             public String getRowStartDelimiter() {

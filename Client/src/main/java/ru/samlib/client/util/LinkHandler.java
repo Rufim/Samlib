@@ -1,15 +1,7 @@
 package ru.samlib.client.util;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.provider.Browser;
 import android.text.SpannableStringBuilder;
-import android.text.TextPaint;
-import android.text.style.URLSpan;
-import android.view.View;
 import android.widget.TextView;
-import com.squareup.picasso.Picasso;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
 
@@ -30,16 +22,4 @@ public class LinkHandler extends TagNodeHandler {
     }
 
 
-    private class URLSpanNoUnderline extends URLSpan {
-
-        public URLSpanNoUnderline(String url) {
-            super(url);
-        }
-
-        @Override
-        public void updateDrawState(TextPaint ds) {
-            super.updateDrawState(ds);
-            ds.setUnderlineText(false);
-        }
-    }
 }

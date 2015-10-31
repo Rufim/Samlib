@@ -152,10 +152,10 @@ public class SectionActivity extends BaseActivity {
         TextView workSeries = GuiUtils.getView(drawerHeader, R.id.work_series);
         GuiUtils.setText(workTitle, work.getTitle());
         if(work.getCreateDate() != null) {
-            GuiUtils.setText(workCreated, new SimpleDateFormat("dd MM yyyy").format(work.getCreateDate()));
+            GuiUtils.setText(workCreated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getCreateDate()));
         }
         if(work.getUpdateDate() != null) {
-            GuiUtils.setText(workUpdated, new SimpleDateFormat("dd MM yyyy").format(work.getUpdateDate()));
+            GuiUtils.setText(workUpdated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getUpdateDate()));
         }
         GuiUtils.setText(workGenres, work.printGenres());
         GuiUtils.setText(workSeries, work.getType().getTitle());

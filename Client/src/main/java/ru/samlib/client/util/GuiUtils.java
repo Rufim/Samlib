@@ -10,11 +10,11 @@ import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.Spanned;
+import android.support.annotation.ColorRes;
+import android.text.*;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -25,6 +25,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import ru.samlib.client.R;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -551,6 +552,19 @@ public class GuiUtils {
                 }
             }
         }
+    }
+
+    public static SpannableStringBuilder coloredText(Context context, String text, @ColorRes int colorRes) {
+        int color = context.getResources().getColor(colorRes);
+        return  spannableText(text, new ForegroundColorSpan(color));
+    }
+
+    public static SpannableStringBuilder spannableText(String text, ParcelableSpan span) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(text);
+        if(span != null) {
+            sb.setSpan(span, 0, sb.length(), 0);
+        }
+        return sb;
     }
 
     public static void selectText(TextView textView, boolean erase, int start, int end, int color) {
