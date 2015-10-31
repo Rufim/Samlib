@@ -20,6 +20,7 @@ public class Comment implements Validatable {
     private String email;
     private Date data;
     private boolean userComment = false;
+    private boolean deleted = false;
 
     public String getFormattedData() {
         return new SimpleDateFormat(Constants.Pattern.DATA_TIME_PATTERN).format(data);
@@ -28,6 +29,6 @@ public class Comment implements Validatable {
 
     @Override
     public boolean validate() {
-        return number != null && nickName != null && rawContent != null;
+        return number != null && rawContent != null;
     }
 }

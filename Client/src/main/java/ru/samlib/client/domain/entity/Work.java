@@ -52,7 +52,7 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
     private New state = New.EMPTY;
     private String description;
     private boolean hasIllustration = false;
-    private boolean hasComments = true;
+    private boolean hasComments = false;
     private boolean parsed = false;
     private String rawContent = "";
     private List<String> indents = new ArrayList<>();

@@ -534,6 +534,13 @@ public class GuiUtils {
         }
     }
 
+
+    public static void setVisibility(int code, View ... views) {
+        for (View view : views) {
+            view.setVisibility(code);
+        }
+    }
+
     public static void setTextOrHide(View textView, CharSequence text, View ... views) {
         if(views.length == 0) {
             views = new View[] {textView};
@@ -542,14 +549,10 @@ public class GuiUtils {
             if (text != null) {
                 if(textView instanceof TextView) {
                     ((TextView)textView).setText(text);
-                    for (View view : views) {
-                        view.setVisibility(View.VISIBLE);
-                    }
+                    setVisibility(View.VISIBLE, views);
                 }
             } else {
-                for (View view : views) {
-                    view.setVisibility(View.GONE);
-                }
+                setVisibility(View.GONE, views);
             }
         }
     }

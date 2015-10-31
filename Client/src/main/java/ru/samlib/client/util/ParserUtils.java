@@ -146,6 +146,7 @@ public class ParserUtils {
 
             }
         }
+        work.setHasComments(el.text().contains("Комментарии"));
         work.setGenres(ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim());
     }
 

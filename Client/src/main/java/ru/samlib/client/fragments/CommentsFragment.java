@@ -5,6 +5,7 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.FragmentManager;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
@@ -72,7 +73,7 @@ public class CommentsFragment extends ListFragment<Comment> {
         }
         if (newWork) {
             try {
-                setDataSource(new CommentsParser(work, 45, false));
+                setDataSource(new CommentsParser(work, false));
             } catch (MalformedURLException e) {
                 Log.e(TAG, "Unknown exception", e);
                 ErrorFragment.show(CommentsFragment.this, R.string.error);
@@ -85,31 +86,37 @@ public class CommentsFragment extends ListFragment<Comment> {
 
         public CommentsAdapter(int layoutId) {
             super(layoutId);
-        }
-
-        @Override
-        public void onClick(View view, int position) {
-
+            bindClicks = false;
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
+            TextView number = holder.getView(R.id.comment_number);
             TextView author = holder.getView(R.id.comment_author);
             TextView email = holder.getView(R.id.comment_email);
             TextView content = holder.getView(R.id.comment_content);
             TextView data = holder.getView(R.id.comment_data);
             Comment comment = items.get(position);
+            number.setText(comment.getNumber().toString());
+            if(!comment.isDeleted()) {
+                data.setText(comment.getFormattedData());
+            } else {
+                data.setText(comment.getRawContent() + " " + comment.getFormattedData());
+                GuiUtils.setVisibility(View.GONE, author, content, email);
+                return;
+            }
             GuiUtils.setTextOrHide(email, comment.getEmail());
             HtmlSpanner spanner = new HtmlSpanner();
             spanner.registerHandler("a", new LinkHandler(content));
             content.setText(spanner.fromHtml(comment.getRawContent()));
-            data.setText(comment.getFormattedData());
-            if(comment.getAuthor() != null) {
+            content.setMovementMethod(LinkMovementMethod.getInstance());
+            if(comment.getAuthor() != null && comment.getAuthor().getLink() != null) {
                 author.setText(GuiUtils.spannableText(comment.getNickName(), new URLSpanNoUnderline(comment.getAuthor().getFullLink())));
+                author.setMovementMethod(LinkMovementMethod.getInstance());
             } else if(comment.isUserComment()){
                 author.setText(GuiUtils.coloredText(getActivity(), comment.getNickName(), R.color.red_light));
             } else {
-                author.setText(comment.getNickName());
+                GuiUtils.setTextOrHide(author, comment.getNickName());
             }
         }
     }

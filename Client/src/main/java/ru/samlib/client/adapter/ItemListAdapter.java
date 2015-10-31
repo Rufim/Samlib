@@ -1,7 +1,6 @@
 package ru.samlib.client.adapter;
 
 import android.support.annotation.LayoutRes;
-import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +22,8 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     protected Set<ViewHolder> currentHolders = Collections.newSetFromMap(new WeakHashMap<>());
     protected final  int layoutId;
     protected Object lastQuery;
+    protected boolean bindViews = true;
+    protected boolean bindClicks = true;
 
     // Adapter's Constructor
     protected ItemListAdapter() {
@@ -47,7 +48,9 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(layoutId, parent, false);
         ViewHolder holder = newHolder(itemView);
-        holder.bindViews(ItemListAdapter.this);
+        if(bindViews) {
+            holder.bindViews(ItemListAdapter.this, bindClicks);
+        }
         return holder;
     }
 
@@ -244,24 +247,26 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     public void onClick(View view) {
         ViewHolder holder = (ViewHolder) view.getTag();
         if (holder.getView(view.getId()) != null) {
-            onClick(view, holder.getPosition());
-
+            onClick(view, holder.getLayoutPosition());
         }
     }
 
-    public abstract void onClick(View view, int position);
+    public void onClick(View view, int position){
+
+    }
 
     // Implement OnLongClick listener.
     @Override
     public boolean onLongClick(View view) {
         ViewHolder holder = (ViewHolder) view.getTag();
         if (holder.getView(view.getId()) != null) {
-            onLongClick(view, holder.getPosition());
+            onLongClick(view, holder.getLayoutPosition());
         }
         return false;
     }
 
     public void onLongClick(View view, int position) {
+
     }
 
 
@@ -298,12 +303,14 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         public void onCreateHolder(View itemView) {
         }
 
-        protected ViewHolder bindViews(ItemListAdapter adapter) {
+        protected ViewHolder bindViews(ItemListAdapter adapter, boolean bindClicks) {
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
                 if(viewEntry != rootView) {
                     View view = viewEntry.getValue();
-                    view.setOnClickListener(adapter);
-                    view.setOnLongClickListener(adapter);
+                    if(bindClicks) {
+                        view.setOnClickListener(adapter);
+                        view.setOnLongClickListener(adapter);
+                    }
                     view.setTag(ViewHolder.this);
                 }
             }

@@ -27,19 +27,21 @@ public class RateFragment extends ListFragment<Work> {
 
     @Override
     protected DataSource<Work> getDataSource() throws Exception {
-        return new RateParser();
+        RateParser rateParser = new RateParser();
+        pageSize = rateParser.getPageSize();
+        return rateParser;
     }
 
     @Override
     protected ItemListAdapter getAdapter() {
-        return new RateArrayAdapter(getActivity(), new ArrayList<Work>());
+        return new RateArrayAdapter();
     }
 
 
     protected class RateArrayAdapter extends ItemListAdapter<Work> {
 
 
-        public RateArrayAdapter(Context context, List<Work> items) {
+        public RateArrayAdapter() {
             super(R.layout.item_rate);
         }
 

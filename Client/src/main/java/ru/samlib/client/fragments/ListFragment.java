@@ -9,16 +9,14 @@ import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.parser.CommentsParser;
+import ru.samlib.client.parser.PageParser;
 import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 
 /**
@@ -53,7 +51,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected volatile boolean isLoading = false;
     protected volatile boolean isEnd = false;
     protected int currentCount = 0;
-    protected int pastVisiblesItems = 0;
+    protected int pastVisibleItems = 0;
     protected DataTask dataTask;
     protected FilterTask filterTask;
     protected String lastSearchQuery;
@@ -198,7 +196,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     protected void clearData() {
         currentCount = 0;
-        pastVisiblesItems = 0;
+        pastVisibleItems = 0;
         isEnd = false;
         if (adapter != null) {
             adapter.getItems().clear();
@@ -287,8 +285,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 RecyclerView.LayoutManager mLayoutManager = itemList.getLayoutManager();
                 visibleItemCount = mLayoutManager.getChildCount();
                 totalItemCount = mLayoutManager.getItemCount();
-                pastVisiblesItems = layoutManager.findFirstVisibleItemPosition();
-                if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
+                if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
                     loadItems(pageSize, true);
                 }
             }
@@ -317,7 +315,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 dataTask.execute();
             } else {
                 stopLoading();
-                layoutManager.scrollToPositionWithOffset(pastVisiblesItems, 0);
+                layoutManager.scrollToPositionWithOffset(pastVisibleItems, 0);
             }
         }
 

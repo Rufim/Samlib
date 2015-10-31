@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import android.util.Log;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -11,7 +12,10 @@ import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.net.Request;
 import ru.samlib.client.util.TextUtils;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Dmitry on 29.10.2015.
@@ -20,9 +24,11 @@ public class CommentsParser extends PageParser<Comment> {
 
     private boolean reverse;
 
+    private static final int FIRST_PAGE = 10;
+    private static final int PAGE = 40;
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
-        super(!reverse ? work.getCommentsLink() : work.getCommentsLink() + "?ORDER=reverse", -1, new RawRowSelector() {
+        super(!reverse ? work.getCommentsLink() : work.getCommentsLink() + "?ORDER=reverse", PAGE, FIRST_PAGE, new RawRowSelector() {
 
             @Override
             public String getRowStartDelimiter() {
@@ -54,14 +60,20 @@ public class CommentsParser extends PageParser<Comment> {
         Comment comment = new Comment();
         Elements smalls = row.select("small");
         comment.setNumber(TextUtils.extractInt(smalls.first().text()));
-        comment.setData(TextUtils.extractData(smalls.get(1).select("i").text(), "/", ":"));
+        String info = smalls.get(1).select("i").text();
+        comment.setData(TextUtils.extractData(info, "/", ":"));
+        if(info.contains("Удалено")) {
+            comment.setDeleted(true);
+            comment.setRawContent(info.substring(0, info.indexOf(".") + 1));
+            return comment;
+        }
         comment.setEmail(row.select("u").text());
         Element b = smalls.first().nextElementSibling();
         comment.setNickName(b.text());
         Elements a = b.select("a");
         if(a.size() != 0) comment.setAuthor(new Author(a.attr("href")));
         comment.setUserComment(b.select("font[color=red]").size() != 0);
-        comment.setRawContent("<br>" + TextUtils.Splitter.extractStrings(row.html(), true, "<br>", "<hr noshade>").get(0));
+        comment.setRawContent(TextUtils.Splitter.extractStrings(row.select("body").html(), true, "<br>", "<hr noshade>").get(0));
         return comment;
     }
 }

@@ -200,12 +200,12 @@ public class TextUtils {
             }
             if (dates != null) {
                 if (dates.length == 3) {
-                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[0]));
+                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[2]));
                     calendar.set(Calendar.MONTH, Integer.parseInt(dates[1]) - 1);
-                    calendar.set(Calendar.YEAR, Integer.parseInt(dates[2]));
+                    calendar.set(Calendar.YEAR, Integer.parseInt(dates[0]));
                 } else if (dates.length == 2) {
-                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[0]));
-                    calendar.set(Calendar.MONTH, Integer.parseInt(dates[1]) - 1);
+                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[1]));
+                    calendar.set(Calendar.MONTH, Integer.parseInt(dates[0]) - 1);
                 }
             }
             if (time != null) {
@@ -538,8 +538,13 @@ public class TextUtils {
                     } else {
                         if (start.matcher(line).find()) {
                             builder = new StringBuilder();
-                            putStrings = true;
                             if (!notInclude) builder.append(line + "\n");
+                            if (!end.matcher(line).find()) {
+                                putStrings = true;
+                            } else if (builder.length() != 0) {
+                                parts.add(builder.toString());
+                                builder = new StringBuilder();
+                            }
                             continue;
                         }
                     }
@@ -554,23 +559,25 @@ public class TextUtils {
             return parts;
         }
 
-        public static ArrayList<String> extractStrings(final String source, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
+        public static ArrayList<String> extractStrings(String source, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
             ArrayList<String> parts = new ArrayList<>();
-            Matcher startMatcher = Pattern.compile(startReg).matcher(source);
-            Matcher endMatcher = Pattern.compile(endReg).matcher(source);
-            while (startMatcher.find()) {
-                int startPos = notInclude ? startMatcher.end() : startMatcher.start();
+            Pattern start = Pattern.compile(startReg);
+            Pattern end = Pattern.compile(endReg);
+            Matcher startMatcher;
+            Matcher endMatcher;
+            int startPos = 0;
+            while ((startMatcher = start.matcher(source)).find()) {
+                startPos = notInclude ? startMatcher.end() : startMatcher.start();
                 int endPos = -1;
-                while (endMatcher.find()) {
+                if ((endMatcher = end.matcher(source)).find()) {
                     endPos = notInclude ? endMatcher.start() : endMatcher.end();
-                    if(endPos > startPos) {
-                        break;
-                    }
                 }
-                if(endPos != -1) {
+                if (endPos != -1) {
                     parts.add(source.substring(startPos, endPos));
+                    source = source.substring(endPos);
                 } else {
-                    parts.add(source.substring(startPos));
+                    parts.add(source);
+                    break;
                 }
             }
             return parts;

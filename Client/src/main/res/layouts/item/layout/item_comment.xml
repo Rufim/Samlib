@@ -12,6 +12,15 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="965"
+                android:id="@+id/comment_number"
+                android:textSize="@dimen/text_medium"
+                android:textStyle="italic"
+                android:textColor="@color/LightGreen"
+                android:layout_marginLeft="@dimen/spacing_small"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="*Дмитриев Александр"
                 android:id="@+id/comment_author"
                 android:textSize="@dimen/text_medium"
@@ -34,7 +43,8 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_small"
+            android:textSize="@dimen/text_medium"
+            android:singleLine="false"
             android:text="  > > 963.Rufim
   >Фу ***. ГГ какой-то очередной моральный уродец. С каких пор это стало круто хз. Ладно, урод, а еще паинькой притворяется. Таких тварей давить надо в зародыше.
   А точно не вас давить, тупых моралефагов? Люди они разные, а не как в сказках"
@@ -42,7 +52,7 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_nano"
+            android:textSize="@dimen/text_small"
             android:text="2015-10-31 13:19"
             android:layout_gravity="right"
             android:textColor="@color/red_light"

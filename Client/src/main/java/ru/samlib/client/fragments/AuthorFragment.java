@@ -190,8 +190,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     break;
                 case R.id.illustration_button:
                     IllustrationPagerFragment.show(AuthorFragment.this, (Work) getItem(position));
+                    break;
                 case R.id.comments_button:
                     CommentsFragment.show(AuthorFragment.this, (Work) getItem(position));
+                    break;
             }
         }
 
