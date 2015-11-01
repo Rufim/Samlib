@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by Dmitry on 30.10.2015.
  */
-public abstract class RowParser<E extends Validatable> extends Parser implements DataSource<E> {
+public abstract class RowParser<I extends Validatable> extends Parser {
 
     protected RowSelector selector;
 
@@ -29,34 +29,7 @@ public abstract class RowParser<E extends Validatable> extends Parser implements
         this.selector = selector;
     }
 
-    @Override
-    public List<E> getItems(int skip, int size) throws IOException {
-        List<E> elementList = new ArrayList<>();
-        try {
-            getDocument(request, MIN_BODY_SIZE);
-            if (document != null) {
-                List elements = selectRows(document, selector);
-                if (elements.size() == 0) {
-                    return elementList;
-                }
-                parseElements(elements, skip, size, elementList);
-            } else {
-                return elementList;
-            }
-            Log.e(TAG, "Elements parsed: " + elementList.size() + " skip is " + skip);
-        } catch (Exception | ExceptionInInitializerError e) {
-            Log.e(TAG, e.getMessage(), e);
-            if (e instanceof IOException) {
-                throw e;
-            }
-        }
-        //  for (Element element : elementList) {
-        //      Log.e(TAG, element.toString());
-        //  }
-        return elementList;
-    }
-
-    protected List selectRows(Document document, RowSelector selector) {
+    protected List selectRows(Document document) throws IOException {
         List elements = new ArrayList<>();
         if (selector instanceof JsoupRowSelector) {
             elements = document.select(((JsoupRowSelector) selector).getRowSelector());
@@ -67,8 +40,8 @@ public abstract class RowParser<E extends Validatable> extends Parser implements
         return elements;
     }
 
-    protected void parseElements(List elements, int skip, int size, List<E> elementList) {
-        for (int i = skip; i < elements.size() && elementList.size() < size; i++) {
+    protected void parseElements(List elements, int skip, int size, List<I> items) {
+        for (int i = skip; i < elements.size() && items.size() < size; i++) {
             Object row = elements.get(i);
             Element element;
             try {
@@ -77,19 +50,19 @@ public abstract class RowParser<E extends Validatable> extends Parser implements
                 } else {
                     element = Jsoup.parseBodyFragment(row.toString());
                 }
-                E item = parseRow(element);
+                I item = parseRow(element);
                 if (item.validate()) {
-                    elementList.add(item);
+                    items.add(item);
                 } else {
                     throw new Exception("Invalid data parsed");
                 }
             } catch (Exception ex) {
-                Log.e(TAG, "Invalid row: " + elementList.size() + " skip is " + skip + " index is " + i + "" +
+                Log.e(TAG, "Invalid row: " + items.size() + " skip is " + skip + " index is " + i + "" +
                         "\n row html content: " + row, ex);
             }
         }
     }
 
-    protected abstract E parseRow(Element row);
+    protected abstract I parseRow(Element row);
 
 }

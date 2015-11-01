@@ -16,6 +16,7 @@ import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.domain.events.FilterEvent;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.NewestParser;
 
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ import java.util.Locale;
 public class NewestFragment extends ListFragment {
 
     public NewestFragment() {
-        super(new NewestParser());
         enableFiltering = true;
     }
 
@@ -87,6 +87,11 @@ public class NewestFragment extends ListFragment {
     @Override
     protected ItemListAdapter getAdapter() {
         return new NewestArrayAdapter();
+    }
+
+    @Override
+    protected DataSource getDataSource() throws Exception {
+        return new NewestParser();
     }
 
     protected class NewestArrayAdapter extends ItemListAdapter<Work> {
