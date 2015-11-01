@@ -23,6 +23,7 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.WorkParsedEvent;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.CommentsParser;
 import ru.samlib.client.parser.IllustrationsParser;
 import ru.samlib.client.util.FragmentBuilder;
@@ -30,7 +31,9 @@ import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.URLSpanNoUnderline;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 
 /**
  * Created by 0shad on 31.10.2015.
@@ -40,6 +43,9 @@ public class CommentsFragment extends ListFragment<Comment> {
     private static final String TAG = CommentsFragment.class.getSimpleName();
 
     private Work work;
+    private DataSource<Comment> datasource;
+    private CommentsParser parser;
+    private int pageIndex = 0;
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
         show(builder, container, CommentsFragment.class, Constants.ArgsName.LINK, link);
@@ -52,7 +58,6 @@ public class CommentsFragment extends ListFragment<Comment> {
     public static void show(BaseFragment fragment, Work work) {
         show(fragment, CommentsFragment.class, Constants.ArgsName.WORK, work);
     }
-
 
 
     @Override
@@ -87,8 +92,15 @@ public class CommentsFragment extends ListFragment<Comment> {
             }
         }
         if (newWork) {
+            pageIndex = 0;
             try {
-                setDataSource(new CommentsParser(work, false));
+                parser = new CommentsParser(work, false);
+                setDataSource(new DataSource<Comment>() {
+                    @Override
+                    public List<Comment> getItems(int skip, int size) throws IOException {
+                        return parser.getPage(pageIndex++);
+                    }
+                });
             } catch (MalformedURLException e) {
                 Log.e(TAG, "Unknown exception", e);
                 ErrorFragment.show(CommentsFragment.this, R.string.error);
@@ -113,7 +125,7 @@ public class CommentsFragment extends ListFragment<Comment> {
             TextView data = holder.getView(R.id.comment_data);
             Comment comment = items.get(position);
             number.setText(comment.getNumber().toString());
-            if(!comment.isDeleted()) {
+            if (!comment.isDeleted()) {
                 data.setText(comment.getFormattedData());
             } else {
                 data.setText(comment.getRawContent() + " " + comment.getFormattedData());
@@ -125,11 +137,11 @@ public class CommentsFragment extends ListFragment<Comment> {
             spanner.registerHandler("a", new LinkHandler(content));
             GuiUtils.setTextOrHide(content, spanner.fromHtml(comment.getRawContent()));
             content.setMovementMethod(LinkMovementMethod.getInstance());
-            if(comment.getAuthor() != null && comment.getAuthor().getLink() != null) {
+            if (comment.getAuthor() != null && comment.getAuthor().getLink() != null) {
                 GuiUtils.setTextOrHide(author, GuiUtils.spannableText(comment.getNickName(),
                         new URLSpanNoUnderline(comment.getAuthor().getFullLink())));
                 author.setMovementMethod(LinkMovementMethod.getInstance());
-            } else if(comment.isUserComment()){
+            } else if (comment.isUserComment()) {
                 GuiUtils.setTextOrHide(author, GuiUtils.coloredText(getActivity(), comment.getNickName(), R.color.red_light));
             } else {
                 GuiUtils.setTextOrHide(author, comment.getNickName());

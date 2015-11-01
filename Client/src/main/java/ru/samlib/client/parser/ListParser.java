@@ -24,7 +24,7 @@ public abstract class ListParser<I> extends RowParser implements DataSource<I> {
         try {
             getDocument(request, MIN_BODY_SIZE);
             if (document != null) {
-                List elements = selectRows();
+                List elements = selectRows(document);
                 if (elements.size() == 0) {
                     return elementList;
                 }

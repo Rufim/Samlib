@@ -16,15 +16,10 @@ import java.net.MalformedURLException;
 /**
  * Created by Dmitry on 29.10.2015.
  */
-public class CommentsParser extends PageListParser<Comment> {
-
-    private boolean reverse;
-
-    private static final int FIRST_PAGE = 10;
-    private static final int PAGE = 40;
+public class CommentsParser extends PageParser<Comment> {
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
-        super(work.getCommentsLink(), PAGE, new RawRowSelector() {
+        super(work.getCommentsLink(), new RawRowSelector() {
 
             @Override
             public String getRowStartDelimiter() {

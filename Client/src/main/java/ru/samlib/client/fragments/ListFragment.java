@@ -47,7 +47,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     //
     protected int pageSize = 50;
-    protected int pageIndex = 0;
     protected volatile boolean isLoading = false;
     protected volatile boolean isEnd = false;
     protected int currentCount = 0;
