@@ -16,6 +16,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Category;
+import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.*;
 import ru.samlib.client.fragments.*;
@@ -90,14 +91,22 @@ public class SectionActivity extends BaseActivity {
                 }
             }
             String link = null;
-            if (validateIntent(intent)) {
-                link = intent.getData().getPath();
-            }
-            if (link != null) {
-                if (link.endsWith(Work.HTML_SUFFIX)) {
-                    WorkFragment.show(builder, id, link);
-                } else {
-                    AuthorFragment.show(builder, id, link);
+            Uri data = getIntent().getData();
+           if(Intent.ACTION_VIEW.equals(intent.getAction())) {
+               link = data.getPath();
+                if (link != null) {
+                    if(Linkable.isAuthorLink(link)) {
+                        AuthorFragment.show(builder, id, link);
+                    }
+                    if(Linkable.isWorkLink(link)) {
+                        WorkFragment.show(builder, id, link);
+                    }
+                    if(Linkable.isIllustrationsLink(link)) {
+                        IllustrationPagerFragment.show(builder, id, link);
+                    }
+                    if(Linkable.isCommentsLink(link)) {
+                        CommentsFragment.show(builder, id, link);
+                    }
                 }
             }
         }
@@ -169,11 +178,6 @@ public class SectionActivity extends BaseActivity {
         navigationView.addHeaderView(drawerHeader);
     }
 
-    private boolean validateIntent(Intent intent) {
-        Uri data = getIntent().getData();
-        return Intent.ACTION_VIEW.equals(intent.getAction())
-                && (Linkable.isAuthorLink(data.getPath()) || Linkable.isWorkLink(data.getPath()));
-    }
 
     @Override
     protected boolean onNavigationItemSelected(MenuItem item) {

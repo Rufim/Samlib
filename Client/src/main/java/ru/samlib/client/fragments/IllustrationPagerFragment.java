@@ -13,6 +13,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.FragmentPagerAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
+import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.entity.Work;
@@ -35,8 +36,8 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
     private Work work;
 
-    public static void show(FragmentManager manager, @IdRes int container, String link) {
-        show(manager, container, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
+        show(builder, container, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
     }
 
     public static void show(BaseFragment fragment, String link) {
@@ -45,6 +46,16 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
     public static void show(BaseFragment fragment, Work work) {
         show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.WORK, work);
+    }
+
+    @Override
+    public boolean allowBackPress() {
+        if(getFragmentManager().getBackStackEntryCount() == 0) {
+            AuthorFragment.show(new FragmentBuilder(getFragmentManager()), getId(), work.getAuthor());
+            return false;
+        } else {
+            return super.allowBackPress();
+        }
     }
 
     @Override

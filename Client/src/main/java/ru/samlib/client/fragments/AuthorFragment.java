@@ -157,7 +157,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
         if (incomingAuthor != null) {
-            if(!incomingAuthor.equals(author)) {
+            if (!incomingAuthor.equals(author)) {
                 author = incomingAuthor;
                 clearData();
             }
@@ -245,10 +245,14 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     Button illustrationButton = holder.getView(R.id.illustration_button);
                     if (work.isHasIllustration()) {
                         illustrationButton.setVisibility(View.VISIBLE);
+                    } else {
+                        illustrationButton.setVisibility(View.GONE);
                     }
                     Button commentsButton = holder.getView(R.id.comments_button);
-                    if(work.isHasComments()) {
-                       commentsButton.setVisibility(View.VISIBLE);
+                    if (work.isHasComments()) {
+                        commentsButton.setVisibility(View.VISIBLE);
+                    } else {
+                        commentsButton.setVisibility(View.GONE);
                     }
                     if (!work.getGenres().isEmpty()) {
                         GuiUtils.setTextOrHide(holder.getView(R.id.work_item_subtitle),
@@ -259,7 +263,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     if (!work.getAnnotationBlocks().isEmpty()) {
                         holder.getView(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
                         View annotation_view = holder.getView(R.id.work_annotation);
-                        if(annotation_view instanceof  HtmlView) {
+                        if (annotation_view instanceof HtmlView) {
                             HtmlView htmlView = (HtmlView) annotation_view;
                             String testTable = "<table border=\"1\" cellpadding=\"4\" cellspacing=\"1\">    <tbody><tr><td width=\"400\"><img src=\"http://budclub.ru/img/p/plotnikow_sergej_aleksandrowich/podpiskairassylka/facebook.png\" alt=\"лого_фейсбук\" width=\"30\"><a href=\"https://www.facebook.com/plotnikovs.ru\" target=\"_blank\">Задать вопрос или поболтать на ФЕЙСБУКЕ</a> </td></tr>  </tbody></table>";
                             htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));

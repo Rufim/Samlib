@@ -1,5 +1,7 @@
 package ru.samlib.client.domain;
 
+import org.intellij.lang.annotations.RegExp;
+
 /**
  * Created by Rufim on 07.01.2015.
  */
@@ -49,6 +51,14 @@ public class Constants {
         public static final String TIME_PATTERN = "HH:mm";
         public static final String DATA_PATTERN = "dd-MM-yyyy";
         public static final String DATA_TIME_PATTERN = "dd-MM-yyyy HH:mm";
+        @RegExp
+        public static final String WORK_URL_REGEXP = "/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml";
+        @RegExp
+        public static final String AUTHOR_URL_REGEXP = "/*[a-z]/+[a-z_0-9]+(/*)";
+        @RegExp
+        public static final String COMMENTS_URL_REGEXP = "/comment/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+";
+        @RegExp
+        public static final String ILLUSTRATIONS_URL_REGEXP = "/img/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+/index\\.shtml";
     }
 
 }

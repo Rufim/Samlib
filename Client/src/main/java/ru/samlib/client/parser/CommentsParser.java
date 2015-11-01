@@ -28,7 +28,7 @@ public class CommentsParser extends PageParser<Comment> {
     private static final int PAGE = 40;
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
-        super(!reverse ? work.getCommentsLink() : work.getCommentsLink() + "?ORDER=reverse", PAGE, FIRST_PAGE, new RawRowSelector() {
+        super(work.getCommentsLink(), PAGE, FIRST_PAGE, new RawRowSelector() {
 
             @Override
             public String getRowStartDelimiter() {
@@ -44,7 +44,7 @@ public class CommentsParser extends PageParser<Comment> {
 
             @Override
             public void setPage(Request request, int index) {
-                request.setSuffix("?PAGE=" + (index + 1));
+                request.setParam("PAGE", (index + 1));
             }
 
 
@@ -53,6 +53,9 @@ public class CommentsParser extends PageParser<Comment> {
                 return TextUtils.extractInt(document.select("center > b:contains(Страниц)").text());
             }
         });
+        if(reverse) {
+            request.setParam("ORDER", "reverse");
+        }
     }
 
     @Override

@@ -33,11 +33,19 @@ public interface Linkable {
     }
 
     public static boolean isWorkLink(String link) {
-        return link.matches("/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml");
+        return link.matches(Constants.Pattern.WORK_URL_REGEXP);
     }
 
     public static boolean isAuthorLink(String link) {
-        return link.matches("/*[a-z]/+[a-z_0-9]+(/*)");
+        return link.matches(Constants.Pattern.AUTHOR_URL_REGEXP);
+    }
+
+    public static boolean isCommentsLink(String link) {
+        return link.matches(Constants.Pattern.COMMENTS_URL_REGEXP);
+    }
+
+    public static boolean isIllustrationsLink(String link) {
+        return link.matches(Constants.Pattern.ILLUSTRATIONS_URL_REGEXP);
     }
 }
 

@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -23,6 +25,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.CommentsParser;
 import ru.samlib.client.parser.IllustrationsParser;
+import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.URLSpanNoUnderline;
@@ -38,8 +41,8 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     private Work work;
 
-    public static void show(FragmentManager manager, @IdRes int container, String link) {
-        show(manager, container, CommentsFragment.class, Constants.ArgsName.LINK, link);
+    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
+        show(builder, container, CommentsFragment.class, Constants.ArgsName.LINK, link);
     }
 
     public static void show(BaseFragment fragment, String link) {
@@ -48,6 +51,18 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     public static void show(BaseFragment fragment, Work work) {
         show(fragment, CommentsFragment.class, Constants.ArgsName.WORK, work);
+    }
+
+
+
+    @Override
+    public boolean allowBackPress() {
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            AuthorFragment.show(new FragmentBuilder(getFragmentManager()), getId(), work.getAuthor());
+            return false;
+        } else {
+            return super.allowBackPress();
+        }
     }
 
     @Override
@@ -108,13 +123,14 @@ public class CommentsFragment extends ListFragment<Comment> {
             GuiUtils.setTextOrHide(email, comment.getEmail());
             HtmlSpanner spanner = new HtmlSpanner();
             spanner.registerHandler("a", new LinkHandler(content));
-            content.setText(spanner.fromHtml(comment.getRawContent()));
+            GuiUtils.setTextOrHide(content, spanner.fromHtml(comment.getRawContent()));
             content.setMovementMethod(LinkMovementMethod.getInstance());
             if(comment.getAuthor() != null && comment.getAuthor().getLink() != null) {
-                author.setText(GuiUtils.spannableText(comment.getNickName(), new URLSpanNoUnderline(comment.getAuthor().getFullLink())));
+                GuiUtils.setTextOrHide(author, GuiUtils.spannableText(comment.getNickName(),
+                        new URLSpanNoUnderline(comment.getAuthor().getFullLink())));
                 author.setMovementMethod(LinkMovementMethod.getInstance());
             } else if(comment.isUserComment()){
-                author.setText(GuiUtils.coloredText(getActivity(), comment.getNickName(), R.color.red_light));
+                GuiUtils.setTextOrHide(author, GuiUtils.coloredText(getActivity(), comment.getNickName(), R.color.red_light));
             } else {
                 GuiUtils.setTextOrHide(author, comment.getNickName());
             }
