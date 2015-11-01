@@ -13,7 +13,7 @@ import java.net.MalformedURLException;
 /**
  * Created by Rufim on 16.01.2015.
  */
-public class TopAuthorsParser extends PageParser {
+public class TopAuthorsParser extends PageListParser {
 
     public TopAuthorsParser() throws MalformedURLException {
         super("/rating/hits/", 100, new DefaultJsoupSelector(),  new DefaultPageLister());

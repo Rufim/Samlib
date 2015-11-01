@@ -19,49 +19,29 @@ import java.util.List;
 /**
  * Created by Rufim on 29.06.2015.
  */
-public abstract class PageParser<E extends Validatable> extends RowParser<E> implements DataSource<E> {
+public abstract class PageListParser<E extends Validatable> extends RowParser<E> implements DataSource<E> {
 
     protected final int pageSize;
-    protected final int firstPageSize;
 
     protected int index = 0;
     protected int lastPage = -1;
     protected PageLister lister;
 
-    public PageParser(String path, int pageSize, RowSelector selector, PageLister lister) throws MalformedURLException {
+    public PageListParser(String path, int pageSize, RowSelector selector, PageLister lister) throws MalformedURLException {
         super(path, selector);
         this.pageSize = pageSize;
         this.lister = lister;
-        this.firstPageSize = pageSize;
-    }
-
-    public PageParser(String path, int pageSize, int firstPageSize, RowSelector selector, PageLister lister) throws MalformedURLException {
-        super(path, selector);
-        this.pageSize = pageSize;
-        this.lister = lister;
-        this.firstPageSize = firstPageSize;
     }
 
     public int getPageSize() {
         return pageSize;
     }
 
-    public int getFirstPageSize() {
-        return firstPageSize;
-    }
-
     @Override
     public List<E> getItems(int skip, int size) throws IOException {
         List<E> elementList = new ArrayList<>();
         try {
-            if(skip == 0) {
-                index = 0;
-            } else {
-                index = Math.abs(skip - firstPageSize) / pageSize;
-            }
-            if(skip >= firstPageSize) {
-                index ++;
-            }
+            index = skip / pageSize;
             if (lastPage > 0 && index > lastPage) return elementList;
             lister.setPage(request, index);
             Document doc = getDocument(request);
@@ -73,11 +53,7 @@ public abstract class PageParser<E extends Validatable> extends RowParser<E> imp
                 if (elements.size() == 0) {
                     return elementList;
                 }
-                if(index > 0) {
-                    parseElements(elements, skip - (pageSize * (index - 1) + firstPageSize), size, elementList);
-                } else {
-                    parseElements(elements, skip, size, elementList);
-                }
+                parseElements(elements, skip - pageSize * index, size, elementList);
             } else {
                 return elementList;
             }

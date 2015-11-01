@@ -12,7 +12,6 @@ import butterknife.Bind;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.parser.PageParser;
 import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 

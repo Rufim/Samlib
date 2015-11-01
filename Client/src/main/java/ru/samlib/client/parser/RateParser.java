@@ -1,9 +1,7 @@
 package ru.samlib.client.parser;
 
 import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.lister.DefaultJsoupSelector;
 import ru.samlib.client.lister.DefaultPageLister;
 
@@ -16,7 +14,7 @@ import java.net.MalformedURLException;
 /**
  * Created by Rufim on 07.01.2015.
  */
-public class RateParser extends PageParser<Work> {
+public class RateParser extends PageListParser<Work> {
 
     public RateParser() throws MalformedURLException {
         super("/rating/expert/", 250, new DefaultJsoupSelector(), new DefaultPageLister());

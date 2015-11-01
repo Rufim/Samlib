@@ -5,7 +5,6 @@ import ru.samlib.client.domain.Valuable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.PageLister;
 import ru.samlib.client.net.Request;
@@ -22,7 +21,7 @@ import java.util.List;
 /**
  * Created by Rufim on 27.06.2015.
  */
-public class SearchParser extends PageParser {
+public class SearchParser extends PageListParser {
 
     protected static final String TAG = SearchParser.class.getSimpleName();
 

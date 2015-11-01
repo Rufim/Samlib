@@ -1,6 +1,5 @@
 package ru.samlib.client.parser;
 
-import android.util.Log;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -12,15 +11,12 @@ import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.net.Request;
 import ru.samlib.client.util.TextUtils;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Dmitry on 29.10.2015.
  */
-public class CommentsParser extends PageParser<Comment> {
+public class CommentsParser extends PageListParser<Comment> {
 
     private boolean reverse;
 
@@ -28,7 +24,7 @@ public class CommentsParser extends PageParser<Comment> {
     private static final int PAGE = 40;
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
-        super(work.getCommentsLink(), PAGE, FIRST_PAGE, new RawRowSelector() {
+        super(work.getCommentsLink(), PAGE, new RawRowSelector() {
 
             @Override
             public String getRowStartDelimiter() {
