@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import de.greenrobot.event.EventBus;
+import io.realm.annotations.Index;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
@@ -33,7 +34,9 @@ import ru.samlib.client.util.URLSpanNoUnderline;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 0shad on 31.10.2015.
@@ -96,9 +99,27 @@ public class CommentsFragment extends ListFragment<Comment> {
             try {
                 parser = new CommentsParser(work, false);
                 setDataSource(new DataSource<Comment>() {
+
+                    HashMap<Integer, Integer> pagesSize = new HashMap<>();
+
                     @Override
                     public List<Comment> getItems(int skip, int size) throws IOException {
-                        return parser.getPage(pageIndex++);
+                        if (skip == 0) pageIndex = 0;
+                        else {
+                            int sizeCounter = 0;
+                            int i;
+                            for (i = 0; skip > sizeCounter; i++) {
+                                if (i >= pagesSize.size()) {
+                                    i = pageIndex + 1;
+                                    break;
+                                }
+                                sizeCounter += pagesSize.get(i);
+                            }
+                            pageIndex = i;
+                        }
+                        List<Comment> comments = parser.getPage(pageIndex);
+                        pagesSize.put(pageIndex, comments.size());
+                        return comments;
                     }
                 });
             } catch (MalformedURLException e) {
