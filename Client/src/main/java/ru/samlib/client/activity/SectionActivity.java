@@ -56,7 +56,7 @@ public class SectionActivity extends BaseActivity {
             }
             if (sectionFragment instanceof WorkFragment) {
                 WorkFragment workFragment = ((WorkFragment) sectionFragment);
-                if(workFragment.getWork() != null && workFragment.getWork().getAuthor() != null) {
+                if (workFragment.getWork() != null && workFragment.getWork().getAuthor() != null) {
                     initializeAuthor(workFragment.getWork().getAuthor());
                 } else {
                     Log.e(TAG, "Error ocurred unknovn author!! Work utl is: " + workFragment.getWork().getFullLink());
@@ -73,11 +73,11 @@ public class SectionActivity extends BaseActivity {
         FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
         int id = R.id.container;
-        if(current != null) {
+        if (current != null) {
             id = current.getId();
             builder.addToBackStack();
         }
-        if(!onOrientationChange) {
+        if (!onOrientationChange) {
             if (args != null) {
                 author = (Author) args.getSerializable(Constants.ArgsName.AUTHOR);
                 if (author != null) {
@@ -91,20 +91,20 @@ public class SectionActivity extends BaseActivity {
                 }
             }
             String link = null;
-            Uri data = getIntent().getData();
-           if(Intent.ACTION_VIEW.equals(intent.getAction())) {
-               link = data.getPath();
+            Uri data = intent.getData();
+            if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+                link = data.getPath();
                 if (link != null) {
-                    if(Linkable.isAuthorLink(link)) {
+                    if (Linkable.isAuthorLink(link)) {
                         AuthorFragment.show(builder, id, link);
                     }
-                    if(Linkable.isWorkLink(link)) {
+                    if (Linkable.isWorkLink(link)) {
                         WorkFragment.show(builder, id, link);
                     }
-                    if(Linkable.isIllustrationsLink(link)) {
+                    if (Linkable.isIllustrationsLink(link)) {
                         IllustrationPagerFragment.show(builder, id, link);
                     }
-                    if(Linkable.isCommentsLink(link)) {
+                    if (Linkable.isCommentsLink(link)) {
                         CommentsFragment.show(builder, id, link);
                     }
                 }
@@ -160,10 +160,10 @@ public class SectionActivity extends BaseActivity {
         TextView workGenres = GuiUtils.getView(drawerHeader, R.id.work_genres);
         TextView workSeries = GuiUtils.getView(drawerHeader, R.id.work_series);
         GuiUtils.setText(workTitle, work.getTitle());
-        if(work.getCreateDate() != null) {
+        if (work.getCreateDate() != null) {
             GuiUtils.setText(workCreated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getCreateDate()));
         }
-        if(work.getUpdateDate() != null) {
+        if (work.getUpdateDate() != null) {
             GuiUtils.setText(workUpdated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getUpdateDate()));
         }
         GuiUtils.setText(workGenres, work.printGenres());
