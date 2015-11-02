@@ -11,8 +11,10 @@ import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.*;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
@@ -267,19 +269,6 @@ public class WorkFragment extends ListFragment<String> {
         if (Mode.SEARCH == mode) {
             adapter.selectText(lastSearchQuery, false, colorFoundedText);
         }
-    }
-
-    //TODO: smoothscrool
-    public void smoothScrollToPosition(int position, int offset) {
-        LinearSmoothScroller linearSmoothScroller = new LinearSmoothScroller(itemList.getContext()) {
-            public PointF computeScrollVectorForPosition(int targetPosition) {
-                PointF calculate = layoutManager.computeScrollVectorForPosition(targetPosition);
-                calculate.y += offset;
-                return calculate;
-            }
-        };
-        linearSmoothScroller.setTargetPosition(position);
-        layoutManager.startSmoothScroll(linearSmoothScroller);
     }
 
     private void scrollToIndex(int index, int textOffset) {

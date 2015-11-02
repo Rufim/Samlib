@@ -1,10 +1,13 @@
 package ru.samlib.client.fragments;
 
+import android.graphics.PointF;
 import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -250,6 +253,27 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
         return partiallyVisible;
     }
+
+
+    public void smoothScrollToPosition(int position, int offset) {
+        LinearSmoothScroller linearSmoothScroller = new LinearSmoothScroller(itemList.getContext()) {
+
+            @Override
+            public PointF computeScrollVectorForPosition(int targetPosition) {
+                PointF calculate = layoutManager.computeScrollVectorForPosition(targetPosition);
+                calculate.y += offset;
+                return calculate;
+            }
+
+            @Override
+            protected float calculateSpeedPerPixel(DisplayMetrics displayMetrics) {
+                return 25f / TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, displayMetrics.densityDpi, displayMetrics);
+            }
+        };
+        linearSmoothScroller.setTargetPosition(position);
+        layoutManager.startSmoothScroll(linearSmoothScroller);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
