@@ -146,8 +146,7 @@ public class AuthorParser extends Parser {
                                 Elements dl = lineDoc.select("DL");
                                 if (line.contains("TYPE=square")) {
                                     a = dl.select("a");
-                                    //TODO: add annotation
-                                    newCategory.addLink(new Link(a.text(), a.attr("href"), ""));
+                                    newCategory.addLink(new Link(a.text(), a.attr("href"), dl.select("i").text()));
                                     continue;
                                 }
                                 Work work = ParserUtils.parseWork(dl.first());

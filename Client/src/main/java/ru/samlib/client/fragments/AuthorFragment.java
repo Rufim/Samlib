@@ -9,6 +9,7 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -228,7 +229,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 case R.layout.item_work:
                     Linkable linkable = getItem(position);
                     if (linkable.getClass() == Link.class) {
-                        GuiUtils.setText(holder.getView(R.id.work_item_title), linkable.getTitle());
+                        CharSequence link;
+                        if (linkable.getAnnotation() != null) {
+                            link = linkable.getTitle() + ": " + linkable.getAnnotation();
+                        } else {
+                            link = linkable.getTitle();
+                        }
+                        GuiUtils.setText(holder.getView(R.id.work_item_title), GuiUtils.coloredText(getActivity(), link, R.color.material_deep_teal_200));
                         holder.getView(R.id.work_item_rate_and_size).setVisibility(View.GONE);
                         break;
                     }

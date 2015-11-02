@@ -557,12 +557,12 @@ public class GuiUtils {
         }
     }
 
-    public static SpannableStringBuilder coloredText(Context context, String text, @ColorRes int colorRes) {
+    public static SpannableStringBuilder coloredText(Context context, CharSequence text, @ColorRes int colorRes) {
         int color = context.getResources().getColor(colorRes);
         return  spannableText(text, new ForegroundColorSpan(color));
     }
 
-    public static SpannableStringBuilder spannableText(String text, ParcelableSpan span) {
+    public static SpannableStringBuilder spannableText(CharSequence text, ParcelableSpan span) {
         SpannableStringBuilder sb = new SpannableStringBuilder(text);
         if(span != null) {
             sb.setSpan(span, 0, sb.length(), 0);
