@@ -162,14 +162,14 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 author = incomingAuthor;
                 clearData();
             }
-            if (author.isParsed()) {
-                EventBus.getDefault().post(new AuthorParsedEvent(author));
-            }
         } else if (link != null) {
             if (author == null || !author.getLink().equals(link)) {
                 author = new Author(link);
                 clearData();
             }
+        }
+        if (author.isParsed()) {
+            EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
         return super.onCreateView(inflater, container, savedInstanceState);
     }

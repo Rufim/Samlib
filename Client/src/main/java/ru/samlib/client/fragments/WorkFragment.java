@@ -322,14 +322,14 @@ public class WorkFragment extends ListFragment<String> {
                 work = incomingWork;
                 clearData();
             }
-            if (work.isParsed()) {
-                EventBus.getDefault().post(new WorkParsedEvent(work));
-            }
         } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 clearData();
             }
+        }
+        if (work.isParsed()) {
+            EventBus.getDefault().post(new WorkParsedEvent(work));
         }
         colorFoundedText = getResources().getColor(R.color.red_dark);
         colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
