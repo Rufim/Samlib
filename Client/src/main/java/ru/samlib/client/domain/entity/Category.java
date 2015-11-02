@@ -40,8 +40,9 @@ public class Category implements Linkable, Serializable, Parsable {
     }
 
     public Linkable getLinkable() {
-        if (type == type.OTHER && link != null) {
-            return new Link(title, author.getLink() + "/" +link, annotation);
+        if (type == type.OTHER) {
+            if (link == null) return new Link(title, author.getLink(), annotation); else
+                return new Link(title, author.getLink() + "/" + link, annotation);
         } else {
             return type;
         }

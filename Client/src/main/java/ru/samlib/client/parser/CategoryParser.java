@@ -36,16 +36,10 @@ public class CategoryParser extends Parser{
     }
 
     public Category parse() {
-        boolean hasNotAuthor = category.getAuthor() != null;
+        boolean hasNotAuthor = category.getAuthor() == null;
         Author author;
         if(hasNotAuthor) {
-            author = new Author();
-            category.setAuthor(author);
-            String link = category.getLink();
-            while (link.endsWith("/")) {
-                link = link.substring(0, link.lastIndexOf("/"));
-            }
-            author.setLink(link.substring(0, link.lastIndexOf("/")));
+            category.setAuthor(new Author(request.getBaseUrl().toString()));
         }
         author = category.getAuthor();
         try {
