@@ -132,7 +132,7 @@ public class TextUtils {
         if (matcher.find()) {
             return TextUtils.parseInt(string.substring(matcher.start(), matcher.end()));
         }
-        return null;
+        return -1;
     }
 
     public static boolean contains(String str, boolean in, String... strs) {

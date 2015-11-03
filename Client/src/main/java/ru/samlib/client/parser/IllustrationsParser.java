@@ -29,9 +29,11 @@ public class IllustrationsParser extends Parser implements DataSource<Image> {
         try {
             Document doc = getDocument(request);
             Elements images = doc.select("table[width=640][align=center] td");
-            for (Element imageElement : images) {
+            for (int i = 0; i < images.size(); i++) {
                 Image image = new Image();
+                Element imageElement = images.get(i);
                 Element img = imageElement.select("img").first();
+                image.setNumber(i);
                 image.setLink(img.attr("src"));
                 image.setHeight(TextUtils.parseInt(img.attr("height")));
                 image.setWidth(TextUtils.parseInt(img.attr("width")));
@@ -39,10 +41,13 @@ public class IllustrationsParser extends Parser implements DataSource<Image> {
                 image.setAnnotation(imageElement.select("i").text());
                 String desc = imageElement.select("small").text();
                 int start = desc.lastIndexOf(", ");
-                if(start != -1) {
+                if (start != -1) {
                     image.setSize(TextUtils.parseInt(desc.substring(start, desc.lastIndexOf("k"))));
                 }
                 imageList.add(image);
+            }
+            for (Element imageElement : images) {
+
             }
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);

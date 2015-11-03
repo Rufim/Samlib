@@ -71,10 +71,6 @@ public class Category implements Linkable, Serializable, Parsable {
 
     @Override
     public String toString() {
-        return "Category{" +
-                "title='" + title + '\'' +
-                ", annotation='" + annotation + '\'' +
-                ", type=" + type +
-                '}';
+        return title;
     }
 }

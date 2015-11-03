@@ -51,7 +51,6 @@ public class WorkFragment extends ListFragment<String> {
 
     private Work work;
     private Queue<Pair<Integer, Integer>> searched = new ArrayDeque<>();
-    private AsyncTask moveToIndex;
     private Integer lastIndent = 0;
     private int colorSpeakingText;
     private int colorFoundedText;
@@ -253,11 +252,8 @@ public class WorkFragment extends ListFragment<String> {
         return true;
     }
 
-    private void scrollToIndex(int index) {
-        scrollToIndex(index, 0);
-    }
-
-    private void toIndex(int index, int textOffset) {
+    @Override
+    public void toIndex(int index, int textOffset) {
         TextView textView = getTextViewIndent(index);
         index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
         if (textView != null) {
@@ -268,33 +264,6 @@ public class WorkFragment extends ListFragment<String> {
         }
         if (Mode.SEARCH == mode) {
             adapter.selectText(lastSearchQuery, false, colorFoundedText);
-        }
-    }
-
-    private void scrollToIndex(int index, int textOffset) {
-        if (adapter.getItemCount() > index) {
-            toIndex(index, textOffset);
-        } else {
-            moveToIndex = new AsyncTask<Object, Void, Void>() {
-
-                int index = 0;
-                int offsetLines = 0;
-
-                @Override
-                protected Void doInBackground(Object... params) {
-                    index = (int) params[0];
-                    offsetLines = (int) params[1];
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(Void empty) {
-                    if (this == moveToIndex) {
-                        toIndex(index, offsetLines);
-                    }
-                }
-            };
-            loadItems(index + pageSize, true, moveToIndex, index, textOffset);
         }
     }
 
@@ -344,16 +313,6 @@ public class WorkFragment extends ListFragment<String> {
             visibleLines = (height + difY) / lineHeight;
         }
         return visibleLines;
-    }
-
-    private boolean isIndentVisible(int index) {
-        index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
-        int first = findFirstVisibleItemPosition(true);
-        int last = findLastVisibleItemPosition(true);
-        if (first > index || index > last) {
-            return false;
-        }
-        return true;
     }
 
     private TextView getTextViewIndent(int index) {

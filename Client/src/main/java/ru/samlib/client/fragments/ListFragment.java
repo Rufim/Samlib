@@ -5,6 +5,7 @@ import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
+import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import butterknife.Bind;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
+import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.GuiUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
@@ -56,6 +58,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected int pastVisibleItems = 0;
     protected DataTask dataTask;
     protected FilterTask filterTask;
+    protected MoveTask moveToIndex;
     protected String lastSearchQuery;
     protected Object lastFilterQuery;
     protected boolean enableFiltering = false;
@@ -254,8 +257,34 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         return partiallyVisible;
     }
 
+    private boolean isItemVisible(int index) {
+        index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
+        int first = findFirstVisibleItemPosition(true);
+        int last = findLastVisibleItemPosition(true);
+        if (first > index || index > last) {
+            return false;
+        }
+        return true;
+    }
 
-    public void smoothScrollToPosition(int position, int offset) {
+    public void scrollToIndex(int index) {
+        scrollToIndex(index, 0);
+    }
+
+    public void toIndex(int index, int offset) {
+        layoutManager.scrollToPositionWithOffset(index, offset);
+    }
+
+    public void scrollToIndex(int index, int textOffset) {
+        if (adapter.getItemCount() > index) {
+            toIndex(index, textOffset);
+        } else {
+            moveToIndex = new MoveTask();
+            loadItems(index + pageSize, true, moveToIndex, index, textOffset);
+        }
+    }
+
+    public void smoothScrollToIndex(int position, int offset) {
         LinearSmoothScroller linearSmoothScroller = new LinearSmoothScroller(itemList.getContext()) {
 
             @Override
@@ -374,7 +403,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 if (items.size() == 0) {
                     return items;
                 }
-                if(adapter.getLastQuery() != null) {
+                if (adapter.getLastQuery() != null) {
                     List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
                     while (count > foundItems.size()) {
                         foundItems = dataSource.getItems(currentCount + items.size(), count);
@@ -410,6 +439,25 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                     dataTask.execute();
                 }
                 dataTask = null;
+            }
+        }
+    }
+
+    public class MoveTask extends AsyncTask<Object, Void, Void> {
+        int index = 0;
+        int offsetLines = 0;
+
+        @Override
+        protected Void doInBackground(Object... params) {
+            index = (int) params[0];
+            offsetLines = (int) params[1];
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void empty) {
+            if (this == moveToIndex) {
+                toIndex(index, offsetLines);
             }
         }
     }

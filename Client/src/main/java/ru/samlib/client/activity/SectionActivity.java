@@ -3,29 +3,33 @@ package ru.samlib.client.activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Category;
-import ru.samlib.client.domain.entity.Comment;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.*;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by 0shad on 12.07.2015.
@@ -124,10 +128,8 @@ public class SectionActivity extends BaseActivity {
     private void initializeAuthor(Author author) {
         this.author = author;
         setState(SectionActivityState.AUTHOR);
-        navigationView.removeHeaderView(drawerHeader);
-        navigationView.getMenu().clear();
         actionBar.setTitle(author.getShortName());
-        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.header_author_bar, navigationView, false);
+        initNavigationView(R.layout.header_author_bar, author.getLinkableCategory().toArray());
         ImageView authorAvatar = GuiUtils.getView(drawerHeader, R.id.drawer_author_avatar);
         TextView drawerAuthorTitle = GuiUtils.getView(drawerHeader, R.id.drawer_author_title);
         TextView drawerAuthorAnnotation = GuiUtils.getView(drawerHeader, R.id.drawer_author_annotation);
@@ -136,24 +138,13 @@ public class SectionActivity extends BaseActivity {
         if (author.isHasAvatar()) {
             Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
         }
-        List<Category> categories = author.getLinkableCategory();
-        for (int i = 0; i < categories.size(); i++) {
-            String title = categories.get(i).getTitle();
-            if (title.length() > 22) {
-                title = title.substring(0, 19) + "...";
-            }
-            navigationView.getMenu().add(Menu.NONE, Menu.NONE, i, title);
-        }
-        navigationView.addHeaderView(drawerHeader);
     }
 
     private void initializeWork(Work work) {
         this.work = work;
         setState(SectionActivityState.WORK);
-        navigationView.removeHeaderView(drawerHeader);
-        navigationView.getMenu().clear();
+        initNavigationView(R.layout.header_work_bar, work.getChapters().toArray());
         actionBar.setTitle(work.getAuthor().getShortName());
-        drawerHeader = (ViewGroup) getLayoutInflater().inflate(R.layout.header_work_bar, navigationView, false);
         TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
         TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
         TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
@@ -168,14 +159,46 @@ public class SectionActivity extends BaseActivity {
         }
         GuiUtils.setText(workGenres, work.printGenres());
         GuiUtils.setText(workSeries, work.getType().getTitle());
-        for (int i = 0; i < work.getChapters().size(); i++) {
-            String title = work.getChapters().get(i).getTitle();
+    }
+
+    private View initNavigationView(@LayoutRes int header, Object ... titles) {
+        navigationView.removeHeaderView(drawerHeader);
+        navigationView.getMenu().clear();
+
+        for (int i = 0; i < titles.length; i++) {
+            String title = titles[i].toString();
             if (title.length() > 22) {
                 title = title.substring(0, 19) + "...";
             }
             navigationView.getMenu().add(Menu.NONE, Menu.NONE, i, title);
         }
-        navigationView.addHeaderView(drawerHeader);
+        if (header > 0) {
+            drawerHeader = (ViewGroup) getLayoutInflater().inflate(header, navigationView, false);
+            navigationView.addHeaderView(drawerHeader);
+            return null;
+        }
+        return drawerHeader;
+    }
+
+
+    private void initializeComments(int lastPage) {
+        setState(SectionActivityState.COMMENTS);
+        ArrayList<String> pages = new ArrayList<>();
+        for (int i = 0; i < lastPage; i++) {
+            pages.add(new String("Страница:" + i));
+        }
+        initNavigationView(R.layout.header_comments_bar, pages.toArray());
+        final EditText number = GuiUtils.getView(drawerHeader, R.id.comments_comment_number);
+        final Button scroll = GuiUtils.getView(drawerHeader, R.id.comments_scroll_to);
+        scroll.setOnClickListener(v -> {
+            postEvent(new ToIndexEvent(TextUtils.extractInt(number.getText().toString())));
+        });
+
+    }
+
+    private void initializeIllustrations(ArrayList<Image> images) {
+        setState(SectionActivityState.ILLUSTRATIONS);
+        initNavigationView(0, images.toArray());
     }
 
 
@@ -191,8 +214,10 @@ public class SectionActivity extends BaseActivity {
                 postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
                 break;
             case COMMENTS:
+                postEvent(new ToIndexEvent(item.getOrder()));
                 break;
             case ILLUSTRATIONS:
+                postEvent(new ToIndexEvent(item.getOrder()));
                 break;
         }
         return false;
@@ -218,8 +243,17 @@ public class SectionActivity extends BaseActivity {
         initializeAuthor(event.author);
     }
 
-
     public void onEventMainThread(WorkParsedEvent event) {
         initializeWork(event.work);
     }
+
+    public void onEventMainThread(CommentsParsedEvent event) {
+        initializeComments(event.lastPage);
+    }
+
+    public void onEventMainThread(IllustrationsParsedEvent event) {
+        initializeIllustrations(event.images);
+    }
+
+
 }

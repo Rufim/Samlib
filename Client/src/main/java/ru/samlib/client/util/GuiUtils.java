@@ -534,7 +534,6 @@ public class GuiUtils {
         }
     }
 
-
     public static void setVisibility(int code, View ... views) {
         for (View view : views) {
             view.setVisibility(code);
@@ -675,4 +674,5 @@ public class GuiUtils {
             Log.e(TAG, "Context is Null in method: runInUI");
         }
     }
+
 }

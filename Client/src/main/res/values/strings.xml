@@ -100,5 +100,7 @@
             &nbsp;&nbsp;
         ]]>
     </string>
+    <string name="comments_goto">Перейти</string>
+    <string name="comments_comment_number">Номер комментария:</string>
 
 </resources>
