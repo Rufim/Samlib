@@ -121,7 +121,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                     }
                     List<Comment> comments = parser.getPage(pageIndex);
                     pagesSize.put(pageIndex, comments.size());
-                    while (listToPage > pageIndex++) {
+                    while (listToPage > pageIndex++ || getPagesSize() <  skip + size) {
                         List<Comment> commentsAdd = parser.getPage(pageIndex);
                         pagesSize.put(pageIndex, comments.size());
                         comments.addAll(commentsAdd);
@@ -146,6 +146,14 @@ public class CommentsFragment extends ListFragment<Comment> {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
+    public int getPagesSize() {
+        int sizeCounter = 0;
+        for (Map.Entry<Integer, Integer> entry : pagesSize.entrySet()) {
+            sizeCounter += entry.getValue();
+        }
+        return sizeCounter;
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -160,11 +168,16 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     public void onEvent(ScrollToCommentEvent event) {
         if(event.index > 0) {
-            scrollToIndex(event.index);
+            scrollToIndex(getItemIndex(event));
         } else {
             listToPage = event.pageIndex;
             loadItems(true);
         }
+    }
+
+    public int getItemIndex(ScrollToCommentEvent event) {
+        int first = adapter.getItems().get(0).getNumber();
+        return first - event.index;
     }
 
     protected class CommentsAdapter extends ItemListAdapter<Comment> {
