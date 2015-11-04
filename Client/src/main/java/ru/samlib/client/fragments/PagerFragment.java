@@ -35,7 +35,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     protected DataSource<I> dataSource;
     protected volatile boolean isLoading = false;
     protected volatile boolean isEnd = false;
-    protected int pageSize = 50;
+    protected int pagesSize = 50;
     protected int currentCount = 0;
     protected PagerDataTask dataTask;
 
@@ -85,7 +85,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
                 if (dataTask != null) {
                     dataTask.cancel(true);
                 }
-                loadItems(pageSize, true);
+                loadItems(pagesSize, true);
             } else {
                 stopLoading();
             }
@@ -142,7 +142,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
 
     public void refreshData(boolean showProgress) {
         clearData();
-        loadItems(pageSize, showProgress);
+        loadItems(pagesSize, showProgress);
     }
 
 
@@ -154,7 +154,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
 
     public void onPageSelected(int position) {
         if(!isEnd && position == currentCount - 1) {
-            loadItems(pageSize, true);
+            loadItems(pagesSize, true);
         }
         currentItem = position;
     }

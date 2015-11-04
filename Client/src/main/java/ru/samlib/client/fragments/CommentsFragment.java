@@ -23,6 +23,8 @@ import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.events.CommentsParsedEvent;
+import ru.samlib.client.domain.events.ScrollToCommentEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.CommentsParser;
@@ -49,6 +51,9 @@ public class CommentsFragment extends ListFragment<Comment> {
     private DataSource<Comment> datasource;
     private CommentsParser parser;
     private int pageIndex = 0;
+    private int listToPage = -1;
+    private boolean isParseSend = false;
+    HashMap<Integer, Integer> pagesSize = new HashMap<>();
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
         show(builder, container, CommentsFragment.class, Constants.ArgsName.LINK, link);
@@ -85,49 +90,81 @@ public class CommentsFragment extends ListFragment<Comment> {
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         if (incomingWork != null && !incomingWork.equals(work)) {
             work = incomingWork;
-            clearData();
             newWork = true;
         } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
-                clearData();
                 newWork = true;
             }
         }
+        pageSize = 40;
         if (newWork) {
+            clearData();
+            pagesSize.clear();
             pageIndex = 0;
+            isParseSend = false;
             try {
                 parser = new CommentsParser(work, false);
-                setDataSource(new DataSource<Comment>() {
-
-                    HashMap<Integer, Integer> pagesSize = new HashMap<>();
-
-                    @Override
-                    public List<Comment> getItems(int skip, int size) throws IOException {
-                        if (skip == 0) pageIndex = 0;
-                        else {
-                            int sizeCounter = 0;
-                            int i;
-                            for (i = 0; skip > sizeCounter; i++) {
-                                if (i >= pagesSize.size()) {
-                                    i = pageIndex + 1;
-                                    break;
-                                }
-                                sizeCounter += pagesSize.get(i);
+                setDataSource((skip, size) -> {
+                    int sizeCounter = 0;
+                    if (skip == 0) pageIndex = 0;
+                    else {
+                        int i;
+                        for (i = 0; skip > sizeCounter; i++) {
+                            if (i >= pagesSize.size()) {
+                                i = pageIndex + 1;
+                                break;
                             }
-                            pageIndex = i;
+                            sizeCounter += pagesSize.get(i);
                         }
-                        List<Comment> comments = parser.getPage(pageIndex);
-                        pagesSize.put(pageIndex, comments.size());
-                        return comments;
+                        pageIndex = i;
                     }
+                    List<Comment> comments = parser.getPage(pageIndex);
+                    pagesSize.put(pageIndex, comments.size());
+                    while (listToPage > pageIndex++) {
+                        List<Comment> commentsAdd = parser.getPage(pageIndex);
+                        pagesSize.put(pageIndex, comments.size());
+                        comments.addAll(commentsAdd);
+                    }
+                    listToPage = -1;
+                    if (!isParseSend) {
+                        postEvent(new CommentsParsedEvent(parser.getLastPage()));
+                        isParseSend = true;
+                    }
+                    return comments;
                 });
             } catch (MalformedURLException e) {
                 Log.e(TAG, "Unknown exception", e);
                 ErrorFragment.show(CommentsFragment.this, R.string.error);
             }
+        } else {
+            if(!isParseSend) {
+                postEvent(new CommentsParsedEvent(parser.getLastPage()));
+                isParseSend = true;
+            }
         }
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    public void onEvent(ScrollToCommentEvent event) {
+        if(event.index > 0) {
+            scrollToIndex(event.index);
+        } else {
+            listToPage = event.pageIndex;
+            loadItems(true);
+        }
     }
 
     protected class CommentsAdapter extends ItemListAdapter<Comment> {

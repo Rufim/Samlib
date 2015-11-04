@@ -189,6 +189,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
+    protected void loadItems(boolean showProgress) {
+        loadItems(pageSize, showProgress, null, null);
+    }
+
     protected void loadItems(int count, boolean showProgress) {
         loadItems(count, showProgress, null, null);
     }
@@ -211,7 +215,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public void refreshData(boolean showProgress) {
         clearData();
-        loadItems(pageSize, showProgress);
+        loadItems(showProgress);
     }
 
 
@@ -339,7 +343,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 totalItemCount = mLayoutManager.getItemCount();
                 pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
                 if ((visibleItemCount + pastVisibleItems) >= totalItemCount) {
-                    loadItems(pageSize, true);
+                    loadItems(true);
                 }
             }
         });
@@ -486,7 +490,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                         filter(lastFilterQuery);
                     }
                 } else if (adapter.getItemCount() < pageSize) {
-                    loadItems(pageSize, true);
+                    loadItems(true);
                 }
             }
         }

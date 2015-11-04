@@ -14,7 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Linkable;
@@ -29,7 +28,6 @@ import ru.samlib.client.util.TextUtils;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by 0shad on 12.07.2015.
@@ -184,19 +182,19 @@ public class SectionActivity extends BaseActivity {
     private void initializeComments(int lastPage) {
         setState(SectionActivityState.COMMENTS);
         ArrayList<String> pages = new ArrayList<>();
-        for (int i = 0; i < lastPage; i++) {
+        for (int i = 1; i < lastPage && lastPage > 0; i++) {
             pages.add(new String("Страница:" + i));
         }
         initNavigationView(R.layout.header_comments_bar, pages.toArray());
         final EditText number = GuiUtils.getView(drawerHeader, R.id.comments_comment_number);
         final Button scroll = GuiUtils.getView(drawerHeader, R.id.comments_scroll_to);
         scroll.setOnClickListener(v -> {
-            postEvent(new ToIndexEvent(TextUtils.extractInt(number.getText().toString())));
+            postEvent(new ScrollToCommentEvent(TextUtils.extractInt(number.getText().toString()), -1));
         });
 
     }
 
-    private void initializeIllustrations(ArrayList<Image> images) {
+    private void initializeIllustrations(List<Image> images) {
         setState(SectionActivityState.ILLUSTRATIONS);
         initNavigationView(0, images.toArray());
     }
@@ -214,10 +212,10 @@ public class SectionActivity extends BaseActivity {
                 postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
                 break;
             case COMMENTS:
-                postEvent(new ToIndexEvent(item.getOrder()));
+                postEvent(new ScrollToCommentEvent(-1, item.getOrder() + 1));
                 break;
             case ILLUSTRATIONS:
-                postEvent(new ToIndexEvent(item.getOrder()));
+                postEvent(new IllustrationSelectedEvent(item.getOrder()));
                 break;
         }
         return false;
