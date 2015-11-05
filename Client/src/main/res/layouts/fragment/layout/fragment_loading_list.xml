@@ -4,12 +4,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <include layout="@layout/progressbar"/>
-
-    <include layout="@layout/top_progressbar"/>
+    <include android:id="@+id/load_more"
+            layout="@layout/top_progressbar"/>
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                 android:layout_alignParentTop="true"
+                 android:layout_below="@id/load_more"
                  android:id="@+id/top_element"
                  android:layout_width="match_parent"
                  android:layout_height="wrap_content"/>
@@ -32,6 +31,7 @@
                 android:visibility="gone"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
+    <include layout="@layout/progressbar"/>
 
     <xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
             android:id="@+id/fast_scroller"

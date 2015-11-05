@@ -1,5 +1,6 @@
 package ru.samlib.client.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -190,6 +192,12 @@ public class SectionActivity extends BaseActivity {
         final Button scroll = GuiUtils.getView(drawerHeader, R.id.comments_scroll_to);
         scroll.setOnClickListener(v -> {
             postEvent(new ScrollToCommentEvent(TextUtils.extractInt(number.getText().toString()), -1));
+            drawerLayout.closeDrawers();
+            View view = this.getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         });
 
     }
@@ -212,7 +220,7 @@ public class SectionActivity extends BaseActivity {
                 postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
                 break;
             case COMMENTS:
-                postEvent(new ScrollToCommentEvent(-1, item.getOrder() + 1));
+                postEvent(new ScrollToCommentEvent(-1, item.getOrder()));
                 break;
             case ILLUSTRATIONS:
                 postEvent(new IllustrationSelectedEvent(item.getOrder()));

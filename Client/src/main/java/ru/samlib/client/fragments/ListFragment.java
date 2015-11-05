@@ -193,6 +193,11 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         loadItems(pageSize, showProgress, null, null);
     }
 
+    protected void loadItems(boolean showProgress, AsyncTask onElementsLoadedTask, Object... params) {
+        loadItems(pageSize, showProgress, onElementsLoadedTask, params);
+    }
+
+
     protected void loadItems(int count, boolean showProgress) {
         loadItems(count, showProgress, null, null);
     }

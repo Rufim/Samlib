@@ -82,7 +82,7 @@ public abstract class HTTPExecutor implements Callable<CachedResponse> {
                     while (cachedResponse.readStream(is, raf, buffer)) ;
                 }
                 cachedResponse.isDownloadOver = true;
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 Log.e(TAG, "Error on download html using url " + request.getUrl(), ex);
                 continue;
             } finally {

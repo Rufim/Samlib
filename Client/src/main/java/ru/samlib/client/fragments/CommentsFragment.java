@@ -1,22 +1,15 @@
 package ru.samlib.client.fragments;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.v4.app.FragmentManager;
-import android.text.Html;
-import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import de.greenrobot.event.EventBus;
-import io.realm.annotations.Index;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
@@ -25,17 +18,15 @@ import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.CommentsParsedEvent;
 import ru.samlib.client.domain.events.ScrollToCommentEvent;
-import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.CommentsParser;
-import ru.samlib.client.parser.IllustrationsParser;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.URLSpanNoUnderline;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,11 +38,13 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     private static final String TAG = CommentsFragment.class.getSimpleName();
 
+    private static final int FIRST_PAGE = 10;
+    private static final int PAGE = 40;
+
     private Work work;
     private DataSource<Comment> datasource;
     private CommentsParser parser;
-    private int pageIndex = 0;
-    private int listToPage = -1;
+    private int showPage = -1;
     private boolean isParseSend = false;
     HashMap<Integer, Integer> pagesSize = new HashMap<>();
 
@@ -97,36 +90,20 @@ public class CommentsFragment extends ListFragment<Comment> {
                 newWork = true;
             }
         }
-        pageSize = 40;
+        pageSize = 10;
         if (newWork) {
             clearData();
-            pagesSize.clear();
-            pageIndex = 0;
-            isParseSend = false;
             try {
                 parser = new CommentsParser(work, false);
                 setDataSource((skip, size) -> {
-                    int sizeCounter = 0;
-                    if (skip == 0) pageIndex = 0;
-                    else {
-                        int i;
-                        for (i = 0; skip > sizeCounter; i++) {
-                            if (i >= pagesSize.size()) {
-                                i = pageIndex + 1;
-                                break;
-                            }
-                            sizeCounter += pagesSize.get(i);
-                        }
-                        pageIndex = i;
-                    }
-                    List<Comment> comments = parser.getPage(pageIndex);
-                    pagesSize.put(pageIndex, comments.size());
-                    while (listToPage > pageIndex++ || getPagesSize() <  skip + size) {
+                    int pageIndex = pagesSize.size();
+                    List<Comment> comments = new ArrayList<>();
+                    while (showPage > pageIndex || getPagesSize() < skip + size) {
                         List<Comment> commentsAdd = parser.getPage(pageIndex);
-                        pagesSize.put(pageIndex, comments.size());
+                        pagesSize.put(pageIndex, commentsAdd.size());
                         comments.addAll(commentsAdd);
+                        pageIndex++;
                     }
-                    listToPage = -1;
                     if (!isParseSend) {
                         postEvent(new CommentsParsedEvent(parser.getLastPage()));
                         isParseSend = true;
@@ -138,7 +115,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                 ErrorFragment.show(CommentsFragment.this, R.string.error);
             }
         } else {
-            if(!isParseSend) {
+            if (!isParseSend) {
                 postEvent(new CommentsParsedEvent(parser.getLastPage()));
                 isParseSend = true;
             }
@@ -147,11 +124,22 @@ public class CommentsFragment extends ListFragment<Comment> {
     }
 
     public int getPagesSize() {
+        return getPagesSize(pagesSize.size());
+    }
+
+    public int getPagesSize(int toPage) {
         int sizeCounter = 0;
-        for (Map.Entry<Integer, Integer> entry : pagesSize.entrySet()) {
-            sizeCounter += entry.getValue();
+        for (int i = 0; i < pagesSize.size() && i < toPage; i++) {
+            sizeCounter += pagesSize.get(i);
         }
         return sizeCounter;
+    }
+
+    @Override
+    protected void clearData() {
+        super.clearData();
+        pagesSize.clear();
+        isParseSend = false;
     }
 
     @Override
@@ -167,17 +155,65 @@ public class CommentsFragment extends ListFragment<Comment> {
     }
 
     public void onEvent(ScrollToCommentEvent event) {
-        if(event.index > 0) {
-            scrollToIndex(getItemIndex(event));
+        if (event.index > 0) {
+            scrollToIndex(getItemIndex(event.index));
         } else {
-            listToPage = event.pageIndex;
-            loadItems(true);
+            showPage = event.pageIndex;
+            if(showPage <= pagesSize.size()) {
+                showPage();
+            } else {
+                loadItems(0, true, new AsyncTask() {
+                    @Override
+                    protected Object doInBackground(Object[] params) {
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Object o) {
+                        showPage();
+                    }
+                });
+            }
         }
     }
 
-    public int getItemIndex(ScrollToCommentEvent event) {
+
+    public void scrollToIndex(int index, int textOffset) {
+        if (adapter.getItemCount() > index) {
+            toIndex(index, textOffset);
+        } else {
+            moveToIndex = new MoveTask() {
+
+                @Override
+                protected void onPostExecute(Void empty) {
+                    if (this == moveToIndex) {
+                        toIndex(index - countLostComments(index), offsetLines);
+                    }
+                }
+            };
+            loadItems(index + pageSize, true, moveToIndex, index, textOffset);
+        }
+    }
+
+    public void showPage() {
+        scrollToIndex(getPagesSize(showPage));
+        showPage = -1;
+    }
+
+    public int getItemIndex(int index) {
         int first = adapter.getItems().get(0).getNumber();
-        return first - event.index;
+        return first - index;
+    }
+
+    public int countLostComments(int toIndex) {
+        int lost = 0;
+        for (int i = 0; i + 1 < adapter.getItems().size() && i + 1 < toIndex; i++) {
+            int dif = adapter.getItems().get(i).getNumber() - adapter.getItems().get(i + 1).getNumber() - 1;
+            if(dif > 0) {
+                lost += dif;
+            }
+        }
+        return lost;
     }
 
     protected class CommentsAdapter extends ItemListAdapter<Comment> {
