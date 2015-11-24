@@ -1,12 +1,11 @@
 package ru.samlib.client.util;
 
 import android.annotation.SuppressLint;
-import android.os.Bundle;
 import android.util.Log;
 import org.intellij.lang.annotations.RegExp;
-import ru.samlib.client.net.CachedResponse;
 
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -16,6 +15,8 @@ import java.util.regex.Pattern;
  * Created by Dmitry on 19.10.2015.
  */
 public class TextUtils {
+
+    private static final String TAG = TextUtils.class.getSimpleName();
 
     // utl fll template: ((https?|ftp)\:\/\/)?([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?([a-z0-9-.]*)\.([a-z]{2,5})(\:[0-9]{2,5})?(\/([a-z0-9+\$_-]\.?)+)*\/?(\?[a-z+&\$_.-][a-z0-9;:@&%=+\/\$_.-]*)?(#[a-z_.-][a-z0-9+\$_.-]*)?
 
@@ -30,6 +31,8 @@ public class TextUtils {
     public static final String SUSPICIOUS_BY_LINK = "\\w+\\.\\w+";
     public static final int DEFAULT_FLAGS = Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE;
     public static final String OUTSIDE_TAGS = "(?![^<\"]*(>|\")|[^<>]*(<|\")\\/)";
+    @RegExp
+    public static final String EXTENDED_DATA_PATTERN = "(((\\d{2}%2$s\\d{2})(%3$s))?((\\d{2}%1$s)?\\d{2}%1$s\\d{2,4})((%3$s)(\\d{2}%2$s\\d{2}))?)|(\\d{2}%2$s\\d{2})";
     public static final String DATA_PATTERN = "((\\d{4}%1$s)?\\d{2}%1$s\\d{2}\\s+\\d{2}%2$s\\d{2})|((\\d{4}%1$s)?\\d{2}%1$s\\d{2})|(\\d{2}%2$s\\d{2})";
     public static final Pattern suspiciousPattern = Pattern.compile(SUSPICIOUS_BY_LINK, DEFAULT_FLAGS);
     public static final Pattern urlPattern = Pattern.compile(URL_REGEX, DEFAULT_FLAGS);
@@ -172,31 +175,38 @@ public class TextUtils {
         return pieces;
     }
 
-    public static Date extractData(String source, String date, String time) {
+    public static Date extractData(SimpleDateFormat dateFormat, String source) throws ParseException {
         Calendar calendar = Calendar.getInstance();
-        Pattern pattern = Pattern.compile(String.format(DATA_PATTERN, date, time));
+        dateFormat.setCalendar(calendar);
+        return dateFormat.parse(source);
+    }
+
+    public static Date extractData(String source, @RegExp String date, @RegExp String time) {
+       return extractData(source, date, time, "\\s");
+    }
+
+    public static Date extractData(String source, @RegExp String date, @RegExp String time, @RegExp String separator) {
+        Calendar calendar = Calendar.getInstance();
+        Pattern pattern = Pattern.compile(String.format(EXTENDED_DATA_PATTERN, date, time, separator));
         Matcher matcher = pattern.matcher(source);
         if (matcher.find()) {
-            String group = null;
-            int i = 0;
-            while (group == null && i <= matcher.groupCount()) {
-                i++;
-                group = matcher.group(i);
-            }
-            String d[] = group.split("\\s+");
             String dates[] = null;
             String times[] = null;
-            switch (i) {
-                case 1:
-                    dates = d[0].split(date);
-                    times = d[1].split(time);
-                    break;
-                case 3:
-                    dates = d[0].split(date);
-                    break;
-                case 5:
-                    times = d[0].split(time);
-                    break;
+            HashMap<Integer, String> groups = new HashMap<>(matcher.groupCount());
+            if(matcher.group(10) == null) {
+                for (int i = 1; i < 10; i++) {
+                    if (matcher.group(i) != null) {
+                        groups.put(i, matcher.group(i));
+                    }
+                }
+                if(groups.get(2) != null) {
+                    times = groups.get(3).split(time);
+                } else if(groups.get(7) != null) {
+                    times = groups.get(9).split(time);
+                }
+                dates = groups.get(5).split(date);
+            } else {
+                times = matcher.group(10).split(time);
             }
             if (dates != null) {
                 if (dates.length == 3) {
@@ -204,11 +214,11 @@ public class TextUtils {
                     calendar.set(Calendar.MONTH, Integer.parseInt(dates[1]) - 1);
                     calendar.set(Calendar.YEAR, Integer.parseInt(dates[0]));
                 } else if (dates.length == 2) {
-                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[1]));
-                    calendar.set(Calendar.MONTH, Integer.parseInt(dates[0]) - 1);
+                    calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(dates[0]));
+                    calendar.set(Calendar.MONTH, Integer.parseInt(dates[1]) - 1);
                 }
             }
-            if (time != null) {
+            if (times != null) {
                 calendar.set(Calendar.MINUTE, Integer.parseInt(times[1]));
                 calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(times[0]));
             } else {
@@ -245,6 +255,17 @@ public class TextUtils {
             }
         }
         return null;
+    }
+
+    public static String getShortFormattedDate(Date date, Locale locale) {
+        Calendar calendarToday = Calendar.getInstance();
+        Calendar calendarDate = Calendar.getInstance();
+        calendarDate.setTime(date);
+        if (calendarToday.get(Calendar.DAY_OF_WEEK) == calendarDate.get(Calendar.DAY_OF_WEEK)) {
+            return new SimpleDateFormat("HH:mm", locale).format(date);
+        } else {
+            return new SimpleDateFormat("dd/MM", locale).format(date);
+        }
     }
 
     public static class Piece {
@@ -377,12 +398,12 @@ public class TextUtils {
             return parts;
         }
 
-        public static String[] extractLines(CachedResponse source, boolean notInclude, Splitter... splitters) {
+        public static String[] extractLines(File source, String encoding, boolean notInclude, Splitter... splitters) {
             try {
                 if (source != null)
-                    return extractLines(new FileInputStream(source), source.getEncoding(), notInclude, splitters);
+                    return extractLines(new FileInputStream(source), encoding, notInclude, splitters);
             } catch (FileNotFoundException e) {
-                Log.e(ParserUtils.TAG, "File not found");
+                Log.e(TAG, "File not found");
                 Log.w(FileNotFoundException.class.getSimpleName(), e);
             }
             return new String[0];
@@ -431,20 +452,20 @@ public class TextUtils {
                     parts[i++] = builder.toString();
                 }
             } catch (Exception e) {
-                Log.e(ParserUtils.TAG, "File not parsable");
-                Log.w(ParserUtils.TAG, e);
+                Log.e(TAG, "File not parsable");
+                Log.w(TAG, e);
             }
             return parts;
         }
 
-        public static String extractLine(CachedResponse file, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
+        public static String extractLine(File file, String encoding, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
             Pattern start = Pattern.compile(startReg, Pattern.CASE_INSENSITIVE);
             Pattern end = Pattern.compile(endReg, Pattern.CASE_INSENSITIVE);
             final StringBuilder builder = new StringBuilder();
             boolean matchedStart = false;
             boolean matchedEnd;
             try (final InputStream is = new FileInputStream(file);
-                 final InputStreamReader isr = new InputStreamReader(is, file.getEncoding());
+                 final InputStreamReader isr = new InputStreamReader(is, encoding);
                  final BufferedReader reader = new BufferedReader(isr)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -460,8 +481,8 @@ public class TextUtils {
                     }
                 }
             } catch (Exception e) {
-                Log.e(ParserUtils.TAG, "File not parsable");
-                Log.w(ParserUtils.TAG, e);
+                Log.e(TAG, "File not parsable");
+                Log.w(TAG, e);
             }
             return builder.toString();
         }
@@ -505,12 +526,12 @@ public class TextUtils {
             return parts;
         }
 
-        public static ArrayList<String> extractLines(CachedResponse source, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
+        public static ArrayList<String> extractLines(File source, String encoding, boolean notInclude, @RegExp String startReg, @RegExp String endReg) {
             try {
                 if (source != null)
-                    return extractLines(new FileInputStream(source), source.getEncoding(), notInclude, startReg, endReg);
+                    return extractLines(new FileInputStream(source), encoding, notInclude, startReg, endReg);
             } catch (FileNotFoundException e) {
-                Log.e(ParserUtils.TAG, "File not found");
+                Log.e(TAG, "File not found");
                 Log.w(FileNotFoundException.class.getSimpleName(), e);
             }
             return new ArrayList<>();
@@ -553,8 +574,8 @@ public class TextUtils {
                     }
                 }
             } catch (Exception e) {
-                Log.e(ParserUtils.TAG, "File not parsable");
-                Log.w(ParserUtils.TAG, e);
+                Log.e(TAG, "File not parsable");
+                Log.w(TAG, e);
             }
             return parts;
         }

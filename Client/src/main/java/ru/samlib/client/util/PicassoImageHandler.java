@@ -14,6 +14,7 @@ import com.squareup.picasso.Transformation;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Link;
 
 import java.net.MalformedURLException;
@@ -53,7 +54,7 @@ public class  PicassoImageHandler extends TagNodeHandler {
                         try {
                             url = new URL(src);
                         } catch (MalformedURLException ex) {
-                            url = new URL(Link.getBaseDomain() + src);
+                            url = new URL(Constants.Net.BASE_DOMAIN + "/" + src);
                         }
                         if(src != null) {
                             int loc[] = new int[2];

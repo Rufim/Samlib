@@ -8,6 +8,7 @@ import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
 
+import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 
 /**
@@ -19,31 +20,31 @@ public class ParserUtils {
 
 
     public static Work parseWork(CachedResponse file, Work work) {
-        if(work == null) {
+        if (work == null) {
             work = new Work(file.getRequest().getBaseUrl().getPath());
         }
-        String[] parts = TextUtils.Splitter.extractLines(file, true,
+        String[] parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
                 new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                 new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
                 new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
                 new TextUtils.Splitter().addEnd("<!-------.*"));
-        if(parts.length == 0) {
+        if (parts.length == 0) {
             return work;
         }
         Document head = Jsoup.parseBodyFragment(parts[0]);
-        if(work.getAuthor().getFullName() == null) {
+        if (work.getAuthor().getFullName() == null) {
             work.getAuthor().setFullName(head.select("div > h3").first().ownText());
         }
         work.setTitle(head.select("center > h2").text());
         Elements lis = Jsoup.parseBodyFragment(parts[1]).select("li");
         int index = 2;
-        if(lis.get(0).text().contains("Copyright"))  {
+        if (lis.get(0).text().contains("Copyright")) {
             index--;
             work.setHasComments(false);
         }
         String info = lis.get(index++).text();
         String[] data = new String[0];
-        if(info.contains("Размещен")) {
+        if (info.contains("Размещен")) {
             data = TextUtils.Splitter.extractStrings(info, true,
                     new TextUtils.Splitter("Размещен: ", ","),
                     new TextUtils.Splitter("изменен: ", "\\."),
@@ -54,18 +55,18 @@ public class ParserUtils {
                     new TextUtils.Splitter("Обновлено: ", "\\."),
                     new TextUtils.Splitter(" ", "k"));
         }
-        if(data.length > 0) {
+        if (data.length > 0) {
             if (data.length == 2) {
                 work.setUpdateDate(TextUtils.parseData(data[0]));
                 work.setSize(Integer.parseInt(data[1]));
             }
-            if(data.length == 3) {
+            if (data.length == 3) {
                 work.setCreateDate(TextUtils.parseData(data[0]));
                 work.setUpdateDate(TextUtils.parseData(data[1]));
                 work.setSize(Integer.parseInt(data[2]));
             }
         }
-        if(lis.size() > index) {
+        if (lis.size() > index) {
             String typeGenre[] = lis.get(index++).text().split(":");
             work.setType(Type.parseType(typeGenre[0]));
             if (typeGenre.length > 1) {
@@ -86,12 +87,12 @@ public class ParserUtils {
                 }
             }
         }
-        if(parts[2].contains("Аннотация")) {
+        if (parts[2].contains("Аннотация")) {
             work.getAnnotationBlocks().clear();
             work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
         }
         if (parts[3].contains("<!--Section Begins-->")) {
-            work.setRawContent(TextUtils.Splitter.extractLines(file, true,
+            work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
                     new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
         } else {
             work.setRawContent(parts[3]);
@@ -127,13 +128,33 @@ public class ParserUtils {
     public static void parseType(Element el, Work work) {
         Elements info = el.select("b");
         if (info.size() > 0) {
-            String[] rate = info.get(0).text().split("\\*");
-            work.setRate(new BigDecimal(rate[0]));
-            work.setKudoed(Integer.parseInt(rate[1]));
+            String text = TextUtils.trim(info.text());
+            String size = null;
+            String rate = null;
+            if (text.matches("\\d+k \\d+\\.\\d+\\*\\d+")) {
+                String[] texts = text.split(" ");
+                size = texts[0];
+                rate = texts[1];
+            } else if (text.matches("\\d+k")) {
+                size = text;
+            } else if (text.matches("\\d+\\.\\d+\\*\\d+")) {
+                rate = text;
+            }
+
+            if (size != null) {
+                work.setSize(Integer.parseInt(size.replace("k", "")));
+            }
+
+            if (rate != null) {
+                String[] rates = rate.split("\\*");
+                work.setRate(new BigDecimal(rates[0]));
+                work.setKudoed(Integer.parseInt(rates[1]));
+            }
         }
-        String ownText = el.ownText();
-        if (ownText.contains("\"")) {
-            String type = ownText.split("\"")[1];
+        String ownText = TextUtils.trim(el.ownText().replace("Оценка:", ""));
+        String first = ownText.split(" ")[0];
+        if (!first.contains(",") && Genre.parseGenre(first) == null) {
+            String type = first.replace("\"", "");
             if (!type.isEmpty()) {
                 Type tp = Type.parseType(type);
                 if (tp == Type.OTHER) {
@@ -143,11 +164,11 @@ public class ParserUtils {
                 } else {
                     work.setType(tp);
                 }
-
             }
+            ownText = ownText.replace(first, "");
         }
         work.setHasComments(el.text().contains("Комментарии"));
-        work.setGenres(ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim());
+        work.setGenres(ownText);
     }
 
     public static Work parseWork(Element element) {
@@ -172,6 +193,9 @@ public class ParserUtils {
                     if (link.contains(".shtml")) {
                         work.setLink(link);
                         work.setTitle(el.text());
+                    } else if(work.getAuthor() == null) {
+                        work.setAuthor(new Author(link));
+                        work.getAuthor().setFullName(el.text());
                     }
                     break;
                 case "b":

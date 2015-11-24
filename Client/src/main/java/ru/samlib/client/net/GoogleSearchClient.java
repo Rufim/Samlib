@@ -2,6 +2,7 @@ package ru.samlib.client.net;
 
 import android.util.Log;
 import com.google.gson.Gson;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.google.ResponseData;
 import ru.samlib.client.domain.google.Result;
@@ -53,7 +54,7 @@ public class GoogleSearchClient implements DataSource<Link> {
         List<Link> links = new ArrayList<>();
         while (links.size() < size) {
             int index = skip / page_size;
-            GoogleResults results = search(query, Link.getBaseDomain(), index);
+            GoogleResults results = search(query, Constants.Net.BASE_DOMAIN, index);
             if(results == null) {
                 throw new IOException("Google Service is not available");
             }

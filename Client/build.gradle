@@ -88,7 +88,7 @@ dependencies {
     //    compile 'com.jakewharton:disklrucache:2.0.2'
 
     //   compile 'com.fasterxml.jackson.core:jackson-databind:2.5.2'
-    compile 'org.jsoup:jsoup:1.8.2'
+    compile 'org.jsoup:jsoup:1.8.3'
     compile 'com.annimon:stream:1.0.1'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'de.greenrobot:eventbus:2.4.0'

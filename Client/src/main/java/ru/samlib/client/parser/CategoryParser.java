@@ -46,7 +46,7 @@ public class CategoryParser extends Parser{
             Document headDoc;
             Elements elements;
             CachedResponse rawFile = HtmlClient.executeRequest(request);
-            String[] parts = TextUtils.Splitter.extractLines(rawFile, false,
+            String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(),  false,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));

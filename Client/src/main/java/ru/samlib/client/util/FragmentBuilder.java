@@ -73,7 +73,7 @@ public class FragmentBuilder {
         }
 
         public static ClassType cast(Object obj) {
-            if (null == obj) cast(Void.class);
+            if (null == obj) return cast(Void.class);
             return cast(obj.getClass());
         }
 
@@ -178,7 +178,7 @@ public class FragmentBuilder {
                 else bundle.putDouble(key, (double) value);
                 return this;
         }
-        if (baseType == ClassType.SERIALIZABLE) {
+        if (Serializable.class.isAssignableFrom(value.getClass())) {
             bundle.putSerializable(key, (Serializable) value);
         } else {
             throw new IllegalArgumentException("Unsupported type " + value.getClass().getSimpleName());

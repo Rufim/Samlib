@@ -73,7 +73,7 @@ public class SearchParser extends PageListParser {
     }
 
     @Override
-    protected Validatable parseRow(Element row) {
+    protected Validatable parseRow(Element row, int position) {
         Elements tbodys = row.select("tbody");
         Work work = new Work();
         if (tbodys.size() > 0) {

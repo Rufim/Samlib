@@ -3,6 +3,7 @@ package ru.samlib.client.parser;
 import android.os.SystemClock;
 import android.support.v4.util.LruCache;
 import android.util.Log;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.net.CachedResponse;
@@ -41,7 +42,7 @@ public abstract class Parser {
         if (path == null) {
             throw new MalformedURLException("Link is NULL");
         }
-        this.request = new Request(Link.getBaseDomain() + path)
+        this.request = new Request(Constants.Net.BASE_DOMAIN + path)
                 .setEncoding("CP1251")
                 .addHeader("Accept", ACCEPT_VALUE)
                 .addHeader("User-Agent", USER_AGENT);
@@ -65,6 +66,7 @@ public abstract class Parser {
             boolean isOver = htmlFile.isDownloadOver;
             try {
                 document = Jsoup.parse(htmlFile, request.getEncoding(), request.getUrl().toString());
+                Log.i(TAG, "Document parsed: " + htmlFile.getAbsolutePath());
             } catch (Exception ex) {
                 Log.w(TAG, "Url is not exist or not have valid content: " + request);
                 throw new IOException("Network is not available", ex);
@@ -102,6 +104,7 @@ public abstract class Parser {
             }
             String url = htmlFile.getRequest().getUrl().toString();
             parserCache.put(htmlFile.getRequest(), Jsoup.parse(htmlFile, htmlFile.getEncoding(), url));
+            Log.i(TAG, "Document parsed: " + htmlFile.getAbsolutePath());
             htmlFile.isCached = true;
             return Boolean.TRUE;
         }

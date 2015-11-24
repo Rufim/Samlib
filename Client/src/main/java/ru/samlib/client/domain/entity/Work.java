@@ -26,11 +26,14 @@ import java.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks"})
-public final class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
+public class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
     public static final String FB2_SUFFIX = ".fb2.zip";
+
+    public static final String COMMENT_PREFIX = "/comment";
+    public static final String ILLUSTRATION_PREFIX = "/img";
 
     private String title;
     private String link;
@@ -81,12 +84,12 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
         return author.getLink() + link;
     }
 
-    public String getIllustrationsLink() {
-        return "/img" + author.getLink() + link.replace(HTML_SUFFIX, "/index"+ HTML_SUFFIX);
+    public Link getIllustrationsLink() {
+        return new Link(ILLUSTRATION_PREFIX + author.getLink() + link.replace(HTML_SUFFIX, "/index"+ HTML_SUFFIX));
     }
 
-    public String getCommentsLink() {
-        return "/comment" + author.getLink() + link.replace(HTML_SUFFIX, "");
+    public Link getCommentsLink() {
+        return new Link(COMMENT_PREFIX + author.getLink() + link.replace(HTML_SUFFIX, ""));
     }
 
     public String getTypeName() {
@@ -149,17 +152,6 @@ public final class Work implements Serializable, Linkable, Validatable, Parsable
 
     public void addAnnotation(String annotation) {
         this.annotationBlocks.add(annotation);
-    }
-
-    public String getShortFormattedDate(Date date, Locale locale) {
-        Calendar calendarToday = Calendar.getInstance();
-        Calendar calendarDate = Calendar.getInstance();
-        calendarDate.setTime(date);
-        if (calendarToday.get(Calendar.DAY_OF_WEEK) == calendarDate.get(Calendar.DAY_OF_WEEK)) {
-            return new SimpleDateFormat("HH:mm", locale).format(date);
-        } else {
-            return new SimpleDateFormat("dd/MM", locale).format(date);
-        }
     }
 
     @Override

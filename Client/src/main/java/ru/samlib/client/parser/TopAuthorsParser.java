@@ -20,7 +20,7 @@ public class TopAuthorsParser extends PageListParser {
     }
 
     @Override
-    protected Validatable parseRow(Element row) {
+    protected Validatable parseRow(Element row, int position) {
         Elements rowItems = row.children();
         Author author = new Author();
         int j = 0;

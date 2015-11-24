@@ -24,7 +24,6 @@ public class SamlibApplication extends Application {
     public void onCreate() {
         super.onCreate();
         singleton = this;
-        Link.setBaseDomain(Constants.Net.BASE_DOMAIN);
         Fresco.initialize(this);
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)

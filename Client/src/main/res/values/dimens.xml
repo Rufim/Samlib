@@ -7,8 +7,8 @@
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="navigation_drawer_width">240dp</dimen>
 
-    <dimen name="newest_author_width">80sp</dimen>
-    <dimen name="newest_date_width">55dp</dimen>
+    <dimen name="table_author_width">80sp</dimen>
+    <dimen name="table_date_width">55dp</dimen>
 
     <integer name="newest_filter_grid_count">2</integer>
 

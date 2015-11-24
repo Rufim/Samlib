@@ -11,10 +11,11 @@ import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.FilterDialog;
+import ru.samlib.client.domain.entity.Discussion;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.parser.NewestParser;
+import ru.samlib.client.parser.DiscussionParser;
 import ru.samlib.client.util.TextUtils;
 
 import java.util.Locale;
@@ -22,9 +23,9 @@ import java.util.Locale;
 /**
  * Created by Rufim on 04.01.2015.
  */
-public class NewestFragment extends ListFragment {
+public class DiscussionFragment extends ListFragment<Discussion> {
 
-    public NewestFragment() {
+    public DiscussionFragment() {
         enableFiltering = true;
     }
 
@@ -77,8 +78,8 @@ public class NewestFragment extends ListFragment {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static NewestFragment newInstance() {
-        return newInstance(NewestFragment.class);
+    public static DiscussionFragment newInstance() {
+        return newInstance(DiscussionFragment.class);
     }
 
     @Override
@@ -87,16 +88,17 @@ public class NewestFragment extends ListFragment {
     }
 
     @Override
-    protected DataSource getDataSource() throws Exception {
-        return new NewestParser();
+    protected DataSource<Discussion> getDataSource() throws Exception {
+        pageSize = 199;
+        return new DiscussionParser();
     }
 
-    protected class NewestArrayAdapter extends ItemListAdapter<Work> {
+    protected class NewestArrayAdapter extends ItemListAdapter<Discussion> {
 
         private final Locale currentLocale = getResources().getConfiguration().locale;
 
         public NewestArrayAdapter() {
-            super(R.layout.item_newest);
+            super(R.layout.item_discussion);
         }
 
         @Override
@@ -104,13 +106,13 @@ public class NewestFragment extends ListFragment {
             int id = view.getId();
             String link = null;
             switch (id) {
-                case R.id.newest_item_work:
-                case R.id.newest_item_work_layout:
-                    link = getItems().get(position).getFullLink();
+                case R.id.discussion_item_work:
+                case R.id.discussion_item_work_layout:
+                    link = getItems().get(position).getWork().getCommentsLink().getFullLink();
                     break;
-                case R.id.newest_item_author:
-                case R.id.newest_item_author_layout:
-                    link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
+                case R.id.discussion_item_author:
+                case R.id.discussion_item_author_layout:
+                    link = getItems().get(position).getAuthor().getFullLink();
                     break;
             }
             if (link != null) {
@@ -122,15 +124,18 @@ public class NewestFragment extends ListFragment {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            TextView workTextView = holder.getView(R.id.newest_item_work);
-            TextView authorTextView = holder.getView(R.id.newest_item_author);
-            TextView timeTextView = holder.getView(R.id.newest_item_time);
-            TextView genresView = holder.getView(R.id.newest_item_genres);
-            Work work = getItems().get(position);
+            TextView workTextView = holder.getView(R.id.discussion_item_work);
+            TextView authorTextView = holder.getView(R.id.discussion_item_author);
+            TextView timeTextView = holder.getView(R.id.discussion_item_time);
+            TextView countTextView = holder.getView(R.id.discussion_item_count);
+            TextView genresView = holder.getView(R.id.discussion_item_genres);
+            Discussion discussion = getItems().get(position);
+            Work work = discussion.getWork();
             workTextView.setText(work.getTitle());
             genresView.setText(work.printGenres());
             authorTextView.setText(work.getAuthor().getShortName());
-            timeTextView.setText(TextUtils.getShortFormattedDate(work.getUpdateDate(), currentLocale));
+            timeTextView.setText(TextUtils.getShortFormattedDate(discussion.getLastOne(), currentLocale));
+            countTextView.setText(discussion.getCount() + (discussion.getCountOfDay() != null ? "/" + discussion.getCountOfDay() : ""));
         }
     }
 

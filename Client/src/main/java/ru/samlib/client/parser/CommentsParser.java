@@ -1,12 +1,11 @@
 package ru.samlib.client.parser;
 
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.PageLister;
+import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.net.Request;
 import ru.samlib.client.util.TextUtils;
@@ -19,7 +18,7 @@ import java.net.MalformedURLException;
 public class CommentsParser extends PageParser<Comment> {
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
-        super(work.getCommentsLink(), new RawRowSelector() {
+        super(work.getCommentsLink().getLink(), new RawRowSelector() {
 
             @Override
             public String getRowStartDelimiter() {
@@ -31,18 +30,13 @@ public class CommentsParser extends PageParser<Comment> {
                 return "<hr noshade>";
             }
 
-        }, new PageLister() {
+        }, new DefaultPageLister() {
 
             @Override
             public void setPage(Request request, int index) {
                 request.setParam("PAGE", (index + 1));
             }
 
-
-            @Override
-            public int getLastPage(Document document) {
-                return TextUtils.extractInt(document.select("center > b:contains(Страниц)").text());
-            }
         });
         if(reverse) {
             request.setParam("ORDER", "reverse");
@@ -50,7 +44,7 @@ public class CommentsParser extends PageParser<Comment> {
     }
 
     @Override
-    protected Comment parseRow(Element row) {
+    protected Comment parseRow(Element row, int position) {
         Comment comment = new Comment();
         Elements smalls = row.select("small");
         comment.setNumber(TextUtils.extractInt(smalls.first().text()));

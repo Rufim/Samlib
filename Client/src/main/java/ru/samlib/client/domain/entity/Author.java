@@ -66,6 +66,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
         if (link == null) return;
         link = ru.samlib.client.util.TextUtils.eraseHost(link);
         if (link.contains("/")) {
+            if(link.startsWith(Work.COMMENT_PREFIX)) {
+                link = link.replace(Work.COMMENT_PREFIX, "");
+            }
+            if(link.startsWith(Work.ILLUSTRATION_PREFIX)) {
+                link = link.replace(Work.ILLUSTRATION_PREFIX, "");
+            }
             if(link.contains(Work.HTML_SUFFIX)) {
                 this.link = new Work(link).getAuthor().getLink();
             } else {
@@ -91,13 +97,21 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     public String getShortName() {
         if (shortName == null && fullName != null) {
-            String names[] = fullName.split(" ");
-            shortName = names[0];
-            for (int i = 1; i < names.length; i++) {
-                if (!names[i].isEmpty()) {
-                    shortName += " " + names[i].charAt(0) + ".";
+            StringBuilder builder = new StringBuilder();
+            String authors[] = fullName.split(",");
+            for (int i = 0; i < authors.length; i++) {
+                String names[] = authors[i].split(" ");
+                builder.append(names[0]);
+                for (int j = 1; j < names.length; j++) {
+                    if (!names[j].isEmpty()) {
+                        builder.append(" " + names[j].charAt(0) + ".");
+                    }
+                }
+                if(i + 1 < authors.length) {
+                    builder.append(",");
                 }
             }
+            return shortName = builder.toString();
         }
         return shortName;
     }

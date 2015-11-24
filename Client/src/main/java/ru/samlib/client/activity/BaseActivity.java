@@ -109,12 +109,15 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        handleIntent(getIntent());
+        if(savedInstanceState == null || !savedInstanceState.getBoolean(Constants.ArgsName.CONFIG_CHANGE, false)) {
+            handleIntent(getIntent());
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString(Constants.ArgsName.LAST_FRAGMENT_TAG, getCurrentFragment().getTag());
+        outState.putBoolean(Constants.ArgsName.CONFIG_CHANGE, true);
         super.onSaveInstanceState(outState);
     }
 

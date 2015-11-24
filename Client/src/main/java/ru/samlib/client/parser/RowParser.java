@@ -35,7 +35,7 @@ public abstract class RowParser<I extends Validatable> extends Parser {
             elements = document.select(((JsoupRowSelector) selector).getRowSelector());
         } else if (selector instanceof RawRowSelector) {
             RawRowSelector rawRowSelector = ((RawRowSelector) selector);
-            elements = TextUtils.Splitter.extractLines(htmlFile, false, rawRowSelector.getRowStartDelimiter(), rawRowSelector.getRowEndDelimiter());
+            elements = TextUtils.Splitter.extractLines(htmlFile, htmlFile.getEncoding() ,  false, rawRowSelector.getRowStartDelimiter(), rawRowSelector.getRowEndDelimiter());
         }
         return elements;
     }
@@ -50,19 +50,20 @@ public abstract class RowParser<I extends Validatable> extends Parser {
                 } else {
                     element = Jsoup.parseBodyFragment(row.toString());
                 }
-                I item = parseRow(element);
+                I item = parseRow(element, i);
+                if(item == null) continue;
                 if (item.validate()) {
                     items.add(item);
                 } else {
                     throw new Exception("Invalid data parsed");
                 }
             } catch (Exception ex) {
-                Log.e(TAG, "Invalid row: " + items.size() + " skip is " + skip + " index is " + i + "" +
+                Log.w(TAG, "Invalid row: " + items.size() + " skip is " + skip + " index is " + i + "" +
                         "\n row html content: " + row, ex);
             }
         }
     }
 
-    protected abstract I parseRow(Element row);
+    protected abstract I parseRow(Element row, int position);
 
 }

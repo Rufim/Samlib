@@ -21,7 +21,7 @@ public class RateParser extends PageListParser<Work> {
     }
 
     @Override
-    protected Work parseRow(Element row) {
+    protected Work parseRow(Element row, int position) {
         Elements rowItems = row.select("li").first().children();
         Work work = new Work();
         for (int j = 0; j < rowItems.size(); j++) {

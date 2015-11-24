@@ -167,7 +167,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     public void stopLoading() {
         isLoading = false;
         if (loadMoreBar != null) {
-            loadMoreBar.setVisibility(View.INVISIBLE);
+            loadMoreBar.setVisibility(View.GONE);
         }
         itemList.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
@@ -179,8 +179,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (isLoading || isEnd) {
             return;
         }
-        startLoading(showProgress);
         if (dataSource != null) {
+            startLoading(showProgress);
             DataTask dataTask = new DataTask(count, onElementsLoadedTask, params);
             if (this.dataTask == null) {
                 dataTask.execute();
@@ -219,8 +219,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     }
 
     public void refreshData(boolean showProgress) {
-        clearData();
-        loadItems(showProgress);
+        if (dataSource != null) {
+            clearData();
+            loadItems(showProgress);
+        }
     }
 
 
@@ -412,17 +414,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 if (items.size() == 0) {
                     return items;
                 }
-                if (adapter.getLastQuery() != null) {
-                    List<I> foundItems = adapter.find(adapter.getLastQuery(), items);
-                    while (count > foundItems.size()) {
-                        foundItems = dataSource.getItems(currentCount + items.size(), count);
-                        if (foundItems.size() == 0) {
-                            break;
-                        }
-                        items.addAll(foundItems);
-                        foundItems = adapter.find(adapter.getLastQuery(), items);
-                    }
-                }
             } catch (IOException e) {
                 Log.e(TAG, "Cant get new Items", e);
                 ErrorFragment.show(ListFragment.this, R.string.error_network);
@@ -434,20 +425,22 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         protected void onPostExecute(List<I> result) {
             super.onPostExecute(result);
             if (itemList != null) {
+                int needMore = 0;
                 if (result.size() == 0) {
                     isEnd = true;
                 } else {
-                    adapter.addItems(result);
+                    needMore = adapter.addItems(result).size() - pageSize;
                 }
                 currentCount = adapter.getAbsoluteItemCount();
-                stopLoading();
+                isLoading = false;
+                dataTask = null;
                 if (onElementsLoadedTask != null) {
                     onElementsLoadedTask.execute(LoadedTaskParams);
+                } else if(needMore <= 0) {
+                    stopLoading();
+                } else {
+                    loadItems(true, new MoreDataTask(needMore));
                 }
-                if (this != dataTask) {
-                    dataTask.execute();
-                }
-                dataTask = null;
             }
         }
     }
@@ -465,6 +458,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         @Override
         protected void onPostExecute(Void empty) {
+            stopLoading();
             if (this == moveToIndex) {
                 toIndex(index, offsetLines);
             }
@@ -494,10 +488,43 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                         lastFilteringTime = current;
                         filter(lastFilterQuery);
                     }
-                } else if (adapter.getItemCount() < pageSize) {
+                } else {
                     loadItems(true);
                 }
             }
         }
     }
+
+    private class MoreDataTask extends AsyncTask {
+
+        int count;
+        int size;
+
+        public MoreDataTask(int count) {
+            this.count = count;
+            this.size = adapter.getItemCount();
+        }
+
+        public MoreDataTask(int count, int size) {
+            this.count = count;
+            this.size = size;
+        }
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            if (adapter.getItemCount() < count + size && !isEnd) {
+                loadItems(true, new MoreDataTask(count, size));
+            } else {
+                stopLoading();
+            }
+        }
+    }
+
 }
+
+

@@ -21,8 +21,10 @@ public class Constants {
         public static final String FRAGMENT_ARGS = "fragment_args";
         public static final String AUTHOR = "author";
         public static final String LINK = "link";
+        public static final String Type = "type";
         public static final String IMAGE = "image";
         public static final String TITLE = "title";
+        public static final String CONFIG_CHANGE = "config_change";
         public static final String WORK = "work";
         public static final String MESSAGE = "message";
         public static final String RESOURCE_ID = "resource_id";

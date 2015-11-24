@@ -46,14 +46,12 @@ public class SectionActivity extends BaseActivity {
     private Author author;
     private Work work;
     private SectionActivityState state = SectionActivityState.INIT;
-    private boolean onOrientationChange = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fragment sectionFragment = getLastFragment(savedInstanceState);
         if (sectionFragment != null) {
-            onOrientationChange = true;
             FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
             if (sectionFragment instanceof AuthorFragment) {
                 initializeAuthor(((AuthorFragment) sectionFragment).getAuthor());
@@ -81,40 +79,37 @@ public class SectionActivity extends BaseActivity {
             id = current.getId();
             builder.addToBackStack();
         }
-        if (!onOrientationChange) {
-            if (args != null) {
-                author = (Author) args.getSerializable(Constants.ArgsName.AUTHOR);
-                if (author != null) {
-                    AuthorFragment.show(builder, id, author);
-                    return;
-                }
-                work = (Work) args.getSerializable(Constants.ArgsName.WORK);
-                if (work != null) {
-                    WorkFragment.show(builder, id, work);
-                    return;
-                }
+        if (args != null) {
+            author = (Author) args.getSerializable(Constants.ArgsName.AUTHOR);
+            if (author != null) {
+                AuthorFragment.show(builder, id, author);
+                return;
             }
-            String link = null;
-            Uri data = intent.getData();
-            if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-                link = data.getPath();
-                if (link != null) {
-                    if (Linkable.isAuthorLink(link)) {
-                        AuthorFragment.show(builder, id, link);
-                    }
-                    if (Linkable.isWorkLink(link)) {
-                        WorkFragment.show(builder, id, link);
-                    }
-                    if (Linkable.isIllustrationsLink(link)) {
-                        IllustrationPagerFragment.show(builder, id, link);
-                    }
-                    if (Linkable.isCommentsLink(link)) {
-                        CommentsFragment.show(builder, id, link);
-                    }
+            work = (Work) args.getSerializable(Constants.ArgsName.WORK);
+            if (work != null) {
+                WorkFragment.show(builder, id, work);
+                return;
+            }
+        }
+        String link = null;
+        Uri data = intent.getData();
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            link = data.getPath();
+            if (link != null) {
+                if (Linkable.isAuthorLink(link)) {
+                    AuthorFragment.show(builder, id, link);
+                }
+                if (Linkable.isWorkLink(link)) {
+                    WorkFragment.show(builder, id, link);
+                }
+                if (Linkable.isIllustrationsLink(link)) {
+                    IllustrationPagerFragment.show(builder, id, link);
+                }
+                if (Linkable.isCommentsLink(link)) {
+                    CommentsFragment.show(builder, id, link);
                 }
             }
         }
-        onOrientationChange = false;
     }
 
     public SectionActivityState getState() {
@@ -161,7 +156,7 @@ public class SectionActivity extends BaseActivity {
         GuiUtils.setText(workSeries, work.getType().getTitle());
     }
 
-    private View initNavigationView(@LayoutRes int header, Object ... titles) {
+    private View initNavigationView(@LayoutRes int header, Object... titles) {
         navigationView.removeHeaderView(drawerHeader);
         navigationView.getMenu().clear();
 
@@ -244,7 +239,6 @@ public class SectionActivity extends BaseActivity {
 
     }
 
-
     public void onEventMainThread(AuthorParsedEvent event) {
         initializeAuthor(event.author);
     }
@@ -260,6 +254,5 @@ public class SectionActivity extends BaseActivity {
     public void onEventMainThread(IllustrationsParsedEvent event) {
         initializeIllustrations(event.images);
     }
-
 
 }

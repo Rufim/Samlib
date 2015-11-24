@@ -22,13 +22,8 @@ public class Link implements Validatable, Linkable, Serializable {
     protected String link;
     protected String annotation;
 
-
-    public static void setBaseDomain(String baseDomain) {
-        Link.baseDomain = baseDomain;
-    }
-
-    public static String getBaseDomain() {
-        return baseDomain;
+    public Link(String link) {
+        this.link = link;
     }
 
     @Override

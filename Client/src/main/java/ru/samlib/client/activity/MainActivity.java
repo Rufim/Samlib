@@ -10,6 +10,8 @@ import android.view.MenuItem;
 import android.view.View;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
+import ru.samlib.client.domain.entity.Genre;
+import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
@@ -52,14 +54,30 @@ public class MainActivity extends BaseActivity {
     public boolean onNavigationItemSelected(MenuItem item) {
         // update the main content by replacing fragments
         Integer itemId = item.getItemId();
-        if (itemId == R.id.drawer_favorite) {
-            replaceFragment(item.getTitle().toString(), RateFragment.class);
-        } else if (itemId == R.id.drawer_top) {
-            replaceFragment(item.getTitle().toString(), TopAuthorsFragment.class);
-        } else if (itemId == R.id.drawer_new) {
-            replaceFragment(item.getTitle().toString(), NewestFragment.class);
-        } else {
-            replaceFragment(item.getTitle().toString(), BaseFragment.class);
+        switch (itemId) {
+            case R.id.drawer_favorite:
+                replaceFragment(item.getTitle().toString(), RateFragment.class);
+                break;
+            case R.id.drawer_top:
+                replaceFragment(item.getTitle().toString(), TopAuthorsFragment.class);
+                break;
+            case R.id.drawer_new:
+                replaceFragment(item.getTitle().toString(), NewestFragment.class);
+                break;
+            case R.id.drawer_discuss:
+                replaceFragment(item.getTitle().toString(), DiscussionFragment.class);
+                break;
+            case R.id.drawer_review:
+                new FragmentBuilder(getSupportFragmentManager())
+                        .putArg(Constants.ArgsName.TITLE, item.getTitle().toString())
+                        .putArg(Constants.ArgsName.Type, Genre.LITREVIEW)
+                        .onOrientationChange()
+                        .replaceFragment(R.id.container, GenreFragment.class);
+                supportInvalidateOptionsMenu();
+                break;
+            default:
+                replaceFragment(item.getTitle().toString(), BaseFragment.class);
+                break;
         }
         return false;
     }

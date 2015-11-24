@@ -16,7 +16,7 @@ public interface Linkable {
     public String getAnnotation();
 
     public default String getFullLink() {
-        return Link.getBaseDomain() + TextUtils.cleanupSlashes(getLink());
+        return Constants.Net.BASE_DOMAIN + TextUtils.cleanupSlashes(getLink());
     }
 
     public default boolean isWork() {

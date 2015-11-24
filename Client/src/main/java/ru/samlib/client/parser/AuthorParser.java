@@ -50,7 +50,7 @@ public class AuthorParser extends Parser {
             if (rawFile.isDownloadOver) {
                 author.setParsed(true);
             }
-            String[] parts = TextUtils.Splitter.extractLines(rawFile, false,
+            String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(), false,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));

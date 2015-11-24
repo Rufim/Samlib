@@ -3,6 +3,7 @@ package ru.samlib.client.lister;
 import ru.samlib.client.net.Request;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import ru.samlib.client.util.TextUtils;
 
 /**
  * Created by Rufim on 29.06.2015.
@@ -17,11 +18,7 @@ public class DefaultPageLister extends PageLister {
     }
 
     @Override
-    public int getLastPage(Document doc) {
-        Elements pages = doc.select("center");
-        if (pages.size() > 0) {
-            return Integer.parseInt(pages.get(1).select("a").last().text());
-        }
-        return -1;
+    public int getLastPage(Document document) {
+        return TextUtils.extractInt(document.select("center > b:contains(Страниц)").text());
     }
 }

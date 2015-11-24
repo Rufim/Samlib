@@ -13,8 +13,6 @@
               android:title="@string/drawer_review"/>
         <item android:id="@+id/drawer_discuss"
               android:title="@string/drawer_discuss"/>
-        <item android:id="@+id/drawer_sign_up"
-              android:title="@string/drawer_sign_up"/>
         <item android:id="@+id/drawer_help"
               android:title="@string/drawer_help"/>
     </group>

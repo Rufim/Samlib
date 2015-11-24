@@ -1,7 +1,6 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
-import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Work;
 import org.jsoup.nodes.Document;
@@ -9,7 +8,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.lister.JsoupRowSelector;
-import ru.samlib.client.lister.RowSelector;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
@@ -49,7 +47,7 @@ public class NewestParser extends RowParser implements DataSource<Work> {
                 throw e;
             }
         }
-        Log.e(TAG, "Works parsed: " + works.size() + " skip is " + skip);
+        Log.i(TAG, "Works parsed: " + works.size() + " skip is " + skip);
         if (works.size() > 0 && size > works.size()) {
             works.addAll(getItems(skip + size, size - works.size()));
             return works;
@@ -58,9 +56,14 @@ public class NewestParser extends RowParser implements DataSource<Work> {
     }
 
     @Override
-    protected Work parseRow(Element row) {
+    protected Work parseRow(Element row, int position) {
         Elements rowItems = row.select("td");
-        Work work = new Work();
+        Work work = new Work(){
+            @Override
+            public boolean validate() {
+                return super.validate() && getUpdateDate() != null;
+            }
+        };
         for (int j = 0; j < rowItems.size(); j++) {
             String text = rowItems.get(j).text();
             switch (j) {
@@ -79,7 +82,7 @@ public class NewestParser extends RowParser implements DataSource<Work> {
                     work.setAuthor(author);
                     break;
                 case 2:
-                    work.setUpdateDate(TextUtils.parseData(text));
+                    work.setUpdateDate(TextUtils.extractData(text, "/", ":"));
                     break;
             }
         }
