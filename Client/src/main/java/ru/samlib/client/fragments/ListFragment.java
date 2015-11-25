@@ -429,17 +429,18 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 if (result.size() == 0) {
                     isEnd = true;
                 } else {
-                    needMore = adapter.addItems(result).size() - pageSize;
+                    needMore = count - adapter.addItems(result).size();
                 }
                 currentCount = adapter.getAbsoluteItemCount();
                 isLoading = false;
                 dataTask = null;
-                if (onElementsLoadedTask != null) {
-                    onElementsLoadedTask.execute(LoadedTaskParams);
-                } else if(needMore <= 0) {
+                if(needMore <= 0) {
+                    if (onElementsLoadedTask != null) {
+                        onElementsLoadedTask.execute(LoadedTaskParams);
+                    }
                     stopLoading();
                 } else {
-                    loadItems(true, new MoreDataTask(needMore));
+                    loadItems(needMore, true, onElementsLoadedTask, LoadedTaskParams);
                 }
             }
         }
@@ -458,7 +459,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
         @Override
         protected void onPostExecute(Void empty) {
-            stopLoading();
             if (this == moveToIndex) {
                 toIndex(index, offsetLines);
             }

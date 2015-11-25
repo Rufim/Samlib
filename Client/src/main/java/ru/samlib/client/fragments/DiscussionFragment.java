@@ -42,7 +42,9 @@ public class DiscussionFragment extends ListFragment<Discussion> {
                 FilterDialog dialog = (FilterDialog) getFragmentManager().findFragmentByTag(FilterDialog.class.getSimpleName());
                 if(dialog == null) {
                     dialog = new FilterDialog();
-                    dialog.setState((FilterEvent) adapter.getLastQuery());
+                    if(adapter.getLastQuery() instanceof FilterEvent) {
+                        dialog.setState((FilterEvent) adapter.getLastQuery());
+                    }
                     dialog.show(getFragmentManager(), FilterDialog.class.getSimpleName());
                 }
                 return true;
