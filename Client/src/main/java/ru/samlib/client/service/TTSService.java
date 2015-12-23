@@ -19,9 +19,9 @@ import android.widget.RemoteViews;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
-import ru.samlib.client.util.AndroidSystemUtils;
-import ru.samlib.client.util.TTSPlayer;
+import ru.samlib.client.util.*;
 
 /**
  * Created by Dmitry on 01.09.2015.
@@ -64,7 +64,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                 && instance.getPlayer() != null
                 && !instance.getPlayer().getState().equals(TTSPlayer.State.UNAVAILABLE)
                 && instance.getPlayer().getWork() != null
-                && instance.getPlayer().getWork().equals(work);
+                && instance.getPlayer().getWork().getLink().equals(work.getLink());
     }
 
     public TTSPlayer.State getState() {
@@ -113,6 +113,10 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             Work work = (Work) intent.getSerializableExtra(Constants.ArgsName.WORK);
+            if(TextUtils.isEmpty(work.getRawContent())) {
+                work = WorkParser.parseWork(work.getCachedResponse(), work);
+                WorkParser.processChapters(work);
+            }
             if (currentVersionSupportLockScreenControls) {
                 RegisterRemoteClient();
             }
@@ -255,9 +259,9 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
         }
         ttsp.onStop();
-        ttsp.onStart();
         String[] pos = position.split(":");
         ttsp.playOnStart(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
+        ttsp.onStart();
         newNotification();
     }
 

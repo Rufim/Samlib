@@ -1,5 +1,6 @@
 package ru.samlib.client.util;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import ru.samlib.client.R;
 
@@ -224,6 +225,23 @@ public class SystemUtils {
         }
 
         return new TreeSet<File>(Arrays.asList(files));
+    }
+
+    @SuppressLint("NewApi")
+    public static String readFile(File file, String encoding) {
+        StringBuilder builder = new StringBuilder();
+        try (final InputStream is = new FileInputStream(file);
+             final InputStreamReader isr = new InputStreamReader(is, encoding);
+             final BufferedReader reader = new BufferedReader(isr)) {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line + "\n");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "File not readable");
+            Log.w(TAG, e);
+        }
+        return builder.toString();
     }
 
 

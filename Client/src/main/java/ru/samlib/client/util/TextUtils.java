@@ -41,6 +41,14 @@ public class TextUtils {
         return string.replaceAll("^\\s+|\\s+$", "");
     }
 
+    public static String [] trim(String ... strings) {
+        String [] trimStrings = new String[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            trimStrings[i] = trim(trim(strings[i]));
+        }
+        return trimStrings;
+    }
+
     public static boolean isLink(String text, String scheme, String userAndPass, String hostOrIp, String path, String query, String anchor) {
         return isLink(text, scheme, userAndPass, hostOrIp, path, query, anchor, null);
     }
