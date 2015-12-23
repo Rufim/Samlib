@@ -56,6 +56,7 @@ public class WorkFragment extends ListFragment<String> {
     private int colorFoundedText;
     private PowerManager.WakeLock screenLock;
     private Mode mode = Mode.NORMAL;
+    private boolean ownTTSService = false;
 
     private enum Mode {
         SEARCH, SPEAK, NORMAL
@@ -289,6 +290,7 @@ public class WorkFragment extends ListFragment<String> {
         if (work.isParsed()) {
             EventBus.getDefault().post(new WorkParsedEvent(work));
         }
+        ownTTSService = false;
         colorFoundedText = getResources().getColor(R.color.red_dark);
         colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
         screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
@@ -367,7 +369,8 @@ public class WorkFragment extends ListFragment<String> {
                 switch (mode) {
                     case SPEAK:
                         position -= firstIsHeader;
-                        if (!TTSService.isReady(work)) {
+                        if (!TTSService.isReady(work) || !ownTTSService) {
+                            ownTTSService = true;
                             WorkFragment.this.selectText(lastIndent, null);
                             Intent i = new Intent(getActivity(), TTSService.class);
                             i.putExtra(Constants.ArgsName.WORK, work);

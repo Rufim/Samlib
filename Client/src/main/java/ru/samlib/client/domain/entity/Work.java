@@ -13,6 +13,8 @@ import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.net.CachedResponse;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -24,8 +26,8 @@ import java.util.*;
  */
 @NoArgsConstructor
 @Data
-@EqualsAndHashCode(callSuper = false)
-@ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks"})
+@EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
+@ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 public class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
@@ -49,7 +51,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private Type type = Type.OTHER;
     private Category category;
     @Setter(AccessLevel.NONE)
-    private List<String> annotationBlocks = new ArrayList<>();
+    private  List<String> annotationBlocks = new ArrayList<>();
     private Date createDate;
     private Date updateDate;
     private New state = New.EMPTY;
@@ -57,9 +59,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private boolean hasIllustration = false;
     private boolean hasComments = false;
     private boolean parsed = false;
-    private String rawContent = "";
-    private List<String> indents = new ArrayList<>();
     private CachedResponse cachedResponse;
+    private transient String rawContent = "";
+    private transient List<String> indents = new ArrayList<>();
     private transient Elements rootElements;
     private transient List<Chapter> chapters = new ArrayList<>();
 
@@ -115,6 +117,11 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public void setGenres(String genres) {
+        if (this.genres == null) {
+            this.genres = new ArrayList<>();
+        } else {
+            this.genres.clear();
+        }
         for (String genre : genres.split(",")) {
             addGenre(genre);
         }
@@ -131,7 +138,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
     public void addGenre(Genre genre) {
         if (genres == null) {
-            genres = new ArrayList<Genre>();
+            genres = new ArrayList<>();
         }
         genres.add(genre);
     }
@@ -191,5 +198,13 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             }
         }
         return false;
+    }
+
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        rawContent = "";
+        indents = new ArrayList<>();
+        chapters = new ArrayList<>();
     }
 }

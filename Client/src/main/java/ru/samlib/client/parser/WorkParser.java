@@ -5,7 +5,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Chapter;
+import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
@@ -55,7 +57,7 @@ public class WorkParser extends Parser {
             if (rawContent.isDownloadOver) {
                 work.setParsed(true);
             }
-            work = ParserUtils.parseWork(rawContent, work);
+            work = parseWork(rawContent, work);
             Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
             processChapters(work);
         } catch (Exception ex)  {
@@ -65,7 +67,89 @@ public class WorkParser extends Parser {
         return work;
     }
 
-    public void processChapters(Work work) {
+    public static Work parseWork(CachedResponse file, Work work) {
+        if (work == null) {
+            work = new Work(file.getRequest().getBaseUrl().getPath());
+        }
+        String[] parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+                new TextUtils.Splitter().addEnd("Первый блок ссылок"),
+                new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
+                new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
+                new TextUtils.Splitter().addEnd("<!-------.*"));
+        if (parts.length == 0) {
+            return work;
+        }
+        Document head = Jsoup.parseBodyFragment(parts[0]);
+        if (work.getAuthor().getFullName() == null) {
+            work.getAuthor().setFullName(head.select("div > h3").first().ownText());
+        }
+        work.setTitle(head.select("center > h2").text());
+        Elements lis = Jsoup.parseBodyFragment(parts[1]).select("li");
+        int index = 2;
+        if (lis.get(0).text().contains("Copyright")) {
+            index--;
+            work.setHasComments(false);
+        }
+        String info = lis.get(index++).text();
+        String[] data = new String[0];
+        if (info.contains("Размещен")) {
+            data = TextUtils.Splitter.extractStrings(info, true,
+                    new TextUtils.Splitter("Размещен: ", ","),
+                    new TextUtils.Splitter("изменен: ", "\\."),
+                    new TextUtils.Splitter(" ", "k"));
+        }
+        if (info.contains("Обновлено")) {
+            data = TextUtils.Splitter.extractStrings(info, true,
+                    new TextUtils.Splitter("Обновлено: ", "\\."),
+                    new TextUtils.Splitter(" ", "k"));
+        }
+        if (data.length > 0) {
+            if (data.length == 2) {
+                work.setUpdateDate(TextUtils.parseData(data[0]));
+                work.setSize(Integer.parseInt(data[1]));
+            }
+            if (data.length == 3) {
+                work.setCreateDate(TextUtils.parseData(data[0]));
+                work.setUpdateDate(TextUtils.parseData(data[1]));
+                work.setSize(Integer.parseInt(data[2]));
+            }
+        }
+        if (lis.size() > index) {
+            String typeGenre[] = lis.get(index++).text().split(":");
+            work.setType(Type.parseType(typeGenre[0]));
+            if (typeGenre.length > 1) {
+                work.setGenres(typeGenre[1]);
+            }
+            for (int i = index; i < lis.size(); i++) {
+                String text = lis.get(i).text();
+                if (text.contains("Иллюстрации")) {
+                    work.setHasIllustration(true);
+                } else if (text.contains("Скачать")) {
+                    break;
+                } else {
+                    Category category = new Category();
+                    category.setTitle(text);
+                    category.setLink(lis.attr("href"));
+                    category.setAuthor(work.getAuthor());
+                    work.setCategory(category);
+                }
+            }
+        }
+        if (parts[2].contains("Аннотация")) {
+            work.getAnnotationBlocks().clear();
+            work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
+        }
+        if (parts[3].contains("<!--Section Begins-->")) {
+            work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+                    new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+        } else {
+            work.setRawContent(parts[3]);
+        }
+        work.setCachedResponse(file);
+        return work;
+    }
+
+    public static void processChapters(Work work) {
         List<String> indents = work.getIndents();
         List<Chapter> chapters = work.getChapters();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
