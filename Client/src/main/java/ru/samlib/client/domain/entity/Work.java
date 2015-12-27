@@ -51,7 +51,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private Type type = Type.OTHER;
     private Category category;
     @Setter(AccessLevel.NONE)
-    private  List<String> annotationBlocks = new ArrayList<>();
+    private List<String> annotationBlocks = new ArrayList<>();
     private Date createDate;
     private Date updateDate;
     private New state = New.EMPTY;
