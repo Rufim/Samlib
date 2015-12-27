@@ -16,8 +16,6 @@ import java.io.Serializable;
 @Data
 public class Link implements Validatable, Linkable, Serializable {
 
-    protected static String baseDomain = "";
-
     protected String title;
     protected String link;
     protected String annotation;
