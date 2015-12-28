@@ -480,7 +480,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 adapter.filter(query);
                 filterTask = null;
                 if (lastFilterQuery != null) {
-                    long current = SystemClock.currentThreadTimeMillis();
+                    long current = SystemClock.elapsedRealtime();
                     if (current - lastFilteringTime < filteringCooldown) {
                         Handler mainHandler = new Handler(getActivity().getMainLooper());
                         mainHandler.postDelayed(() -> filter(lastFilterQuery), current - lastFilteringTime);
@@ -491,36 +491,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 } else {
                     loadItems(true);
                 }
-            }
-        }
-    }
-
-    private class MoreDataTask extends AsyncTask {
-
-        int count;
-        int size;
-
-        public MoreDataTask(int count) {
-            this.count = count;
-            this.size = adapter.getItemCount();
-        }
-
-        public MoreDataTask(int count, int size) {
-            this.count = count;
-            this.size = size;
-        }
-
-        @Override
-        protected Object doInBackground(Object[] params) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Object o) {
-            if (adapter.getItemCount() < count + size && !isEnd) {
-                loadItems(true, new MoreDataTask(count, size));
-            } else {
-                stopLoading();
             }
         }
     }

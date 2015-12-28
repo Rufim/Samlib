@@ -44,9 +44,7 @@ public class MainActivity extends BaseActivity {
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, SearchFragment.newInstance(query))
-                    .commit();
+            SearchFragment.show(getCurrentFragment(), query);
         }
     }
 
@@ -83,19 +81,13 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void onDrawerClosed(View drawerView) {
-        setTitle(title);
-    }
+    protected void onDrawerClosed(View drawerView) {}
 
     @Override
-    protected void onDrawerOpened(View drawerView) {
-        setTitle(getTitle());
-    }
+    protected void onDrawerOpened(View drawerView) {}
 
-
-    public void onEvent(FragmentAttachedEvent fragmentAttached) {
-        title = fragmentAttached.fragment.getArguments().getString(Constants.ArgsName.TITLE);
-    }
+    @Override
+    public void onEvent(FragmentAttachedEvent fragmentAttached) {}
 
     protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
         new FragmentBuilder(getSupportFragmentManager())

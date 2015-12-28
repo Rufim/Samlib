@@ -62,6 +62,11 @@ public class SearchParser extends PageListParser {
         request.initParams(SearchParams.values());
     }
 
+    public SearchParser(String query) throws MalformedURLException {
+        this();
+        request.setParam(SearchParams.FIND, query);
+    }
+
     public void setQuery(String query) {
         request.setParam(SearchParams.FIND, query);
     }
@@ -75,7 +80,16 @@ public class SearchParser extends PageListParser {
     @Override
     protected Validatable parseRow(Element row, int position) {
         Elements tbodys = row.select("tbody");
-        Work work = new Work();
+        Work work = new Work() {
+            @Override
+            public boolean find(Object query) {
+                if (query instanceof String) {
+                    return getTitle().toLowerCase().contains(query.toString().toLowerCase());
+                } else {
+                    return super.find(query);
+                }
+            }
+        };
         if (tbodys.size() > 0) {
             Elements workElements = tbodys.get(0).select("a");
             Author author = new Author();

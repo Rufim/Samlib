@@ -30,23 +30,23 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static <F extends BaseFragment> F newInstance(Class<F> fragmentClass, Bundle args) {
+    public static <F extends Fragment> F newInstance(Class<F> fragmentClass, Bundle args) {
         return FragmentBuilder.newInstance(fragmentClass, args);
     }
 
-    public static <F extends BaseFragment> F newInstance(Class<F> fragmentClass) {
+    public static <F extends Fragment> F newInstance(Class<F> fragmentClass) {
         return FragmentBuilder.newInstance(fragmentClass);
     }
 
-    protected static <F extends BaseFragment> F show(FragmentBuilder builder, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
+    protected static <F extends Fragment> F show(FragmentBuilder builder, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
         return builder.putArg(key, obj).newFragment().replaceFragment(container, fragmentClass);
     }
 
-    protected static <F extends BaseFragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
+    protected static <F extends Fragment> F show(FragmentManager manager, @IdRes int container, Class<F> fragmentClass, String key, Object obj) {
         return new FragmentBuilder(manager).newFragment().putArg(key, obj).replaceFragment(container, fragmentClass);
     }
 
-    protected static <F extends BaseFragment> F show(BaseFragment fragment, Class<F> fragmentClass, String key, Object obj) {
+    protected static <F extends Fragment> F show(Fragment fragment, Class<F> fragmentClass, String key, Object obj) {
         return new FragmentBuilder(fragment.getFragmentManager()).newFragment().addToBackStack().putArg(key, obj).replaceFragment(fragment, fragmentClass);
     }
 
@@ -72,6 +72,15 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        String title = getArguments().getString(Constants.ArgsName.TITLE);
+        if(title != null) {
+            getActivity().setTitle(title);
+        }
+        super.onViewCreated(view, savedInstanceState);
     }
 
     public BaseFragment show(FragmentManager manager, @IdRes int container, String key, Object obj) {

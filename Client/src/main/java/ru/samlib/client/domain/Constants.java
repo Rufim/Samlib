@@ -19,6 +19,7 @@ public class Constants {
         public static final String LAST_FRAGMENT = "last_fragment";
         public static final String FRAGMENT_CLASS = "fragment_class";
         public static final String FRAGMENT_ARGS = "fragment_args";
+        public static final String SEARCH_QUERY = "search_query";
         public static final String AUTHOR = "author";
         public static final String LINK = "link";
         public static final String Type = "type";

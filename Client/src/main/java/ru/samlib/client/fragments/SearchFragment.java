@@ -3,6 +3,7 @@ package ru.samlib.client.fragments;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
@@ -11,10 +12,14 @@ import android.widget.TextView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.net.GoogleSearchClient;
+import ru.samlib.client.parser.SearchParser;
+import ru.samlib.client.util.GuiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +29,16 @@ import java.util.List;
  */
 public class SearchFragment extends ListFragment {
 
-    protected static final String ARG_SEARCH_QUERY = "search_query";
+    private String query;
 
     public static SearchFragment newInstance(String query) {
         Bundle args = new Bundle();
-        args.putString(ARG_SEARCH_QUERY, query);
+        args.putString(Constants.ArgsName.SEARCH_QUERY, query);
         return newInstance(SearchFragment.class, args);
+    }
+
+    public static void show(Fragment fragment, String quaery) {
+        show(fragment, SearchFragment.class, Constants.ArgsName.SEARCH_QUERY, quaery);
     }
 
     public SearchFragment() {
@@ -42,12 +51,24 @@ public class SearchFragment extends ListFragment {
     }
 
 
+    @Override
+    protected DataSource getDataSource() throws Exception {
+        query = getArguments().getString(Constants.ArgsName.SEARCH_QUERY);
+        return new SearchParser(query);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+         getActivity().setTitle(R.string.search);
+    }
+
     protected class SearchArrayAdapter extends ItemListAdapter<Linkable> {
 
 
         public SearchArrayAdapter() {
             super(R.layout.item_search);
-            setDataSource(new GoogleSearchClient(getArguments().getString(ARG_SEARCH_QUERY)));
+            enterFilteringMode();
+            lastFilterQuery = query;
         }
 
         @Override
@@ -87,8 +108,8 @@ public class SearchFragment extends ListFragment {
                 HtmlSpanner spanner = new HtmlSpanner();
                 subtitleTextView.setText(spanner.fromHtml(TextUtils.join(" ", subtitle) + "\n\"" + work.getDescription() + "\""));
             } else {
-                authorTextView.setText(Html.fromHtml(linkable.getTitle()));
-                titleTextView.setText(Html.fromHtml(linkable.getAnnotation()));
+                GuiUtils.setText(authorTextView, Html.fromHtml(linkable.getTitle()));
+                GuiUtils.setText(titleTextView, Html.fromHtml(linkable.getAnnotation()));
                 subtitleTextView.setVisibility(View.GONE);
             }
         }
