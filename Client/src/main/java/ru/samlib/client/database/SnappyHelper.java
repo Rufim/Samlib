@@ -24,13 +24,11 @@ public class SnappyHelper {
         this.snappyDB = DBFactory.open(context);
     }
 
-
     public SnappyHelper putSerializable(String key,  Serializable value) throws SnappydbException {
         int keys = snappyDB.findKeys(key).length;
         snappyDB.put(key, value + ":" + String.format("%10d", keys));
         return this;
     }
-
 
     public SnappyHelper setSerializable(String key, int index, Serializable value) throws SnappydbException {
         snappyDB.put(key, value + ":" + String.format("%10d", index));

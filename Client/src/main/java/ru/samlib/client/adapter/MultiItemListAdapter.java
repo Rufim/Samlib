@@ -4,7 +4,7 @@ import android.support.annotation.LayoutRes;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import org.apache.commons.lang3.ArrayUtils;
+import ru.samlib.client.util.SystemUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,7 +49,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     public ItemListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Create a new view by inflating the row item xml.
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (ArrayUtils.contains(layoutIds, viewType)) {
+        if (SystemUtils.contains(layoutIds, viewType)) {
             ViewHolder holder = newHolder(inflater.inflate(viewType, parent, false));
             if (bindViews) {
                 holder.bindViews(MultiItemListAdapter.this, bindClicks);

@@ -16,7 +16,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
+import com.snappydb.SnappydbException;
 import ru.samlib.client.R;
+import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.parser.WorkParser;
@@ -112,7 +114,16 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-            Work work = (Work) intent.getSerializableExtra(Constants.ArgsName.WORK);
+            String link =  intent.getStringExtra(Constants.ArgsName.LINK);
+            SnappyHelper snappyHelper = null;
+            Work work = null;
+            try {
+                snappyHelper = new SnappyHelper(getApplicationContext());
+                work = snappyHelper.getWork(link);
+                snappyHelper.close();
+            } catch (SnappydbException e) {
+                Log.e(TAG, "Unknown exception", e);
+            }
             if(TextUtils.isEmpty(work.getRawContent())) {
                 work = WorkParser.parseWork(work.getCachedResponse(), work);
                 WorkParser.processChapters(work);

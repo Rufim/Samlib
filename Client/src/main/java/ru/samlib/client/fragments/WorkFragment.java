@@ -20,8 +20,10 @@ import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
+import com.snappydb.SnappydbException;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
@@ -87,8 +89,11 @@ public class WorkFragment extends ListFragment<String> {
             if (!work.isParsed()) {
                 try {
                     work = new WorkParser(work).parse(false);
+                    SnappyHelper snappyHelper = new SnappyHelper(getActivity());
+                    snappyHelper.putWork(work);
+                    snappyHelper.close();
                     postEvent(new WorkParsedEvent(work));
-                } catch (MalformedURLException e) {
+                } catch (MalformedURLException | SnappydbException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
                 }
@@ -373,7 +378,7 @@ public class WorkFragment extends ListFragment<String> {
                             ownTTSService = true;
                             WorkFragment.this.selectText(lastIndent, null);
                             Intent i = new Intent(getActivity(), TTSService.class);
-                            i.putExtra(Constants.ArgsName.WORK, work);
+                            i.putExtra(Constants.ArgsName.LINK, work.getLink());
                             i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
                             getActivity().startService(i);
                         } else {

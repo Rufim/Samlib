@@ -115,7 +115,15 @@ public class SystemUtils {
                 if (e == v || v.equals(e))
                     return true;
         }
+        return false;
+    }
 
+    public static boolean contains(final int[] array, final int key) {
+        for (final int i : array) {
+            if (i == key) {
+                return true;
+            }
+        }
         return false;
     }
 

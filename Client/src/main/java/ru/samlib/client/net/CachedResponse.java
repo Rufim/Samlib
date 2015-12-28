@@ -10,10 +10,15 @@ import java.util.zip.GZIPOutputStream;
  * Created by Dmitry on 29.06.2015.
  */
 public class CachedResponse extends File implements Serializable {
-    private final Request request;
+    private transient final Request request;
     public boolean isDownloadOver = false;
     public boolean isCached = false;
     public boolean arched = false;
+
+    private CachedResponse() {
+        super("");
+        request = null;
+    }
 
     public CachedResponse(File dir, String name, Request request) {
         super(dir, name);

@@ -60,10 +60,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private boolean hasComments = false;
     private boolean parsed = false;
     private CachedResponse cachedResponse;
-    private transient String rawContent = "";
-    private transient List<String> indents = new ArrayList<>();
+    private String rawContent = "";
+    private List<String> indents = new ArrayList<>();
     private transient Elements rootElements;
-    private transient List<Chapter> chapters = new ArrayList<>();
+    private List<Chapter> chapters = new ArrayList<>();
 
     public Work(String link) {
         setLink(link);
