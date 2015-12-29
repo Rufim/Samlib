@@ -81,8 +81,9 @@ public class WorkFragment extends ListFragment<String> {
                 SystemClock.sleep(10);
             }
             if (!work.isParsed()) {
+                SnappyHelper snappyHelper = null;
                 try {
-                    SnappyHelper snappyHelper = new SnappyHelper(getActivity());
+                    snappyHelper = new SnappyHelper(getActivity());
                     Work savedWork = snappyHelper.getWork(work.getLink());
                     if(savedWork != null) {
                         work = new WorkParser(savedWork).parse(false);
@@ -93,11 +94,12 @@ public class WorkFragment extends ListFragment<String> {
                         snappyHelper.putWork(work);
                         work.setChanged(false);
                     }
-                    snappyHelper.close();
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException | SnappydbException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
+                } finally {
+                    SnappyHelper.close(snappyHelper);
                 }
             }
             if (work.isParsed()) {
@@ -144,16 +146,21 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onPause() {
         super.onPause();
+        SnappyHelper snappyHelper = null;
         try {
-            SnappyHelper snappyHelper = new SnappyHelper(getActivity());
-            int index = findFirstVisibleItemPosition(true);
-            String indent = ((MultiItemListAdapter<String>) adapter).getItem(index);
-            Bookmark bookmark = new Bookmark(indent);
-            bookmark.setIndex(index);
-            snappyHelper.putSavedPostiton(bookmark, work);
-            snappyHelper.close();
+            int index = findFirstVisibleItemPosition(false);
+            int size = adapter.getItems().size();
+            if(size > index && index > 0) {
+                snappyHelper = new SnappyHelper(getActivity());
+                String indent = adapter.getItems().get(index);
+                Bookmark bookmark = new Bookmark(indent);
+                bookmark.setIndex(index);
+                snappyHelper.putSavedPostiton(bookmark, work);
+            }
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
+        } finally {
+            SnappyHelper.close(snappyHelper);
         }
         // sanity check for null as this is a public method
         if (screenLock != null) {
