@@ -82,7 +82,7 @@ public class SnappyHelper {
     }
 
     private synchronized void open() throws SnappydbException {
-        if (snappyDB == null && !snappyDB.isOpen()) {
+        if (snappyDB == null || !snappyDB.isOpen()) {
             snappyDB = DBFactory.open(context);
         }
     }
