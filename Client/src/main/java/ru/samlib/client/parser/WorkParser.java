@@ -6,7 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Category;
-import ru.samlib.client.domain.entity.Chapter;
+import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
@@ -18,6 +18,7 @@ import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -50,17 +51,25 @@ public class WorkParser extends Parser {
         } else {
             rawContent = HtmlClient.executeRequest(request);
         }
-        if(rawContent == null) {
+        if (rawContent == null) {
             return work;
         }
         try {
             if (rawContent.isDownloadOver) {
                 work.setParsed(true);
             }
+            Date oldUpdateDate = work.getUpdateDate();
+            work.setChanged(true);
             work = parseWork(rawContent, work);
             Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
+            if (oldUpdateDate != null
+                    && oldUpdateDate.getTime() == work.getUpdateDate().getTime()
+                    && work.getIndents().size() > 0) {
+                work.setChanged(false);
+                return work;
+            }
             processChapters(work);
-        } catch (Exception ex)  {
+        } catch (Exception ex) {
             work.setParsed(false);
             Log.e(TAG, "Work NOT parsed using url " + request.getBaseUrl(), ex);
         }
@@ -145,13 +154,18 @@ public class WorkParser extends Parser {
         } else {
             work.setRawContent(parts[3]);
         }
+     /*   if(work.getRawContent() != null) {
+            String oldMd5 = work.getMd5();
+            work.setMd5(TextUtils.calculateMD5(work.getRawContent(), file.getRequest().getEncoding()));
+            if(!work.getMd5().equals(oldMd5)) work.setChanged(true);
+        } */
         work.setCachedResponse(file);
         return work;
     }
 
     public static void processChapters(Work work) {
         List<String> indents = work.getIndents();
-        List<Chapter> chapters = work.getChapters();
+        List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
         document.outputSettings().prettyPrint(false);
         Elements rootElements = replaceTables(document.body()).select("> *");
@@ -170,9 +184,7 @@ public class WorkParser extends Parser {
             rootElements = rootElements.first().select("> *");
         }
         work.setRootElements(rootElements);
-        chapters.clear();
         indents.clear();
-        Chapter currentChapter = new Chapter("Начало");
         Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         indents.addAll(Arrays.asList(JsoupUtils.ownText(document.body()).split("\\n")));
@@ -188,19 +200,17 @@ public class WorkParser extends Parser {
                 }
             }
         }
+        bookmarks.clear();
+        bookmarks.add(new Bookmark("Начало"));
         for (int i = 0; i < indents.size(); i++) {
             String text = JsoupUtils.cleanHtml(indents.get(i));
-            if (rootElements.size() > i) {
-                if (pattern.matcher(TextUtils.trim(text)).find()) {
-                    Chapter newChapter = new Chapter(text);
-                    chapters.add(currentChapter);
-                    newChapter.setPercent(((float) i) / rootElements.size());
-                    newChapter.setIndex(i);
-                    currentChapter = newChapter;
-                }
+            if (pattern.matcher(TextUtils.trim(text)).find()) {
+                Bookmark newBookmark = new Bookmark(text);
+                newBookmark.setPercent(((float) i) / indents.size());
+                newBookmark.setIndex(i);
+                bookmarks.add(newBookmark);
             }
         }
-        chapters.add(currentChapter);
     }
 
 

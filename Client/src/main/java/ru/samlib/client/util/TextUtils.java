@@ -5,6 +5,9 @@ import android.util.Log;
 import org.intellij.lang.annotations.RegExp;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -274,6 +277,20 @@ public class TextUtils {
         } else {
             return new SimpleDateFormat("dd/MM", locale).format(date);
         }
+    }
+
+    public static String calculateMD5(String string, String encoding) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(string.getBytes(Charset.forName(encoding)));
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < array.length; ++i) {
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+        }
+        return null;
     }
 
     public static class Piece {

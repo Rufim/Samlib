@@ -3,9 +3,7 @@ package ru.samlib.client.domain.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,23 +15,18 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class Chapter {
+public class Bookmark implements Serializable {
     private String title;
     private float percent = 0;
     private int index = 0;
-    private String content;
-    private List<Chapter> subChapters = new ArrayList<>();
-    private List<Element> elements = new ArrayList<>();
+    private String indent;
+    private List<Bookmark> subBookmarks = new ArrayList<>();
 
-    public Chapter(String title){
+    public Bookmark(String title){
         this.title = title;
     }
 
-    public void addElement(Element element) {
-        elements.add(element);
-    }
-
-    public void addSubChapter(Chapter chapter) {
-        subChapters.add(chapter);
+    public void addSubBookmark(Bookmark bookmark) {
+        subBookmarks.add(bookmark);
     }
 }

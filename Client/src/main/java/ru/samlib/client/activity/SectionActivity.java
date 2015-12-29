@@ -138,7 +138,7 @@ public class SectionActivity extends BaseActivity {
     private void initializeWork(Work work) {
         this.work = work;
         setState(SectionActivityState.WORK);
-        initNavigationView(R.layout.header_work_bar, work.getChapters().toArray());
+        initNavigationView(R.layout.header_work_bar, work.getAutoBookmarks().toArray());
         actionBar.setTitle(work.getAuthor().getShortName());
         TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
         TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
@@ -209,7 +209,7 @@ public class SectionActivity extends BaseActivity {
             case INIT:
                 break;
             case WORK:
-                postEvent(new ChapterSelectedEvent(work.getChapters().get(item.getOrder())));
+                postEvent(new ChapterSelectedEvent(work.getAutoBookmarks().get(item.getOrder())));
                 break;
             case AUTHOR:
                 postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));

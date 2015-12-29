@@ -4,8 +4,7 @@ import android.support.v4.util.Pair;
 import android.util.Log;
 import ru.samlib.client.domain.Valuable;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -19,7 +18,8 @@ public class Request implements Cloneable, Serializable {
 
     private static final String TAG = Request.class.getSimpleName();
 
-    private URL url;
+    private transient URL url;
+    private String serialiseUrl;
     private String suffix = "";
     private List<Pair<String, String>> params = new ArrayList<>();
     private boolean saveInCache = true;
@@ -262,5 +262,15 @@ public class Request implements Cloneable, Serializable {
         result = 31 * result + headers.hashCode();
         result = 31 * result + method.hashCode();
         return result;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        serialiseUrl = url.toString();
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        url = new URL(serialiseUrl);
     }
 }

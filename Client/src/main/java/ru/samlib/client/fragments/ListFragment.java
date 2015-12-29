@@ -179,13 +179,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (isLoading || isEnd) {
             return;
         }
-        if (dataSource != null) {
+        if (dataSource != null && dataTask == null) {
             startLoading(showProgress);
             DataTask dataTask = new DataTask(count, onElementsLoadedTask, params);
-            if (this.dataTask == null) {
-                dataTask.execute();
-            }
-            this.dataTask = dataTask;
+            dataTask.execute();
         }
     }
 
@@ -369,20 +366,18 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             });
         }
         if (adapter != null) {
-            if (dataSource != null) {
-                isLoading = true;
-                if (dataTask != null) {
-                    dataTask.cancel(true);
-                }
-                dataTask = new DataTask(pageSize);
-                dataTask.execute();
-            } else {
-                stopLoading();
-                layoutManager.scrollToPositionWithOffset(pastVisibleItems, 0);
-            }
+           firstLoad();
         }
-
         return rootView;
+    }
+
+    protected void firstLoad() {
+        if (dataSource != null) {
+            loadItems(false);
+        } else {
+            stopLoading();
+            layoutManager.scrollToPositionWithOffset(pastVisibleItems, 0);
+        }
     }
 
     public class DataTask extends AsyncTask<Void, Void, List<I>> {

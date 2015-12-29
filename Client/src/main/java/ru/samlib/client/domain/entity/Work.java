@@ -12,12 +12,12 @@ import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.net.CachedResponse;
+import ru.samlib.client.util.SystemUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -59,11 +59,15 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private boolean hasIllustration = false;
     private boolean hasComments = false;
     private boolean parsed = false;
+    private boolean changed = false;
     private CachedResponse cachedResponse;
     private String rawContent = "";
     private List<String> indents = new ArrayList<>();
+    private List<Bookmark> autoBookmarks = new ArrayList<>();
+    private String md5;
+
+
     private transient Elements rootElements;
-    private List<Chapter> chapters = new ArrayList<>();
 
     public Work(String link) {
         setLink(link);
@@ -205,6 +209,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         in.defaultReadObject();
         rawContent = "";
         indents = new ArrayList<>();
-        chapters = new ArrayList<>();
+        autoBookmarks = new ArrayList<>();
     }
 }

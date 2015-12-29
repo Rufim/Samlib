@@ -2,19 +2,14 @@ package ru.samlib.client.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.PointF;
 import android.os.*;
 import android.support.annotation.IdRes;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.*;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
@@ -29,9 +24,8 @@ import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
@@ -88,9 +82,17 @@ public class WorkFragment extends ListFragment<String> {
             }
             if (!work.isParsed()) {
                 try {
-                    work = new WorkParser(work).parse(false);
                     SnappyHelper snappyHelper = new SnappyHelper(getActivity());
-                    snappyHelper.putWork(work);
+                    Work savedWork = snappyHelper.getWork(work.getLink());
+                    if(savedWork != null) {
+                        work = new WorkParser(savedWork).parse(false);
+                    } else {
+                        work = new WorkParser(work).parse(false);
+                    }
+                    if(work.isChanged()) {
+                        snappyHelper.putWork(work);
+                        work.setChanged(false);
+                    }
                     snappyHelper.close();
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException | SnappydbException e) {
@@ -112,6 +114,22 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     @Override
+    protected void firstLoad() {
+        try {
+            SnappyHelper snappyHelper = new SnappyHelper(getActivity());
+            Bookmark bookmark = snappyHelper.getSavedPostiton(work);
+            if(bookmark != null) {
+                scrollToIndex(bookmark.getIndex());
+            } else {
+                loadItems(false);
+            }
+            snappyHelper.close();
+        } catch (SnappydbException e) {
+            Log.e(TAG, "Unknown exception", e);
+        }
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
@@ -126,6 +144,17 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onPause() {
         super.onPause();
+        try {
+            SnappyHelper snappyHelper = new SnappyHelper(getActivity());
+            int index = findFirstVisibleItemPosition(true);
+            String indent = ((MultiItemListAdapter<String>) adapter).getItem(index);
+            Bookmark bookmark = new Bookmark(indent);
+            bookmark.setIndex(index);
+            snappyHelper.putSavedPostiton(bookmark, work);
+            snappyHelper.close();
+        } catch (SnappydbException e) {
+            Log.e(TAG, "Unknown exception", e);
+        }
         // sanity check for null as this is a public method
         if (screenLock != null) {
             Log.v(TAG, "Releasing wakelock");
@@ -274,7 +303,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public void onEvent(ChapterSelectedEvent event) {
-        scrollToIndex(event.chapter.getIndex());
+        scrollToIndex(event.bookmark.getIndex());
     }
 
     @Override
