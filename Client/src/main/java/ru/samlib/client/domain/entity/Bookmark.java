@@ -3,6 +3,7 @@ package ru.samlib.client.domain.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
 import java.io.Serializable;
@@ -28,5 +29,15 @@ public class Bookmark implements Serializable {
 
     public void addSubBookmark(Bookmark bookmark) {
         subBookmarks.add(bookmark);
+    }
+
+    public String toString() {
+        if(title != null) {
+            return title;
+        }
+        if(indent != null) {
+            return Jsoup.parse(indent).text();
+        }
+        return "Без Имени";
     }
 }
