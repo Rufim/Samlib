@@ -73,7 +73,7 @@ public class FragmentBuilder {
         }
 
         public static ClassType cast(Object obj) {
-            if (null == obj) return cast(Void.class);
+            if (null == obj) cast(Void.class);
             return cast(obj.getClass());
         }
 
@@ -85,7 +85,10 @@ public class FragmentBuilder {
     private Map<String, Object> args = new HashMap<>();
     private boolean toBackStack = false;
     private boolean newFragment = false;
-    private boolean onOrientationChange = false;
+    private boolean removeIfExists = false;
+    private boolean clearBackStack = false;
+    private String clearBackStackUpToName = null;
+    private Fragment fragmentInvoker;
 
     public FragmentBuilder(FragmentManager manager) {
         this.manager = manager;
@@ -111,7 +114,7 @@ public class FragmentBuilder {
 
     public FragmentBuilder putArg(String key, Object value) {
         ClassType type = ClassType.cast(value);
-        ClassType itemType;
+        ClassType baseType = type;
         boolean arrayFlag = false;
         boolean listFlag = false;
         if (type == ClassType.ARRAY) {
@@ -121,15 +124,15 @@ public class FragmentBuilder {
         if (type == ClassType.ARRAYLIST) {
             listFlag = true;
             ArrayList list = (ArrayList) value;
-            itemType = ClassType.cast(list.toArray().getClass().getComponentType());
-            if (type != ClassType.STRING || type != ClassType.CHARSEQUENCE || itemType != ClassType.SERIALIZABLE) {
-                itemType = ClassType.UNSUPPORTED;
+            type = ClassType.cast(list.toArray().getClass().getComponentType());
+            if (type != ClassType.STRING || type != ClassType.CHARSEQUENCE) {
+                type = ClassType.UNSUPPORTED;
             }
         }
         switch (type) {
             case PARCELABLE:
-                if (arrayFlag) bundle.putParcelableArray(key, (Parcelable[]) value);
-                else bundle.putParcelable(key, (Parcelable) value);
+                if (arrayFlag) break;
+                bundle.putParcelable(key, (Parcelable) value);
                 return this;
             case CHARSEQUENCE:
                 if (arrayFlag) bundle.putCharSequenceArray(key, (CharSequence[]) value);
@@ -138,7 +141,7 @@ public class FragmentBuilder {
                 return this;
             case BUNDLE:
                 if (arrayFlag) break;
-                else bundle.putBundle(key, (Bundle) value);
+                bundle.putBundle(key, (Bundle) value);
                 return this;
             case STRING:
                 if (arrayFlag) bundle.putStringArray(key, (String[]) value);
@@ -186,13 +189,20 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder putArgs(Map args) {
-        args.putAll(args);
+    public FragmentBuilder putArgs(Map<String, Object> args) {
+        for (Map.Entry<String, Object> entry :  args.entrySet()) {
+            putArg(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 
     public FragmentBuilder putArgs(Bundle args) {
         bundle.putAll(args);
+        return this;
+    }
+
+    public FragmentBuilder fragmentInvoker(Fragment fragmentInvoker) {
+        this.fragmentInvoker = fragmentInvoker;
         return this;
     }
 
@@ -206,8 +216,23 @@ public class FragmentBuilder {
         return this;
     }
 
-    public FragmentBuilder onOrientationChange() {
-        this.onOrientationChange = true;
+    public FragmentBuilder removeIfExists() {
+        this.removeIfExists = true;
+        return this;
+    }
+
+    public FragmentBuilder clearBackStack() {
+        this.clearBackStack = true;
+        return this;
+    }
+
+    public FragmentBuilder clearBackStack(Class<Fragment> fragmentClass) {
+        return clearBackStack(fragmentClass.getSimpleName());
+    }
+
+    public FragmentBuilder clearBackStack(String name) {
+        this.clearBackStackUpToName = name;
+        this.clearBackStack = true;
         return this;
     }
 
@@ -216,47 +241,53 @@ public class FragmentBuilder {
         return replaceFragment(container, fragmentClass, tag);
     }
 
-    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass, String tag) {
-        if (fragmentClass == null && tag == null) {
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass, String name) {
+        if (fragmentClass == null && name == null) {
             return null;
         }
-        Fragment fr = manager.findFragmentByTag(tag);
+        if(clearBackStack) {
+            manager.popBackStack(clearBackStackUpToName, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+        Fragment fragment = manager.findFragmentByTag(name);
         FragmentTransaction transaction = manager.beginTransaction();
-        if (fr == null || newFragment) {
+        if (fragment == null || newFragment) {
             if (fragmentClass == null) {
                 try {
-                    fragmentClass = (Class<F>) Class.forName(tag);
+                    fragmentClass = (Class<F>) Class.forName(name);
                 } catch (ClassNotFoundException e) {
                     return null;
                 }
             }
-            fr = newFragment(fragmentClass);
-            transaction.replace(container, fr, tag);
+            fragment = newFragment(fragmentClass);
+            transaction.replace(container, fragment, name);
         } else {
-            fr.getArguments().putAll(bundle);
-            if (manager.findFragmentById(container) != fr || onOrientationChange) {
-                transaction.replace(container, fr, tag);
+            fragment.getArguments().putAll(bundle);
+            if (manager.findFragmentById(container) == fragment && removeIfExists) {
+                transaction.remove(fragment);
+                transaction.add(container, fragment, name);
             } else {
-                transaction.remove(fr);
-                transaction.add(container, fr, tag);
+                transaction.replace(container, fragment, name);
             }
         }
         if (toBackStack) {
             transaction.addToBackStack(null);
         }
         transaction.commitAllowingStateLoss();
-        return (F) fr;
+        return (F) fragment;
     }
 
 
-    public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment, String tag) {
+    public <F extends Fragment> F replaceFragment(@IdRes int container, Fragment fragment, String name) {
+        if (clearBackStack) {
+            manager.popBackStack(clearBackStackUpToName, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
         FragmentTransaction transaction = manager.beginTransaction();
         fragment.getArguments().putAll(bundle);
-        if (manager.findFragmentById(container) != fragment || onOrientationChange) {
-            transaction.replace(container, fragment, tag);
-        } else {
+        if (manager.findFragmentById(container) == fragment && removeIfExists) {
             transaction.remove(fragment);
-            transaction.add(container, fragment, tag);
+            transaction.add(container, fragment, name);
+        } else {
+            transaction.replace(container, fragment, name);
         }
         if (toBackStack) {
             transaction.addToBackStack(null);

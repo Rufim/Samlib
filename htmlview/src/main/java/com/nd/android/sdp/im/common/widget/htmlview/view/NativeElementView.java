@@ -13,11 +13,7 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.*;
 import android.widget.*;
-import com.facebook.drawee.drawable.ScalingUtils;
-import com.facebook.drawee.generic.GenericDraweeHierarchy;
-import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
-import com.facebook.drawee.generic.RoundingParams;
-import com.facebook.drawee.view.SimpleDraweeView;
+
 import com.felipecsl.gifimageview.library.GifImageView;
 import com.koushikdutta.ion.Ion;
 import com.nd.android.sdp.im.common.widget.htmlview.R;
@@ -83,7 +79,7 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
     }
 
 
-    static NativeElementView createFresco(Context context, Element child) {
+  /*  static NativeElementView createFresco(Context context, Element child) {
         GenericDraweeHierarchyBuilder builder =
                 new GenericDraweeHierarchyBuilder(context.getResources());
         RoundingParams roundingParams = RoundingParams.fromCornersRadius(5f);
@@ -143,10 +139,10 @@ class NativeElementView extends AbstractElementView implements View.OnClickListe
                     .setTapToRetryEnabled(true)
                     .build();
             imageView.setHierarchy(hierarchy);
-            imageView.setController(controller); */
+            imageView.setController(controller);
         }
         return new NativeElementView(context, child, false, imageView);
-    }
+    }  */
 
     public static class TransformImage implements Transformation {
 

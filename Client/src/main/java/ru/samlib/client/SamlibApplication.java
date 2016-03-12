@@ -2,7 +2,6 @@ package ru.samlib.client;
 
 import android.app.Application;
 import android.content.res.Configuration;
-import com.facebook.drawee.backends.pipeline.Fresco;
 
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import ru.samlib.client.domain.entity.Link;
@@ -24,7 +23,6 @@ public class SamlibApplication extends Application {
     public void onCreate() {
         super.onCreate();
         singleton = this;
-        Fresco.initialize(this);
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
                 .setFontAttrId(R.attr.fontPath)

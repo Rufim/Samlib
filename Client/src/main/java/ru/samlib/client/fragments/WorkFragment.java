@@ -17,6 +17,7 @@ import com.annimon.stream.Stream;
 import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import com.snappydb.SnappydbException;
 import de.greenrobot.event.EventBus;
+import lombok.Cleanup;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
@@ -81,9 +82,8 @@ public class WorkFragment extends ListFragment<String> {
                 SystemClock.sleep(10);
             }
             if (!work.isParsed()) {
-                SnappyHelper snappyHelper = null;
+                SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "DS");
                 try {
-                    snappyHelper = new SnappyHelper(getActivity());
                     Work savedWork = snappyHelper.getWork(work.getLink());
                     if(savedWork != null) {
                         work = new WorkParser(savedWork).parse(false);
@@ -98,9 +98,8 @@ public class WorkFragment extends ListFragment<String> {
                 } catch (MalformedURLException | SnappydbException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
-                } finally {
-                    SnappyHelper.close(snappyHelper);
                 }
+                SnappyHelper.close(snappyHelper);
             }
             if (work.isParsed()) {
                 pageSize += pageSize;
@@ -117,15 +116,14 @@ public class WorkFragment extends ListFragment<String> {
 
     @Override
     protected void firstLoad() {
+        @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "FL");
         try {
-            SnappyHelper snappyHelper = new SnappyHelper(getActivity());
-            Bookmark bookmark = snappyHelper.getSavedPostiton(work);
+            Bookmark bookmark = snappyHelper.getSavedPosition(work);
             if(bookmark != null) {
                 scrollToIndex(bookmark.getIndex());
             } else {
                 loadItems(false);
             }
-            snappyHelper.close();
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
         }
@@ -146,21 +144,19 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onPause() {
         super.onPause();
-        SnappyHelper snappyHelper = null;
+       @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "P");
         try {
+            int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
             int size = adapter.getItems().size();
             if(size > index && index > 0) {
-                snappyHelper = new SnappyHelper(getActivity());
                 String indent = adapter.getItems().get(index);
                 Bookmark bookmark = new Bookmark(indent);
-                bookmark.setIndex(index);
-                snappyHelper.putSavedPostiton(bookmark, work);
+                bookmark.setIndex(indexLast);
+                snappyHelper.putSavedPosition(bookmark, work);
             }
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
-        } finally {
-            SnappyHelper.close(snappyHelper);
         }
         // sanity check for null as this is a public method
         if (screenLock != null) {

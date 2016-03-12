@@ -255,4 +255,30 @@ public abstract class BaseActivity extends AppCompatActivity {
     public ActionBar getCurrentActionBar() {
         return actionBar;
     }
+
+
+    // Использовать для основных лейаутов
+    public <F extends Fragment> void replaceFragment(Class<F> fragmentClass) {
+       replaceFragment(fragmentClass, new FragmentBuilder(getSupportFragmentManager()));
+    }
+
+    public <F extends Fragment> void replaceFragment(Class<F> fragmentClass, FragmentBuilder builder) {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            builder.addToBackStack();
+        }
+        builder.replaceFragment(R.id.container, fragmentClass);
+        supportInvalidateOptionsMenu();
+    }
+
+    public <F extends Fragment> void replaceFragment(F fragment) {
+        replaceFragment(fragment, new FragmentBuilder(getSupportFragmentManager()));
+    }
+
+    public <F extends Fragment> void replaceFragment(F fragment, FragmentBuilder builder) {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            builder.addToBackStack();
+        }
+        builder.replaceFragment(R.id.container, fragment);
+        supportInvalidateOptionsMenu();
+    }
 }

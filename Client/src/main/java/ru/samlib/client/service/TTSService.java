@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 import com.snappydb.SnappydbException;
+import lombok.Cleanup;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.Constants;
@@ -115,12 +116,10 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            SnappyHelper snappyHelper = null;
+            @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getApplicationContext());
             Work work = null;
             try {
-                snappyHelper = new SnappyHelper(getApplicationContext());
                 work = snappyHelper.getWork(link);
-                snappyHelper.close();
             } catch (SnappydbException e) {
                 Log.e(TAG, "Unknown exception", e);
             }

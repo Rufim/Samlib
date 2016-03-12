@@ -2,8 +2,10 @@ package ru.samlib.client.activity;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.provider.SyncStateContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
@@ -44,7 +46,10 @@ public class MainActivity extends BaseActivity {
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
-            SearchFragment.show(getCurrentFragment(), query);
+            Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+            searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
+            startActivity(searchIntent);
+            //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
     }
 
@@ -66,12 +71,9 @@ public class MainActivity extends BaseActivity {
                 replaceFragment(item.getTitle().toString(), DiscussionFragment.class);
                 break;
             case R.id.drawer_review:
-                new FragmentBuilder(getSupportFragmentManager())
+                replaceFragment(GenreFragment.class, new FragmentBuilder(getSupportFragmentManager())
                         .putArg(Constants.ArgsName.TITLE, item.getTitle().toString())
-                        .putArg(Constants.ArgsName.Type, Genre.LITREVIEW)
-                        .onOrientationChange()
-                        .replaceFragment(R.id.container, GenreFragment.class);
-                supportInvalidateOptionsMenu();
+                        .putArg(Constants.ArgsName.Type, Genre.LITREVIEW));
                 break;
             default:
                 replaceFragment(item.getTitle().toString(), BaseFragment.class);
@@ -90,11 +92,9 @@ public class MainActivity extends BaseActivity {
     public void onEvent(FragmentAttachedEvent fragmentAttached) {}
 
     protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
-        new FragmentBuilder(getSupportFragmentManager())
-                .putArg(Constants.ArgsName.TITLE, title)
-                .onOrientationChange()
-                .replaceFragment(R.id.container, fragmentClass);
-        supportInvalidateOptionsMenu();
+        FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
+        builder.putArg(Constants.ArgsName.TITLE, title);
+        replaceFragment(fragmentClass);
     }
 
 

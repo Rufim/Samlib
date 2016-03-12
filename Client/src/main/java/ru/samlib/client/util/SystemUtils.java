@@ -9,8 +9,11 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -35,6 +38,11 @@ public class SystemUtils {
         }
     }
 
+    public static void runWithDelay(Runnable command, long delay) {
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        executor.schedule(command, delay, TimeUnit.MILLISECONDS);
+    }
+
     public static String getClassName() {
         try {
             String fullClassName = new Exception().getStackTrace()[1].getClassName();
@@ -43,6 +51,7 @@ public class SystemUtils {
             return "UnknownClass";
         }
     }
+
 
     public static Object round(Object value, int places) {
         // if (places < 0) throw new IllegalArgumentException();
@@ -105,7 +114,7 @@ public class SystemUtils {
         return result;
     }
 
-    public static <T> boolean contains(final T v, final T ... array) {
+    public static <T> boolean contains(final T v, final T... array) {
         if (v == null) {
             for (final T e : array)
                 if (e == null)
@@ -315,21 +324,32 @@ public class SystemUtils {
             // Preform su to get root privledges
             Runtime.getRuntime().exec(command);
         } catch (IOException e) {
-            Log.i(TAG,e.getLocalizedMessage());
+            Log.i(TAG, e.getLocalizedMessage());
         }
     }
 
-    public interface IfNotNull<R,T> {
-        R function(T ... obj);
+    public interface IfNotNull<R, T> {
+        R function(T... obj);
     }
 
-    public static <T, R> R nn(IfNotNull<R, T> exec, T ... obj) {
+    public static <T, R> R nn(IfNotNull<R, T> exec, T... obj) {
         for (T t : obj) {
-            if(t == null) {
+            if (t == null) {
                 return null;
             }
         }
         return exec.function(obj);
+    }
+
+    public interface IfNotNullSingleArg<R, T> {
+        R function(T obj);
+    }
+
+    public static <T, R> R nn(IfNotNullSingleArg<R, T> exec, T t) {
+        if (t == null) {
+            return null;
+        }
+        return exec.function(t);
     }
 
     public interface IfNotNullNoArgs {
@@ -357,4 +377,9 @@ public class SystemUtils {
         }
     }
 
+    private static long currentTime() {
+        Calendar time = Calendar.getInstance();
+        time.add(Calendar.MILLISECOND, -time.getTimeZone().getOffset(time.getTimeInMillis()));
+        return time.getTime().getTime();
+    }
 }

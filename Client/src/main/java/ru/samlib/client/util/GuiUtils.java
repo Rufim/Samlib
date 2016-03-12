@@ -11,6 +11,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.ColorRes;
+import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.StringRes;
 import android.text.*;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
@@ -274,6 +277,10 @@ public class GuiUtils {
         return inSampleSize;
     }
 
+    public static <V extends View> V inflate(ViewGroup group, @LayoutRes int id) {
+        return (V) LayoutInflater.from(group.getContext()).inflate(id, group, false);
+    }
+
     public static <L extends ViewGroup> L getLayout(Context context, Integer id) {
         return (L) ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(id, null, false);
     }
@@ -287,7 +294,7 @@ public class GuiUtils {
     }
 
     public static ArrayList<View> getAllChildren(View v) {
-        if(v == null) {
+        if (v == null) {
             return new ArrayList<View>();
         }
 
@@ -431,7 +438,7 @@ public class GuiUtils {
     }
 
     public static void replaceView(View currentView, View newView) {
-        if(currentView == null) {
+        if (currentView == null) {
             return;
         }
         ViewGroup parent = getParent(currentView);
@@ -524,6 +531,15 @@ public class GuiUtils {
         return text;
     }
 
+    public static void setText(ViewGroup root, @IdRes int textViewId, CharSequence text) {
+        TextView textView = getView(root, textViewId);
+        if (textView != null) {
+            if (text != null) {
+                textView.setText(text);
+            }
+        }
+    }
+
     public static void setText(View textView, CharSequence text) {
         if (textView != null) {
             if (text != null) {
@@ -534,20 +550,30 @@ public class GuiUtils {
         }
     }
 
-    public static void setVisibility(int code, View ... views) {
+    public static void setText(View textView, @StringRes int format, Object ... args) {
+        if (textView != null) {
+            if (args != null) {
+                if (textView instanceof TextView) {
+                    ((TextView) textView).setText(String.format(textView.getContext().getString(format), args));
+                }
+            }
+        }
+    }
+
+    public static void setVisibility(int code, View... views) {
         for (View view : views) {
             view.setVisibility(code);
         }
     }
 
-    public static void setTextOrHide(View textView, CharSequence text, View ... views) {
-        if(views.length == 0) {
-            views = new View[] {textView};
+    public static void setTextOrHide(View textView, CharSequence text, View... views) {
+        if (views.length == 0) {
+            views = new View[]{textView};
         }
-        if(textView != null) {
+        if (textView != null) {
             if (text != null) {
-                if(textView instanceof TextView) {
-                    ((TextView)textView).setText(text);
+                if (textView instanceof TextView) {
+                    ((TextView) textView).setText(text);
                     setVisibility(View.VISIBLE, views);
                 }
             } else {
@@ -558,12 +584,25 @@ public class GuiUtils {
 
     public static SpannableStringBuilder coloredText(Context context, CharSequence text, @ColorRes int colorRes) {
         int color = context.getResources().getColor(colorRes);
-        return  spannableText(text, new ForegroundColorSpan(color));
+        return spannableText(text, new ForegroundColorSpan(color));
+    }
+
+    public static SpannableStringBuilder coloredText(Context context, CharSequence text, int from, int to, @ColorRes int colorRes) {
+        int color = context.getResources().getColor(colorRes);
+        return spannableText(text, new ForegroundColorSpan(color), from, to);
+    }
+
+    public static SpannableStringBuilder spannableText(CharSequence text, ParcelableSpan span, int from, int to) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(text);
+        if (span != null) {
+            sb.setSpan(span, from, to, 0);
+        }
+        return sb;
     }
 
     public static SpannableStringBuilder spannableText(CharSequence text, ParcelableSpan span) {
         SpannableStringBuilder sb = new SpannableStringBuilder(text);
-        if(span != null) {
+        if (span != null) {
             sb.setSpan(span, 0, sb.length(), 0);
         }
         return sb;
@@ -587,7 +626,7 @@ public class GuiUtils {
                 }
             }
         }
-        if(end > raw.length()) {
+        if (end > raw.length()) {
             end = raw.length();
         }
         raw.setSpan(new BackgroundColorSpan(color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -595,16 +634,16 @@ public class GuiUtils {
     }
 
     public static void selectText(TextView textView, boolean erase, String query, int color) {
-        if(textView == null) {
+        if (textView == null) {
             return;
         }
-        if(query != null) {
+        if (query != null) {
             query = query.trim().toLowerCase();
         }
 
         Spannable raw = new SpannableString(textView.getText());
 
-        if(erase) {
+        if (erase) {
             BackgroundColorSpan[] spans = raw.getSpans(0,
                     raw.length(),
                     BackgroundColorSpan.class);
@@ -624,7 +663,7 @@ public class GuiUtils {
             return;
         }
 
-        if(query.isEmpty()) {
+        if (query.isEmpty()) {
             raw.setSpan(new BackgroundColorSpan(color), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         } else {
             int index = TextUtils.indexOf(raw.toString().toLowerCase(), query);
@@ -657,11 +696,11 @@ public class GuiUtils {
     }
 
     public interface RunUIThread {
-        void run(Object ... var);
+        void run(Object... var);
     }
 
     public static void runInUI(final Context context, final RunUIThread uiThread, final Object... var) {
-        if(context != null ) {
+        if (context != null) {
             Handler mainHandler = new Handler(context.getMainLooper());
             Runnable myRunnable = new Runnable() {
                 @Override

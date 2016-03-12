@@ -23,7 +23,6 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.facebook.fresco:fresco:0.5.3+'
     compile 'uk.co.chrisjenx:calligraphy:2.1.0'
     compile 'com.felipecsl:gifimageview:1.2.0'
     compile 'com.koushikdutta.ion:ion:2.+'
