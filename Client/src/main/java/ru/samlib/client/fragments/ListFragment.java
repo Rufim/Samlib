@@ -366,16 +366,15 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             });
         }
         if (adapter != null) {
-           firstLoad();
+           firstLoad(true);
         }
         return rootView;
     }
 
-    protected void firstLoad() {
-        if (dataSource != null) {
+    protected void firstLoad(boolean scroll) {
+        if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
             loadItems(false);
-        } else {
-            stopLoading();
+        } else if (pastVisibleItems > 0 && scroll) {
             layoutManager.scrollToPositionWithOffset(pastVisibleItems, 0);
         }
     }

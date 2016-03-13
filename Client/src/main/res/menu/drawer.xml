@@ -12,6 +12,8 @@
               android:title="@string/drawer_review"/>
         <item android:id="@+id/drawer_discuss"
               android:title="@string/drawer_discuss"/>
+        <item android:id="@+id/drawer_history"
+              android:title="@string/drawer_history"/>
         <item android:id="@+id/drawer_help"
               android:title="@string/drawer_help"/>
     </group>

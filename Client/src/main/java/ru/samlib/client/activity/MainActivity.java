@@ -75,6 +75,9 @@ public class MainActivity extends BaseActivity {
                         .putArg(Constants.ArgsName.TITLE, item.getTitle().toString())
                         .putArg(Constants.ArgsName.Type, Genre.LITREVIEW));
                 break;
+            case R.id.drawer_history:
+                replaceFragment(item.getTitle().toString(), HistoryFragment.class);
+                break;
             default:
                 replaceFragment(item.getTitle().toString(), BaseFragment.class);
                 break;

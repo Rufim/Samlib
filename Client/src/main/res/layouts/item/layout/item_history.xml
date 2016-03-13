@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/update_item_body"
+                  android:gravity="center_vertical"
+                  android:background="@android:drawable/list_selector_background"
+                  android:weightSum="1">
+        <LinearLayout android:orientation="vertical"
+                      android:background="@drawable/clickable"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:id="@+id/history_item_work_layout"
+                      android:width="0dp"
+                      android:layout_weight="1"
+                      android:gravity="center_vertical"
+                      android:weightSum="1">
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="0sp"
+                    android:id="@+id/history_item_work"
+                    android:gravity="left|top"
+                    android:width="0dp"
+                    android:maxLines="2"
+                    android:text="Как нам образумить начальство?"
+                    android:layout_weight="0.8"
+                    android:textSize="@dimen/text_large"
+                    style="@style/item_text"/>
+            <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/history_item_genres"
+                    android:paddingTop="0sp"
+                    android:paddingBottom="3dp"
+                    android:gravity="left|top"
+                    android:lines="1"
+                    android:text="Фантастика"
+                    android:layout_weight="0.2"
+                    style="@style/subtitle"
+                    />
+        </LinearLayout>
+        <View style="@style/vertical_border"/>
+        <LinearLayout android:orientation="horizontal"
+                      android:background="@android:drawable/list_selector_background"
+                      android:layout_width="wrap_content"
+                      android:layout_weight="1"
+                      android:gravity="center"
+                      android:layout_height="fill_parent"
+                      android:id="@+id/history_item_author_layout">
+            <TextView
+                    android:layout_width="@dimen/table_author_width"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/history_item_author"
+                    android:text="Сорокин В.А."
+                    android:textSize="@dimen/text_medium"
+                    android:gravity="center"
+                    style="@style/item_text"/>
+        </LinearLayout>
+        <View style="@style/vertical_border"/>
+        <TextView
+                android:layout_width="@dimen/table_date_width"
+                android:layout_height="wrap_content"
+                android:id="@+id/history_item_time"
+                android:layout_weight="1"
+                android:textSize="@dimen/text_medium"
+                android:text="04.01"
+                android:gravity="center"
+                style="@style/item_text"/>
+    </LinearLayout>
+
+</LinearLayout>

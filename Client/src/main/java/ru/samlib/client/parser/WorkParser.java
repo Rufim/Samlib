@@ -4,6 +4,8 @@ import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Bookmark;
@@ -17,6 +19,7 @@ import ru.samlib.client.util.SystemUtils;
 import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -168,37 +171,49 @@ public class WorkParser extends Parser {
         List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
         document.outputSettings().prettyPrint(false);
-        Elements rootElements = replaceTables(document.body()).select("> *");
-        Elements elements = rootElements.select("xxx7");
+        List<Node> rootNodes;
+        Element body = replaceTables(document.body());
+        Elements elements = body.select("xxx7");
         if (elements.size() > 0) {
-            rootElements = elements.first().select("> *");
+            rootNodes = elements.first().childNodes();
         } else {
-            elements = rootElements.select("div[align=justify]");
+            elements = body.select("div[align=justify]");
             if (elements.size() > 0) {
-                rootElements = elements.first().select("> *");
+                rootNodes = elements.first().childNodes();
+            } else {
+                rootNodes = body.childNodes();
             }
         }
-        while (rootElements.size() > 0
-                && rootElements.first().tagName() == "font"
-                && rootElements.size() == 1) {
-            rootElements = rootElements.first().select("> *");
+        if (rootNodes.size() > 0
+                && rootNodes.get(0) instanceof  Element
+                && "font".equals(((Element)rootNodes.get(0)).tagName())
+                && rootNodes.size() == 1) {
+            rootNodes = rootNodes.get(0).childNodes();
         }
-        work.setRootElements(rootElements);
+
+        work.setRootNodes(rootNodes);
         indents.clear();
         Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         indents.addAll(Arrays.asList(JsoupUtils.ownText(document.body()).split("\\n")));
-        for (int i = 0; i < rootElements.size(); i++) {
-            Element el = rootElements.get(i);
-            if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
-                indents.add(TextUtils.linkifyHtml(el.outerHtml()));
-            } else {
-                if (indents.isEmpty()) {
-                    indents.add(el.outerHtml());
-                } else {
-                    indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
-                }
-            }
+       for (int i = 0; i < rootNodes.size(); i++) {
+            Node node = rootNodes.get(i);
+           if(node instanceof Element) {
+               Element el = (Element) node;
+               if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
+                   if(!el.text().isEmpty()) {
+                       indents.add(TextUtils.linkifyHtml(el.outerHtml()));
+                   }
+               } else {
+                   if (indents.isEmpty()) {
+                       indents.add(el.outerHtml());
+                   } else {
+                       indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
+                   }
+               }
+           } else if(node instanceof TextNode) {
+               indents.add(TextUtils.linkifyHtml(((TextNode) node).text()));
+           }
         }
         bookmarks.clear();
         bookmarks.add(new Bookmark("Начало"));

@@ -20,6 +20,7 @@
     <string name="drawer_review">Обзоры</string>
     <string name="drawer_discuss">Обсуждения</string>
     <string name="drawer_sign_up">Регистрация</string>
+    <string name="drawer_history">История</string>
     <string name="drawer_help">Помощь</string>
 
     <string name="refresh">Обновить</string>

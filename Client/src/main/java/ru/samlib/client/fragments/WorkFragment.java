@@ -79,7 +79,7 @@ public class WorkFragment extends ListFragment<String> {
         pageSize = 250;
         setDataSource(((skip, size) -> {
             while (work == null) {
-                SystemClock.sleep(10);
+                SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
                 SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "DS");
@@ -91,6 +91,7 @@ public class WorkFragment extends ListFragment<String> {
                         work = new WorkParser(work).parse(false);
                     }
                     if(work.isChanged()) {
+                        work.setCachedDate(new Date());
                         snappyHelper.putWork(work);
                         work.setChanged(false);
                     }
@@ -98,10 +99,11 @@ public class WorkFragment extends ListFragment<String> {
                 } catch (MalformedURLException | SnappydbException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
+                } finally {
+                    SnappyHelper.close(snappyHelper);
                 }
-                SnappyHelper.close(snappyHelper);
             }
-            if (work.isParsed()) {
+            if(work.isParsed()){
                 pageSize += pageSize;
                 return Stream.of(work.getIndents())
                         .skip(skip)
@@ -110,19 +112,17 @@ public class WorkFragment extends ListFragment<String> {
             } else {
                 return new ArrayList<>();
             }
-
         }));
     }
 
     @Override
-    protected void firstLoad() {
+    protected void firstLoad(boolean scroll) {
+        super.firstLoad(false);
         @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "FL");
         try {
             Bookmark bookmark = snappyHelper.getSavedPosition(work);
-            if(bookmark != null) {
+            if(bookmark != null && scroll) {
                 scrollToIndex(bookmark.getIndex());
-            } else {
-                loadItems(false);
             }
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
@@ -170,6 +170,12 @@ public class WorkFragment extends ListFragment<String> {
             // should never happen during normal workflow
             Log.e(TAG, "Wakelock reference is null");
         }
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        work.setParsed(false);
+        super.refreshData(showProgress);
     }
 
     public List<Pair<Integer, Integer>> search(String query) {

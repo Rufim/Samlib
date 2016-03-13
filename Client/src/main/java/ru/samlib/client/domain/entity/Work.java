@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
@@ -54,6 +55,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private List<String> annotationBlocks = new ArrayList<>();
     private Date createDate;
     private Date updateDate;
+    private Date cachedDate;
     private New state = New.EMPTY;
     private String description;
     private boolean hasIllustration = false;
@@ -65,9 +67,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private List<String> indents = new ArrayList<>();
     private List<Bookmark> autoBookmarks = new ArrayList<>();
     private String md5;
-
-
-    private transient Elements rootElements;
+    private transient List<Node> rootNodes;;
 
     public Work(String link) {
         setLink(link);

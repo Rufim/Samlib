@@ -2,7 +2,6 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,7 +11,6 @@ import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.FilterDialog;
-import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.lister.DataSource;
@@ -33,13 +31,13 @@ public class NewestFragment extends ListFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.newest, menu);
+        inflater.inflate(R.menu.filter, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_newest_filter:
+            case R.id.action_filter:
                 FilterDialog dialog = (FilterDialog) getFragmentManager().findFragmentByTag(FilterDialog.class.getSimpleName());
                 if(dialog == null) {
                     dialog = new FilterDialog();
