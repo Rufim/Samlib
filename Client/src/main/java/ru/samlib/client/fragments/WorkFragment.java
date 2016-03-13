@@ -76,7 +76,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public WorkFragment() {
-        pageSize = 250;
+        pageSize = Integer.MAX_VALUE;
         setDataSource(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(100);
@@ -86,15 +86,16 @@ public class WorkFragment extends ListFragment<String> {
                 try {
                     Work savedWork = snappyHelper.getWork(work.getLink());
                     if(savedWork != null) {
-                        work = new WorkParser(savedWork).parse(false);
+                        work = new WorkParser(savedWork).parse(false, false);
                     } else {
-                        work = new WorkParser(work).parse(false);
+                        work = new WorkParser(work).parse(false, false);
                     }
                     if(work.isChanged()) {
                         work.setCachedDate(new Date());
                         snappyHelper.putWork(work);
                         work.setChanged(false);
                     }
+                    WorkParser.processChapters(work);
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException | SnappydbException e) {
                     Log.e(TAG, "Unknown exception", e);
@@ -118,7 +119,7 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     protected void firstLoad(boolean scroll) {
         super.firstLoad(false);
-        @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "FL");
+        SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "FL");
         try {
             Bookmark bookmark = snappyHelper.getSavedPosition(work);
             if(bookmark != null && scroll) {
@@ -126,6 +127,8 @@ public class WorkFragment extends ListFragment<String> {
             }
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
+        } finally {
+            SnappyHelper.close(snappyHelper);
         }
     }
 
@@ -144,7 +147,7 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onPause() {
         super.onPause();
-       @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "P");
+       SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "P");
         try {
             int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
@@ -157,6 +160,8 @@ public class WorkFragment extends ListFragment<String> {
             }
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
+        } finally {
+            SnappyHelper.close(snappyHelper);
         }
         // sanity check for null as this is a public method
         if (screenLock != null) {

@@ -24,6 +24,7 @@ import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -99,12 +100,22 @@ public class HistoryFragment extends ListFragment {
     @Override
     protected DataSource getDataSource() throws Exception {
         return (skip, size) -> {
-            @Cleanup SnappyHelper helper = new SnappyHelper(getActivity());
+            SnappyHelper helper = new SnappyHelper(getActivity(), TAG);
             try {
-                return Stream.of(helper.getWorks()).skip(skip).limit(size).collect(Collectors.toList());
+                if(adapter.getItems().isEmpty()) {
+                    return Stream.of(helper.getWorks())
+                            .skip(skip)
+                            .limit(size)
+                            .sorted((lhs, rhs) -> rhs.getCachedDate().compareTo(lhs.getCachedDate()))
+                            .collect(Collectors.toList());
+                } else {
+                    return new ArrayList<>();
+                }
             } catch (SnappydbException e) {
                 Log.e(TAG, "Unknown exception", e);
                 return new ArrayList<>();
+            } finally {
+                SnappyHelper.close(helper);
             }
         };
     }

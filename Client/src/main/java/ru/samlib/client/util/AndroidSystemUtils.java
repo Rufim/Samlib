@@ -285,4 +285,31 @@ public class AndroidSystemUtils {
         }
         return false;
     }
+
+    public static void memoryUsageReport(Context context) {
+        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        activityManager.getMemoryInfo(mi);
+        long availableMegs = mi.availMem / 1048576L;
+        Log.e(TAG, "available memory " + availableMegs);
+//Percentage can be calculated for API 16+
+        long percentAvail = mi.availMem / mi.totalMem;
+        Log.e(TAG, "available memory percent " + percentAvail);
+    }
+
+    public static void memoryApplicationUsageReport() {
+        long freeSize = 0L;
+        long totalSize = 0L;
+        long usedSize = -1L;
+        try {
+            Runtime info = Runtime.getRuntime();
+            freeSize = info.freeMemory();
+            totalSize = info.totalMemory();
+            usedSize = totalSize - freeSize;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.e(TAG, "available memory " + freeSize);
+    }
+
 }

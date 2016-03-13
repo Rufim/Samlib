@@ -116,12 +116,14 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getApplicationContext());
+            @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getApplicationContext(), TAG);
             Work work = null;
             try {
                 work = snappyHelper.getWork(link);
             } catch (SnappydbException e) {
                 Log.e(TAG, "Unknown exception", e);
+            } finally {
+                SnappyHelper.close(snappyHelper);
             }
             if(TextUtils.isEmpty(work.getRawContent())) {
                 work = WorkParser.parseWork(work.getCachedResponse(), work);

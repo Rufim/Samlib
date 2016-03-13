@@ -57,29 +57,30 @@ public class MainActivity extends BaseActivity {
     public boolean onNavigationItemSelected(MenuItem item) {
         // update the main content by replacing fragments
         Integer itemId = item.getItemId();
+        String title = item.getTitle().toString();
         switch (itemId) {
             case R.id.drawer_favorite:
-                replaceFragment(item.getTitle().toString(), RateFragment.class);
+                replaceFragment(title, RateFragment.class);
                 break;
             case R.id.drawer_top:
-                replaceFragment(item.getTitle().toString(), TopAuthorsFragment.class);
+                replaceFragment(title, TopAuthorsFragment.class);
                 break;
             case R.id.drawer_new:
-                replaceFragment(item.getTitle().toString(), NewestFragment.class);
+                replaceFragment(title, NewestFragment.class);
                 break;
             case R.id.drawer_discuss:
-                replaceFragment(item.getTitle().toString(), DiscussionFragment.class);
+                replaceFragment(title, DiscussionFragment.class);
                 break;
             case R.id.drawer_review:
                 replaceFragment(GenreFragment.class, new FragmentBuilder(getSupportFragmentManager())
-                        .putArg(Constants.ArgsName.TITLE, item.getTitle().toString())
+                        .putArg(Constants.ArgsName.TITLE, title)
                         .putArg(Constants.ArgsName.Type, Genre.LITREVIEW));
                 break;
             case R.id.drawer_history:
-                replaceFragment(item.getTitle().toString(), HistoryFragment.class);
+                replaceFragment(title, HistoryFragment.class);
                 break;
             default:
-                replaceFragment(item.getTitle().toString(), BaseFragment.class);
+                replaceFragment(title, BaseFragment.class);
                 break;
         }
         return false;
@@ -97,7 +98,7 @@ public class MainActivity extends BaseActivity {
     protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
         FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
         builder.putArg(Constants.ArgsName.TITLE, title);
-        replaceFragment(fragmentClass);
+        replaceFragment(fragmentClass, builder);
     }
 
 

@@ -9,6 +9,7 @@ import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.util.SystemUtils;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by 0shad on 27.12.2015.
  */
-public class SnappyHelper {
+public class SnappyHelper implements Closeable {
 
     private static final String TAG = SnappyHelper.class.getSimpleName();
 

@@ -13,10 +13,7 @@ import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.util.JsoupUtils;
-import ru.samlib.client.util.ParserUtils;
-import ru.samlib.client.util.SystemUtils;
-import ru.samlib.client.util.TextUtils;
+import ru.samlib.client.util.*;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -47,7 +44,7 @@ public class WorkParser extends Parser {
         this.work = new Work(workLink);
     }
 
-    public Work parse(boolean fullDownload) {
+    public Work parse(boolean fullDownload, boolean processChapters) {
         CachedResponse rawContent = null;
         if (work.getRawContent() == null && !fullDownload) {
             rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
@@ -71,7 +68,9 @@ public class WorkParser extends Parser {
                 work.setChanged(false);
                 return work;
             }
-            processChapters(work);
+            if(processChapters) {
+                processChapters(work);
+            }
         } catch (Exception ex) {
             work.setParsed(false);
             Log.e(TAG, "Work NOT parsed using url " + request.getBaseUrl(), ex);
@@ -171,59 +170,66 @@ public class WorkParser extends Parser {
         List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
         document.outputSettings().prettyPrint(false);
-        List<Node> rootNodes;
+        List<Node> rootNodes = new ArrayList<>();
         Element body = replaceTables(document.body());
-        Elements elements = body.select("xxx7");
+        Elements rootElements = body.select("> *");
+        Elements elements = rootElements.select("xxx7");
         if (elements.size() > 0) {
-            rootNodes = elements.first().childNodes();
+            for (Element element : elements) {
+                rootNodes.addAll(element.childNodes());
+            }
         } else {
-            elements = body.select("div[align=justify]");
+            elements = rootElements.select("div[align=justify]");
             if (elements.size() > 0) {
-                rootNodes = elements.first().childNodes();
+                for (Element element : elements) {
+                    rootNodes.addAll(element.childNodes());
+                }
             } else {
                 rootNodes = body.childNodes();
             }
         }
         if (rootNodes.size() > 0
-                && rootNodes.get(0) instanceof  Element
-                && "font".equals(((Element)rootNodes.get(0)).tagName())
+                && rootNodes.get(0) instanceof Element
+                && "font".equals(((Element) rootNodes.get(0)).tagName())
                 && rootNodes.size() == 1) {
             rootNodes = rootNodes.get(0).childNodes();
         }
-
-        work.setRootNodes(rootNodes);
+        elements.clear();
+        rootElements.clear();
         indents.clear();
         Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         indents.addAll(Arrays.asList(JsoupUtils.ownText(document.body()).split("\\n")));
-       for (int i = 0; i < rootNodes.size(); i++) {
+        for (int i = 0; i < rootNodes.size(); i++) {
             Node node = rootNodes.get(i);
-           if(node instanceof Element) {
-               Element el = (Element) node;
-               if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
-                   if(!el.text().isEmpty()) {
-                       indents.add(TextUtils.linkifyHtml(el.outerHtml()));
-                   }
-               } else {
-                   if (indents.isEmpty()) {
-                       indents.add(el.outerHtml());
-                   } else {
-                       indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
-                   }
-               }
-           } else if(node instanceof TextNode) {
-               indents.add(TextUtils.linkifyHtml(((TextNode) node).text()));
-           }
+            if (node instanceof Element) {
+                Element el = (Element) node;
+                if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
+                    if (!el.text().isEmpty()) {
+                        indents.add(TextUtils.linkifyHtml(el.outerHtml()));
+                    }
+                } else {
+                    if (indents.isEmpty()) {
+                        indents.add(el.outerHtml());
+                    } else {
+                        indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
+                    }
+                }
+            } else if (node instanceof TextNode) {
+                indents.add(TextUtils.linkifyHtml(((TextNode) node).text()));
+            }
         }
         bookmarks.clear();
         bookmarks.add(new Bookmark("Начало"));
         for (int i = 0; i < indents.size(); i++) {
-            String text = JsoupUtils.cleanHtml(indents.get(i));
-            if (pattern.matcher(TextUtils.trim(text)).find()) {
-                Bookmark newBookmark = new Bookmark(text);
-                newBookmark.setPercent(((float) i) / indents.size());
-                newBookmark.setIndex(i);
-                bookmarks.add(newBookmark);
+            if(indents.get(i).length() > 3 && indents.get(i).length() < 10) {
+                String text = JsoupUtils.cleanHtml(indents.get(i));
+                if (pattern.matcher(TextUtils.trim(text)).find()) {
+                    Bookmark newBookmark = new Bookmark(text);
+                    newBookmark.setPercent(((float) i) / indents.size());
+                    newBookmark.setIndex(i);
+                    bookmarks.add(newBookmark);
+                }
             }
         }
     }

@@ -159,7 +159,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public void startLoading(boolean showProgress) {
         isLoading = true;
-        if (loadMoreBar != null && showProgress) {
+        if (loadMoreBar != null && showProgress ) {
             loadMoreBar.setVisibility(View.VISIBLE);
         }
     }
@@ -373,10 +373,15 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     protected void firstLoad(boolean scroll) {
         if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
+            loadMoreBar.setVisibility(View.GONE);
             loadItems(false);
-        } else if (pastVisibleItems > 0 && scroll) {
+        } else {
+            stopLoading();
+        }
+        if (pastVisibleItems > 0 && scroll) {
             layoutManager.scrollToPositionWithOffset(pastVisibleItems, 0);
         }
+
     }
 
     public class DataTask extends AsyncTask<Void, Void, List<I>> {

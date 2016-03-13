@@ -67,7 +67,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     private List<String> indents = new ArrayList<>();
     private List<Bookmark> autoBookmarks = new ArrayList<>();
     private String md5;
-    private transient List<Node> rootNodes;;
+
 
     public Work(String link) {
         setLink(link);
