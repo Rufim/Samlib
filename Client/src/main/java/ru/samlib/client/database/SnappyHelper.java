@@ -22,6 +22,7 @@ public class SnappyHelper implements Closeable {
 
     private static final String TAG = SnappyHelper.class.getSimpleName();
 
+    private static final int DB_VERSION = 1;
     private static final String WORK_KEY_NAME = "work";
     private static final String SAVED_POSITION_KEY_NAME = "saved_position";
     private static final int MAX_HOLD_TIMEOUT = 5000;

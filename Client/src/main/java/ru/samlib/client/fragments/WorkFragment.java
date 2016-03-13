@@ -76,7 +76,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public WorkFragment() {
-        pageSize = Integer.MAX_VALUE;
+        pageSize = 30000;
         setDataSource(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(100);
@@ -95,7 +95,9 @@ public class WorkFragment extends ListFragment<String> {
                         snappyHelper.putWork(work);
                         work.setChanged(false);
                     }
-                    WorkParser.processChapters(work);
+                    if(!work.isParsed()) {
+                        WorkParser.processChapters(work);
+                    }
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException | SnappydbException e) {
                     Log.e(TAG, "Unknown exception", e);
@@ -118,12 +120,18 @@ public class WorkFragment extends ListFragment<String> {
 
     @Override
     protected void firstLoad(boolean scroll) {
-        super.firstLoad(false);
         SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "FL");
         try {
             Bookmark bookmark = snappyHelper.getSavedPosition(work);
-            if(bookmark != null && scroll) {
-                scrollToIndex(bookmark.getIndex());
+            if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
+                loadMoreBar.setVisibility(View.GONE);
+                if (bookmark != null && scroll) {
+                    scrollToIndex(bookmark.getIndex());
+                } else {
+                    loadItems(false);
+                }
+            } else {
+                stopLoading();
             }
         } catch (SnappydbException e) {
             Log.e(TAG, "Unknown exception", e);
@@ -155,7 +163,7 @@ public class WorkFragment extends ListFragment<String> {
             if(size > index && index > 0) {
                 String indent = adapter.getItems().get(index);
                 Bookmark bookmark = new Bookmark(indent);
-                bookmark.setIndex(indexLast);
+                bookmark.setIndex(indexLast - 1);
                 snappyHelper.putSavedPosition(bookmark, work);
             }
         } catch (SnappydbException e) {

@@ -381,7 +381,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         if (pastVisibleItems > 0 && scroll) {
             layoutManager.scrollToPositionWithOffset(pastVisibleItems, 0);
         }
-
     }
 
     public class DataTask extends AsyncTask<Void, Void, List<I>> {

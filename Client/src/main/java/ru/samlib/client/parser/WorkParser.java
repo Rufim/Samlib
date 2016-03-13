@@ -55,9 +55,6 @@ public class WorkParser extends Parser {
             return work;
         }
         try {
-            if (rawContent.isDownloadOver) {
-                work.setParsed(true);
-            }
             Date oldUpdateDate = work.getUpdateDate();
             work.setChanged(true);
             work = parseWork(rawContent, work);
@@ -232,6 +229,7 @@ public class WorkParser extends Parser {
                 }
             }
         }
+        work.setParsed(true);
     }
 
 
