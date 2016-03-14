@@ -116,7 +116,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            @Cleanup SnappyHelper snappyHelper = new SnappyHelper(getApplicationContext(), TAG);
+            SnappyHelper snappyHelper = new SnappyHelper(getApplicationContext(), TAG);
             Work work = null;
             try {
                 work = snappyHelper.getWork(link);
@@ -125,9 +125,12 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             } finally {
                 SnappyHelper.close(snappyHelper);
             }
-            if(TextUtils.isEmpty(work.getRawContent())) {
-                work = WorkParser.parseWork(work.getCachedResponse(), work);
-                WorkParser.processChapters(work);
+            if(!work.isParsed()) {
+                if (!TextUtils.isEmpty(work.getRawContent())) {
+                    WorkParser.processChapters(work);
+                } else {
+                    return START_STICKY_COMPATIBILITY;
+                }
             }
             if (currentVersionSupportLockScreenControls) {
                 RegisterRemoteClient();

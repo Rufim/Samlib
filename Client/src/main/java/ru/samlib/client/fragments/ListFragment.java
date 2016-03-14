@@ -159,7 +159,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public void startLoading(boolean showProgress) {
         isLoading = true;
-        if (loadMoreBar != null && showProgress ) {
+        if (loadMoreBar != null && showProgress && progressBar.getVisibility() != View.VISIBLE) {
             loadMoreBar.setVisibility(View.VISIBLE);
         }
     }
