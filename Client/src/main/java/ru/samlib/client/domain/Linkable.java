@@ -1,8 +1,5 @@
 package ru.samlib.client.domain;
 
-import android.content.Context;
-import com.nd.android.sdp.im.common.widget.htmlview.css.StylableElement;
-import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.util.TextUtils;
 
 /**

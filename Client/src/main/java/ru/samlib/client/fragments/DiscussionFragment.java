@@ -13,7 +13,6 @@ import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.entity.Discussion;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.FilterEvent;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.DiscussionParser;
 import ru.samlib.client.util.TextUtils;
@@ -23,58 +22,7 @@ import java.util.Locale;
 /**
  * Created by Rufim on 04.01.2015.
  */
-public class DiscussionFragment extends ListFragment<Discussion> {
-
-    public DiscussionFragment() {
-        enableFiltering = true;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.filter, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_filter:
-                FilterDialog dialog = (FilterDialog) getFragmentManager().findFragmentByTag(FilterDialog.class.getSimpleName());
-                if(dialog == null) {
-                    dialog = new FilterDialog();
-                    if(adapter.getLastQuery() instanceof FilterEvent) {
-                        dialog.setState((FilterEvent) adapter.getLastQuery());
-                    }
-                    dialog.show(getFragmentManager(), FilterDialog.class.getSimpleName());
-                }
-                return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
-
-    public void onEvent(FilterEvent event) {
-        if(event.genres == null) {
-            adapter.exitFilteringMode();
-        } else {
-            String query = searchView.getQuery().toString();
-            if (query != null && !query.isEmpty()) {
-                event.query = query;
-            }
-            filter(event);
-        }
-    }
+public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
 
     /**
      * Returns a new instance of this fragment for the given section

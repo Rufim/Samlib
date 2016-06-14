@@ -9,15 +9,19 @@ import android.content.res.TypedArray;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.ColorRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
+import android.support.design.widget.Snackbar;
 import android.text.*;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.URLSpan;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -281,6 +285,10 @@ public class GuiUtils {
         return (V) LayoutInflater.from(group.getContext()).inflate(id, group, false);
     }
 
+    public static <V extends View> V inflate(Context context, @LayoutRes int id) {
+        return (V) LayoutInflater.from(context).inflate(id, null);
+    }
+
     public static <L extends ViewGroup> L getLayout(Context context, Integer id) {
         return (L) ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(id, null, false);
     }
@@ -523,6 +531,31 @@ public class GuiUtils {
         toast.show();
     }
 
+    public static void showSnackbar(View viewContainer, CharSequence message, int textColor, int backgroundColor) {
+        Snackbar snackbar = Snackbar.make(viewContainer, message, Snackbar.LENGTH_LONG);
+        View view = snackbar.getView();
+        TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(textColor);
+        view.setBackgroundColor(backgroundColor);
+        snackbar.show();
+    }
+
+    public static void showSnackbar(View viewContainer, @StringRes int message, int textColor, int backgroundColor) {
+        showSnackbar(viewContainer, viewContainer.getContext().getString(message), textColor, backgroundColor);
+    }
+
+    public static void showSnackbar(View viewContainer, @StringRes int message) {
+        showSnackbar(viewContainer, viewContainer.getContext().getString(message));
+    }
+
+    public static void showSnackbar(View viewContainer, CharSequence message) {
+        int defaultBackgroundResource = android.R.attr.windowBackground;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            defaultBackgroundResource = android.R.attr.colorPrimary;
+        }
+        showSnackbar(viewContainer, message, GuiUtils.getThemeColor(viewContainer.getContext(), defaultBackgroundResource), GuiUtils.getThemeColor(viewContainer.getContext(), android.R.attr.textColor));
+    }
+
     public static String getText(TextView textView) throws EmptyTextException {
         String text = textView.getText().toString();
         if (text == null || text.isEmpty()) {
@@ -550,7 +583,7 @@ public class GuiUtils {
         }
     }
 
-    public static void setText(View textView, @StringRes int format, Object ... args) {
+    public static void setText(View textView, @StringRes int format, Object... args) {
         if (textView != null) {
             if (args != null) {
                 if (textView instanceof TextView) {
@@ -559,6 +592,17 @@ public class GuiUtils {
             }
         }
     }
+
+    public static void setText(View textView, @StringRes int format, Object arg) {
+        if (textView != null) {
+            if (arg != null) {
+                if (textView instanceof TextView) {
+                    ((TextView) textView).setText(String.format(textView.getContext().getString(format), arg));
+                }
+            }
+        }
+    }
+
 
     public static void setVisibility(int code, View... views) {
         for (View view : views) {
@@ -571,7 +615,7 @@ public class GuiUtils {
             views = new View[]{textView};
         }
         if (textView != null) {
-            if (text != null) {
+            if (!TextUtils.isEmpty(text)) {
                 if (textView instanceof TextView) {
                     ((TextView) textView).setText(text);
                     setVisibility(View.VISIBLE, views);
@@ -580,6 +624,40 @@ public class GuiUtils {
                 setVisibility(View.GONE, views);
             }
         }
+    }
+
+    public static void stripUnderlines(TextView textView) {
+        Spannable s = (Spannable) textView.getText();
+        URLSpan[] spans = s.getSpans(0, s.length(), URLSpan.class);
+        for (URLSpan span : spans) {
+            int start = s.getSpanStart(span);
+            int end = s.getSpanEnd(span);
+            s.removeSpan(span);
+            span = new URLSpanNoUnderline(span.getURL());
+            s.setSpan(span, start, end, 0);
+        }
+    }
+
+    public static StateListDrawable createStateList(int[][] stateSet, int[] colors) {
+        StateListDrawable stateListDrawable= new StateListDrawable();
+        for (int i = 0; i < colors.length && i < stateSet.length; i++) {
+            addStateToStateList(stateListDrawable, colors[i], stateSet[i]);
+        }
+        return stateListDrawable;
+    }
+
+    public static void addStateToStateList(StateListDrawable stateListDrawable, int color, int [] stateSet) {
+        Rect rect = new Rect(0, 0, 1, 1);
+
+        Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paintPressed = new Paint();
+        paintPressed.setColor(color);
+        canvas.drawRect(rect, paintPressed);
+        RectF bounds = new RectF();
+        bounds.round(rect);
+
+        stateListDrawable.addState(stateSet, new BitmapDrawable(bitmap));
     }
 
     public static SpannableStringBuilder coloredText(Context context, CharSequence text, @ColorRes int colorRes) {
@@ -675,7 +753,7 @@ public class GuiUtils {
         textView.setText(raw);
     }
 
-    public int getThemeColor(Context context, int id) {
+    public static int getThemeColor(Context context, int id) {
         Resources.Theme theme = context.getTheme();
         TypedArray a = theme.obtainStyledAttributes(new int[]{id});
         int result = a.getColor(0, 0);
@@ -683,7 +761,7 @@ public class GuiUtils {
         return result;
     }
 
-    public TypedArray getStyledAttrs(Context context) {
+    public static TypedArray getStyledAttrs(Context context) {
         int[] attrs = {android.R.attr.textColor,
                 android.R.attr.textSize,
                 android.R.attr.background,
@@ -693,6 +771,27 @@ public class GuiUtils {
                 android.R.attr.orientation,
                 android.R.attr.text};
         return context.obtainStyledAttributes(attrs);
+    }
+
+    public static int getDarkerColor(int color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[2] *= 0.8f; // value component
+        return Color.HSVToColor(hsv);
+    }
+
+    public static boolean isDarkColor(int color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        float brightness = hsv[2];
+        return brightness < 0.20;
+    }
+
+    public static boolean isBrightColor(int color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        float brightness = hsv[2];
+        return brightness > 0.93;
     }
 
     public interface RunUIThread {

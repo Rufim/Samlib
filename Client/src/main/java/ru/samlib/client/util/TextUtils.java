@@ -81,7 +81,7 @@ public class TextUtils {
         return result;
     }
 
-    public static boolean isEmpty(String string) {
+    public static boolean isEmpty(CharSequence string) {
         return string == null || string.length() == 0;
     }
 

@@ -7,7 +7,7 @@ import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IdRes;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.internal.view.ContextThemeWrapper;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.text.Html;
 import android.util.Log;
@@ -19,7 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
@@ -219,9 +218,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     Category category = (Category) getItem(position);
                     GuiUtils.setTextOrHide(holder.getView(R.id.section_label), category.getTitle());
                     if (category.getAnnotation() != null) {
-                        holder.getView(R.id.section_annotation).setVisibility(View.VISIBLE);
-                        HtmlView htmlView = holder.getView(R.id.section_annotation);
-                        htmlView.loadHtml(category.processAnnotation(getResources().getColor(R.color.SeaGreen)));
+                        HtmlSpanner spanner = new HtmlSpanner();
+                        TextView annotationView = holder.getView(R.id.section_annotation);
+                        spanner.registerHandler("img", new PicassoImageHandler(annotationView));
+                        spanner.registerHandler("a", new LinkHandler(annotationView));
+                        annotationView.setText(spanner.fromHtml(category.processAnnotation(getResources().getColor(R.color.SeaGreen))));
+                        annotationView.setVisibility(View.VISIBLE);
                     } else {
                         holder.getView(R.id.section_annotation).setVisibility(View.GONE);
                     }
@@ -270,17 +272,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     if (!work.getAnnotationBlocks().isEmpty()) {
                         holder.getView(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
                         View annotation_view = holder.getView(R.id.work_annotation);
-                        if (annotation_view instanceof HtmlView) {
-                            HtmlView htmlView = (HtmlView) annotation_view;
-                            String testTable = "<table border=\"1\" cellpadding=\"4\" cellspacing=\"1\">    <tbody><tr><td width=\"400\"><img src=\"http://budclub.ru/img/p/plotnikow_sergej_aleksandrowich/podpiskairassylka/facebook.png\" alt=\"лого_фейсбук\" width=\"30\"><a href=\"https://www.facebook.com/plotnikovs.ru\" target=\"_blank\">Задать вопрос или поболтать на ФЕЙСБУКЕ</a> </td></tr>  </tbody></table>";
-                            htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
-                        } else {
-                            TextView textView = (TextView) annotation_view;
-                            HtmlSpanner spanner = new HtmlSpanner();
-                            spanner.registerHandler("img", new PicassoImageHandler(textView));
-                            spanner.registerHandler("a", new LinkHandler(textView));
-                            textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
-                        }
+                        TextView textView = (TextView) annotation_view;
+                        HtmlSpanner spanner = new HtmlSpanner();
+                        spanner.registerHandler("img", new PicassoImageHandler(textView));
+                        spanner.registerHandler("a", new LinkHandler(textView));
+                        textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
                     } else {
                         holder.getView(R.id.work_annotation).setVisibility(View.GONE);
                     }

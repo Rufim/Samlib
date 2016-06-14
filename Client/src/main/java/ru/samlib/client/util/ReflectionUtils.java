@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
 import java.lang.reflect.*;
 import java.util.*;
 
+import static com.google.gson.internal.$Gson$Preconditions.checkArgument;
+
 /**
  * Created by 0shad on 13.07.2015.
  */
@@ -19,6 +21,33 @@ public class ReflectionUtils {
     @Target({ElementType.FIELD, ElementType.TYPE})
     public @interface Value {
         String name();
+    }
+
+    public static <C> C cloneObject(C original) {
+        try {
+            C clone = (C) original.getClass().newInstance();
+            for (Field field : getAllFieldsValues(original.getClass())) {
+                field.setAccessible(true);
+                if (field.get(original) == null || Modifier.isFinal(field.getModifiers())) {
+                    continue;
+                }
+                if (field.getType().isPrimitive() || field.getType().equals(String.class)
+                        || field.getType().getSuperclass().equals(Number.class)
+                        || field.getType().equals(Boolean.class)) {
+                    field.set(clone, field.get(original));
+                } else {
+                    Object childObj = field.get(original);
+                    if (childObj == original) {
+                        field.set(clone, clone);
+                    } else {
+                        field.set(clone, cloneObject(field.get(original)));
+                    }
+                }
+            }
+            return clone;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static <S, T> T castObject(S source, Class<T> targetClass) throws IllegalAccessException, InstantiationException {
@@ -215,4 +244,54 @@ public class ReflectionUtils {
             throw new NoSuchMethodException("Method " + methodName + " not found");
         }
     }
+
+    // Working whith Types
+
+    public static Class<?> getRawType(Type type) {
+        if (type instanceof Class<?>) {
+            // type is a normal class.
+            return (Class<?>) type;
+
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+
+            // I'm not exactly sure why getRawType() returns Type instead of Class.
+            // Neal isn't either but suspects some pathological case related
+            // to nested classes exists.
+            Type rawType = parameterizedType.getRawType();
+            checkArgument(rawType instanceof Class);
+            return (Class<?>) rawType;
+
+        } else if (type instanceof GenericArrayType) {
+            Type componentType = ((GenericArrayType) type).getGenericComponentType();
+            return Array.newInstance(getRawType(componentType), 0).getClass();
+
+        } else if (type instanceof TypeVariable) {
+            // we could use the variable's bounds, but that won't work if there are multiple.
+            // having a raw type that's more general than necessary is okay
+            return Object.class;
+
+        } else if (type instanceof WildcardType) {
+            return getRawType(((WildcardType) type).getUpperBounds()[0]);
+
+        } else {
+            String className = type == null ? "null" : type.getClass().getName();
+            throw new IllegalArgumentException("Expected a Class, ParameterizedType, or "
+                    + "GenericArrayType, but <" + type + "> is of type " + className);
+        }
+    }
+
+    public static Type getParameterUpperBound(int index, ParameterizedType type) {
+        Type[] types = type.getActualTypeArguments();
+        if (types.length <= index) {
+            throw new IllegalArgumentException(
+                    "Expected at least " + index + " type argument(s) but got: " + Arrays.toString(types));
+        }
+        Type paramType = types[index];
+        if (paramType instanceof WildcardType) {
+            return ((WildcardType) paramType).getUpperBounds()[0];
+        }
+        return paramType;
+    }
+
 }

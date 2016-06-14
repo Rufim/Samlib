@@ -2,6 +2,8 @@ package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
 import android.text.TextUtils;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.stmt.query.In;
 import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,7 +13,7 @@ import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.domain.events.FilterEvent;
+import ru.samlib.client.fragments.FilterDialogListFragment;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.util.SystemUtils;
 
@@ -38,34 +40,56 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     public static final String COMMENT_PREFIX = "/comment";
     public static final String ILLUSTRATION_PREFIX = "/img";
 
+    @DatabaseField(generatedId = true)
+    private Integer id;
+    @DatabaseField
     private String title;
+    @DatabaseField
     private String link;
+    @DatabaseField
     private Author author;
+    @DatabaseField
     private String imageLink;
+    @DatabaseField
     private Integer size;
+    @DatabaseField
     private BigDecimal rate;
+    @DatabaseField
     private Integer kudoed;
+    @DatabaseField
     private BigDecimal expertRate;
+    @DatabaseField
     private Integer expertKudoed;
-    @Setter(AccessLevel.NONE)
+    @DatabaseField
     private List<Genre> genres = new ArrayList<>();
+    @DatabaseField
     private Type type = Type.OTHER;
+    @DatabaseField
     private Category category;
-    @Setter(AccessLevel.NONE)
     private List<String> annotationBlocks = new ArrayList<>();
+    @DatabaseField
     private Date createDate;
+    @DatabaseField
     private Date updateDate;
+    @DatabaseField
     private Date cachedDate;
+    @DatabaseField
     private New state = New.EMPTY;
+    @DatabaseField
     private String description;
+    @DatabaseField
     private boolean hasIllustration = false;
+    @DatabaseField
     private boolean hasComments = false;
+    @DatabaseField
     private boolean parsed = false;
+    @DatabaseField
     private boolean changed = false;
     private CachedResponse cachedResponse;
     private String rawContent = "";
     private List<String> indents = new ArrayList<>();
     private List<Bookmark> autoBookmarks = new ArrayList<>();
+    @DatabaseField
     private String md5;
 
 
@@ -174,12 +198,15 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     @Override
     public boolean find(Object query) {
         String stringQuery;
-        if (query.getClass() == FilterEvent.class) {
-            FilterEvent filterQuery = (FilterEvent) query;
+        if (query.getClass() == FilterDialogListFragment.FilterEvent.class) {
+            FilterDialogListFragment.FilterEvent filterQuery = (FilterDialogListFragment.FilterEvent) query;
             ArrayList<Genre> genres = filterQuery.genres;
             stringQuery = filterQuery.query;
             boolean result = false;
             if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
+                if(stringQuery != null) {
+                    result = true;
+                }
                 if(genres != null) {
                     if (filterQuery.excluding) result = Collections.disjoint(genres, this.genres);
                     else result = genres.containsAll(this.genres);

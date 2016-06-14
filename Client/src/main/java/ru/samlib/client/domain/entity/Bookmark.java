@@ -1,5 +1,6 @@
 package ru.samlib.client.domain.entity;
 
+import com.j256.ormlite.field.DatabaseField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,18 +19,19 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class Bookmark implements Serializable {
+    @DatabaseField(generatedId = true)
+    private Integer id;
+    @DatabaseField
     private String title;
+    @DatabaseField
     private float percent = 0;
+    @DatabaseField
     private int index = 0;
+    @DatabaseField
     private String indent;
-    private List<Bookmark> subBookmarks = new ArrayList<>();
 
     public Bookmark(String title){
         this.title = title;
-    }
-
-    public void addSubBookmark(Bookmark bookmark) {
-        subBookmarks.add(bookmark);
     }
 
     public String toString() {

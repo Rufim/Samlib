@@ -17,7 +17,8 @@ import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;
-import ru.samlib.client.domain.events.FilterEvent;
+import ru.samlib.client.fragments.FilterDialogListFragment;
+
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -80,7 +81,7 @@ public class FilterDialog extends BaseDialog {
         return adb.create();
     }
 
-    public void setState(FilterEvent filterEvent) {
+    public void setState(FilterDialogListFragment.FilterEvent filterEvent) {
         if (filterEvent != null) {
             this.excluding = filterEvent.excluding;
             this.genreList = filterEvent.genres;
@@ -92,7 +93,7 @@ public class FilterDialog extends BaseDialog {
     public void onButtonPositive(DialogInterface dialog) {
         super.onButtonPositive(dialog);
         saveState();
-        postEvent(new FilterEvent(genreList, genderSet, excluding));
+        postEvent(new FilterDialogListFragment.FilterEvent(genreList, genderSet, excluding));
     }
 
     private void saveState() {
@@ -117,7 +118,7 @@ public class FilterDialog extends BaseDialog {
 
     @Override
     public void onButtonNeutral(DialogInterface dialog) {
-        postEvent(new FilterEvent(null, excluding));
+        postEvent(new FilterDialogListFragment.FilterEvent(null, excluding));
     }
 
     private void addToGrid(Genre genre, boolean checked) {

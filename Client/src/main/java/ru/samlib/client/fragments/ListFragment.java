@@ -5,7 +5,6 @@ import android.os.*;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.*;
-import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -13,11 +12,14 @@ import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.Bind;
+import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
+import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.GuiUtils;
+import ru.samlib.client.util.TextUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import java.io.IOException;
@@ -59,8 +61,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected DataTask dataTask;
     protected FilterTask filterTask;
     protected MoveTask moveToIndex;
-    protected String lastSearchQuery;
-    protected Object lastFilterQuery;
+    protected FilterEvent lastSearchQuery;
     protected boolean enableFiltering = false;
     protected long lastFilteringTime = 0;
 
@@ -90,6 +91,10 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
+    protected FilterEvent getNewFilterEvent(String query) {
+        return new FilterEvent(query);
+    }
+
     @Override
     public boolean onQueryTextChange(String query) {
         if (query.isEmpty() && !searchView.isIconified() && searchView.hasFocus()) {
@@ -101,34 +106,33 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        lastSearchQuery = query;
+        if(lastSearchQuery == null) {
+            lastSearchQuery = getNewFilterEvent(query);
+        } else {
+            lastSearchQuery.query = query;
+        }
         if (enableFiltering) {
-            filter(query);
+            filter(lastSearchQuery);
             return true;
         } else {
             return false;
         }
     }
 
-    public void filter(Object obj) {
+    public void filter(FilterEvent filterEvent) {
         adapter.enterFilteringMode();
         if (filterTask == null) {
-            lastFilterQuery = null;
-            filterTask = new FilterTask(obj);
+            lastSearchQuery = null;
+            filterTask = new FilterTask(filterEvent);
             getActivity().runOnUiThread(filterTask);
-        } else {
-            lastFilterQuery = obj;
         }
     }
 
     protected void onSearchViewClose(SearchView searchView) {
         if (searchView != null) {
             if (enableFiltering) {
-                searchView.setOnCloseListener(() -> {
-                    lastSearchQuery = null;
-                    adapter.exitFilteringMode();
-                    return false;
-                });
+                lastSearchQuery = null;
+                adapter.exitFilteringMode();
             }
         }
     }
@@ -477,14 +481,14 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 itemList.scrollToPosition(adapter.getItemCount() - adapter.getItems().size());
                 adapter.filter(query);
                 filterTask = null;
-                if (lastFilterQuery != null) {
+                if (lastSearchQuery != null) {
                     long current = SystemClock.elapsedRealtime();
                     if (current - lastFilteringTime < filteringCooldown) {
                         Handler mainHandler = new Handler(getActivity().getMainLooper());
-                        mainHandler.postDelayed(() -> filter(lastFilterQuery), current - lastFilteringTime);
+                        mainHandler.postDelayed(() -> filter(lastSearchQuery), current - lastFilteringTime);
                     } else {
                         lastFilteringTime = current;
-                        filter(lastFilterQuery);
+                        filter(lastSearchQuery);
                     }
                 } else {
                     loadItems(true);
@@ -493,6 +497,22 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
+    public static class FilterEvent implements Event {
+        public String query;
+
+        public FilterEvent(String query) {
+            this.query = query;
+        }
+
+        public boolean isEmpty() {
+            return TextUtils.isEmpty(query);
+        }
+
+        @Override
+        public String toString() {
+            return query;
+        }
+    }
 }
 
 

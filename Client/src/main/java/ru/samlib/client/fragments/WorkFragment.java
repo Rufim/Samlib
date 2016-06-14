@@ -14,10 +14,8 @@ import android.view.*;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView;
 import com.snappydb.SnappydbException;
 import de.greenrobot.event.EventBus;
-import lombok.Cleanup;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
@@ -303,7 +301,11 @@ public class WorkFragment extends ListFragment<String> {
         }
         Pair<Integer, Integer> index = searched.poll();
         if (index != null) {
-            lastSearchQuery = query;
+            if(lastSearchQuery != null)  {
+                lastSearchQuery.query = query;
+            } else {
+                lastSearchQuery = getNewFilterEvent(query);
+            }
             scrollToIndex(index.first, index.second);
         }
         return true;
@@ -320,7 +322,7 @@ public class WorkFragment extends ListFragment<String> {
             layoutManager.scrollToPosition(index);
         }
         if (Mode.SEARCH == mode) {
-            adapter.selectText(lastSearchQuery, false, colorFoundedText);
+            adapter.selectText(lastSearchQuery.toString(), false, colorFoundedText);
         }
     }
 
@@ -455,10 +457,13 @@ public class WorkFragment extends ListFragment<String> {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
+            HtmlSpanner spanner = new HtmlSpanner();
             switch (holder.getItemViewType()) {
                 case R.layout.header_work_list:
-                    HtmlView htmlView = holder.getView(R.id.work_annotation_header);
-                    htmlView.loadHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold)));
+                    TextView annotationView = holder.getView(R.id.work_annotation_header);
+                    spanner.registerHandler("img", new PicassoImageHandler(annotationView));
+                    spanner.registerHandler("a", new LinkHandler(annotationView));
+                    annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
                     break;
                 case R.layout.item_indent:
                     String indent = getItem(position);
@@ -486,13 +491,12 @@ public class WorkFragment extends ListFragment<String> {
                         }
                         return true;
                     });
-                    HtmlSpanner spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
                     view.setText(spanner.fromHtml(indent));
                     break;
             }
-            selectText(holder, true, WorkFragment.this.lastSearchQuery, colorFoundedText);
+            selectText(holder, true, lastSearchQuery == null ? null : lastSearchQuery.query, colorFoundedText);
         }
 
     }

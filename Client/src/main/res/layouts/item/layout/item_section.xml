@@ -16,7 +16,7 @@
                   android:text="Глава"
                   android:padding="10dp"
                   style="@style/item_text"/>
-        <com.nd.android.sdp.im.common.widget.htmlview.view.HtmlView
+        <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/section_annotation"

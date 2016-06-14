@@ -1,6 +1,7 @@
 package ru.samlib.client.domain;
 
 import org.intellij.lang.annotations.RegExp;
+import ru.samlib.client.BuildConfig;
 
 /**
  * Created by Rufim on 07.01.2015.
@@ -33,10 +34,11 @@ public class Constants {
         public static final String COMMENTS_PAGE = "comments_page";
     }
 
+
     public static class Net {
-        public static final String BASE_SCHEME = "http";
-        public static final String BASE_HOST = "budclub.ru";
-        public static final String BASE_DOMAIN = "http://budclub.ru";
+        public static final String BASE_SCHEME = BuildConfig.BASE_SCHEME;
+        public static final String BASE_HOST = BuildConfig.BASE_HOST;
+        public static final String BASE_DOMAIN = BASE_SCHEME + "://" + BASE_HOST;
         public static final String USER_AGENT = "Mozilla";
     }
 
@@ -47,8 +49,12 @@ public class Constants {
         public static final int DISK_MAX_SIZE = 1024 * 1024 * 50;
     }
 
+
     public static class App {
-        public static final int APP_VERSION = 1;
+        public static final int VERSION = BuildConfig.VERSION_CODE;
+        public static final String VERSION_NAME = BuildConfig.VERSION_NAME;
+        public static final String DATABASE_NAME = BuildConfig.APPLICATION_ID + ".db";
+        public static final int DATABASE_VERSION = 1;
     }
 
     public static class Pattern {

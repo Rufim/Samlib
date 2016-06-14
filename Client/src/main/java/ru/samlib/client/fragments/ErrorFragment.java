@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import com.nd.android.sdp.im.common.widget.htmlview.view.RequestHandler;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;

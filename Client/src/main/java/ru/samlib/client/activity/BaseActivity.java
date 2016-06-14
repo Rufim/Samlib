@@ -29,9 +29,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 import de.greenrobot.event.EventBus;
 import org.jsoup.Connection;
 import ru.samlib.client.R;
+import ru.samlib.client.database.DatabaseHelper;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
@@ -58,6 +60,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Bind(R.id.main_border)
     protected View mainBorder;
 
+    protected DatabaseHelper databaseHelper = null;
     protected ActionBar actionBar;
 
     public interface BackCallback {
@@ -73,7 +76,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         toolbar.setTitle("");
         actionBar = getSupportActionBar();
         navigationView.setNavigationItemSelectedListener(menuItem -> {
-            Snackbar.make(container, menuItem.getTitle() + " pressed", Snackbar.LENGTH_LONG).show();
             if (!menuItem.isChecked()) menuItem.setChecked(true);
             drawerLayout.closeDrawers();
             onNavigationItemSelected(menuItem);
@@ -109,7 +111,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        if(savedInstanceState == null || !savedInstanceState.getBoolean(Constants.ArgsName.CONFIG_CHANGE, false)) {
+        if (!isConfigChange(savedInstanceState)) {
             handleIntent(getIntent());
         }
     }
@@ -132,16 +134,30 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
         EventBus.getDefault().register(this);
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
         EventBus.getDefault().unregister(this);
-        super.onStop();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
+        super.onPause();
     }
+
+
+
+    public DatabaseHelper getDatabaseHelper() {
+        if (databaseHelper == null || !databaseHelper.isOpen()) {
+            databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
+        }
+        return databaseHelper;
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -155,6 +171,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected abstract void handleIntent(Intent intent);
+
+    protected boolean isConfigChange(@Nullable Bundle savedInstanceState) {
+        return savedInstanceState != null && savedInstanceState.getBoolean(Constants.ArgsName.CONFIG_CHANGE, false);
+    }
 
     protected abstract boolean onNavigationItemSelected(MenuItem item);
 
@@ -257,9 +277,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
 
-    // Использовать для основных лейаутов
+    // Использовать при изменении ориентации экрана.
     public <F extends Fragment> void replaceFragment(Class<F> fragmentClass) {
-       replaceFragment(fragmentClass, new FragmentBuilder(getSupportFragmentManager()));
+        replaceFragment(fragmentClass, new FragmentBuilder(getSupportFragmentManager()));
     }
 
     public <F extends Fragment> void replaceFragment(Class<F> fragmentClass, FragmentBuilder builder) {
@@ -280,5 +300,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         builder.replaceFragment(R.id.container, fragment);
         supportInvalidateOptionsMenu();
+    }
+
+
+    public void showSnackbar(@StringRes int message) {
+        GuiUtils.showSnackbar(container, message);
     }
 }

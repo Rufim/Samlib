@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.widget.ProgressBar;
@@ -19,6 +20,7 @@ import android.widget.ProgressBar;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -232,7 +234,7 @@ public class AndroidSystemUtils {
     }
 
     public static void shareText(Context context, String title, String subject,  String text, String mime) {
-        Intent share = new Intent(android.content.Intent.ACTION_SEND);
+        Intent share = new Intent(Intent.ACTION_SEND);
         share.setType(mime);
         share.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
 
@@ -286,30 +288,17 @@ public class AndroidSystemUtils {
         return false;
     }
 
-    public static void memoryUsageReport(Context context) {
-        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        activityManager.getMemoryInfo(mi);
-        long availableMegs = mi.availMem / 1048576L;
-        Log.e(TAG, "available memory " + availableMegs);
-//Percentage can be calculated for API 16+
-        long percentAvail = mi.availMem / mi.totalMem;
-        Log.e(TAG, "available memory percent " + percentAvail);
-    }
+    public static String getDeviceId(Context context) {
+        final TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-    public static void memoryApplicationUsageReport() {
-        long freeSize = 0L;
-        long totalSize = 0L;
-        long usedSize = -1L;
-        try {
-            Runtime info = Runtime.getRuntime();
-            freeSize = info.freeMemory();
-            totalSize = info.totalMemory();
-            usedSize = totalSize - freeSize;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Log.e(TAG, "available memory " + freeSize);
+        final String tmDevice, tmSerial, androidId;
+        tmDevice = "" + tm.getDeviceId();
+        tmSerial = "" + tm.getSimSerialNumber();
+        androidId = "" + android.provider.Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
+        UUID deviceUuid = new UUID(androidId.hashCode(), ((long) tmDevice.hashCode() << 32) | tmSerial.hashCode());
+        String deviceId = deviceUuid.toString();
+        return deviceId;
     }
 
 }

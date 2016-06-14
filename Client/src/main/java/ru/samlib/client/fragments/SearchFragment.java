@@ -17,7 +17,6 @@ import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.net.GoogleSearchClient;
 import ru.samlib.client.parser.SearchParser;
 import ru.samlib.client.util.GuiUtils;
 
@@ -68,7 +67,7 @@ public class SearchFragment extends ListFragment {
         public SearchArrayAdapter() {
             super(R.layout.item_search);
             enterFilteringMode();
-            lastFilterQuery = query;
+            lastSearchQuery = getNewFilterEvent(query);
         }
 
         @Override
