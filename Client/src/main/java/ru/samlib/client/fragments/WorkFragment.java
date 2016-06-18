@@ -124,7 +124,7 @@ public class WorkFragment extends ListFragment<String> {
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll) {
-                    scrollToIndex(bookmark.getIndex());
+                    scrollToIndex(bookmark.getIndentIndex());
                 } else {
                     loadItems(false);
                 }
@@ -161,7 +161,7 @@ public class WorkFragment extends ListFragment<String> {
             if(size > index && index > 0) {
                 String indent = adapter.getItems().get(index);
                 Bookmark bookmark = new Bookmark(indent);
-                bookmark.setIndex(indexLast - 1);
+                bookmark.setIndentIndex(indexLast - 1);
                 snappyHelper.putSavedPosition(bookmark, work);
             }
         } catch (SnappydbException e) {
@@ -327,7 +327,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public void onEvent(ChapterSelectedEvent event) {
-        scrollToIndex(event.bookmark.getIndex());
+        scrollToIndex(event.bookmark.getIndentIndex());
     }
 
     @Override

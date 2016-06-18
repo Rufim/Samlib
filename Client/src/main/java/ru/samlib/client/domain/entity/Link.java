@@ -1,6 +1,6 @@
 package ru.samlib.client.domain.entity;
 
-import lombok.AllArgsConstructor;
+import io.requery.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.samlib.client.domain.Linkable;
@@ -12,13 +12,30 @@ import java.io.Serializable;
  * Created by Rufim on 01.07.2015.
  */
 @NoArgsConstructor
-@AllArgsConstructor
 @Data
+@Entity
 public class Link implements Validatable, Linkable, Serializable {
 
-    protected String title;
-    protected String link;
-    protected String annotation;
+    @Key @Generated
+    Integer id;
+
+    @ForeignKey
+    @OneToOne(mappedBy = "site")
+    Author authorSite;
+
+    @ManyToOne
+    Author author;
+
+
+    String title;
+    String link;
+    String annotation;
+
+    public Link(String title, String link, String annotation) {
+        this.title = title;
+        this.link = link;
+        this.annotation = annotation;
+    }
 
     public Link(String link) {
         this.link = link;

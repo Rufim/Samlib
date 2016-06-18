@@ -1,6 +1,5 @@
 package ru.samlib.client.domain.entity;
 
-import java.util.EnumSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

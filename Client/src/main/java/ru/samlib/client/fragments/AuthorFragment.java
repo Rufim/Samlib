@@ -379,7 +379,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         @Override
         public List<Linkable> getSubItems(Linkable item) {
             if (item.getClass() == Category.class) {
-                return ((Category) item).getLinks();
+                return ((Category) item).getLinkables();
             } else {
                 return null;
             }

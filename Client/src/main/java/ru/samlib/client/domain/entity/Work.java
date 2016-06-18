@@ -2,29 +2,28 @@ package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
 import android.text.TextUtils;
-import com.raizlabs.android.dbflow.annotation.Column;
-import com.raizlabs.android.dbflow.annotation.PrimaryKey;
-import com.raizlabs.android.dbflow.annotation.Table;
-import com.raizlabs.android.dbflow.structure.BaseModel;
-import lombok.*;
+import io.requery.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-import ru.samlib.client.database.AppDatabase;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 import ru.samlib.client.net.CachedResponse;
-import ru.samlib.client.util.SystemUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -34,8 +33,8 @@ import java.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 @ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
-@Table(database = AppDatabase.class)
-public class Work extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
+@Entity
+public class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
@@ -44,61 +43,44 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     public static final String COMMENT_PREFIX = "/comment";
     public static final String ILLUSTRATION_PREFIX = "/img";
 
-    @PrimaryKey(autoincrement = true)
-    private Integer id;
-    @Column
-    private Author author;
-    @Column
-    private String title;
-    @Column
-    private String link;
-    @Column
-    private String imageLink;
-    @Column
-    private Integer size;
-    @Column
-    private BigDecimal rate;
-    @Column
-    private Integer kudoed;
-    @Column
-    private BigDecimal expertRate;
-    @Column
-    private Integer expertKudoed;
-    @Column
-    private List<Genre> genres = new ArrayList<>();
-    @Column
-    private Type type = Type.OTHER;
-    @Column
-    private Category category;
-    @Column
-    private List<String> annotationBlocks = new ArrayList<>();
-    @Column
-    private Date createDate;
-    @Column
-    private Date updateDate;
-    @Column
-    private Date cachedDate;
-    @Column
-    private New state = New.EMPTY;
-    @Column
-    private String description;
-    @Column
-    private boolean hasIllustration = false;
-    @Column
-    private boolean hasComments = false;
-    @Column
-    private boolean parsed = false;
-    @Column
-    private boolean changed = false;
+    @Key @Generated
+    Integer id;
+    String title;
+    String link;
+    @ManyToOne
+    Author author;
+    String imageLink;
+    Integer size;
+    BigDecimal rate;
+    Integer kudoed;
+    BigDecimal expertRate;
+    Integer expertKudoed;
+    List<Genre> genres = new ArrayList<>();
+    Type type = Type.OTHER;
+    @ForeignKey
+    @OneToOne
+    Category category;
+    List<String> annotationBlocks = new ArrayList<>();
+    Date createDate;
+    Date updateDate;
+    Date cachedDate;
+    New state = New.EMPTY;
+    String description;
+    boolean hasIllustration = false;
+    boolean hasComments = false;
+    boolean changed = false;
+    String md5;
 
-
-    private CachedResponse cachedResponse;
-    private String rawContent = "";
-    private List<String> indents = new ArrayList<>();
-    private List<Bookmark> autoBookmarks = new ArrayList<>();
-    @Column
-    private String md5;
-
+    @Transient
+    CachedResponse cachedResponse;
+    @Transient
+    String rawContent = "";
+    @Transient
+    List<String> indents = new ArrayList<>();
+    @Transient
+    List<Bookmark> autoBookmarks = new ArrayList<>();
+    @Transient
+    boolean parsed = false;
 
     public Work(String link) {
         setLink(link);

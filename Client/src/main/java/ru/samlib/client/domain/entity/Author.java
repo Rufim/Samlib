@@ -1,14 +1,11 @@
 package ru.samlib.client.domain.entity;
 
-import android.net.Uri;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.raizlabs.android.dbflow.annotation.Column;
-import com.raizlabs.android.dbflow.annotation.PrimaryKey;
-import com.raizlabs.android.dbflow.annotation.Table;
-import com.raizlabs.android.dbflow.structure.BaseModel;
-import lombok.*;
-import ru.samlib.client.database.AppDatabase;
+import io.requery.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -16,7 +13,9 @@ import ru.samlib.client.util.TextUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Rufim on 22.05.2014.
@@ -24,74 +23,88 @@ import java.util.*;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Table(database = AppDatabase.class)
-public class Author extends BaseModel implements Serializable, Linkable, Validatable, Parsable {
+@Entity
+public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
     private static final String AVATAR = ".photo2.jpg";
 
-    @PrimaryKey(autoincrement = true)
-    private Integer id;
-    @Column
-    private String link;
-    @Column
-    private String fullName;;
-    @Column
-    private String shortName;
-    @Column
-    private String email;
-    @Column
-    private String annotation;
-    @Column
-    private Gender gender;
-    @Column
-    private Date dateBirth;
-    @Column
-    private String address;
-    @Column
-    private Link site;
-    @Column
-    private boolean isNew = false;
-    @Column
-    private boolean hasUpdates = false;
-    @Column
-    private boolean hasAvatar = false;
-    @Column
-    private boolean hasAbout = false;
-    @Column
-    private Date lastUpdateDate;
-    @Column
-    private Integer size;
-    @Column
-    private Integer workCount;
-    @Column
-    private BigDecimal rate;
-    @Column
-    private Integer kudoed;
-    @Column
-    private Integer views;
-    @Column
-    private String about;
-    @Column
-    private String sectionAnnotation;
-    @Column
-    private Integer friends;
-    @Column
-    private Integer friendsOf;
+    @Key @Generated
+    Integer id;
 
+    String link;
+    String fullName;;
+    String shortName;
+    String email;
+    String annotation;
+    Gender gender;
+    Date dateBirth;
+    String address;
+    @OneToOne(mappedBy = "authorSite")
+    Link site;
+    boolean hasAvatar = false;
+    boolean hasAbout = false;
+    boolean hasUpdates = false;
+    boolean isNew;
+    Date lastUpdateDate;
+    Integer size;
+    Integer workCount;
+    BigDecimal rate;
+    Integer kudoed;
+    Integer views;
+    String about;
+    String sectionAnnotation;
+    @OneToMany
+    List<Work> recommendations = new ArrayList<>();
+    @OneToMany
+    List<Category> categories = new ArrayList<>();
+    @OneToMany(mappedBy = "author")
+    List<Link> rootLinks = new ArrayList<>();
+    @OneToMany
+    List<Work> rootWorks = new ArrayList<>();
+    @ManyToMany
+    List<Author> friendList = new ArrayList<>();
+    @ManyToMany
+    List<Author> friendOfList = new ArrayList<>();
+    Integer friends;
+    Integer friendsOf;
 
-    private boolean parsed = false;
+    @Transient
+    boolean parsed = false;
 
-    private List<Work> recommendations = new ArrayList<>();
-    private List<Category> categories = new ArrayList<>();
-    private List<Linkable> rootLinks = new ArrayList<>();
-
-    //TODO:Need to parse, view and make many to many
-    private List<Author> friendList = new ArrayList<>();
-    private List<Author> friendOfList = new ArrayList<>();
-
-    public Author() {};
+    public Author(Author other) {
+        this.id = other.id;
+        this.link = other.link;
+        this.fullName = other.fullName;
+        this.shortName = other.shortName;
+        this.email = other.email;
+        this.annotation = other.annotation;
+        this.gender = other.gender;
+        this.dateBirth = other.dateBirth;
+        this.address = other.address;
+        this.site = other.site;
+        this.hasAvatar = other.hasAvatar;
+        this.hasAbout = other.hasAbout;
+        this.lastUpdateDate = other.lastUpdateDate;
+        this.size = other.size;
+        this.workCount = other.workCount;
+        this.rate = other.rate;
+        this.kudoed = other.kudoed;
+        this.views = other.views;
+        this.about = other.about;
+        this.sectionAnnotation = other.sectionAnnotation;
+        this.recommendations = other.recommendations;
+        this.isNew = other.isNew;
+        this.categories = other.categories;
+        this.rootLinks = other.rootLinks;
+        this.rootWorks = other.rootWorks;
+        this.friendList = other.friendList;
+        this.friendOfList = other.friendOfList;
+        this.friends = other.friends;
+        this.friendsOf = other.friendsOf;
+        this.parsed = other.parsed;
+    }
 
     public Author(String link) {
         setLink(link);
@@ -186,7 +199,12 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
 
 
     public void addRootLink(Linkable linkable) {
-        this.rootLinks.add(linkable);
+        if(linkable instanceof Work) {
+            this.rootWorks.add((Work) linkable);
+        }
+        if(linkable instanceof Link) {
+            this.rootLinks.add((Link) linkable);
+        }
     }
 
 

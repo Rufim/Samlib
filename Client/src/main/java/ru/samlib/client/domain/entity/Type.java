@@ -1,17 +1,12 @@
 package ru.samlib.client.domain.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.util.SystemUtils;
 import ru.samlib.client.util.TextUtils;
-
-import java.util.Collection;
 
 /**
  * Created by Rufim on 02.07.2015.
  */
-@AllArgsConstructor
 public enum Type implements Linkable {
 
     NOVEL("Роман", "/type/index_type_1-1.shtml"),
@@ -36,6 +31,11 @@ public enum Type implements Linkable {
 
     private @Getter String title;
     private @Getter String link;
+
+    Type(String title, String link) {
+        this.title = title;
+        this.link = link;
+    }
 
     public static Type parseType(String type) {
         if (type != null && !type.isEmpty()) {

@@ -223,8 +223,8 @@ public class WorkParser extends Parser {
                 String text = JsoupUtils.cleanHtml(indents.get(i));
                 if (pattern.matcher(TextUtils.trim(text)).find()) {
                     Bookmark newBookmark = new Bookmark(text);
-                    newBookmark.setPercent(((float) i) / indents.size());
-                    newBookmark.setIndex(i);
+                    newBookmark.setPercent(((double) i) / indents.size());
+                    newBookmark.setIndentIndex(i);
                     bookmarks.add(newBookmark);
                 }
             }

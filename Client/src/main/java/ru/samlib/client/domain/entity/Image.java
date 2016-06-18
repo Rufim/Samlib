@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.util.TextUtils;
 
 import java.io.Serializable;
 

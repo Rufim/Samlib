@@ -1,16 +1,14 @@
 package ru.samlib.client.domain.entity;
 
-import com.j256.ormlite.field.DatabaseField;
+import io.requery.Entity;
+import io.requery.Generated;
+import io.requery.Key;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by 0shad on 23.07.2015.
@@ -18,17 +16,14 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
+@Entity
 public class Bookmark implements Serializable {
-    @DatabaseField(generatedId = true)
-    private Integer id;
-    @DatabaseField
-    private String title;
-    @DatabaseField
-    private float percent = 0;
-    @DatabaseField
-    private int index = 0;
-    @DatabaseField
-    private String indent;
+    @Key @Generated
+    Integer id;
+    String title;
+    Double percent = 0d;
+    Integer indentIndex = 0;
+    String indent;
 
     public Bookmark(String title){
         this.title = title;

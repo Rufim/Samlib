@@ -1,20 +1,12 @@
 package ru.samlib.client.domain.entity;
 
-import android.widget.TextView;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.util.SystemUtils;
 import ru.samlib.client.util.TextUtils;
-
-import java.util.Timer;
 
 /**
  * Created by Rufim on 22.05.2014.
  */
-@AllArgsConstructor
 public enum Genre implements Linkable {
     PROSE("Проза", "/janr/index_janr_5"),
     POETRY("Поэзия", "/janr/index_janr_4"),
@@ -54,6 +46,11 @@ public enum Genre implements Linkable {
 
     private @Getter String title;
     private @Getter String link;
+
+    Genre(String title, String link) {
+        this.title = title;
+        this.link = link;
+    }
 
     public static Genre parseGenre(String genre) {
         if (genre != null && !genre.isEmpty()) {

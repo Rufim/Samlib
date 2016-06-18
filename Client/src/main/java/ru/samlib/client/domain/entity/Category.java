@@ -1,8 +1,13 @@
 package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
-import android.text.TextUtils;
-import lombok.*;
+import io.requery.Entity;
+import io.requery.Generated;
+import io.requery.Key;
+import io.requery.ManyToOne;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.samlib.client.domain.Linkable;
@@ -18,25 +23,35 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
+@Entity
 public class Category implements Linkable, Serializable, Parsable {
 
     private static final long serialVersionUID = 6549621729790810154L;
 
-    private String title;
-    private String annotation;
-    private Author author;
-    private Type type = Type.OTHER;
-    @Setter(AccessLevel.NONE)
-    private List<Linkable> links = new ArrayList<>();
-    private String link;
-    private boolean parsed = false;
+    @Key @Generated
+    Integer id;
+
+    String title;
+    String annotation;
+    @ManyToOne
+    Author author;
+    Type type = Type.OTHER;
+    List<Work> works = new ArrayList<>();
+    List<Link> links = new ArrayList<>();
+    String link;
+    boolean parsed = false;
 
     public String getLink() {
         return link != null ? author.getLink() + "/" + link : null;
     }
 
-    public void addLink(Linkable link) {
-        this.links.add(link);
+    public void addLink(Linkable linkable) {
+        if(linkable instanceof Work) {
+            this.works.add((Work) linkable);
+        }
+        if(linkable instanceof Link) {
+            this.links.add((Link) linkable);
+        }
     }
 
     public Linkable getLinkable() {
@@ -47,6 +62,13 @@ public class Category implements Linkable, Serializable, Parsable {
             return type;
         }
     }
+
+     public List<Linkable> getLinkables()  {
+         List<Linkable> linkables = new ArrayList<>();
+         linkables.addAll(works);
+         linkables.addAll(links);
+         return linkables;
+     }
 
     public void setParsed(boolean parsed) {
         if (link != null) {

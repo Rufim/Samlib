@@ -1,6 +1,5 @@
 package ru.samlib.client.domain.entity;
 
-import ru.samlib.client.util.SystemUtils;
 import ru.samlib.client.util.TextUtils;
 
 /**
