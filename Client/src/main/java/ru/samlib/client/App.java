@@ -2,7 +2,6 @@ package ru.samlib.client;
 
 import android.app.Application;
 
-import io.requery.EntityStore;
 import io.requery.Persistable;
 import io.requery.android.DefaultMapping;
 import io.requery.android.sqlite.DatabaseSource;
@@ -21,14 +20,14 @@ import java.math.BigDecimal;
 /**
  * Created by Rufim on 03.07.2015.
  */
-public class SamlibApplication extends Application {
+public class App extends Application {
 
-    private static SamlibApplication singleton;
+    private static App singleton;
 
     private SingleEntityStore<Persistable> rxDataStore;
     private EntityDataStore<Persistable> dataStore;
 
-    public static SamlibApplication getInstance() {
+    public static App getInstance() {
         return singleton;
     }
 
@@ -47,13 +46,14 @@ public class SamlibApplication extends Application {
         super.onLowMemory();
     }
 
-    public EntityDataStore<Persistable> getData() {
+    public EntityDataStore<Persistable> getDataStore() {
         if (dataStore == null) {
             // override onUpgrade to handle migrating to a new version
             DatabaseSource source = new DatabaseSource(this, Models.DEFAULT, 1);
             if (BuildConfig.DEBUG) {
                 // use this in development mode to drop and recreate the tables on every upgrade
                 source.setTableCreationMode(TableCreationMode.DROP_CREATE);
+                source.setLoggingEnabled(true);
             }
 
             Configuration configuration = source.getConfiguration();
@@ -67,6 +67,7 @@ public class SamlibApplication extends Application {
     }
 
     public SingleEntityStore<Persistable> getRxDataStore() {
+        getDataStore();
         return rxDataStore;
     }
 }

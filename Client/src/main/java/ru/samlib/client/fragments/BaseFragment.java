@@ -10,16 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
+import io.requery.Persistable;
+import io.requery.sql.EntityDataStore;
 import ru.samlib.client.R;
+import ru.samlib.client.App;
 import ru.samlib.client.activity.BaseActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.util.FragmentBuilder;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -66,6 +65,10 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
         setRetainInstance(retainInstance);
     }
 
+
+    public EntityDataStore<Persistable>  getDataStore() {
+         return App.getInstance().getDataStore();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

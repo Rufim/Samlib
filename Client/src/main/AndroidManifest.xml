@@ -15,7 +15,7 @@
         android:icon="@drawable/ico"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:name=".SamlibApplication">
+        android:name=".App">
         <provider android:name=".database.SuggestionProvider"
                   android:authorities="ru.samlib.client.database.SuggestionProvider"/>
 

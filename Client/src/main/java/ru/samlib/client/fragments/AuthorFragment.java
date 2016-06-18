@@ -20,7 +20,7 @@ import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
-import ru.samlib.client.SamlibApplication;
+import ru.samlib.client.App;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Linkable;
@@ -78,7 +78,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     author = new AuthorParser(author).parse();
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
-                    EntityDataStore<Persistable> dataStore = SamlibApplication.getInstance().getData();
+                    EntityDataStore<Persistable> dataStore = App.getInstance().getDataStore();
                     AuthorEntity authorEntity = dataStore.select(AuthorEntity.class).where(AuthorEntity.LINK.eq(author.getLink())).get().firstOrNull();
                     if (authorEntity != null) {
                         author.setId(authorEntity.getId());
@@ -110,7 +110,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        EntityDataStore<Persistable> dataStore = SamlibApplication.getInstance().getData();
+        EntityDataStore<Persistable> dataStore = App.getInstance().getDataStore();
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if(!item.isChecked()) {

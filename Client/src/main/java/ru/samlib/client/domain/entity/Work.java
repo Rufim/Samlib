@@ -69,6 +69,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean changed = false;
+    long contentLength;
     String md5;
 
     @Transient
@@ -84,6 +85,38 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
     public Work(String link) {
         setLink(link);
+    }
+
+    public Work(Work other) {
+        this.id = other.id;
+        this.title = other.title;
+        this.link = other.link;
+        this.author = other.author;
+        this.imageLink = other.imageLink;
+        this.size = other.size;
+        this.rate = other.rate;
+        this.kudoed = other.kudoed;
+        this.expertRate = other.expertRate;
+        this.expertKudoed = other.expertKudoed;
+        this.genres = other.genres;
+        this.type = other.type;
+        this.category = other.category;
+        this.annotationBlocks = other.annotationBlocks;
+        this.createDate = other.createDate;
+        this.updateDate = other.updateDate;
+        this.cachedDate = other.cachedDate;
+        this.state = other.state;
+        this.description = other.description;
+        this.hasIllustration = other.hasIllustration;
+        this.hasComments = other.hasComments;
+        this.changed = other.changed;
+        this.contentLength = other.contentLength;
+        this.md5 = other.md5;
+        this.cachedResponse = other.cachedResponse;
+        this.rawContent = other.rawContent;
+        this.indents = other.indents;
+        this.autoBookmarks = other.autoBookmarks;
+        this.parsed = other.parsed;
     }
 
     public void setLink(String link) {

@@ -9,7 +9,7 @@ import com.annimon.stream.Stream;
 import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.R;
-import ru.samlib.client.SamlibApplication;
+import ru.samlib.client.App;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
@@ -18,7 +18,6 @@ import ru.samlib.client.lister.DataSource;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,7 +37,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         return new DataSource<AuthorEntity>() {
             @Override
             public List<AuthorEntity> getItems(int skip, int size) throws IOException {
-                EntityDataStore<Persistable> dataStore = SamlibApplication.getInstance().getData();
+                EntityDataStore<Persistable> dataStore = getDataStore();
                 return Stream.of(dataStore.select(AuthorEntity.class).get().toList()).skip(skip).limit(size).collect(Collectors.toList());
             }
         };

@@ -1,6 +1,7 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
+import com.annimon.stream.Stream;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -97,7 +98,9 @@ public class AuthorParser extends Parser {
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);
                         work.setAuthor(author);
-                        author.addRecommendation(work);
+                        if(!author.getRecommendations().contains(author)) {
+                            author.addRecommendation(work);
+                        }
                     }
                 }
             }

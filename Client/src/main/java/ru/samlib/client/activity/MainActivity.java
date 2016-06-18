@@ -77,6 +77,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.drawer_observable:
                 replaceFragment(title, ObservableFragment.class);
+                break;
             default:
                 replaceFragment(title, BaseFragment.class);
                 break;
