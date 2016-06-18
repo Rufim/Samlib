@@ -21,6 +21,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     protected final int firstIsHeader;
 
     public MultiItemListAdapter(boolean firstIsHeader, @LayoutRes int... layoutIds) {
+        super(-1);
         this.layoutIds = layoutIds;
         this.firstIsHeader = firstIsHeader ? 1 : 0;
     }

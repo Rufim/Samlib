@@ -3,6 +3,8 @@ package ru.samlib.client;
 import android.app.Application;
 import android.content.res.Configuration;
 
+import com.raizlabs.android.dbflow.config.FlowConfig;
+import com.raizlabs.android.dbflow.config.FlowManager;
 import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.Constants;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -21,6 +23,7 @@ public class SamlibApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        FlowManager.init(new FlowConfig.Builder(this).build());
         singleton = this;
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)

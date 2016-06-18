@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.util.GuiUtils;
@@ -24,11 +25,6 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     protected Object lastQuery;
     protected boolean bindViews = true;
     protected boolean bindClicks = true;
-
-    // Adapter's Constructor
-    protected ItemListAdapter() {
-        this.layoutId = -1;
-    }
 
     // Adapter's Constructor
     public ItemListAdapter(@LayoutRes int layoutId) {
@@ -276,8 +272,6 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         private static final String TAG = ViewHolder.class.getSimpleName();
 
         protected HashMap<Integer, View> views;
-        protected View rootView;
-
         /**
          * Constructor
          *
@@ -290,7 +284,6 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
 
         private void cacheViews(View itemView) {
             List<View> views = getViews(itemView);
-            rootView = itemView;
             this.views = new HashMap<>(views.size());
             for (View view : views) {
                 this.views.put(view.getId(), view);
@@ -303,22 +296,23 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         public void onCreateHolder(View itemView) {
         }
 
-        protected ViewHolder bindViews(ItemListAdapter adapter, boolean bindClicks) {
+        protected <C extends View.OnClickListener & View.OnLongClickListener> ViewHolder bindViews(C clickable, boolean bindClicks) {
             for (Map.Entry<Integer, View> viewEntry : views.entrySet()) {
-                if(viewEntry != rootView) {
+                if(viewEntry != itemView) {
                     View view = viewEntry.getValue();
                     if(bindClicks) {
-                        view.setOnClickListener(adapter);
-                        view.setOnLongClickListener(adapter);
+                        if(view instanceof AdapterView) {
+                            AdapterView adapterView = (AdapterView) view;
+                            // TODO: bind adapter
+                        }  else {
+                            view.setOnClickListener(clickable);
+                            view.setOnLongClickListener(clickable);
+                        }
                     }
                     view.setTag(ViewHolder.this);
                 }
             }
             return this;
-        }
-
-        public View getRootView() {
-            return rootView;
         }
 
         public <V extends View> V getView(int id) {

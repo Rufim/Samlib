@@ -25,7 +25,7 @@ public class TopAuthorsParser extends PageListParser {
         Author author = new Author();
         int j = 0;
         if (rowItems.size() > 3) {
-            author.setIsNew(rowItems.get(j++).text().equals("New"));
+            author.setNew(rowItems.get(j++).text().equals("New"));
         }
         String peopleViews = rowItems.get(j++).select("b").text();
         author.setViews(Integer.parseInt(peopleViews));

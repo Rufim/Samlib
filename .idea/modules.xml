@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/Samlib.iml" filepath="$PROJECT_DIR$/Samlib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/htmlview/htmlview.iml" filepath="$PROJECT_DIR$/htmlview/htmlview.iml" />
     </modules>
   </component>
 </project>

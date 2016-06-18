@@ -32,12 +32,18 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import ru.samlib.client.R;
 
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static android.R.attr.textColor;
 
 /**
  * Created with IntelliJ IDEA.
@@ -47,6 +53,18 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class GuiUtils {
+
+    private static String thousandSeparator;
+    private static String decimalSeparator;
+
+
+    public static void setThousandSeparator(String thousandSeparator) {
+        GuiUtils.thousandSeparator = thousandSeparator;
+    }
+
+    public static void setDecimalSeparator(String decimalSeparator) {
+        GuiUtils.decimalSeparator = decimalSeparator;
+    }
 
     public static class EmptyTextException extends Exception {
         static final String MESSAGE = "TextView do not contains string";
@@ -553,7 +571,7 @@ public class GuiUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             defaultBackgroundResource = android.R.attr.colorPrimary;
         }
-        showSnackbar(viewContainer, message, GuiUtils.getThemeColor(viewContainer.getContext(), defaultBackgroundResource), GuiUtils.getThemeColor(viewContainer.getContext(), android.R.attr.textColor));
+        showSnackbar(viewContainer, message, GuiUtils.getThemeColor(viewContainer.getContext(), defaultBackgroundResource), GuiUtils.getThemeColor(viewContainer.getContext(), textColor));
     }
 
     public static String getText(TextView textView) throws EmptyTextException {
@@ -583,26 +601,48 @@ public class GuiUtils {
         }
     }
 
-    public static void setText(View textView, @StringRes int format, Object... args) {
+    public static String setText(View textView, @StringRes int format, Object... args) {
+        return setText(textView, Locale.getDefault(), format, args);
+    }
+
+    public static String setText(View textView, Locale locale, @StringRes int format, Object... args) {
         if (textView != null) {
             if (args != null) {
                 if (textView instanceof TextView) {
-                    ((TextView) textView).setText(String.format(textView.getContext().getString(format), args));
+                    String formatted  = String.format(locale, textView.getContext().getString(format), args);
+                    DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+                    if(decimalSeparator != null) {
+                        formatted = formatted.replace(String.valueOf(symbols.getDecimalSeparator()), decimalSeparator);
+                    }
+                    if(thousandSeparator != null) {
+                        Pattern pattern = Pattern.compile("\\d{3}(?=\\d)");
+                        Matcher digitsMatcher = pattern.matcher(formatted);
+                        StringBuffer buffer = new StringBuffer();
+                        while (digitsMatcher.find()) {
+                            digitsMatcher.appendReplacement(buffer, digitsMatcher.group() + thousandSeparator);
+                        }
+                        digitsMatcher.appendTail(buffer);
+                        formatted = buffer.toString();
+                    }
+                    ((TextView) textView).setText(formatted);
+                    return formatted;
                 }
             }
         }
+        return null;
     }
 
-    public static void setText(View textView, @StringRes int format, Object arg) {
+    public static String setText(ViewGroup root, @IdRes int textViewId, @StringRes int format, Object... args) {
+        TextView textView = getView(root, textViewId);
         if (textView != null) {
-            if (arg != null) {
-                if (textView instanceof TextView) {
-                    ((TextView) textView).setText(String.format(textView.getContext().getString(format), arg));
-                }
-            }
+            return setText(textView, format, args);
         }
+        return null;
     }
 
+    public static String setText(ViewGroup root, @IdRes int textViewId, @StringRes int format, Object arg) {
+        return setText(root, textViewId, format, new Object[] {arg});
+    }
 
     public static void setVisibility(int code, View... views) {
         for (View view : views) {
@@ -611,8 +651,10 @@ public class GuiUtils {
     }
 
     public static void setTextOrHide(View textView, CharSequence text, View... views) {
-        if (views.length == 0) {
+        if (views == null || views.length == 0) {
             views = new View[]{textView};
+        } else {
+            views = SystemUtils.concat(new View[]{textView}, views);
         }
         if (textView != null) {
             if (!TextUtils.isEmpty(text)) {
@@ -639,14 +681,14 @@ public class GuiUtils {
     }
 
     public static StateListDrawable createStateList(int[][] stateSet, int[] colors) {
-        StateListDrawable stateListDrawable= new StateListDrawable();
+        StateListDrawable stateListDrawable = new StateListDrawable();
         for (int i = 0; i < colors.length && i < stateSet.length; i++) {
             addStateToStateList(stateListDrawable, colors[i], stateSet[i]);
         }
         return stateListDrawable;
     }
 
-    public static void addStateToStateList(StateListDrawable stateListDrawable, int color, int [] stateSet) {
+    public static void addStateToStateList(StateListDrawable stateListDrawable, int color, int[] stateSet) {
         Rect rect = new Rect(0, 0, 1, 1);
 
         Bitmap bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888);
@@ -668,6 +710,11 @@ public class GuiUtils {
     public static SpannableStringBuilder coloredText(Context context, CharSequence text, int from, int to, @ColorRes int colorRes) {
         int color = context.getResources().getColor(colorRes);
         return spannableText(text, new ForegroundColorSpan(color), from, to);
+    }
+
+    public static void colorText(TextView textView, int from, int to, @ColorRes int colorRes) {
+        int color = textView.getContext().getResources().getColor(colorRes);
+        textView.setText(spannableText(textView.getText().toString(), new ForegroundColorSpan(color), from, to));
     }
 
     public static SpannableStringBuilder spannableText(CharSequence text, ParcelableSpan span, int from, int to) {

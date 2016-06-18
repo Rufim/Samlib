@@ -29,11 +29,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import com.j256.ormlite.android.apptools.OpenHelperManager;
 import de.greenrobot.event.EventBus;
 import org.jsoup.Connection;
 import ru.samlib.client.R;
-import ru.samlib.client.database.DatabaseHelper;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
@@ -45,7 +43,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 /**
  * Created by 0shad on 11.07.2015.
  */
-public abstract class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener {
 
     @Bind(R.id.container)
     protected FrameLayout container;
@@ -60,8 +58,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Bind(R.id.main_border)
     protected View mainBorder;
 
-    protected DatabaseHelper databaseHelper = null;
     protected ActionBar actionBar;
+    protected ActionBarDrawerToggle actionBarDrawerToggle;
 
     public interface BackCallback {
         boolean allowBackPress();
@@ -81,11 +79,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             onNavigationItemSelected(menuItem);
             return true;
         });
-        if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(null);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close) {
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
             @Override
             public void onDrawerClosed(View drawerView) {
                 // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
@@ -99,13 +93,14 @@ public abstract class BaseActivity extends AppCompatActivity {
                 super.onDrawerOpened(drawerView);
                 BaseActivity.this.onDrawerOpened(drawerView);
             }
-        };
 
+        };
+        //Listen for changes in the back stack
+        getSupportFragmentManager().addOnBackStackChangedListener(this);
+        //Handle when activity is recreated like on orientation Change
         //Setting the actionbarToggle to drawer layout
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
-
-        //calling sync state is necessay or else your hamburger icon wont show up
-        actionBarDrawerToggle.syncState();
+        shouldDisplayHomeUp();
     }
 
     @Override
@@ -115,6 +110,13 @@ public abstract class BaseActivity extends AppCompatActivity {
             handleIntent(getIntent());
         }
     }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        actionBarDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -134,29 +136,17 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         EventBus.getDefault().register(this);
     }
 
     @Override
-    public void onPause() {
+    protected void onStop() {
         EventBus.getDefault().unregister(this);
-        if (databaseHelper != null) {
-            OpenHelperManager.releaseHelper();
-            databaseHelper = null;
-        }
-        super.onPause();
+        super.onStop();
     }
 
-
-
-    public DatabaseHelper getDatabaseHelper() {
-        if (databaseHelper == null || !databaseHelper.isOpen()) {
-            databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
-        }
-        return databaseHelper;
-    }
 
 
     @Override
@@ -228,8 +218,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
 
         if (id == android.R.id.home) {
-            drawerLayout.openDrawer(GravityCompat.START);
-            return true;
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                onBackPressed();
+                return true;
+            }
+            if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -305,5 +300,31 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public void showSnackbar(@StringRes int message) {
         GuiUtils.showSnackbar(container, message);
+    }
+
+    @Override
+    public void onBackStackChanged() {
+        shouldDisplayHomeUp();
+    }
+
+    public void shouldDisplayHomeUp() {
+        //Enable Up button only  if there are entries in the back stack
+        if (actionBar != null) {
+            boolean canback = getSupportFragmentManager().getBackStackEntryCount() > 0;
+            if (canback) {
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_action_navigation_arrow_back);
+            } else {
+                actionBar.setHomeAsUpIndicator(null);
+                actionBarDrawerToggle.syncState();
+            }
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        //This method is called when the up button is pressed. Just the pop back stack.
+        getSupportFragmentManager().popBackStack();
+        return true;
     }
 }

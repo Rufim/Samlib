@@ -3,10 +3,16 @@ package ru.samlib.client.domain.entity;
 import android.net.Uri;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.*;
+import ru.samlib.client.database.AppDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
+import ru.samlib.client.util.TextUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,45 +24,74 @@ import java.util.*;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class Author implements Serializable, Linkable, Validatable, Parsable {
+@Table(database = AppDatabase.class)
+public class Author extends BaseModel implements Serializable, Linkable, Validatable, Parsable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
     private static final String AVATAR = ".photo2.jpg";
 
+    @PrimaryKey(autoincrement = true)
+    private Integer id;
+    @Column
     private String link;
+    @Column
     private String fullName;;
+    @Column
     private String shortName;
+    @Column
     private String email;
+    @Column
     private String annotation;
+    @Column
     private Gender gender;
+    @Column
     private Date dateBirth;
+    @Column
     private String address;
+    @Column
     private Link site;
+    @Column
+    private boolean isNew = false;
+    @Column
+    private boolean hasUpdates = false;
+    @Column
     private boolean hasAvatar = false;
+    @Column
     private boolean hasAbout = false;
-    private boolean parsed = false;
+    @Column
     private Date lastUpdateDate;
+    @Column
     private Integer size;
+    @Column
     private Integer workCount;
+    @Column
     private BigDecimal rate;
+    @Column
     private Integer kudoed;
+    @Column
     private Integer views;
+    @Column
     private String about;
+    @Column
     private String sectionAnnotation;
-    @Setter(AccessLevel.NONE)
-    private List<Work> recommendations = new ArrayList<>();
-    private Boolean isNew;
-    @Setter(AccessLevel.NONE)
-    private List<Category> categories = new ArrayList<>();
-    @Setter(AccessLevel.NONE)
-    private List<Linkable> rootLinks = new ArrayList<>();
-    @Setter(AccessLevel.NONE)
-    private List<Author> friendList = new ArrayList<>();
-    @Setter(AccessLevel.NONE)
-    private List<Author> friendOfList = new ArrayList<>();
+    @Column
     private Integer friends;
+    @Column
     private Integer friendsOf;
+
+
+    private boolean parsed = false;
+
+    private List<Work> recommendations = new ArrayList<>();
+    private List<Category> categories = new ArrayList<>();
+    private List<Linkable> rootLinks = new ArrayList<>();
+
+    //TODO:Need to parse, view and make many to many
+    private List<Author> friendList = new ArrayList<>();
+    private List<Author> friendOfList = new ArrayList<>();
+
+    public Author() {};
 
     public Author(String link) {
         setLink(link);
@@ -64,7 +99,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     public void setLink(String link) {
         if (link == null) return;
-        link = ru.samlib.client.util.TextUtils.eraseHost(link);
+        link = TextUtils.eraseHost(link);
         if (link.contains("/")) {
             if(link.startsWith(Work.COMMENT_PREFIX)) {
                 link = link.replace(Work.COMMENT_PREFIX, "");

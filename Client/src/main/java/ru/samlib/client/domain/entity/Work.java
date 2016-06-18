@@ -2,13 +2,16 @@ package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
 import android.text.TextUtils;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.stmt.query.In;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
+import ru.samlib.client.database.AppDatabase;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
@@ -31,7 +34,8 @@ import java.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 @ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
-public class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
+@Table(database = AppDatabase.class)
+public class Work extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
@@ -40,56 +44,59 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     public static final String COMMENT_PREFIX = "/comment";
     public static final String ILLUSTRATION_PREFIX = "/img";
 
-    @DatabaseField(generatedId = true)
+    @PrimaryKey(autoincrement = true)
     private Integer id;
-    @DatabaseField
-    private String title;
-    @DatabaseField
-    private String link;
-    @DatabaseField
+    @Column
     private Author author;
-    @DatabaseField
+    @Column
+    private String title;
+    @Column
+    private String link;
+    @Column
     private String imageLink;
-    @DatabaseField
+    @Column
     private Integer size;
-    @DatabaseField
+    @Column
     private BigDecimal rate;
-    @DatabaseField
+    @Column
     private Integer kudoed;
-    @DatabaseField
+    @Column
     private BigDecimal expertRate;
-    @DatabaseField
+    @Column
     private Integer expertKudoed;
-    @DatabaseField
+    @Column
     private List<Genre> genres = new ArrayList<>();
-    @DatabaseField
+    @Column
     private Type type = Type.OTHER;
-    @DatabaseField
+    @Column
     private Category category;
+    @Column
     private List<String> annotationBlocks = new ArrayList<>();
-    @DatabaseField
+    @Column
     private Date createDate;
-    @DatabaseField
+    @Column
     private Date updateDate;
-    @DatabaseField
+    @Column
     private Date cachedDate;
-    @DatabaseField
+    @Column
     private New state = New.EMPTY;
-    @DatabaseField
+    @Column
     private String description;
-    @DatabaseField
+    @Column
     private boolean hasIllustration = false;
-    @DatabaseField
+    @Column
     private boolean hasComments = false;
-    @DatabaseField
+    @Column
     private boolean parsed = false;
-    @DatabaseField
+    @Column
     private boolean changed = false;
+
+
     private CachedResponse cachedResponse;
     private String rawContent = "";
     private List<String> indents = new ArrayList<>();
     private List<Bookmark> autoBookmarks = new ArrayList<>();
-    @DatabaseField
+    @Column
     private String md5;
 
 
