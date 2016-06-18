@@ -32,7 +32,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     @Key @Generated
     Integer id;
-
     String link;
     String fullName;;
     String shortName;
@@ -46,7 +45,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     boolean hasAvatar = false;
     boolean hasAbout = false;
     boolean hasUpdates = false;
-    boolean isNew;
+    boolean isNew = false;
     Date lastUpdateDate;
     Integer size;
     Integer workCount;
@@ -86,6 +85,8 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
         this.site = other.site;
         this.hasAvatar = other.hasAvatar;
         this.hasAbout = other.hasAbout;
+        this.hasUpdates = other.hasUpdates;
+        this.isNew = other.isNew;
         this.lastUpdateDate = other.lastUpdateDate;
         this.size = other.size;
         this.workCount = other.workCount;
@@ -95,7 +96,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
         this.about = other.about;
         this.sectionAnnotation = other.sectionAnnotation;
         this.recommendations = other.recommendations;
-        this.isNew = other.isNew;
         this.categories = other.categories;
         this.rootLinks = other.rootLinks;
         this.rootWorks = other.rootWorks;

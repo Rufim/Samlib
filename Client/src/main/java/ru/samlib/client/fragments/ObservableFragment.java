@@ -4,12 +4,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
 import android.widget.TextView;
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+import io.requery.Persistable;
+import io.requery.sql.EntityDataStore;
 import ru.samlib.client.R;
+import ru.samlib.client.SamlibApplication;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.parser.TopAuthorsParser;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -19,21 +24,22 @@ import java.util.List;
 /**
  * Created by 0shad on 16.06.2016.
  */
-public class FavoritesFragment extends ListFragment<Author>{
+public class ObservableFragment extends ListFragment<AuthorEntity>{
 
 
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
-    public static FavoritesFragment newInstance() {
-        return newInstance(FavoritesFragment.class);
+    public static ObservableFragment newInstance() {
+        return newInstance(ObservableFragment.class);
     }
 
     @Override
-    protected DataSource<Author> getDataSource() throws Exception {
-        return new DataSource<Author>() {
+    protected DataSource<AuthorEntity> getDataSource() throws Exception {
+        return new DataSource<AuthorEntity>() {
             @Override
-            public List<Author> getItems(int skip, int size) throws IOException {
-                return new ArrayList<>();
+            public List<AuthorEntity> getItems(int skip, int size) throws IOException {
+                EntityDataStore<Persistable> dataStore = SamlibApplication.getInstance().getData();
+                return Stream.of(dataStore.select(AuthorEntity.class).get().toList()).skip(skip).limit(size).collect(Collectors.toList());
             }
         };
     }

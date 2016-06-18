@@ -6,29 +6,25 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IdRes;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
-import android.text.Html;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import de.greenrobot.event.EventBus;
+import io.requery.Persistable;
+import io.requery.sql.EntityDataStore;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
+import ru.samlib.client.SamlibApplication;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.domain.entity.Category;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.parser.CategoryParser;
@@ -54,7 +50,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private Author author;
     private Category category;
-
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
         show(builder, container, AuthorFragment.class, Constants.ArgsName.LINK, link);
@@ -83,6 +78,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     author = new AuthorParser(author).parse();
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
+                    EntityDataStore<Persistable> dataStore = SamlibApplication.getInstance().getData();
+                    AuthorEntity authorEntity = dataStore.select(AuthorEntity.class).where(AuthorEntity.LINK.eq(author.getLink())).get().firstOrNull();
+                    if (authorEntity != null) {
+                        author.setId(authorEntity.getId());
+                        author = dataStore.update(new AuthorEntity(author));
+                    }
+                    getActivity().invalidateOptionsMenu();
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
@@ -93,6 +95,35 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     .limit(size)
                     .collect(Collectors.toList());
         });
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.author, menu);
+        MenuItem item = menu.findItem(R.id.action_author_observable);
+        if(author instanceof AuthorEntity) {
+            item.setChecked(true);
+        } else {
+            item.setChecked(false);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        EntityDataStore<Persistable> dataStore = SamlibApplication.getInstance().getData();
+        switch (item.getItemId()) {
+            case R.id.action_author_observable:
+                if(!item.isChecked()) {
+                    dataStore.insert(new AuthorEntity(author));
+                    item.setChecked(true);
+                    return true;
+                } else {
+                    dataStore.delete((AuthorEntity) author);
+                    item.setChecked(false);
+                    return true;
+                }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -156,6 +187,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
+        setHasOptionsMenu(true);
         if (incomingAuthor != null) {
             if (!incomingAuthor.equals(author)) {
                 author = incomingAuthor;

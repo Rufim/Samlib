@@ -6,7 +6,7 @@
               android:title="@string/drawer_new"/>
         <item android:id="@+id/drawer_top"
               android:title="@string/drawer_top"/>
-        <item android:id="@+id/drawer_favorite"
+        <item android:id="@+id/drawer_rate"
               android:title="@string/drawer_favorite"/>
         <item android:id="@+id/drawer_review"
               android:title="@string/drawer_review"/>
@@ -14,6 +14,8 @@
               android:title="@string/drawer_discuss"/>
         <item android:id="@+id/drawer_history"
               android:title="@string/drawer_history"/>
+        <item android:id="@+id/drawer_observable"
+              android:title="@string/drawer_observable"/>
         <item android:id="@+id/drawer_help"
               android:title="@string/drawer_help"/>
     </group>

@@ -2,18 +2,14 @@ package ru.samlib.client.activity;
 
 import android.app.SearchManager;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
-import android.provider.SyncStateContract;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 import android.view.View;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.entity.Genre;
-import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
@@ -59,7 +55,7 @@ public class MainActivity extends BaseActivity {
         Integer itemId = item.getItemId();
         String title = item.getTitle().toString();
         switch (itemId) {
-            case R.id.drawer_favorite:
+            case R.id.drawer_rate:
                 replaceFragment(title, RateFragment.class);
                 break;
             case R.id.drawer_top:
@@ -79,6 +75,8 @@ public class MainActivity extends BaseActivity {
             case R.id.drawer_history:
                 replaceFragment(title, HistoryFragment.class);
                 break;
+            case R.id.drawer_observable:
+                replaceFragment(title, ObservableFragment.class);
             default:
                 replaceFragment(title, BaseFragment.class);
                 break;

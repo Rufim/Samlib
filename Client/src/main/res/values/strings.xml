@@ -21,6 +21,7 @@
     <string name="drawer_discuss">Обсуждения</string>
     <string name="drawer_sign_up">Регистрация</string>
     <string name="drawer_history">История</string>
+    <string name="drawer_observable">Отслеживаемые</string>
     <string name="drawer_help">Помощь</string>
 
     <string name="refresh">Обновить</string>
@@ -105,5 +106,5 @@
     <string name="comments_goto">Перейти</string>
     <string name="comments_comment_number">Номер комментария:</string>
     <string name="favorites_new">New</string>
-
+    <string name="author_observable">Отслеживать обновления</string>
 </resources>
