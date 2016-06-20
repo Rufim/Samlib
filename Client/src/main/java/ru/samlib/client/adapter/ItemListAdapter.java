@@ -92,6 +92,13 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return this.items;
     }
 
+
+    public void clear() {
+        originalItems = null;
+        items.clear();
+    }
+
+
     public List<I> getOriginalItems() {
         return this.originalItems == null ? this.items : this.originalItems;
     }
