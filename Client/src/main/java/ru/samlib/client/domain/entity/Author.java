@@ -227,4 +227,18 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     public String getImageLink() {
         return getFullLink() + AVATAR;
     }
+
+
+    public boolean hasCategory(Category category) {
+        for (Category next : getCategories()) {
+            if (next.title != null ? !next.title.equals(category.title) : category.title != null) continue;
+            if (next.annotation != null ? !next.annotation.equals(category.annotation) : category.annotation != null) continue;
+            if (next.author != null ? !next.author.equals(category.author) : category.author != null) continue;
+            if (next.type != category.type) continue;
+            if(!(next.link != null ? next.link.equals(category.link) : category.link == null)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
