@@ -37,7 +37,7 @@ public class DiscussionParser extends PageListParser<Discussion>{
         Element info = tds.get(0).select("small").first();
         String workSize = info.select("b").first().ownText();
         work.setSize(Integer.parseInt(workSize.substring(0, workSize.lastIndexOf("k"))));
-        work.setGenres(info.ownText());
+        work.setGenresAsString(info.ownText());
         work.getAuthor().setFullName(tds.get(1).select("a").first().text());
         discussion.setAuthor(work.getAuthor());
         String counts[]  = tds.get(2).select("center").text().split("/");

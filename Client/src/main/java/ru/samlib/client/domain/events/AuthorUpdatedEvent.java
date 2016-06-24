@@ -4,15 +4,14 @@ import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 
 /**
- * Created by 0shad on 16.07.2015.
+ * Created by Dmitry on 24.06.2016.
  */
+public class AuthorUpdatedEvent implements Event {
 
+    public final AuthorEntity author;
 
-public class AuthorParsedEvent implements Event {
-
-    public final Author author;
-
-    public AuthorParsedEvent(Author author) {
+    public AuthorUpdatedEvent(AuthorEntity author) {
         this.author = author;
     }
+
 }

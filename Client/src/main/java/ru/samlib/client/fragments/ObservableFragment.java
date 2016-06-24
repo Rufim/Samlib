@@ -2,7 +2,12 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -14,6 +19,9 @@ import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
+import ru.samlib.client.domain.events.AuthorParsedEvent;
+import ru.samlib.client.domain.events.AuthorUpdatedEvent;
+import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.lister.DataSource;
 
 import java.io.IOException;
@@ -33,6 +41,12 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ObservableUpdateJob.start();
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Override
     protected DataSource<AuthorEntity> getDataSource() throws Exception {
         return new DataSource<AuthorEntity>() {
             @Override
@@ -42,6 +56,30 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
             }
         };
     }
+
+    public void onEvent(AuthorUpdatedEvent event) {
+        initializeAuthor(event.author);
+    }
+
+    private void initializeAuthor(AuthorEntity author) {
+      if(author.isHasUpdates()) {
+          int index = -1;
+          for (int i = 0; i < adapter.getItems().size(); i++) {
+              if(author.getLink().equals(adapter.getItems().get(0).getLink()))  {
+                  index = 1;
+              }
+          }
+          adapter.getItems().set(index, author);
+          Handler handler = new Handler(Looper.getMainLooper());
+          handler.post(new Runnable() {
+              @Override
+              public void run() {
+                adapter.notifyDataSetChanged();
+              }
+          });
+      }
+    }
+
 
     @Override
     protected ItemListAdapter getAdapter() {

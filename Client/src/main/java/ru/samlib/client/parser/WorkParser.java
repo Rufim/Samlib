@@ -126,7 +126,7 @@ public class WorkParser extends Parser {
             String typeGenre[] = lis.get(index++).text().split(":");
             work.setType(Type.parseType(typeGenre[0]));
             if (typeGenre.length > 1) {
-                work.setGenres(typeGenre[1]);
+                work.setGenresAsString(typeGenre[1]);
             }
             for (int i = index; i < lis.size(); i++) {
                 String text = lis.get(i).text();

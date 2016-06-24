@@ -18,6 +18,8 @@ import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.entity.WorkEntity;
+import ru.samlib.client.domain.events.AuthorParsedEvent;
+import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.parser.AuthorParser;
@@ -61,15 +63,19 @@ public class ObservableUpdateJob extends Job {
     }
 
     private EntityDataStore<Persistable> getDataStore() throws Exception {
-        if(App.getInstance() == null || App.getInstance().getDataStore() == null) throw new Exception("database not available");
+        if (App.getInstance() == null || App.getInstance().getDataStore() == null)
+            throw new Exception("database not available");
         return App.getInstance().getDataStore();
-    };
+    }
 
-    public static void updateObservable(EntityDataStore<Persistable> dataStore) {
+    ;
+
+    public void updateObservable(EntityDataStore<Persistable> dataStore) {
         Stream.of(dataStore.select(AuthorEntity.class).get().toList()).forEach(author -> {
             try {
                 AuthorParser parser = new AuthorParser(author);
-                dataStore.update((AuthorEntity) parser.parse());
+                author = dataStore.update((AuthorEntity) parser.parse());
+                postEvent(new AuthorUpdatedEvent(author));
             } catch (MalformedURLException e) {
                 Log.e(TAG, "Unknown exception", e);
             }
@@ -81,27 +87,26 @@ public class ObservableUpdateJob extends Job {
     }
 
     public static void stop() {
-        if(jobId > 0) {
+        if (jobId > 0) {
             JobManager.instance().cancel(jobId);
         }
     }
 
+    public static void startSchedule() {
+        jobId = AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
+                .setPeriodic(200000)
+                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                .setUpdateCurrent(true)
+                .build()
+                .schedule();
+
+    }
+
     public static void start() {
-        Set<JobRequest> requests = AppJobCreator.getJobRequests(JobType.UPDATE_OBSERVABLE);
-        if (requests.size() == 0) {
-            jobId = AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
-                    .setPeriodic(200000)
-                    .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
-                    .build()
-                    .schedule();
-        } else {
-            Iterator<JobRequest> it = requests.iterator();
-            jobId = it.next().getJobId();
-            if (requests.size() > 1) {
-                while (it.hasNext()) {
-                    JobManager.instance().cancel(it.next().getJobId());
-                }
-            }
-        }
+        AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
+                .setExact(100L)
+                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                .build()
+                .schedule();
     }
 }

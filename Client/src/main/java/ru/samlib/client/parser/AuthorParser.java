@@ -1,7 +1,6 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
-import com.annimon.stream.Stream;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,6 +13,9 @@ import ru.samlib.client.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -41,7 +43,7 @@ public class AuthorParser extends Parser {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
-            if(author.getCategories().isEmpty()) {
+            if (author.getCategories().isEmpty()) {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
             } else {
                 rawFile = HtmlClient.executeRequest(request);
@@ -56,7 +58,7 @@ public class AuthorParser extends Parser {
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Author Info
-            if(parts.length > 0) {
+            if (parts.length > 0) {
                 String title = parts[0];
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
                 author.setFullName(titles[0]);
@@ -66,7 +68,7 @@ public class AuthorParser extends Parser {
             if (parts.length > 1) {
                 String head = parts[1];
                 headDoc = Jsoup.parseBodyFragment(head);
-                if(headDoc == null) return author;
+                if (headDoc == null) return author;
                 elements = headDoc.select("table[bgcolor=#e0e0e0] li");
                 if (elements.size() > 0) {
                     for (Element element : elements) {
@@ -98,12 +100,15 @@ public class AuthorParser extends Parser {
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);
                         work.setAuthor(author);
-                        if(!author.getRecommendations().contains(author)) {
+                        if (!author.getRecommendations().contains(author)) {
                             author.addRecommendation(work);
                         }
                     }
                 }
             }
+            List<Category> categories = new ArrayList<>();
+            List<Work> rootWorks = new ArrayList<>();
+            List<Link> rootLinks = new ArrayList<>();
             // body - Partitions with Works
             if (parts.length > 2 && !parts[2].isEmpty()) {
                 Scanner scanner = new Scanner(parts[2]);
@@ -118,7 +123,7 @@ public class AuthorParser extends Parser {
                                 newCategory = new Category();
                                 newCategory.setTitle(lineDoc.select("h3").text());
                                 newCategory.setAuthor(author);
-                                author.addCategory(newCategory);
+                                categories.add(newCategory);
                             }
                             if (line.startsWith("</small>")) {
                                 newCategory = new Category();
@@ -132,10 +137,10 @@ public class AuthorParser extends Parser {
                                 newCategory.setAuthor(author);
                                 scanner.nextLine();
                                 line = scanner.nextLine();
-                                if(line.startsWith("<font")) {
+                                if (line.startsWith("<font")) {
                                     String annotation = line;
                                     line = scanner.nextLine();
-                                    if(line.startsWith("<dd>")) {
+                                    if (line.startsWith("<dd>")) {
                                         newCategory.setAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(annotation + line.substring(line.indexOf("<dd>")))));
                                         line = scanner.nextLine();
                                     } else {
@@ -143,21 +148,27 @@ public class AuthorParser extends Parser {
                                     }
                                 }
                                 lineDoc = Jsoup.parseBodyFragment(line);
-                                author.addCategory(newCategory);
+                                categories.add(newCategory);
                             }
                             if (line.contains("<DL>")) {
                                 Elements dl = lineDoc.select("DL");
                                 if (line.contains("TYPE=square")) {
                                     a = dl.select("a");
-                                    newCategory.addLink(new Link(a.text(), a.attr("href"), dl.select("i").text()));
+                                    Link link = new Link(a.text(), a.attr("href"), dl.select("i").text());
+                                    if (newCategory == null) {
+                                        rootLinks.add(link);
+                                    } else {
+                                        newCategory.addLink(link);
+                                    }
                                     continue;
                                 }
                                 Work work = ParserUtils.parseWork(dl.first());
+                                work.setContentLength(HtmlClient.getContentLength(work.getFullLink()));
                                 work.setAuthor(author);
                                 work.setCategory(newCategory);
                                 if (work.validate()) {
                                     if (newCategory == null) {
-                                        author.addRootLink(work);
+                                        rootWorks.add(work);
                                     } else {
                                         newCategory.addLink(work);
                                     }
@@ -173,10 +184,139 @@ public class AuthorParser extends Parser {
                 scanner.close();
             }
             Log.e(TAG, "Author " + author.getTitle() + " parsed");
+            if (author.getId() != null) {
+                merge(author, categories, rootWorks, rootLinks);
+                Log.e(TAG, "Author " + author.getTitle() + " merged");
+            } else {
+                author.setCategories(categories);
+                author.setRootLinks(rootLinks);
+                author.setRootWorks(rootWorks);
+            }
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
         }
         return author;
+    }
+
+
+    private void merge(Author author, List<Category> newCategories, List<Work> newRootWorks, List<Link> newRootLinks) {
+        List<Category> oldCategories = author.getCategories();
+        List<Work> oldRootWorks = author.getRootWorks();
+        List<Link> oldRootLinks = author.getRootLinks();
+        merge(newRootWorks, newRootLinks, oldRootWorks, oldRootLinks);
+        Iterator<Category> ocit = oldCategories.iterator();
+        while (ocit.hasNext()) {
+            Category oldCategory = ocit.next();
+            int newCategoryIndex = hasCategory(newCategories, oldCategory);
+            if (newCategoryIndex > 0) {
+                Category newCategory = newCategories.get(newCategoryIndex);
+                oldCategory.setTitle(newCategory.getTitle());
+                oldCategory.setType(newCategory.getType());
+                oldCategory.setLink(newCategory.getLink());
+                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks());
+                Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
+                newCategories.remove(newCategoryIndex);
+            } else {
+                ocit.remove();
+            }
+        }
+        if(!newCategories.isEmpty()) {
+            oldCategories.addAll(newCategories);
+        }
+    }
+
+    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks) {
+        Iterator<Work> owit = oldWorks.iterator();
+        Iterator<Link> olit = oldLinks.iterator();
+        while (olit.hasNext()) {
+            Link oldLink = olit.next();    
+            int newLinkIndex = hasLink(newLinks, oldLink);
+            if(newLinkIndex > 0) {
+                Link newLink = newLinks.get(newLinkIndex);
+                oldLink.setTitle(newLink.getTitle());
+                newLinks.remove(newLinkIndex);
+            } else {
+                olit.remove();
+            }
+        }
+        if(!newWorks.isEmpty()) {
+            oldWorks.addAll(newWorks);    
+        }
+        while (olit.hasNext()) {
+            Work oldWork = owit.next();
+            int newWorkIndex = hasWork(newWorks, oldWork);
+            if(newWorkIndex > 0) {
+                Work newWork = newWorks.get(newWorkIndex);
+                updateWork(oldWork, newWork);
+                if(oldWork.getContentLength() != newWork.getContentLength()) {
+                    oldWork.setChanged(true);
+                    oldWork.getAuthor().setHasUpdates(true);
+                    oldWork.setContentLength(newWork.getContentLength());
+                }
+                newWorks.remove(newWorkIndex);
+            } else {
+                olit.remove();
+            }
+        }
+        if(!newWorks.isEmpty()) {
+            for (Work newWork : newWorks) {
+                newWork.setChanged(true);
+                newWork.getAuthor().setHasUpdates(true);
+            }
+            oldWorks.addAll(newWorks);
+        }
+    }
+    
+    private int hasLink(List<Link> linkables, Link linkable) {
+        for (int i = 0; i < linkables.size(); i++) {
+            if(linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
+                return i;        
+        }   
+        return -1;
+    }
+
+    private int hasWork(List<Work> linkables, Work linkable) {
+        for (int i = 0; i < linkables.size(); i++) {
+            if(linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
+                return i;
+        }
+        return -1;
+    }
+
+    private int hasCategory(List<Category> categories, Category category) {
+        for (int i = 0; i < categories.size(); i++) {
+            Category newCategory = categories.get(i);
+            if (newCategory.getLink() != null && newCategory.getLink().equals(category.getLink())) {
+                return i;
+            }
+            if (!Type.OTHER.equals(newCategory.getType())) {
+                return i;
+            }
+            if (simpleCategory(newCategory) && simpleCategory(category) && newCategory.getTitle().equals(category.getTitle())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean simpleCategory(Category category) {
+        return Type.OTHER.equals(category.getType())
+                && category.getLink() == null;
+    }
+
+    private void updateWork(Work into, Work from) {
+        into.setTitle(from.getTitle());
+        into.setLink(from.getLink());
+        into.setSize(from.getSize());
+        into.setRate(from.getRate());
+        into.setKudoed(from.getKudoed());
+        into.setGenres(from.getGenres());
+        into.setType(from.getType());
+        into.setAnnotationBlocks(from.getAnnotationBlocks());
+        into.setCategory(from.getCategory());
+        into.setState(from.getState());
+        into.setHasIllustration(from.isHasIllustration());
+        into.setHasComments(from.isHasComments());
     }
 
 }

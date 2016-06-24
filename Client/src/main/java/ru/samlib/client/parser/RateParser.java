@@ -52,7 +52,7 @@ public class RateParser extends PageListParser<Work> {
                         work.setKudoed(Integer.parseInt(rate[1]));
                     }
                     String ownText = item.ownText();
-                    work.setGenres(ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim());
+                    work.setGenresAsString(ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim());
                     break;
             }
         }

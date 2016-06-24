@@ -1,11 +1,15 @@
 package ru.samlib.client.net;
 
+import android.net.Uri;
 import android.util.Log;
 import ru.samlib.client.App;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Hashtable;
 import java.util.concurrent.*;
 
@@ -105,6 +109,10 @@ public class HtmlClient {
             Log.e(TAG, "Error when ", e);
         }
         return cachedResponse;
+    }
+
+    public static long getContentLength(String url) throws IOException {
+        return new URL(url).openConnection().getContentLength();
     }
 
 }

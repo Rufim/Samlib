@@ -176,7 +176,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
                 .collect(Collectors.toList());
     }
 
-
     public void addCategory(Category category) {
         this.categories.add(category);
     }
@@ -205,6 +204,13 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
         if(linkable instanceof Link) {
             this.rootLinks.add((Link) linkable);
         }
+    }
+
+    public List<Linkable> getLinkables()  {
+        List<Linkable> linkables = new ArrayList<>();
+        linkables.addAll(rootLinks);
+        linkables.addAll(rootWorks);
+        return linkables;
     }
 
 

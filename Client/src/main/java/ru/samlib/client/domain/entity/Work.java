@@ -166,7 +166,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return builder.toString();
     }
 
-    public void setGenres(String genres) {
+    public void setGenresAsString(String genres) {
         if (this.genres == null) {
             this.genres = new ArrayList<>();
         } else {

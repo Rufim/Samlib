@@ -1,14 +1,10 @@
 package ru.samlib.client.util;
 
 import android.util.Log;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.*;
-import ru.samlib.client.net.CachedResponse;
 
-import java.lang.ref.SoftReference;
 import java.math.BigDecimal;
 
 /**
@@ -84,7 +80,7 @@ public class ParserUtils {
             ownText = ownText.replace(first, "");
         }
         work.setHasComments(el.text().contains("Комментарии"));
-        work.setGenres(ownText);
+        work.setGenresAsString(ownText);
     }
 
     public static Work parseWork(Element element) {

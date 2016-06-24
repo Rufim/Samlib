@@ -104,7 +104,7 @@ public class SearchParser extends PageListParser {
                 work.setType(Type.parseType(subtext[1].substring(subtext[1].indexOf(":") + 2)));
             }
             if (subtext.length > 2 && !subtext[2].isEmpty()) {
-                work.setGenres(subtext[2].substring(subtext[2].indexOf(":") + 2));
+                work.setGenresAsString(subtext[2].substring(subtext[2].indexOf(":") + 2));
             }
             if (tbodys.size() > 1) {
                 Elements p = tbodys.get(1).select("p");

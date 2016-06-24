@@ -1,10 +1,7 @@
 package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
-import io.requery.Entity;
-import io.requery.Generated;
-import io.requery.Key;
-import io.requery.ManyToOne;
+import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -22,7 +19,6 @@ import java.util.List;
  */
 @NoArgsConstructor
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Entity
 public class Category implements Linkable, Serializable, Parsable {
 
@@ -39,10 +35,27 @@ public class Category implements Linkable, Serializable, Parsable {
     List<Work> works = new ArrayList<>();
     List<Link> links = new ArrayList<>();
     String link;
+
+    @Transient
     boolean parsed = false;
 
+    public Category(Category other) {
+        this.id = other.id;
+        this.title = other.title;
+        this.annotation = other.annotation;
+        this.author = other.author;
+        this.type = other.type;
+        this.works = other.works;
+        this.links = other.links;
+        this.link = other.link;
+        this.parsed = other.parsed;
+    }
+
     public String getLink() {
-        return link != null ? author.getLink() + "/" + link : null;
+        if(link != null && !link.contains(author.getLink())) {
+            link = author.getLink() + "/" + link;
+        }
+        return link;
     }
 
     public void addLink(Linkable linkable) {
@@ -57,7 +70,7 @@ public class Category implements Linkable, Serializable, Parsable {
     public Linkable getLinkable() {
         if (type == type.OTHER) {
             if (link == null) return new Link(title, "", annotation); else
-                return new Link(title, author.getLink() + "/" + link, annotation);
+                return new Link(title, getLink(), annotation);
         } else {
             return type;
         }
