@@ -32,23 +32,34 @@ public class Category implements Linkable, Serializable, Parsable {
     @ManyToOne
     Author author;
     Type type = Type.OTHER;
+    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> works = new ArrayList<>();
+    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Link> links = new ArrayList<>();
     String link;
 
     @Transient
     boolean parsed = false;
 
-    public Category(Category other) {
-        this.id = other.id;
-        this.title = other.title;
-        this.annotation = other.annotation;
-        this.author = other.author;
-        this.type = other.type;
-        this.works = other.works;
-        this.links = other.links;
-        this.link = other.link;
-        this.parsed = other.parsed;
+    public CategoryEntity createEntry(){
+        if(getClass() == CategoryEntity.class) return (CategoryEntity) this;
+        CategoryEntity entity = new CategoryEntity();
+        entity.setAnnotation(annotation);
+        entity.setAuthor(author);
+        entity.setId(id);
+        entity.setLink(link);
+        entity.setParsed(parsed);
+        entity.setTitle(title);
+        entity.setType(type);
+        for (Work work : works) {
+            work.setCategory(entity);
+            entity.getWorks().add(work.createEntity());
+        }
+        for (Link link1 : links) {
+            link1.setCategory(entity);
+            entity.getLinks().add(link1.createEntity());
+        }
+        return entity;
     }
 
     public String getLink() {

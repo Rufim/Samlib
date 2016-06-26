@@ -3,7 +3,7 @@
               android:orientation="vertical"
               android:layout_marginLeft="12dp"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="wrap_content">
 
     <LinearLayout
             android:id="@+id/work_item_layout"
@@ -12,6 +12,15 @@
             android:gravity="left"
             android:background="@android:drawable/list_selector_background"
             android:layout_height="wrap_content">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/favorites_update"
+                android:layout_gravity="center_vertical"
+                android:visibility="gone"
+                android:id="@+id/work_item_update"
+                android:textSize="@dimen/spacing_small"
+                style="@style/text.rate_column"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

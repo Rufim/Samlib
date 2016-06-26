@@ -17,6 +17,9 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import de.greenrobot.event.EventBus;
 import io.requery.Persistable;
+import io.requery.query.JoinAndOr;
+import io.requery.query.Result;
+import io.requery.query.WhereAndOr;
 import io.requery.sql.EntityDataStore;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
@@ -26,10 +29,12 @@ import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorParsedEvent;
+import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.service.ObservableService;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
@@ -75,15 +80,23 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
             if (!author.isParsed()) {
                 try {
-                    author = new AuthorParser(author).parse();
+                    if(author.getId() == null) {
+                        AuthorEntity authorEntity = ObservableService.getInstance().getAuthorByLink(author.getLink());
+                        if (authorEntity != null) {
+                            author = authorEntity;
+                        }
+                        author = new AuthorParser(author).parse();
+                        if (authorEntity != null) {
+                            ObservableService.getInstance().updateAuthor(authorEntity);
+                            if(authorEntity.isHasUpdates()) {
+                                postEvent(new AuthorUpdatedEvent(authorEntity));
+                            }
+                        }
+                    } else {
+                        author = ObservableService.getInstance().getAuthorById(author.getId());
+                    }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
-                    EntityDataStore<Persistable> dataStore = App.getInstance().getDataStore();
-                    AuthorEntity authorEntity = dataStore.select(AuthorEntity.class).where(AuthorEntity.LINK.eq(author.getLink())).get().firstOrNull();
-                    if (authorEntity != null) {
-                        author.setId(authorEntity.getId());
-                        author = dataStore.update(new AuthorEntity(author));
-                    }
                     getActivity().invalidateOptionsMenu();
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
@@ -114,7 +127,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if(!item.isChecked()) {
-                    dataStore.insert(new AuthorEntity(author));
+                    dataStore.insert(author.createEntry());
                     item.setChecked(true);
                     return true;
                 } else {
@@ -231,6 +244,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public void openLinkable(Linkable linkable) {
             if (linkable.isWork()) {
+                Work work = (Work) linkable;
+                if(work.isChanged() && work.getId() != null) {
+                    work.setChanged(false);
+                    work.setSizeDiff(null);
+                    getDataStore().update((WorkEntity) work);
+                }
                 WorkFragment.show(AuthorFragment.this, linkable.getLink());
             } else {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
@@ -278,6 +297,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     String rate_and_size = "";
                     if (work.getSize() != null) {
                         rate_and_size += work.getSize() + "k";
+                        if(work.getSizeDiff() != null) {
+                            if(work.getSizeDiff() > 0) {
+                                rate_and_size += " (+" + work.getSizeDiff() + ")";
+                            } else {
+                                rate_and_size += " (" + work.getSizeDiff() + ")";
+                            }
+                        }
                     }
                     if (work.getRate() != null) {
                         rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
@@ -311,6 +337,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
                     } else {
                         holder.getView(R.id.work_annotation).setVisibility(View.GONE);
+                    }
+                    if (work.isChanged() && work.getId() != null) {
+                        holder.getView(R.id.work_item_update).setVisibility(View.VISIBLE);
+                    } else {
+                        holder.getView(R.id.work_item_update).setVisibility(View.GONE);
                     }
                     break;
             }
@@ -401,7 +432,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         @Override
         public int getLayoutId(Linkable item) {
-            if (item.getClass() == Category.class) {
+            if (item instanceof Category) {
                 return R.layout.item_section;
             } else {
                 return R.layout.item_work;
@@ -410,7 +441,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         @Override
         public List<Linkable> getSubItems(Linkable item) {
-            if (item.getClass() == Category.class) {
+            if (item instanceof Category) {
                 return ((Category) item).getLinkables();
             } else {
                 return null;
@@ -419,7 +450,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         @Override
         public boolean hasSubItems(Linkable item) {
-            return item.getClass() == Category.class;
+            return item instanceof Category;
         }
     }
 

@@ -3,6 +3,7 @@ package ru.samlib.client.domain.entity;
 import io.requery.Entity;
 import io.requery.Generated;
 import io.requery.Key;
+import io.requery.OneToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -24,9 +25,23 @@ public class Bookmark implements Serializable {
     Double percent = 0d;
     Integer indentIndex = 0;
     String indent;
+    @OneToOne
+    Work work;
 
     public Bookmark(String title){
         this.title = title;
+    }
+
+    public BookmarkEntity createEntry() {
+        if(getClass() == BookmarkEntity.class) return (BookmarkEntity) this;
+        BookmarkEntity entity = new BookmarkEntity();
+        entity.setIndent(indent);
+        entity.setIndentIndex(indentIndex);
+        entity.setPercent(percent);
+        entity.setTitle(title);
+        entity.setId(id);
+        entity.setWork(work);
+        return entity;
     }
 
     public String toString() {

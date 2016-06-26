@@ -53,8 +53,5 @@ public enum Type implements Linkable {
         return "";
     }
 
-    @Override
-    public String toString() {
-        return getTitle();
-    }
+
 }

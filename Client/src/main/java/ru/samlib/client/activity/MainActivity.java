@@ -2,6 +2,7 @@ package ru.samlib.client.activity;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
@@ -9,11 +10,13 @@ import android.view.MenuItem;
 import android.view.View;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
+import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
+import ru.samlib.client.util.TextUtils;
 
 
 public class MainActivity extends BaseActivity {
@@ -42,9 +45,15 @@ public class MainActivity extends BaseActivity {
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
-            Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
-            searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
-            startActivity(searchIntent);
+            if(Linkable.isSamlibLink(TextUtils.eraseHost(query))) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(Constants.Net.BASE_DOMAIN + TextUtils.eraseHost(query)));
+                startActivity(i);
+            }  else {
+                Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+                searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
+                startActivity(searchIntent);
+            }
             //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
     }

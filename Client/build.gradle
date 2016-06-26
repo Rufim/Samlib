@@ -20,7 +20,7 @@ android {
     buildToolsVersion buildToolsProjectVersion
 
     defaultConfig {
-        applicationId "com.persilab.shoppingbox"
+        applicationId "ru.samlib.client"
         minSdkVersion 14
         targetSdkVersion 23
         versionCode versionProjectCode

@@ -2,6 +2,7 @@ package ru.samlib.client;
 
 import android.app.Application;
 
+import com.evernote.android.job.JobManager;
 import io.requery.Persistable;
 import io.requery.android.DefaultMapping;
 import io.requery.android.sqlite.DatabaseSource;
@@ -11,11 +12,14 @@ import io.requery.sql.Configuration;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.TableCreationMode;
 import ru.samlib.client.database.BigDecimalConverter;
+import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Models;
+import ru.samlib.client.job.AppJobCreator;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Created by Rufim on 03.07.2015.
@@ -35,6 +39,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         singleton = this;
+        JobManager.create(this).addJobCreator(new AppJobCreator());
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
                 .setFontAttrId(R.attr.fontPath)
@@ -58,6 +63,7 @@ public class App extends Application {
 
             Configuration configuration = source.getConfiguration();
             ((DefaultMapping)configuration.getMapping()).addConverter(new BigDecimalConverter(), BigDecimal.class);
+            ((DefaultMapping) configuration.getMapping()).addConverter(new ListConverter(), List.class);
             dataStore = new EntityDataStore<Persistable>(configuration);
 
             rxDataStore = RxSupport.toReactiveStore(

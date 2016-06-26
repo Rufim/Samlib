@@ -45,7 +45,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     boolean hasAvatar = false;
     boolean hasAbout = false;
     boolean hasUpdates = false;
-    boolean isNew = false;
+    boolean newest = false;
     Date lastUpdateDate;
     Integer size;
     Integer workCount;
@@ -54,17 +54,18 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     Integer views;
     String about;
     String sectionAnnotation;
-    @OneToMany
+    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @Transient
     List<Work> recommendations = new ArrayList<>();
-    @OneToMany
+    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Category> categories = new ArrayList<>();
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Link> rootLinks = new ArrayList<>();
-    @OneToMany
+    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> rootWorks = new ArrayList<>();
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Author> friendList = new ArrayList<>();
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Author> friendOfList = new ArrayList<>();
     Integer friends;
     Integer friendsOf;
@@ -73,38 +74,90 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     boolean parsed = false;
 
     public Author(Author other) {
-        this.id = other.id;
-        this.link = other.link;
-        this.fullName = other.fullName;
-        this.shortName = other.shortName;
-        this.email = other.email;
-        this.annotation = other.annotation;
-        this.gender = other.gender;
-        this.dateBirth = other.dateBirth;
-        this.address = other.address;
-        this.site = other.site;
-        this.hasAvatar = other.hasAvatar;
-        this.hasAbout = other.hasAbout;
-        this.hasUpdates = other.hasUpdates;
-        this.isNew = other.isNew;
-        this.lastUpdateDate = other.lastUpdateDate;
-        this.size = other.size;
-        this.workCount = other.workCount;
-        this.rate = other.rate;
-        this.kudoed = other.kudoed;
-        this.views = other.views;
-        this.about = other.about;
+        this.id = other.getId();
+        this.link = other.getLink();
+        this.fullName = other.getFullName();
+        this.shortName = other.getShortName();
+        this.email = other.getEmail();
+        this.annotation = other.getAnnotation();
+        this.gender = other.getGender();
+        this.dateBirth = other.getDateBirth();
+        this.address = other.getAddress();
+        this.site = other.getSite();
+        this.hasAvatar = other.isHasAbout();
+        this.hasAbout = other.isHasAbout();
+        this.hasUpdates = other.isHasUpdates();
+        this.lastUpdateDate = other.getLastUpdateDate();
+        this.newest = other.isNewest();
+        this.size = other.getSize();
+        this.workCount = other.getWorkCount();
+        this.rate = other.getRate();
+        this.kudoed = other.getKudoed();
+        this.views = other.getViews();
+        this.about = other.getAbout();
         this.sectionAnnotation = other.sectionAnnotation;
-        this.recommendations = other.recommendations;
-        this.categories = other.categories;
-        this.rootLinks = other.rootLinks;
-        this.rootWorks = other.rootWorks;
-        this.friendList = other.friendList;
-        this.friendOfList = other.friendOfList;
-        this.friends = other.friends;
-        this.friendsOf = other.friendsOf;
-        this.parsed = other.parsed;
+        this.recommendations = other.getRecommendations();
+        this.categories = other.getCategories();
+        this.rootLinks = other.getRootLinks();
+        this.rootWorks = other.getRootWorks();
+        this.friendList = other.getFriendList();
+        this.friendOfList = other.getFriendOfList();
+        this.friends = other.getFriends();
+        this.friendsOf = other.getFriendsOf();
+        this.parsed = other.isParsed();
     }
+
+    public AuthorEntity createEntry() {
+        if(getClass() == AuthorEntity.class) return (AuthorEntity) this;
+        AuthorEntity entity = new AuthorEntity();
+        entity.setHasUpdates(hasUpdates);
+        entity.setId(id);
+        entity.setHasAvatar(hasAvatar);
+        entity.setHasAbout(hasAbout);
+        entity.setDateBirth(dateBirth);
+        entity.setRate(rate);
+        entity.setSize(size);
+        entity.setKudoed(kudoed);
+        entity.setLink(link);
+        entity.setNewest(newest);
+        entity.setShortName(getShortName());
+        entity.setFullName(fullName);
+        entity.setAnnotation(annotation);
+        entity.setEmail(email);
+        entity.setWorkCount(workCount);
+        entity.setSectionAnnotation(sectionAnnotation);
+        entity.setGender(getGender());
+        entity.setAbout(about);
+        entity.setViews(views);
+        entity.setAddress(address);
+        entity.setParsed(parsed);
+        entity.setSite(site);
+        entity.setLastUpdateDate(lastUpdateDate);
+        for (Category category : categories) {
+            category.setAuthor(entity);
+            entity.getCategories().add(category.createEntry());
+        }
+        for (Work recommendation : recommendations) {
+            recommendation.setAuthor(entity);
+            entity.getRecommendations().add(recommendation.createEntity());
+        }
+        for (Work rootWork : rootWorks) {
+            rootWork.setAuthor(entity);
+            entity.getRootWorks().add(rootWork.createEntity());
+        }
+        for (Link rootLink : rootLinks) {
+            rootLink.setAuthor(entity);
+            entity.getRootLinks().add(rootLink.createEntity());
+        }
+        for (Author author : friendList) {
+            entity.getFriendList().add(author.createEntry());
+        }
+        for (Author author : friendOfList) {
+            entity.getFriendOfList().add(author.createEntry());
+        }
+        return entity;
+    }
+
 
     public Author(String link) {
         setLink(link);
@@ -188,10 +241,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
         this.friendOfList.add(friend);
     }
 
-    public List<Work> getRecommendations() {
-        return recommendations;
-    }
-
     public void addRecommendation(Work work) {
         this.recommendations.add(work);
     }
@@ -208,8 +257,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
 
     public List<Linkable> getLinkables()  {
         List<Linkable> linkables = new ArrayList<>();
-        linkables.addAll(rootLinks);
-        linkables.addAll(rootWorks);
+        if (rootLinks != null) {
+            linkables.addAll(rootLinks);
+        }
+        if (rootWorks != null) {
+            linkables.addAll(rootWorks);
+        }
         return linkables;
     }
 

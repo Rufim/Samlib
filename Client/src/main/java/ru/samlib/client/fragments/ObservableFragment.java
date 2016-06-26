@@ -11,15 +11,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import de.greenrobot.event.EventBus;
 import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.R;
-import ru.samlib.client.App;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
-import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.lister.DataSource;
@@ -57,26 +57,36 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         };
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+
     public void onEvent(AuthorUpdatedEvent event) {
         initializeAuthor(event.author);
     }
 
     private void initializeAuthor(AuthorEntity author) {
       if(author.isHasUpdates()) {
-          int index = -1;
+          final int index;
           for (int i = 0; i < adapter.getItems().size(); i++) {
-              if(author.getLink().equals(adapter.getItems().get(0).getLink()))  {
-                  index = 1;
+              if(author.getLink().equals(adapter.getItems().get(i).getLink()))  {
+                  index = i;
+                  adapter.getItems().set(i, author);
+                  Handler handler = new Handler(Looper.getMainLooper());
+                  handler.post(() -> adapter.notifyItemChanged(index));
+                  break;
               }
           }
-          adapter.getItems().set(index, author);
-          Handler handler = new Handler(Looper.getMainLooper());
-          handler.post(new Runnable() {
-              @Override
-              public void run() {
-                adapter.notifyDataSetChanged();
-              }
-          });
       }
     }
 
@@ -86,7 +96,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends ItemListAdapter<Author> {
+    protected class FavoritesAdapter extends ItemListAdapter<AuthorEntity> {
 
         public FavoritesAdapter() {
             super(R.layout.item_favorites);
@@ -94,9 +104,13 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
 
         @Override
         public void onClick(View view, int position) {
-            String link = getItems().get(position).getFullLink();
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(link));
+            AuthorEntity authorEntity = getItems().get(position);
+            authorEntity.setHasUpdates(false);
+            getDataStore().update(authorEntity);
+            adapter.notifyDataSetChanged();
+            Intent i = new Intent(getActivity(), SectionActivity.class);
+            Author author = new Author(authorEntity.getLink());
+            i.putExtra(Constants.ArgsName.AUTHOR, author);
             startActivity(i);
         }
 
@@ -104,7 +118,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         public void onBindViewHolder(ViewHolder holder, int position) {
             TextView authorTextView = holder.getView(R.id.favorites_author);
             TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
-            TextView newText = holder.getView(R.id.favorites_new);
+            TextView newText = holder.getView(R.id.favorites_update);
             TextView annotationTextView = holder.getView(R.id.favorites_annotation);
             Author author = getItems().get(position);
             authorTextView.setText(author.getFullName());
@@ -112,6 +126,8 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
             annotationTextView.setText(author.getAnnotation());
             if(author.isHasUpdates()) {
                 newText.setVisibility(View.VISIBLE);
+            } else {
+                newText.setVisibility(View.GONE);
             }
         }
     }

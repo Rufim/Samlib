@@ -2,6 +2,7 @@ package ru.samlib.client.job;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.util.CircularArray;
 import android.util.Log;
 import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
@@ -14,15 +15,13 @@ import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.AuthorEntity;
-import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.entity.WorkEntity;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.parser.AuthorParser;
+import ru.samlib.client.service.ObservableService;
 
 import java.net.MalformedURLException;
 import java.util.Iterator;
@@ -36,7 +35,6 @@ import java.util.Set;
 public class ObservableUpdateJob extends Job {
 
     private static final String TAG = ObservableUpdateJob.class.getSimpleName();
-    private EntityDataStore<Persistable> dataStore;
     public static int jobId = -1;
 
     @NonNull
@@ -46,7 +44,7 @@ public class ObservableUpdateJob extends Job {
             return Result.SUCCESS;
         }
         try {
-            updateObservable(getDataStore());
+            updateObservable();
         } catch (Exception e) {
             Log.e(TAG, "Unknown exception", e);
             return Result.FAILURE;
@@ -62,22 +60,16 @@ public class ObservableUpdateJob extends Job {
         EventBus.getDefault().post(event);
     }
 
-    private EntityDataStore<Persistable> getDataStore() throws Exception {
-        if (App.getInstance() == null || App.getInstance().getDataStore() == null)
-            throw new Exception("database not available");
-        return App.getInstance().getDataStore();
-    }
-
-    ;
-
-    public void updateObservable(EntityDataStore<Persistable> dataStore) {
-        Stream.of(dataStore.select(AuthorEntity.class).get().toList()).forEach(author -> {
+    public void updateObservable() {
+        Stream.of(ObservableService.getInstance().getObservableAuthors()).forEach(author -> {
             try {
                 AuthorParser parser = new AuthorParser(author);
-                author = dataStore.update((AuthorEntity) parser.parse());
+                author = ObservableService.getInstance().updateAuthor((AuthorEntity) parser.parse());
+                author.setParsed(true);
                 postEvent(new AuthorUpdatedEvent(author));
-            } catch (MalformedURLException e) {
-                Log.e(TAG, "Unknown exception", e);
+                Log.e(TAG, "Author " +  author.getShortName() + " updated");
+            } catch (Exception e) {
+                Log.e(TAG, "Unknown exception while update", e);
             }
         });
     }
@@ -104,7 +96,7 @@ public class ObservableUpdateJob extends Job {
 
     public static void start() {
         AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
-                .setExact(100L)
+                .setExecutionWindow(100L, 2000L)
                 .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
                 .build()
                 .schedule();

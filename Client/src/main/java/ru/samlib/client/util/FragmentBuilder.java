@@ -10,6 +10,7 @@ import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.View;
 import com.google.gson.internal.Primitives;
+import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.fragments.ErrorFragment;
 
@@ -87,6 +88,8 @@ public class FragmentBuilder {
     private boolean newFragment = false;
     private boolean removeIfExists = false;
     private boolean clearBackStack = false;
+    private int inAnimationId = R.anim.slide_in_left;
+    private int outAnimationId = R.anim.slide_out_right;
     private String clearBackStackUpToName = null;
     private Fragment fragmentInvoker;
 
@@ -236,6 +239,11 @@ public class FragmentBuilder {
         return this;
     }
 
+    public void setAnimation(int inAnimationId, int outAnimationId) {
+        this.inAnimationId = inAnimationId;
+        this.outAnimationId = outAnimationId;
+    }
+
     public <F extends Fragment> F replaceFragment(@IdRes int container, Class<F> fragmentClass) {
         String tag = fragmentClass.getSimpleName();
         return replaceFragment(container, fragmentClass, tag);
@@ -272,6 +280,9 @@ public class FragmentBuilder {
         if (toBackStack) {
             transaction.addToBackStack(null);
         }
+        if(inAnimationId > 0 && outAnimationId > 0){
+            transaction.setCustomAnimations(inAnimationId, outAnimationId);
+        }
         transaction.commitAllowingStateLoss();
         return (F) fragment;
     }
@@ -291,6 +302,9 @@ public class FragmentBuilder {
         }
         if (toBackStack) {
             transaction.addToBackStack(null);
+        }
+        if (inAnimationId > 0 && outAnimationId > 0) {
+            transaction.setCustomAnimations(inAnimationId, outAnimationId);
         }
         transaction.commitAllowingStateLoss();
         return (F) fragment;

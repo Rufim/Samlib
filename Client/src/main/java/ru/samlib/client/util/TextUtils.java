@@ -164,6 +164,10 @@ public class TextUtils {
         return link.replaceAll("https?\\:\\/\\/([a-z0-9-.]*)\\.([a-z]{2,5})", "");
     }
 
+    public static boolean hasHost(String link) {
+        return link.matches("https?\\:\\/\\/([a-z0-9-.]*)\\.([a-z]{2,5})");
+    }
+
     public static String putInString(String source, String placement, int gap) {
         StringBuilder builder = new StringBuilder();
         int i = 0;

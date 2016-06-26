@@ -43,12 +43,17 @@ public class AuthorParser extends Parser {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
+            if(author.getId() != null) {
+                request.saveInCache(false);
+            }
             if (author.getCategories().isEmpty()) {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
             } else {
                 rawFile = HtmlClient.executeRequest(request);
-                author.getCategories().clear();
-                author.getRecommendations().clear();
+                if(author.getId() == null) {
+                    author.getCategories().clear();
+                    author.getRecommendations().clear();
+                }
             }
             if (rawFile.isDownloadOver) {
                 author.setParsed(true);
@@ -163,7 +168,6 @@ public class AuthorParser extends Parser {
                                     continue;
                                 }
                                 Work work = ParserUtils.parseWork(dl.first());
-                                work.setContentLength(HtmlClient.getContentLength(work.getFullLink()));
                                 work.setAuthor(author);
                                 work.setCategory(newCategory);
                                 if (work.validate()) {
@@ -208,11 +212,17 @@ public class AuthorParser extends Parser {
         while (ocit.hasNext()) {
             Category oldCategory = ocit.next();
             int newCategoryIndex = hasCategory(newCategories, oldCategory);
-            if (newCategoryIndex > 0) {
+            if (newCategoryIndex >= 0) {
                 Category newCategory = newCategories.get(newCategoryIndex);
                 oldCategory.setTitle(newCategory.getTitle());
                 oldCategory.setType(newCategory.getType());
                 oldCategory.setLink(newCategory.getLink());
+                for (Work work : newCategory.getWorks()) {
+                    work.setCategory(oldCategory);
+                }
+                for (Link link : newCategory.getLinks()) {
+                    link.setCategory(oldCategory);
+                }
                 merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks());
                 Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
                 newCategories.remove(newCategoryIndex);
@@ -221,7 +231,10 @@ public class AuthorParser extends Parser {
             }
         }
         if(!newCategories.isEmpty()) {
-            oldCategories.addAll(newCategories);
+            for (Category newCategory : newCategories) {
+                oldCategories.add(newCategory.createEntry());
+                newCategory.getAuthor().setHasUpdates(true);
+            }
         }
     }
 
@@ -231,7 +244,7 @@ public class AuthorParser extends Parser {
         while (olit.hasNext()) {
             Link oldLink = olit.next();    
             int newLinkIndex = hasLink(newLinks, oldLink);
-            if(newLinkIndex > 0) {
+            if(newLinkIndex >= 0) {
                 Link newLink = newLinks.get(newLinkIndex);
                 oldLink.setTitle(newLink.getTitle());
                 newLinks.remove(newLinkIndex);
@@ -239,31 +252,34 @@ public class AuthorParser extends Parser {
                 olit.remove();
             }
         }
-        if(!newWorks.isEmpty()) {
-            oldWorks.addAll(newWorks);    
+        if(!newLinks.isEmpty()) {
+            for (Link newLink : newLinks) {
+                oldLinks.add(newLink.createEntity());
+            }
         }
-        while (olit.hasNext()) {
+        while (owit.hasNext()) {
             Work oldWork = owit.next();
             int newWorkIndex = hasWork(newWorks, oldWork);
-            if(newWorkIndex > 0) {
+            if(newWorkIndex >= 0) {
                 Work newWork = newWorks.get(newWorkIndex);
                 updateWork(oldWork, newWork);
-                if(oldWork.getContentLength() != newWork.getContentLength()) {
+                if(!oldWork.getSize().equals(newWork.getSize())) {
                     oldWork.setChanged(true);
+                    oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
+                    oldWork.setSize(newWork.getSize());
                     oldWork.getAuthor().setHasUpdates(true);
-                    oldWork.setContentLength(newWork.getContentLength());
                 }
                 newWorks.remove(newWorkIndex);
             } else {
-                olit.remove();
+                owit.remove();
             }
         }
         if(!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
                 newWork.getAuthor().setHasUpdates(true);
+                oldWorks.add(newWork.createEntity());
             }
-            oldWorks.addAll(newWorks);
         }
     }
     
@@ -307,7 +323,6 @@ public class AuthorParser extends Parser {
     private void updateWork(Work into, Work from) {
         into.setTitle(from.getTitle());
         into.setLink(from.getLink());
-        into.setSize(from.getSize());
         into.setRate(from.getRate());
         into.setKudoed(from.getKudoed());
         into.setGenres(from.getGenres());

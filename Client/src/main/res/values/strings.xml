@@ -105,6 +105,6 @@
     </string>
     <string name="comments_goto">Перейти</string>
     <string name="comments_comment_number">Номер комментария:</string>
-    <string name="favorites_new">New</string>
+    <string name="favorites_update">Update</string>
     <string name="author_observable">Отслеживать обновления</string>
 </resources>

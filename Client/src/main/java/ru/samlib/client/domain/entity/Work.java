@@ -51,14 +51,14 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Author author;
     String imageLink;
     Integer size;
+    Integer sizeDiff;
     BigDecimal rate;
     Integer kudoed;
     BigDecimal expertRate;
     Integer expertKudoed;
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ForeignKey
-    @OneToOne
+    @ManyToOne
     Category category;
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;
@@ -69,8 +69,11 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean changed = false;
-    long contentLength;
+    @ForeignKey
+    @OneToOne
+    Bookmark bookmark;
     String md5;
+
 
     @Transient
     CachedResponse cachedResponse;
@@ -87,36 +90,35 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         setLink(link);
     }
 
-    public Work(Work other) {
-        this.id = other.id;
-        this.title = other.title;
-        this.link = other.link;
-        this.author = other.author;
-        this.imageLink = other.imageLink;
-        this.size = other.size;
-        this.rate = other.rate;
-        this.kudoed = other.kudoed;
-        this.expertRate = other.expertRate;
-        this.expertKudoed = other.expertKudoed;
-        this.genres = other.genres;
-        this.type = other.type;
-        this.category = other.category;
-        this.annotationBlocks = other.annotationBlocks;
-        this.createDate = other.createDate;
-        this.updateDate = other.updateDate;
-        this.cachedDate = other.cachedDate;
-        this.state = other.state;
-        this.description = other.description;
-        this.hasIllustration = other.hasIllustration;
-        this.hasComments = other.hasComments;
-        this.changed = other.changed;
-        this.contentLength = other.contentLength;
-        this.md5 = other.md5;
-        this.cachedResponse = other.cachedResponse;
-        this.rawContent = other.rawContent;
-        this.indents = other.indents;
-        this.autoBookmarks = other.autoBookmarks;
-        this.parsed = other.parsed;
+    public WorkEntity createEntity() {
+        if(getClass() == WorkEntity.class) return (WorkEntity) this;
+        WorkEntity entity = new WorkEntity();
+        entity.setTitle(title);
+        entity.setLink(link);
+        entity.setChanged(changed);
+        entity.setCreateDate(createDate);
+        entity.setDescription(description);
+        entity.setExpertKudoed(expertKudoed);
+        entity.setExpertRate(expertRate);
+        entity.setImageLink(imageLink);
+        entity.setBookmark(bookmark);
+        entity.setMd5(md5);
+        entity.setCachedDate(cachedDate);
+        entity.setAuthor(author);
+        entity.setUpdateDate(updateDate);
+        entity.setGenres(genres);
+        entity.setType(type);
+        entity.setHasComments(hasComments);
+        entity.setHasIllustration(hasIllustration);
+        entity.setAnnotationBlocks(annotationBlocks);
+        entity.setId(id);
+        entity.setSizeDiff(sizeDiff);
+        entity.setSize(size);
+        entity.setCategory(category);
+        entity.setKudoed(kudoed);
+        entity.setRate(rate);
+        entity.setState(state);
+        return entity;
     }
 
     public void setLink(String link) {
@@ -133,7 +135,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public String getLink() {
-        return author.getLink() + link;
+        if(link != null && !link.contains(author.getLink())) {
+            link = author.getLink() + link;
+        }
+        return link;
     }
 
     public Link getIllustrationsLink() {

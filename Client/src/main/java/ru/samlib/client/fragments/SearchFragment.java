@@ -97,7 +97,7 @@ public class SearchFragment extends ListFragment {
                 List<String> subtitle = new ArrayList<>();
                 if (work.getType() != Type.OTHER) {
                     subtitle.add(getString(R.string.item_form_label));
-                    subtitle.add(work.getType().toString());
+                    subtitle.add(work.getType().getTitle());
                 }
                 if (work.getGenres() != null) {
                     subtitle.add(getString(R.string.item_genres_label));
