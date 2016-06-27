@@ -1,5 +1,7 @@
 package ru.samlib.client.database;
 
+
+
 import io.requery.Converter;
 
 import java.math.BigDecimal;
@@ -7,21 +9,21 @@ import java.math.BigDecimal;
 /**
  * Created by 0shad on 18.06.2016.
  */
-public class BigDecimalConverter implements Converter<BigDecimal, String>{
+public class BigDecimalConverter implements Converter<BigDecimal, String> {
 
 
     @Override
-    public Class<BigDecimal> mappedType() {
+    public Class<BigDecimal> getMappedType() {
         return BigDecimal.class;
     }
 
     @Override
-    public Class<String> persistedType() {
+    public Class<String> getPersistedType() {
         return String.class;
     }
 
     @Override
-    public Integer persistedSize() {
+    public Integer getPersistedSize() {
         return null;
     }
 

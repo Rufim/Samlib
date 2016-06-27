@@ -19,19 +19,19 @@ public class ListConverter implements Converter<List, String> {
     private static final char ENUM = 'E';
 
     @Override
-    public Class<List> mappedType() {
+    public Class<List> getMappedType() {
         //noinspection unchecked
         return (Class) List.class;
     }
 
     @Override
-    public Class<String> persistedType() {
+    public Class<String> getPersistedType() {
         return String.class;
     }
 
     @Nullable
     @Override
-    public Integer persistedSize() {
+    public Integer getPersistedSize() {
         return null;
     }
 

@@ -110,6 +110,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
             adapter.notifyDataSetChanged();
             Intent i = new Intent(getActivity(), SectionActivity.class);
             Author author = new Author(authorEntity.getLink());
+            author.setId(authorEntity.getId());
             i.putExtra(Constants.ArgsName.AUTHOR, author);
             startActivity(i);
         }
