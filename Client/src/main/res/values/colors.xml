@@ -27,6 +27,7 @@
     <color name="red_light">#ffdd3030</color>
     <color name="light_grey">#ffafafaf</color>
     <color name="deep_grey">#ff767676</color>
+    <color name="deep_grey_transparent">#8c767676</color>
     <color name="transparent">#00000000</color>
 
     <!-- Base colors -->

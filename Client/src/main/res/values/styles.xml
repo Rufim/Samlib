@@ -67,6 +67,16 @@
         <item name="android:layout_height">2px</item>
         <item name="android:background">@color/light_grey</item>
     </style>
+    <style name="vertical_spacer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">0dp</item>
+    </style>
+    <style name="horizontal_spacer">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_width">0dp</item>
+    </style>
     <style name="author_info">
         <item name="android:textSize">@dimen/text_large</item>
         <item name="android:textStyle">bold</item>

@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -17,12 +18,15 @@ import io.requery.sql.EntityDataStore;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.adapter.ItemListAdapter;
+import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
+import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.util.GuiUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -36,6 +40,8 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
 
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
+    private boolean loading;
+
     public static ObservableFragment newInstance() {
         return newInstance(ObservableFragment.class);
     }
@@ -43,6 +49,8 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ObservableUpdateJob.start();
+        enableScrollbar = false;
+        loading = true;
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -75,6 +83,11 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         initializeAuthor(event.author);
     }
 
+    public void onEventMainThread(ObservableCheckedEvent event) {
+        loading = false;
+        adapter.notifyItemChanged(0);
+    }
+
     private void initializeAuthor(AuthorEntity author) {
       if(author.isHasUpdates()) {
           final int index;
@@ -83,7 +96,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
                   index = i;
                   adapter.getItems().set(i, author);
                   Handler handler = new Handler(Looper.getMainLooper());
-                  handler.post(() -> adapter.notifyItemChanged(index));
+                  handler.post(() -> adapter.notifyItemChanged(index + 1));
                   break;
               }
           }
@@ -96,40 +109,56 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends ItemListAdapter<AuthorEntity> {
+    protected class FavoritesAdapter extends MultiItemListAdapter<AuthorEntity> {
 
         public FavoritesAdapter() {
-            super(R.layout.item_favorites);
+            super(true, R.layout.header_observable, R.layout.item_favorites);
         }
 
         @Override
         public void onClick(View view, int position) {
-            AuthorEntity authorEntity = getItems().get(position);
-            authorEntity.setHasUpdates(false);
-            getDataStore().update(authorEntity);
-            adapter.notifyDataSetChanged();
-            Intent i = new Intent(getActivity(), SectionActivity.class);
-            Author author = new Author(authorEntity.getLink());
-            author.setId(authorEntity.getId());
-            i.putExtra(Constants.ArgsName.AUTHOR, author);
-            startActivity(i);
+            if(!loading) {
+                AuthorEntity authorEntity = getItem(position);
+                authorEntity.setHasUpdates(false);
+                getDataStore().update(authorEntity);
+                adapter.notifyDataSetChanged();
+                Intent i = new Intent(getActivity(), SectionActivity.class);
+                Author author = new Author(authorEntity.getLink());
+                author.setId(authorEntity.getId());
+                i.putExtra(Constants.ArgsName.AUTHOR, author);
+                startActivity(i);
+            }
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            TextView authorTextView = holder.getView(R.id.favorites_author);
-            TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
-            TextView newText = holder.getView(R.id.favorites_update);
-            TextView annotationTextView = holder.getView(R.id.favorites_annotation);
-            Author author = getItems().get(position);
-            authorTextView.setText(author.getFullName());
-            lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
-            annotationTextView.setText(author.getAnnotation());
-            if(author.isHasUpdates()) {
-                newText.setVisibility(View.VISIBLE);
-            } else {
-                newText.setVisibility(View.GONE);
+            switch (holder.getItemViewType()) {
+                case R.layout.header_observable:
+                    if(!loading) {
+                        ((LinearLayout)holder.getItemView()).removeAllViews();
+                    }
+                    break;
+                case R.layout.item_favorites:
+                    TextView authorTextView = holder.getView(R.id.favorites_author);
+                    TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
+                    TextView newText = holder.getView(R.id.favorites_update);
+                    TextView annotationTextView = holder.getView(R.id.favorites_annotation);
+                    Author author = getItem(position);
+                    authorTextView.setText(author.getFullName());
+                    lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
+                    annotationTextView.setText(author.getAnnotation());
+                    if (author.isHasUpdates()) {
+                        newText.setVisibility(View.VISIBLE);
+                    } else {
+                        newText.setVisibility(View.GONE);
+                    }
+                    break;
             }
+        }
+
+        @Override
+        public int getLayoutId(AuthorEntity item) {
+            return R.layout.item_favorites;
         }
     }
 

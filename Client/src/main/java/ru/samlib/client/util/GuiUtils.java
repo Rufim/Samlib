@@ -521,7 +521,11 @@ public class GuiUtils {
         }
         view.setAnimation(animation);
         animation.start();
-        ((View) view.getParent()).invalidate();
+        if(view.getParent() != null) {
+            ((View) view.getParent()).invalidate();
+        } else {
+            view.invalidate();
+        }
         return size;
     }
 

@@ -18,19 +18,18 @@ public class ListConverter implements Converter<List, String> {
     private static final char STRING = 'S';
     private static final char ENUM = 'E';
 
-    @Override
+
     public Class<List> getMappedType() {
         //noinspection unchecked
         return (Class) List.class;
     }
 
-    @Override
+
     public Class<String> getPersistedType() {
         return String.class;
     }
 
     @Nullable
-    @Override
     public Integer getPersistedSize() {
         return null;
     }
