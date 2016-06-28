@@ -37,6 +37,7 @@ public class MainActivity extends BaseActivity {
             replaceFragment(getResString(R.string.drawer_new), NewestFragment.class);
             setTitle(R.string.drawer_new);
         }
+
     }
 
     protected void handleIntent(Intent intent) {

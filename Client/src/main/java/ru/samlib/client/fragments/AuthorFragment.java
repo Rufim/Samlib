@@ -16,14 +16,9 @@ import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import de.greenrobot.event.EventBus;
-import io.requery.Persistable;
-import io.requery.query.JoinAndOr;
-import io.requery.query.Result;
-import io.requery.query.WhereAndOr;
-import io.requery.sql.EntityDataStore;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
-import ru.samlib.client.R;
 import ru.samlib.client.App;
+import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Linkable;
@@ -55,6 +50,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private Author author;
     private Category category;
+    private ObservableService observableModule;
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
         show(builder, container, AuthorFragment.class, Constants.ArgsName.LINK, link);
@@ -81,19 +77,19 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 try {
                     if(author.getId() == null) {
-                        AuthorEntity authorEntity = ObservableService.getInstance().getAuthorByLink(author.getLink());
+                        AuthorEntity authorEntity = observableModule.getAuthorByLink(author.getLink());
                         if (authorEntity != null) {
                             author = authorEntity;
                         }
                         author = new AuthorParser(author).parse();
                         if (authorEntity != null) {
-                            ObservableService.getInstance().updateAuthor(authorEntity);
+                            observableModule.upsertAuthor(authorEntity);
                             if(authorEntity.isHasUpdates()) {
                                 postEvent(new AuthorUpdatedEvent(authorEntity));
                             }
                         }
                     } else {
-                        author = ObservableService.getInstance().getAuthorById(author.getId());
+                        author = observableModule.getAuthorById(author.getId());
                     }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
@@ -111,6 +107,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        App.getInstance().getComponent().inject(this);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.author, menu);
         MenuItem item = menu.findItem(R.id.action_author_observable);
@@ -123,15 +125,14 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        EntityDataStore<Persistable> dataStore = App.getInstance().getDataStore();
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if(!item.isChecked()) {
-                    dataStore.insert(author.createEntry());
+                    observableModule.insertAuthor(author.createEntry());
                     item.setChecked(true);
                     return true;
                 } else {
-                    dataStore.delete((AuthorEntity) author);
+                    observableModule.deleteAuthor((AuthorEntity) author);
                     item.setChecked(false);
                     return true;
                 }

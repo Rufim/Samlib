@@ -88,8 +88,8 @@ public class FragmentBuilder {
     private boolean newFragment = false;
     private boolean removeIfExists = false;
     private boolean clearBackStack = false;
-    private int inAnimationId = R.anim.slide_in_left;
-    private int outAnimationId = R.anim.slide_out_right;
+    private int inAnimationId = -1;
+    private int outAnimationId = -1;
     private String clearBackStackUpToName = null;
     private Fragment fragmentInvoker;
 

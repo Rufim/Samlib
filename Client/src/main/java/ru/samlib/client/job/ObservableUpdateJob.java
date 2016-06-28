@@ -1,8 +1,6 @@
 package ru.samlib.client.job;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v4.util.CircularArray;
 import android.util.Log;
 import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
@@ -12,27 +10,22 @@ import com.evernote.android.job.JobRequest;
 import de.greenrobot.event.EventBus;
 import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
-import ru.samlib.client.App;
-import ru.samlib.client.database.SnappyHelper;
-import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.domain.entity.*;
-import ru.samlib.client.domain.events.AuthorParsedEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.ObservableService;
 
-import java.net.MalformedURLException;
-import java.util.Iterator;
-import java.util.Set;
-
-;
+;import javax.inject.Inject;
 
 /**
  * Created by 0shad on 01.03.2016.
  */
 public class ObservableUpdateJob extends Job {
+
+    @Inject
+    ObservableService observableService;
 
     private static final String TAG = ObservableUpdateJob.class.getSimpleName();
     public static int jobId = -1;
@@ -61,10 +54,10 @@ public class ObservableUpdateJob extends Job {
     }
 
     public void updateObservable() {
-        Stream.of(ObservableService.getInstance().getObservableAuthors()).forEach(author -> {
+        Stream.of(observableService.getObservableAuthors()).forEach(author -> {
             try {
                 AuthorParser parser = new AuthorParser(author);
-                author = ObservableService.getInstance().updateAuthor((AuthorEntity) parser.parse());
+                author = observableService.upsertAuthor((AuthorEntity) parser.parse());
                 author.setParsed(true);
                 postEvent(new AuthorUpdatedEvent(author));
                 Log.e(TAG, "Author " +  author.getShortName() + " updated");
