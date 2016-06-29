@@ -349,6 +349,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                     if (work.isChanged() && work.getId() != null) {
                         holder.getView(R.id.work_item_update).setVisibility(View.VISIBLE);
+                        if (work.getSizeDiff() != null) {
+                            GuiUtils.setText(holder.getView(R.id.work_item_update), R.string.favorites_update);
+                        } else {
+                            GuiUtils.setText(holder.getView(R.id.work_item_update), R.string.favorites_new);
+                        }
                     } else {
                         holder.getView(R.id.work_item_update).setVisibility(View.GONE);
                     }

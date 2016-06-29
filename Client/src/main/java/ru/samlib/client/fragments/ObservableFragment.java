@@ -52,9 +52,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ObservableUpdateJob.start();
         enableScrollbar = false;
-        loading = true;
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -89,7 +87,14 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
 
     public void onEventMainThread(ObservableCheckedEvent event) {
         loading = false;
-        adapter.notifyItemChanged(0);
+        swipeRefresh.setRefreshing(false);
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        ObservableUpdateJob.start();
+        loading = true;
+        swipeRefresh.setRefreshing(true);
     }
 
     private void initializeAuthor(AuthorEntity author) {
@@ -116,7 +121,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
     protected class FavoritesAdapter extends MultiItemListAdapter<AuthorEntity> {
 
         public FavoritesAdapter() {
-            super(true, R.layout.header_observable, R.layout.item_favorites);
+            super(false, R.layout.item_favorites);
         }
 
         @Override
@@ -137,11 +142,6 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
-                case R.layout.header_observable:
-                    if(!loading) {
-                        ((LinearLayout)holder.getItemView()).removeAllViews();
-                    }
-                    break;
                 case R.layout.item_favorites:
                     TextView authorTextView = holder.getView(R.id.favorites_author);
                     TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
