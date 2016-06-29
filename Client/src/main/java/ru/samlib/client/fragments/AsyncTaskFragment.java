@@ -110,7 +110,7 @@ public abstract class AsyncTaskFragment<Params, Progress, Result> extends Fragme
     public void execute(FragmentManager manager, String tag) {
         this.manager = manager;
         Fragment fragment = manager.findFragmentByTag(tag);
-        if (fragment == null) manager.beginTransaction().add(this, tag);
+        if (fragment == null) manager.beginTransaction().add(this, tag).commitAllowingStateLoss();
         if (fragment instanceof AsyncTaskFragment) {
             AsyncTaskFragment oldAsync = (AsyncTaskFragment) fragment;
             if (!oldAsync.eq(this)) {

@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 @Singleton
 @Component(modules={AppModule.class})
 public interface AppComponent {
-    ObservableService createObservableService();
     void inject(MainActivity activity);
     void inject(AuthorFragment fragment);
     void inject(ObservableService service);

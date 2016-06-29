@@ -35,6 +35,7 @@ import ru.samlib.client.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.PicassoImageHandler;
 
+import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,7 +51,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private Author author;
     private Category category;
-    private ObservableService observableModule;
+    @Inject
+   ObservableService observableModule;
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
         show(builder, container, AuthorFragment.class, Constants.ArgsName.LINK, link);

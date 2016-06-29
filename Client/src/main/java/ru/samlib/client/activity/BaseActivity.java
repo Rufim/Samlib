@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -60,6 +61,9 @@ public abstract class BaseActivity extends AppCompatActivity implements Fragment
 
     protected ActionBar actionBar;
     protected ActionBarDrawerToggle actionBarDrawerToggle;
+    private static BaseActivity activity;
+
+    boolean doubleBackToExitPressedOnce = false;
 
     public interface BackCallback {
         boolean allowBackPress();
@@ -101,6 +105,13 @@ public abstract class BaseActivity extends AppCompatActivity implements Fragment
         //Setting the actionbarToggle to drawer layout
         drawerLayout.setDrawerListener(actionBarDrawerToggle);
         shouldDisplayHomeUp();
+        activity = this;
+    }
+
+    @Override
+    protected void onDestroy() {
+        activity = null;
+        super.onDestroy();
     }
 
     @Override
@@ -147,7 +158,9 @@ public abstract class BaseActivity extends AppCompatActivity implements Fragment
         super.onStop();
     }
 
-
+    public static BaseActivity getInstance() {
+        return activity;
+    }
 
     @Override
     public void onBackPressed() {
@@ -155,9 +168,18 @@ public abstract class BaseActivity extends AppCompatActivity implements Fragment
         if (fr instanceof BackCallback) {
             if (((BackCallback) fr).allowBackPress()) super.onBackPressed();
         } else {
-            super.onBackPressed();
+            if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
+                if (doubleBackToExitPressedOnce) {
+                    super.onBackPressed();
+                    return;
+                }
+                this.doubleBackToExitPressedOnce = true;
+                showSnackbar(R.string.back_to_exit);
+                new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+            } else {
+                super.onBackPressed();
+            }
         }
-
     }
 
     protected abstract void handleIntent(Intent intent);

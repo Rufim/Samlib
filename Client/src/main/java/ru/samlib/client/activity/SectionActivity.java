@@ -238,6 +238,19 @@ public class SectionActivity extends BaseActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        Fragment fr = getCurrentFragment();
+        if (fr instanceof BackCallback) {
+            if (((BackCallback) fr).allowBackPress()) super.onBackPressed();
+        } else if(MainActivity.getInstance() == null) {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     public void onEventMainThread(AuthorParsedEvent event) {
         initializeAuthor(event.author);
     }

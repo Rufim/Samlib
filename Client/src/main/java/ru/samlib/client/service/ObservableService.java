@@ -17,13 +17,15 @@ import java.util.List;
 
 public class ObservableService {
 
+    enum Action {INSERT,UPDATE,DELETE,UPSERT}
 
     @Inject
-    public EntityDataStore<Persistable> dataStore;
+    EntityDataStore<Persistable> dataStore;
 
     private JoinAndOr<Result<AuthorEntity>> joinAndOr;
 
     public ObservableService() {
+        App.getInstance().getComponent().inject(this);
         joinAndOr = dataStore.select(AuthorEntity.class).distinct()
                 .leftJoin(CategoryEntity.class).on(CategoryEntity.AUTHOR_ID.equal(AuthorEntity.ID))
                 .leftJoin(WorkEntity.class).on(WorkEntity.AUTHOR_ID.equal(AuthorEntity.ID).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
@@ -31,19 +33,59 @@ public class ObservableService {
     }
 
     public AuthorEntity insertAuthor(AuthorEntity entity) {
-        AuthorEntity createdEntity = dataStore.insert(entity);
-        for (Category category : entity.getCategories()) {
-            dataStore.insert((CategoryEntity)category);
-        }
-        return createdEntity;
+        return doActionAuthor(Action.INSERT, entity);
     }
 
     public AuthorEntity upsertAuthor(AuthorEntity entity) {
-        AuthorEntity updatedEntity = dataStore.upsert(entity);
-        for (Category category : entity.getCategories()) {
-            dataStore.upsert((CategoryEntity)category);
+        return doActionAuthor(Action.UPDATE, entity);
+    }
+
+    public AuthorEntity doActionAuthor(Action action, AuthorEntity authorEntity) {
+        AuthorEntity result = (AuthorEntity) doAction(action, authorEntity);
+        for (Category category : authorEntity.getCategories()) {
+            category.setAuthor(result);
+            doAction(action, category);
+            for (Work work : category.getWorks()) {
+                work.setCategory(category);
+                doAction(action, work);
+            }
+            for (Link link : category.getLinks()) {
+                link.setCategory(category);
+                doAction(action, link);
+            }
         }
-        return updatedEntity;
+        for (Work work : authorEntity.getRootWorks()) {
+            work.setAuthor(result);
+            doAction(action, work);
+        }
+        for (Link link : authorEntity.getRootLinks()) {
+            link.setAuthor(result);
+            doAction(action, link);
+        }
+        if(result != null) {
+            return result;
+        } else {
+            return authorEntity;
+        }
+    }
+
+    private Persistable doAction(Action action, Object value) {
+        Persistable result = null;
+        if(value instanceof Persistable) {
+            Persistable entity = (Persistable) value;
+            switch (action) {
+                case INSERT:
+                    result = dataStore.insert(entity);
+                    break;
+                case UPDATE:
+                    result = dataStore.update(entity);
+                    break;
+                case DELETE:
+                    dataStore.delete(entity);
+                    break;
+            }
+        }
+        return result;
     }
 
     public void deleteAuthor(AuthorEntity entity) {

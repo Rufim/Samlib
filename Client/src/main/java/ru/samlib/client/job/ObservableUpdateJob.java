@@ -10,6 +10,7 @@ import com.evernote.android.job.JobRequest;
 import de.greenrobot.event.EventBus;
 import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
+import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
@@ -24,11 +25,16 @@ import ru.samlib.client.service.ObservableService;
  */
 public class ObservableUpdateJob extends Job {
 
+
     @Inject
     ObservableService observableService;
 
     private static final String TAG = ObservableUpdateJob.class.getSimpleName();
     public static int jobId = -1;
+
+    public ObservableUpdateJob() {
+        App.getInstance().getComponent().inject(this);
+    }
 
     @NonNull
     @Override
@@ -89,7 +95,7 @@ public class ObservableUpdateJob extends Job {
 
     public static void start() {
         AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
-                .setExecutionWindow(100L, 2000L)
+                .setExecutionWindow(1L, 2000L)
                 .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
                 .build()
                 .schedule();
