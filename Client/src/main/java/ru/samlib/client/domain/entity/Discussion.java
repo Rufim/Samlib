@@ -1,6 +1,7 @@
 package ru.samlib.client.domain.entity;
 
 import lombok.Data;
+import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Validatable;
 
@@ -24,7 +25,7 @@ public class Discussion implements Validatable, Findable {
 
 
     @Override
-    public boolean find(Object query) {
+    public boolean find(ItemListAdapter.FilterEvent query) {
         return work.find(query);
     }
 }

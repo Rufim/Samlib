@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.Valuable;
 import ru.samlib.client.domain.Validatable;
@@ -80,16 +81,7 @@ public class SearchParser extends PageListParser {
     @Override
     protected Validatable parseRow(Element row, int position) {
         Elements tbodys = row.select("tbody");
-        Work work = new Work() {
-            @Override
-            public boolean find(Object query) {
-                if (query instanceof String) {
-                    return getTitle().toLowerCase().contains(query.toString().toLowerCase());
-                } else {
-                    return super.find(query);
-                }
-            }
-        };
+        Work work = new Work();
         if (tbodys.size() > 0) {
             Elements workElements = tbodys.get(0).select("a");
             Author author = new Author();

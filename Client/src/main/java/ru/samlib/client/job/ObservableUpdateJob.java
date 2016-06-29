@@ -63,7 +63,7 @@ public class ObservableUpdateJob extends Job {
         Stream.of(observableService.getObservableAuthors()).forEach(author -> {
             try {
                 AuthorParser parser = new AuthorParser(author);
-                author = observableService.upsertAuthor((AuthorEntity) parser.parse());
+                author = observableService.updateAuthor((AuthorEntity) parser.parse());
                 author.setParsed(true);
                 postEvent(new AuthorUpdatedEvent(author));
                 Log.e(TAG, "Author " +  author.getShortName() + " updated");

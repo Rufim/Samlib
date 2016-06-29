@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.TextView;
 import ru.samlib.client.domain.Findable;
+import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.util.GuiUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.util.*;
 
@@ -22,7 +24,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
     protected List<I> originalItems = null;
     protected Set<ViewHolder> currentHolders = Collections.newSetFromMap(new WeakHashMap<>());
     protected final  int layoutId;
-    protected Object lastQuery;
+    protected FilterEvent lastQuery;
     protected boolean bindViews = true;
     protected boolean bindClicks = true;
 
@@ -171,7 +173,7 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         }
     }
 
-    public List<I> filter(Object query) {
+    public List<I> filter(FilterEvent query) {
         if (query == null) {
             return items;
         }
@@ -184,11 +186,11 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         return founded;
     }
 
-    public List<I> find(Object query, boolean original) {
+    public List<I> find(FilterEvent query, boolean original) {
         return find(query, original ? getOriginalItems() : getItems());
     }
 
-    public List<I> find(Object query, List<I> items) {
+    public List<I> find(FilterEvent query, List<I> items) {
         if (query == null) return items;
         final List<I> filteredList = new ArrayList<>();
         for (I item : items) {
@@ -363,6 +365,23 @@ public abstract class ItemListAdapter<I> extends RecyclerView.Adapter<ItemListAd
         @Override
         public int hashCode() {
             return views != null ? views.hashCode() : 0;
+        }
+    }
+
+    public static class FilterEvent implements Event {
+        public String query;
+
+        public FilterEvent(String query) {
+            this.query = query;
+        }
+
+        public boolean isEmpty() {
+            return TextUtils.isEmpty(query);
+        }
+
+        @Override
+        public String toString() {
+            return query;
         }
     }
 }

@@ -52,7 +52,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     private Author author;
     private Category category;
     @Inject
-   ObservableService observableModule;
+    ObservableService observableService;
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
         show(builder, container, AuthorFragment.class, Constants.ArgsName.LINK, link);
@@ -79,19 +79,19 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 try {
                     if(author.getId() == null) {
-                        AuthorEntity authorEntity = observableModule.getAuthorByLink(author.getLink());
+                        AuthorEntity authorEntity = observableService.getAuthorByLink(author.getLink());
                         if (authorEntity != null) {
                             author = authorEntity;
                         }
                         author = new AuthorParser(author).parse();
                         if (authorEntity != null) {
-                            observableModule.upsertAuthor(authorEntity);
+                            observableService.updateAuthor(authorEntity);
                             if(authorEntity.isHasUpdates()) {
                                 postEvent(new AuthorUpdatedEvent(authorEntity));
                             }
                         }
                     } else {
-                        author = observableModule.getAuthorById(author.getId());
+                        author = observableService.getAuthorById(author.getId());
                     }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
@@ -130,11 +130,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if(!item.isChecked()) {
-                    observableModule.insertAuthor(author.createEntry());
+                    author = observableService.insertAuthor(author.createEntry());
                     item.setChecked(true);
                     return true;
                 } else {
-                    observableModule.deleteAuthor((AuthorEntity) author);
+                    observableService.deleteAuthor((AuthorEntity) author);
                     item.setChecked(false);
                     return true;
                 }

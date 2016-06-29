@@ -13,14 +13,11 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import butterknife.Bind;
-import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
-import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.GuiUtils;
-import ru.samlib.client.util.TextUtils;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 import java.io.IOException;
@@ -62,7 +59,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
     protected DataTask dataTask;
     protected FilterTask filterTask;
     protected MoveTask moveToIndex;
-    protected FilterEvent lastSearchQuery;
+    protected ItemListAdapter.FilterEvent lastSearchQuery;
     protected boolean enableFiltering = false;
     protected boolean enableScrollbar = true;
     protected long lastFilteringTime = 0;
@@ -93,8 +90,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
-    protected FilterEvent getNewFilterEvent(String query) {
-        return new FilterEvent(query);
+    protected ItemListAdapter.FilterEvent getNewFilterEvent(String query) {
+        return new ItemListAdapter.FilterEvent(query);
     }
 
     @Override
@@ -121,7 +118,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
-    public void filter(FilterEvent filterEvent) {
+    public void filter(ItemListAdapter.FilterEvent filterEvent) {
         adapter.enterFilteringMode();
         if (filterTask == null) {
             lastSearchQuery = null;
@@ -473,9 +470,9 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     public class FilterTask implements Runnable {
 
-        private final Object query;
+        private final ItemListAdapter.FilterEvent query;
 
-        public FilterTask(Object query) {
+        public FilterTask(ItemListAdapter.FilterEvent query) {
             this.query = query;
         }
 
@@ -501,22 +498,6 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
-    public static class FilterEvent implements Event {
-        public String query;
-
-        public FilterEvent(String query) {
-            this.query = query;
-        }
-
-        public boolean isEmpty() {
-            return TextUtils.isEmpty(query);
-        }
-
-        @Override
-        public String toString() {
-            return query;
-        }
-    }
 }
 
 

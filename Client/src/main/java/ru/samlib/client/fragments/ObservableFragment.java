@@ -46,6 +46,10 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         return newInstance(ObservableFragment.class);
     }
 
+    public ObservableFragment() {
+        enableFiltering = true;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ObservableUpdateJob.start();

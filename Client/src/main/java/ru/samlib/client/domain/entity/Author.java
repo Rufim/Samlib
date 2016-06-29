@@ -6,6 +6,8 @@ import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import ru.samlib.client.adapter.ItemListAdapter;
+import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -24,7 +26,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-public class Author implements Serializable, Linkable, Validatable, Parsable {
+public class Author implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
@@ -63,10 +65,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     List<Link> rootLinks = new ArrayList<>();
     @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> rootWorks = new ArrayList<>();
-    @ManyToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Author> friendList = new ArrayList<>();
-    @ManyToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Author> friendOfList = new ArrayList<>();
+    @Transient
+    List<Author> friendList  = new ArrayList<>();
+    @Transient
+    List<Author> friendOfList  = new ArrayList<>();
     Integer friends;
     Integer friendsOf;
 
@@ -135,25 +137,25 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
         entity.setLastUpdateDate(lastUpdateDate);
         for (Category category : categories) {
             category.setAuthor(entity);
-            entity.getCategories().add(category.createEntry());
+            entity.addCategory(category.createEntry());
         }
         for (Work recommendation : recommendations) {
             recommendation.setAuthor(entity);
-            entity.getRecommendations().add(recommendation.createEntity());
+            entity.addRecommendation(recommendation.createEntity());
         }
         for (Work rootWork : rootWorks) {
             rootWork.setAuthor(entity);
-            entity.getRootWorks().add(rootWork.createEntity());
+            entity.addRootLink(rootWork.createEntity());
         }
         for (Link rootLink : rootLinks) {
             rootLink.setAuthor(entity);
-            entity.getRootLinks().add(rootLink.createEntity());
+            entity.addRootLink(rootLink.createEntity());
         }
         for (Author author : friendList) {
-            entity.getFriendList().add(author.createEntry());
+            entity.addFriend(author.createEntry());
         }
         for (Author author : friendOfList) {
-            entity.getFriendOfList().add(author.createEntry());
+            entity.addFriendOf(author.createEntry());
         }
         return entity;
     }
@@ -218,40 +220,40 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
     }
 
     public List<Category> getLinkableCategory() {
-        return Stream.of(categories)
+        return Stream.of(getCategories())
                 .filter(sec -> sec.getLink() != null)
                 .collect(Collectors.toList());
     }
 
     public List<Category> getStaticCategory() {
-        return Stream.of(categories)
+        return Stream.of(getCategories())
                 .filter(sec -> sec.getLink() == null)
                 .collect(Collectors.toList());
     }
 
     public void addCategory(Category category) {
-        this.categories.add(category);
+        this.getCategories().add(category);
     }
 
     public void addFriend(Author friend) {
-        this.friendList.add(friend);
+        this.getFriendList().add(friend);
     }
 
     public void addFriendOf(Author friend) {
-        this.friendOfList.add(friend);
+        this.getFriendOfList().add(friend);
     }
 
     public void addRecommendation(Work work) {
-        this.recommendations.add(work);
+        this.getRecommendations().add(work);
     }
 
 
     public void addRootLink(Linkable linkable) {
         if(linkable instanceof Work) {
-            this.rootWorks.add((Work) linkable);
+            this.getRootWorks().add((Work) linkable);
         }
         if(linkable instanceof Link) {
-            this.rootLinks.add((Link) linkable);
+            this.getRootLinks().add((Link) linkable);
         }
     }
 
@@ -298,6 +300,11 @@ public class Author implements Serializable, Linkable, Validatable, Parsable {
                 return true;
             }
         }
+        return false;
+    }
+
+    @Override
+    public boolean find(ItemListAdapter.FilterEvent query) {
         return false;
     }
 }

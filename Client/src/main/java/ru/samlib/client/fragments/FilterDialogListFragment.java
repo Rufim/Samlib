@@ -5,6 +5,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
+import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;
@@ -31,7 +32,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
     }
 
     @Override
-    protected ListFragment.FilterEvent getNewFilterEvent(String query) {
+    protected ItemListAdapter.FilterEvent getNewFilterEvent(String query) {
         return new FilterEvent(query);
     }
 
@@ -79,7 +80,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
     }
 
 
-    public static class FilterEvent extends ListFragment.FilterEvent implements Event {
+    public static class FilterEvent extends ItemListAdapter.FilterEvent implements Event {
 
         public final ArrayList<Genre> genres;
         public final boolean excluding;

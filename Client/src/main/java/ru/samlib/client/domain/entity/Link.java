@@ -24,9 +24,9 @@ public class Link implements Validatable, Linkable, Serializable {
     @OneToOne(mappedBy = "site")
     Author authorSite;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Author author;
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Category category;
 
     String title;

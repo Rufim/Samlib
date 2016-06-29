@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
@@ -43,11 +44,12 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     public static final String COMMENT_PREFIX = "/comment";
     public static final String ILLUSTRATION_PREFIX = "/img";
 
-    @Key @Generated
+    @Key
+    @Generated
     Integer id;
     String title;
     String link;
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Author author;
     String imageLink;
     Integer size;
@@ -58,7 +60,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer expertKudoed;
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Category category;
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;
@@ -91,10 +93,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public WorkEntity createEntity() {
-        if(getClass() == WorkEntity.class) return (WorkEntity) this;
+        if (getClass() == WorkEntity.class) return (WorkEntity) this;
         WorkEntity entity = new WorkEntity();
         entity.setTitle(title);
-        entity.setLink(link);
+        entity.setLink(getLink());
         entity.setChanged(changed);
         entity.setCreateDate(createDate);
         entity.setDescription(description);
@@ -122,7 +124,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public void setLink(String link) {
-        if(link == null) return;
+        if (link == null) return;
         link = ru.samlib.client.util.TextUtils.eraseHost(link);
         if (link.contains("/")) {
             if (author == null) {
@@ -135,14 +137,14 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public String getLink() {
-        if(link != null && !link.contains(author.getLink())) {
+        if (link != null && !link.contains(author.getLink())) {
             link = author.getLink() + link;
         }
         return link;
     }
 
     public Link getIllustrationsLink() {
-        return new Link(ILLUSTRATION_PREFIX + author.getLink() + link.replace(HTML_SUFFIX, "/index"+ HTML_SUFFIX));
+        return new Link(ILLUSTRATION_PREFIX + author.getLink() + link.replace(HTML_SUFFIX, "/index" + HTML_SUFFIX));
     }
 
     public Link getCommentsLink() {
@@ -223,37 +225,29 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
 
     @Override
-    public boolean find(Object query) {
-        String stringQuery;
-        if (query.getClass() == FilterDialogListFragment.FilterEvent.class) {
-            FilterDialogListFragment.FilterEvent filterQuery = (FilterDialogListFragment.FilterEvent) query;
-            ArrayList<Genre> genres = filterQuery.genres;
-            stringQuery = filterQuery.query;
-            boolean result = false;
-            if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
-                if(stringQuery != null) {
-                    result = true;
-                }
-                if(genres != null) {
-                    if (filterQuery.excluding) result = Collections.disjoint(genres, this.genres);
-                    else result = genres.containsAll(this.genres);
-                }
-                if(!result) return result;
-                if(filterQuery.genders != null && filterQuery.genders.size() != Gender.values().length) {
-                    Author author = getAuthor();
-                    Gender gender;
-                    if(author == null) gender = Gender.UNDEFINED;
-                    else gender = author.getGender();
-                    if(filterQuery.excluding) result = !filterQuery.genders.contains(gender);
-                    else result = filterQuery.genders.contains(gender);
-                }
-                return result;
+    public boolean find(ItemListAdapter.FilterEvent query) {
+        FilterDialogListFragment.FilterEvent filterQuery = (FilterDialogListFragment.FilterEvent) query;
+        ArrayList<Genre> genres = filterQuery.genres;
+        String stringQuery = filterQuery.query;
+        boolean result = false;
+        if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
+            if (stringQuery != null) {
+                result = true;
             }
-        } else {
-            stringQuery = query.toString().toLowerCase();
-            if (toString().toLowerCase().contains(stringQuery)) {
-                return true;
+            if (genres != null) {
+                if (filterQuery.excluding) result = Collections.disjoint(genres, this.genres);
+                else result = genres.containsAll(this.genres);
             }
+            if (!result) return result;
+            if (filterQuery.genders != null && filterQuery.genders.size() != Gender.values().length) {
+                Author author = getAuthor();
+                Gender gender;
+                if (author == null) gender = Gender.UNDEFINED;
+                else gender = author.getGender();
+                if (filterQuery.excluding) result = !filterQuery.genders.contains(gender);
+                else result = filterQuery.genders.contains(gender);
+            }
+            return result;
         }
         return false;
     }
