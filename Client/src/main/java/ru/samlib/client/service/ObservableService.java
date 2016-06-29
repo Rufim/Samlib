@@ -26,11 +26,12 @@ public class ObservableService {
     @Inject
     EntityDataStore<Persistable> dataStore;
 
-    private JoinAndOr<Result<AuthorEntity>> joinAndOr;
-
     public ObservableService() {
         App.getInstance().getComponent().inject(this);
-        joinAndOr = dataStore.select(AuthorEntity.class).distinct()
+    }
+
+    private JoinAndOr<Result<AuthorEntity>> getAuthorQuery() {
+        return dataStore.select(AuthorEntity.class).distinct()
                 .leftJoin(CategoryEntity.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.ID))
                 .leftJoin(WorkEntity.class).on(WorkEntity.AUTHOR_ID.equal(AuthorEntity.ID).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
                 .leftJoin(LinkEntity.class).on(LinkEntity.AUTHOR_ID.equal(AuthorEntity.ID).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
@@ -118,15 +119,15 @@ public class ObservableService {
     }
 
     public AuthorEntity getAuthorById(Integer id) {
-        return joinAndOr.where(AuthorEntity.ID.eq(id)).get().first();
+        return getAuthorQuery().where(AuthorEntity.ID.eq(id)).get().first();
     }
 
     public AuthorEntity getAuthorByLink(String link) {
-        return joinAndOr.where(AuthorEntity.LINK.eq(link)).get().firstOrNull();
+        return getAuthorQuery().where(AuthorEntity.LINK.eq(link)).get().firstOrNull();
     }
 
     public List<AuthorEntity> getObservableAuthors() {
-        return joinAndOr.get().toList();
+        return getAuthorQuery().get().toList();
     }
 
 }
