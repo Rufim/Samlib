@@ -134,7 +134,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     item.setChecked(true);
                     return true;
                 } else {
+                    Author save = new Author(author);
+                    save.setId(null);
                     observableService.deleteAuthor((AuthorEntity) author);
+                    for (Linkable linkable : adapter.getItems()) {
+                       save.addRootLink(linkable);
+                    }
+                    author = save;
                     item.setChecked(false);
                     return true;
                 }

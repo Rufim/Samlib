@@ -114,7 +114,7 @@ public class ObservableService {
     }
 
     public void deleteAuthor(AuthorEntity entity) {
-        dataStore.delete(entity);
+        doAction(Action.DELETE, entity);
     }
 
     public AuthorEntity getAuthorById(Integer id) {
