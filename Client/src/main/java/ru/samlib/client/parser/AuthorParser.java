@@ -267,7 +267,7 @@ public class AuthorParser extends Parser {
                     oldWork.setChanged(true);
                     oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
                     oldWork.setSize(newWork.getSize());
-                    oldWork.getAuthor().setHasUpdates(true);
+                    oldWork.getCategory().getAuthor().setHasUpdates(true);
                 }
                 newWorks.remove(newWorkIndex);
             } else {
@@ -277,7 +277,7 @@ public class AuthorParser extends Parser {
         if(!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
-                newWork.getAuthor().setHasUpdates(true);
+                newWork.getCategory().getAuthor().setHasUpdates(true);
                 oldWorks.add(newWork.createEntity());
             }
         }
