@@ -1,6 +1,12 @@
 package ru.samlib.client.job;
 
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
@@ -8,15 +14,17 @@ import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 
 import de.greenrobot.event.EventBus;
-import io.requery.Persistable;
-import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
+import ru.samlib.client.R;
+import ru.samlib.client.activity.SectionActivity;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.ObservableService;
+import ru.samlib.client.util.GuiUtils;
 
 ;import javax.inject.Inject;
 
@@ -43,14 +51,13 @@ public class ObservableUpdateJob extends Job {
             return Result.SUCCESS;
         }
         try {
-            updateObservable();
+            updateObservable(observableService, getContext());
         } catch (Exception e) {
             Log.e(TAG, "Unknown exception", e);
             return Result.FAILURE;
         } finally {
 
         }
-        postEvent(new ObservableCheckedEvent());
         return Result.SUCCESS;
     }
 
@@ -59,22 +66,25 @@ public class ObservableUpdateJob extends Job {
         EventBus.getDefault().post(event);
     }
 
-    public void updateObservable() {
-        Stream.of(observableService.getObservableAuthors()).forEach(author -> {
+    public static void updateObservable(ObservableService service, Context context) {
+        Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {
                 AuthorParser parser = new AuthorParser(author);
-                author = observableService.updateAuthor((AuthorEntity) parser.parse());
                 author.setParsed(true);
-                postEvent(new AuthorUpdatedEvent(author));
+                if(context != null && author.isHasUpdates() && author.isNotNotified()) {
+                    Intent intent = new Intent(context, SectionActivity.class);
+                    intent.setData(Uri.parse(Constants.Net.BASE_DOMAIN + author.getLink()));
+                    GuiUtils.sendNotification(context, R.drawable.ic_update_white_36dp, "Автор обновился", author.getShortName(), intent, "observable");
+                    author.setNotNotified(false);
+                }
+                author = service.updateAuthor((AuthorEntity) parser.parse());
+                EventBus.getDefault().post(new AuthorUpdatedEvent(author));
                 Log.e(TAG, "Author " +  author.getShortName() + " updated");
             } catch (Exception e) {
                 Log.e(TAG, "Unknown exception while update", e);
             }
         });
-    }
-
-    public static void checkWork(Work work, EntityDataStore<Persistable> dataStore) {
-
+        EventBus.getDefault().post(new ObservableCheckedEvent());
     }
 
     public static void stop() {

@@ -15,6 +15,7 @@ import com.annimon.stream.Stream;
 import de.greenrobot.event.EventBus;
 import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
+import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.adapter.ItemListAdapter;
@@ -26,8 +27,10 @@ import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.service.ObservableService;
 import ru.samlib.client.util.GuiUtils;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -37,7 +40,8 @@ import java.util.List;
  */
 public class ObservableFragment extends ListFragment<AuthorEntity>{
 
-
+    @Inject
+    ObservableService observableService;
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
     private boolean loading;
@@ -67,6 +71,11 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         };
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        App.getInstance().getComponent().inject(this);
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public void onStart() {
@@ -92,9 +101,11 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
 
     @Override
     public void refreshData(boolean showProgress) {
-        ObservableUpdateJob.start();
-        loading = true;
         swipeRefresh.setRefreshing(true);
+        loading = true;
+        new Thread(() -> {
+            ObservableUpdateJob.updateObservable(observableService, getContext());
+        }).start();
     }
 
     private void initializeAuthor(AuthorEntity author) {
@@ -105,7 +116,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
                   index = i;
                   adapter.getItems().set(i, author);
                   Handler handler = new Handler(Looper.getMainLooper());
-                  handler.post(() -> adapter.notifyItemChanged(index + 1));
+                  handler.post(() -> adapter.notifyItemChanged(index));
                   break;
               }
           }

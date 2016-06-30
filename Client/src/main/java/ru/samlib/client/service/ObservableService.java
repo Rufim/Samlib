@@ -46,50 +46,7 @@ public class ObservableService {
     }
 
     public AuthorEntity doActionAuthor(Action action, AuthorEntity authorEntity) {
-        AuthorEntity result;
-        if (action.equals(Action.INSERT)) {
-            List<Category> categories = authorEntity.getCategories();
-            List<Work> works = authorEntity.getRootWorks();
-            List<Link> links = authorEntity.getRootLinks();
-            result = (AuthorEntity) doAction(action, authorEntity);
-            result.getCategories().addAll(categories);
-            result.getRootWorks().addAll(works);
-            result.getRootLinks().addAll(links);
-            action = Action.UPDATE;
-            result = (AuthorEntity) doAction(action, result);
-            for (Category category : result.getCategories()) {
-                for (Linkable linkable : category.getLinkables()) {
-                    if (linkable instanceof Link) {
-                        ((Link) linkable).setAuthor(authorEntity);
-                        category.getLinks().add((Link) linkable);
-                    }
-                    if (linkable instanceof Work) {
-                        ((Work) linkable).setAuthor(authorEntity);
-                        category.getWorks().add((Work) linkable);
-                    }
-                }
-            }
-        } else {
-            result = (AuthorEntity) doAction(action, authorEntity);
-        }
-        for (Category category : authorEntity.getCategories()) {
-            category.setAuthor(result);
-            for (Work work : category.getWorks()) {
-                work.setCategory(category);
-                work.setAuthor(null);
-            }
-            for (Link link : category.getLinks()) {
-                link.setCategory(category);
-                link.setAuthor(null);
-            }
-            doAction(action, category);
-        }
-        if (result != null) {
-            return result;
-        } else {
-            return authorEntity;
-        }
-
+        return (AuthorEntity) doAction(action, authorEntity);
     }
 
     private Persistable doAction(Action action, Object value) {

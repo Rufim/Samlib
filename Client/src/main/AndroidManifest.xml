@@ -38,6 +38,7 @@
         <activity
                 android:name=".activity.SectionActivity"
                 android:launchMode="singleInstance"
+                android:parentActivityName=".activity.MainActivity"
                 android:configChanges="orientation">
             <meta-data android:name="android.app.searchable"
                        android:resource="@xml/searchable"/>
@@ -55,6 +56,10 @@
             android:name="ru.samlib.client.service.TTSService"
             android:exported="true"
             android:enabled="true"/>
+
+        <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.MainActivity"/>
 
         <receiver android:name=".receiver.TTSNotificationBroadcast">
             <intent-filter>

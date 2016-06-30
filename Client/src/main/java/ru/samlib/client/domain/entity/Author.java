@@ -48,6 +48,8 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     boolean hasAbout = false;
     boolean hasUpdates = false;
     boolean newest = false;
+    @Transient
+    boolean notNotified = false;
     Date lastUpdateDate;
     Integer size;
     Integer workCount;
@@ -135,6 +137,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         entity.setParsed(parsed);
         entity.setSite(site);
         entity.setLastUpdateDate(lastUpdateDate);
+        entity.categories = null;
+        entity.rootLinks = null;
+        entity.rootWorks = null;
+        //entity.recommendations = null;
+        //entity.friendList = null;
+       // entity.friendOfList = null;
         for (Category category : categories) {
             category.setAuthor(entity);
             entity.addCategory(category.createEntry());
@@ -306,5 +314,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     @Override
     public boolean find(ItemListAdapter.FilterEvent query) {
         return false;
+    }
+
+    public void hasNewUpdates(){
+        setHasUpdates(true);
+        setNotNotified(true);
     }
 }

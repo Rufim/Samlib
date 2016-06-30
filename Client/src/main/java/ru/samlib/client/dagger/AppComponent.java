@@ -18,6 +18,7 @@ import javax.inject.Singleton;
 public interface AppComponent {
     void inject(MainActivity activity);
     void inject(AuthorFragment fragment);
+    void inject(ObservableFragment fragment);
     void inject(ObservableService service);
     void inject(ObservableUpdateJob job);
 }

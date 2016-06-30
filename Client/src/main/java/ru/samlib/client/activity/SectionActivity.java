@@ -90,23 +90,20 @@ public class SectionActivity extends BaseActivity {
                 return;
             }
         }
-        String link = null;
-        Uri data = intent.getData();
-        if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-            link = data.getPath();
-            if (link != null) {
-                if (Linkable.isAuthorLink(link)) {
-                    AuthorFragment.show(builder, id, link);
-                }
-                if (Linkable.isWorkLink(link)) {
-                    WorkFragment.show(builder, id, link);
-                }
-                if (Linkable.isIllustrationsLink(link)) {
-                    IllustrationPagerFragment.show(builder, id, link);
-                }
-                if (Linkable.isCommentsLink(link)) {
-                    CommentsFragment.show(builder, id, link);
-                }
+        String link;
+        Uri data;
+        if ((data = intent.getData()) != null && (link = data.getPath()) != null) {
+            if (Linkable.isAuthorLink(link)) {
+                AuthorFragment.show(builder, id, link);
+            }
+            if (Linkable.isWorkLink(link)) {
+                WorkFragment.show(builder, id, link);
+            }
+            if (Linkable.isIllustrationsLink(link)) {
+                IllustrationPagerFragment.show(builder, id, link);
+            }
+            if (Linkable.isCommentsLink(link)) {
+                CommentsFragment.show(builder, id, link);
             }
         }
     }
@@ -243,7 +240,7 @@ public class SectionActivity extends BaseActivity {
         Fragment fr = getCurrentFragment();
         if (fr instanceof BackCallback) {
             if (((BackCallback) fr).allowBackPress()) super.onBackPressed();
-        } else if(MainActivity.getInstance() == null) {
+        } else if (MainActivity.getInstance() == null) {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         } else {

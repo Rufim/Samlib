@@ -233,7 +233,7 @@ public class AuthorParser extends Parser {
         if(!newCategories.isEmpty()) {
             for (Category newCategory : newCategories) {
                 oldCategories.add(newCategory.createEntry());
-                newCategory.getAuthor().setHasUpdates(true);
+                newCategory.getAuthor().hasNewUpdates();
             }
         }
     }
@@ -263,11 +263,11 @@ public class AuthorParser extends Parser {
             if(newWorkIndex >= 0) {
                 Work newWork = newWorks.get(newWorkIndex);
                 updateWork(oldWork, newWork);
-                if(!oldWork.getSize().equals(newWork.getSize())) {
+                if(oldWork.getSize() == null || !oldWork.getSize().equals(newWork.getSize())) {
                     oldWork.setChanged(true);
                     oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
                     oldWork.setSize(newWork.getSize());
-                    oldWork.getCategory().getAuthor().setHasUpdates(true);
+                    oldWork.getCategory().getAuthor().hasNewUpdates();
                 }
                 newWorks.remove(newWorkIndex);
             } else {
@@ -277,7 +277,7 @@ public class AuthorParser extends Parser {
         if(!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
-                newWork.getCategory().getAuthor().setHasUpdates(true);
+                newWork.getCategory().getAuthor().hasNewUpdates();
                 oldWorks.add(newWork.createEntity());
             }
         }

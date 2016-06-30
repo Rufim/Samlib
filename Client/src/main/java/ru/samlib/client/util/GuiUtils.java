@@ -1,6 +1,9 @@
 package ru.samlib.client.util;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -12,11 +15,10 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.ColorRes;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.StringRes;
+import android.support.annotation.*;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.text.*;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
@@ -32,6 +34,9 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import ru.samlib.client.R;
+import ru.samlib.client.activity.MainActivity;
+import ru.samlib.client.activity.SectionActivity;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -64,6 +69,23 @@ public class GuiUtils {
 
     public static void setDecimalSeparator(String decimalSeparator) {
         GuiUtils.decimalSeparator = decimalSeparator;
+    }
+
+    public static void sendNotification(@NonNull Context context, int icon, CharSequence title, CharSequence text, Intent intent, String groupKey) {
+        NotificationManagerCompat manager =  NotificationManagerCompat.from(context);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
+        PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        notificationBuilder.setSmallIcon(icon)
+                .setWhen(System.currentTimeMillis())
+                .setContentIntent(pIntent)
+                .setGroup(groupKey)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setDefaults(Notification.DEFAULT_SOUND)
+                // ставим флаг, чтобы уведомление пропало после нажатия
+                .setAutoCancel(true);
+        // отправляем
+        manager.notify(1, notificationBuilder.build());
     }
 
     public static class EmptyTextException extends Exception {
@@ -521,7 +543,7 @@ public class GuiUtils {
         }
         view.setAnimation(animation);
         animation.start();
-        if(view.getParent() != null) {
+        if (view.getParent() != null) {
             ((View) view.getParent()).invalidate();
         } else {
             view.invalidate();
@@ -613,12 +635,12 @@ public class GuiUtils {
         if (textView != null) {
             if (args != null) {
                 if (textView instanceof TextView) {
-                    String formatted  = String.format(locale, textView.getContext().getString(format), args);
+                    String formatted = String.format(locale, textView.getContext().getString(format), args);
                     DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-                    if(decimalSeparator != null) {
+                    if (decimalSeparator != null) {
                         formatted = formatted.replace(String.valueOf(symbols.getDecimalSeparator()), decimalSeparator);
                     }
-                    if(thousandSeparator != null) {
+                    if (thousandSeparator != null) {
                         Pattern pattern = Pattern.compile("\\d{3}(?=\\d)");
                         Matcher digitsMatcher = pattern.matcher(formatted);
                         StringBuffer buffer = new StringBuffer();
@@ -645,7 +667,7 @@ public class GuiUtils {
     }
 
     public static String setText(ViewGroup root, @IdRes int textViewId, @StringRes int format, Object arg) {
-        return setText(root, textViewId, format, new Object[] {arg});
+        return setText(root, textViewId, format, new Object[]{arg});
     }
 
     public static void setVisibility(int code, View... views) {
