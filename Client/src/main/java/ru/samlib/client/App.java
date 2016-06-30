@@ -20,6 +20,7 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Models;
 import ru.samlib.client.job.AppJobCreator;
 import ru.samlib.client.dagger.AppComponent;
+import ru.samlib.client.job.ObservableUpdateJob;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.math.BigDecimal;
@@ -53,6 +54,7 @@ public class App extends Application {
                 .build());
         component = DaggerAppComponent.builder()
                 .appModule(new AppModule(singleton)).build();
+        ObservableUpdateJob.startSchedule();
     }
 
     @Override

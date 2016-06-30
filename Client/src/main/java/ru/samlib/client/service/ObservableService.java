@@ -46,7 +46,13 @@ public class ObservableService {
     }
 
     public AuthorEntity doActionAuthor(Action action, AuthorEntity authorEntity) {
-        return (AuthorEntity) doAction(action, authorEntity);
+        AuthorEntity result =  (AuthorEntity) doAction(action, authorEntity);
+        if(action.equals(Action.UPDATE)) {
+            for (Category category : authorEntity.getCategories()) {
+                doAction(action, category);
+            }
+        }
+        return result;
     }
 
     private Persistable doAction(Action action, Object value) {

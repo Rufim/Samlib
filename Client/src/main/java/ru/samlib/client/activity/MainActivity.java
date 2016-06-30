@@ -57,6 +57,9 @@ public class MainActivity extends BaseActivity {
             }
             //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
+        if (intent.getAction() == null && ObservableFragment.class.getSimpleName().equals(intent.getStringExtra(Constants.ArgsName.FRAGMENT_CLASS))) {
+            replaceFragment(getString(R.string.drawer_observable), ObservableFragment.class);
+        }
     }
 
     @Override

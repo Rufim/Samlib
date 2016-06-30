@@ -41,10 +41,7 @@ import ru.samlib.client.activity.SectionActivity;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,22 +68,47 @@ public class GuiUtils {
         GuiUtils.decimalSeparator = decimalSeparator;
     }
 
-    public static void sendNotification(@NonNull Context context, int icon, CharSequence title, CharSequence text, Intent intent, String groupKey) {
+    public static void sendNotification(@NonNull Context context, int id, int icon, CharSequence title, CharSequence text, Intent intent) {
         NotificationManagerCompat manager =  NotificationManagerCompat.from(context);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
         PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);
-        notificationBuilder.setSmallIcon(icon)
+        notificationBuilder
                 .setWhen(System.currentTimeMillis())
+                .setSmallIcon(icon)
                 .setContentIntent(pIntent)
-                .setGroup(groupKey)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setDefaults(Notification.DEFAULT_SOUND)
                 // ставим флаг, чтобы уведомление пропало после нажатия
                 .setAutoCancel(true);
         // отправляем
-        manager.notify(1, notificationBuilder.build());
+        manager.notify(id, notificationBuilder.build());
     }
+
+    public static void sendBigNotification(@NonNull Context context, int id, int icon, CharSequence title, CharSequence bigContentTitle, CharSequence text, Intent intent, List<CharSequence> lines) {
+        NotificationManagerCompat manager = NotificationManagerCompat.from(context);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
+        PendingIntent pIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        NotificationCompat.InboxStyle inboxStyle =
+                new NotificationCompat.InboxStyle();
+        for (CharSequence line : lines) {
+            inboxStyle.addLine(line);
+        }
+        inboxStyle.setBigContentTitle(bigContentTitle);
+        notificationBuilder
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(icon)
+                .setContentIntent(pIntent)
+                .setStyle(inboxStyle)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setDefaults(Notification.DEFAULT_SOUND)
+                // ставим флаг, чтобы уведомление пропало после нажатия
+                .setAutoCancel(true);
+        // отправляем
+        manager.notify(id, notificationBuilder.build());
+    }
+
 
     public static class EmptyTextException extends Exception {
         static final String MESSAGE = "TextView do not contains string";

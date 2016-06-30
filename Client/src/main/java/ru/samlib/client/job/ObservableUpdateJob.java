@@ -5,6 +5,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -16,17 +17,22 @@ import com.evernote.android.job.JobRequest;
 import de.greenrobot.event.EventBus;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
+import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
+import ru.samlib.client.fragments.AuthorFragment;
+import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.ObservableService;
 import ru.samlib.client.util.GuiUtils;
 
 ;import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by 0shad on 01.03.2016.
@@ -67,23 +73,27 @@ public class ObservableUpdateJob extends Job {
     }
 
     public static void updateObservable(ObservableService service, Context context) {
+        List<CharSequence> notifyAuthors = new ArrayList<>();
         Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {
                 AuthorParser parser = new AuthorParser(author);
+                author = service.updateAuthor((AuthorEntity) parser.parse());
                 author.setParsed(true);
                 if(context != null && author.isHasUpdates() && author.isNotNotified()) {
-                    Intent intent = new Intent(context, SectionActivity.class);
-                    intent.setData(Uri.parse(Constants.Net.BASE_DOMAIN + author.getLink()));
-                    GuiUtils.sendNotification(context, R.drawable.ic_update_white_36dp, "Автор обновился", author.getShortName(), intent, "observable");
+                    notifyAuthors.add(author.getShortName());
                     author.setNotNotified(false);
                 }
-                author = service.updateAuthor((AuthorEntity) parser.parse());
                 EventBus.getDefault().post(new AuthorUpdatedEvent(author));
                 Log.e(TAG, "Author " +  author.getShortName() + " updated");
             } catch (Exception e) {
                 Log.e(TAG, "Unknown exception while update", e);
             }
         });
+        if(!notifyAuthors.isEmpty()) {
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.putExtra(Constants.ArgsName.FRAGMENT_CLASS, ObservableFragment.class.getSimpleName());
+            GuiUtils.sendBigNotification(context, 1, R.drawable.ic_update_white_36dp, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);
+        }
         EventBus.getDefault().post(new ObservableCheckedEvent());
     }
 
@@ -95,12 +105,11 @@ public class ObservableUpdateJob extends Job {
 
     public static void startSchedule() {
         jobId = AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
-                .setPeriodic(200000)
+                .setPeriodic(10800000)
                 .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
                 .setUpdateCurrent(true)
                 .build()
                 .schedule();
-
     }
 
     public static void start() {
