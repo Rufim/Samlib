@@ -93,8 +93,8 @@ public class Category implements Linkable, Serializable, Parsable {
 
      public List<Linkable> getLinkables()  {
          List<Linkable> linkables = new ArrayList<>();
-         linkables.addAll(works);
-         linkables.addAll(links);
+         linkables.addAll(getWorks());
+         linkables.addAll(getLinks());
          return linkables;
      }
 
