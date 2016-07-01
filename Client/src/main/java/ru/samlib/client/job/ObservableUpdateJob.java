@@ -1,13 +1,8 @@
 package ru.samlib.client.job;
 
-import android.app.NotificationManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
@@ -18,13 +13,11 @@ import de.greenrobot.event.EventBus;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
-import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
-import ru.samlib.client.fragments.AuthorFragment;
 import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.ObservableService;
@@ -92,7 +85,7 @@ public class ObservableUpdateJob extends Job {
         if(!notifyAuthors.isEmpty()) {
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(Constants.ArgsName.FRAGMENT_CLASS, ObservableFragment.class.getSimpleName());
-            GuiUtils.sendBigNotification(context, 1, R.drawable.ic_update_white_36dp, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);
+            GuiUtils.sendBigNotification(context, 1, R.drawable.ic_update_white, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);
         }
         EventBus.getDefault().post(new ObservableCheckedEvent());
     }

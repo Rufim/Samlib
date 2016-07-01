@@ -79,11 +79,19 @@ public class WorkParser extends Parser {
         if (work == null) {
             work = new Work(file.getRequest().getBaseUrl().getPath());
         }
-        String[] parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
-                new TextUtils.Splitter().addEnd("Первый блок ссылок"),
-                new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
-                new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
-                new TextUtils.Splitter().addEnd("<!-------.*"));
+        String[] parts;
+        if(!work.getLink().matches(work.getAuthor().getLink() +"/rating\\d.shtml")) {
+             parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+                    new TextUtils.Splitter().addEnd("Первый блок ссылок"),
+                    new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
+                    new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
+                    new TextUtils.Splitter().addEnd("<!-------.*"));
+        } else {
+            parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+                    new TextUtils.Splitter().addEnd("Первый блок ссылок"),
+                    new TextUtils.Splitter("<table width=90% border=0 cellpadding=0 cellspacing=0><tr>", "</tr></table>"),
+                    new TextUtils.Splitter("<hr align=\"CENTER\" size=\"2\" noshade>", "<hr align=\"CENTER\" size=\"2\" noshade>"));
+        }
         if (parts.length == 0) {
             return work;
         }
@@ -114,7 +122,9 @@ public class WorkParser extends Parser {
         if (data.length > 0) {
             if (data.length == 2) {
                 work.setUpdateDate(TextUtils.parseData(data[0]));
-                work.setSize(Integer.parseInt(data[1]));
+                if(!data[1].contains("Статистика")) {
+                    work.setSize(Integer.parseInt(data[1]));
+                }
             }
             if (data.length == 3) {
                 work.setCreateDate(TextUtils.parseData(data[0]));
@@ -142,16 +152,22 @@ public class WorkParser extends Parser {
                     work.setCategory(category);
                 }
             }
+
+
         }
-        if (parts[2].contains("Аннотация")) {
-            work.getAnnotationBlocks().clear();
-            work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
-        }
-        if (parts[3].contains("<!--Section Begins-->")) {
-            work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
-                    new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
-        } else {
-            work.setRawContent(parts[3]);
+        if(parts.length == 3) {
+            work.setRawContent(parts[2]);
+        } else if(parts.length == 4){
+            if (parts[2].contains("Аннотация")) {
+                work.getAnnotationBlocks().clear();
+                work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
+            }
+            if (parts[3].contains("<!--Section Begins-->")) {
+                work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+            } else {
+                work.setRawContent(parts[3]);
+            }
         }
      /*   if(work.getRawContent() != null) {
             String oldMd5 = work.getMd5();

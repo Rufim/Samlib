@@ -290,7 +290,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     break;
                 case R.layout.item_work:
                     Linkable linkable = getItem(position);
-                    if (linkable.getClass() == Link.class) {
+                    if (linkable instanceof Link) {
                         CharSequence link;
                         if (linkable.getAnnotation() != null) {
                             link = linkable.getTitle() + ": " + linkable.getAnnotation();

@@ -26,7 +26,7 @@ public interface Linkable {
 
 
     public static boolean isSamlibLink(String link) {
-        return link.matches("/*[a-z]/+[a-z_0-9]+((/*)|(/+[a-z-_0-9]+\\.shtml))?");
+        return isAuthorLink(link) || isWorkLink(link) || isCommentsLink(link) || isIllustrationsLink(link);
     }
 
     public static boolean isWorkLink(String link) {

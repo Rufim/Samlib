@@ -161,6 +161,7 @@ public class AuthorParser extends Parser {
                                     a = dl.select("a");
                                     Link link = new Link(a.text(), a.attr("href"), dl.select("i").text());
                                     if (newCategory == null) {
+                                        link.setRootAuthor(author);
                                         rootLinks.add(link);
                                     } else {
                                         newCategory.addLink(link);
@@ -172,6 +173,7 @@ public class AuthorParser extends Parser {
                                 work.setCategory(newCategory);
                                 if (work.validate()) {
                                     if (newCategory == null) {
+                                        work.setRootAuthor(author);
                                         rootWorks.add(work);
                                     } else {
                                         newCategory.addLink(work);
@@ -207,7 +209,7 @@ public class AuthorParser extends Parser {
         List<Category> oldCategories = author.getCategories();
         List<Work> oldRootWorks = author.getRootWorks();
         List<Link> oldRootLinks = author.getRootLinks();
-        merge(newRootWorks, newRootLinks, oldRootWorks, oldRootLinks);
+        merge(newRootWorks, newRootLinks, oldRootWorks, oldRootLinks, null, author);
         Iterator<Category> ocit = oldCategories.iterator();
         while (ocit.hasNext()) {
             Category oldCategory = ocit.next();
@@ -223,7 +225,7 @@ public class AuthorParser extends Parser {
                 for (Link link : newCategory.getLinks()) {
                     link.setCategory(oldCategory);
                 }
-                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks());
+                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks(), oldCategory, null);
                 Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
                 newCategories.remove(newCategoryIndex);
             } else {
@@ -238,13 +240,13 @@ public class AuthorParser extends Parser {
         }
     }
 
-    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks) {
+    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks, Category category, Author author) {
         Iterator<Work> owit = oldWorks.iterator();
         Iterator<Link> olit = oldLinks.iterator();
         while (olit.hasNext()) {
-            Link oldLink = olit.next();    
+            Link oldLink = olit.next();
             int newLinkIndex = hasLink(newLinks, oldLink);
-            if(newLinkIndex >= 0) {
+            if (newLinkIndex >= 0) {
                 Link newLink = newLinks.get(newLinkIndex);
                 oldLink.setTitle(newLink.getTitle());
                 newLinks.remove(newLinkIndex);
@@ -252,7 +254,7 @@ public class AuthorParser extends Parser {
                 olit.remove();
             }
         }
-        if(!newLinks.isEmpty()) {
+        if (!newLinks.isEmpty()) {
             for (Link newLink : newLinks) {
                 oldLinks.add(newLink.createEntity());
             }
@@ -260,24 +262,42 @@ public class AuthorParser extends Parser {
         while (owit.hasNext()) {
             Work oldWork = owit.next();
             int newWorkIndex = hasWork(newWorks, oldWork);
-            if(newWorkIndex >= 0) {
+            if (newWorkIndex >= 0) {
                 Work newWork = newWorks.get(newWorkIndex);
                 updateWork(oldWork, newWork);
-                if(oldWork.getSize() == null || !oldWork.getSize().equals(newWork.getSize())) {
-                    oldWork.setChanged(true);
-                    oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
-                    oldWork.setSize(newWork.getSize());
-                    oldWork.getCategory().getAuthor().hasNewUpdates();
+                if (newWork.getSize() == null) {
+                    newWork.setSize(0);
+                }
+                if (oldWork.getSize() == null) {
+                    oldWork.setSize(0);
+                }
+                if (!oldWork.getSize().equals(newWork.getSize())) {
+                    if (oldWork.getSize() == null || !oldWork.getSize().equals(newWork.getSize())) {
+                        oldWork.setChanged(true);
+                        oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
+                        oldWork.setSize(newWork.getSize());
+                        oldWork.getCategory().getAuthor().hasNewUpdates();
+                    }
                 }
                 newWorks.remove(newWorkIndex);
             } else {
                 owit.remove();
             }
         }
-        if(!newWorks.isEmpty()) {
+        if (!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
                 newWork.getCategory().getAuthor().hasNewUpdates();
+                if(category != null) {
+                    category.getAuthor().hasNewUpdates();
+                    newWork.setAuthor(author);
+                    newWork.setCategory(null);
+                }
+                if(author != null) {
+                    author.hasNewUpdates();
+                    newWork.setAuthor(null);
+                    newWork.setCategory(category);
+                }
                 oldWorks.add(newWork.createEntity());
             }
         }

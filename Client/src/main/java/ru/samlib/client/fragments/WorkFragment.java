@@ -2,12 +2,14 @@ package ru.samlib.client.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.util.Pair;
 import android.view.*;
@@ -17,6 +19,7 @@ import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
 import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.R;
@@ -448,7 +451,16 @@ public class WorkFragment extends ListFragment<String> {
                         ClickableSpan[] link = new SpannableString(textView.getText()).getSpans(lastOffset, lastOffset, ClickableSpan.class);
                         if (link.length != 0) {
                             ClickableSpan span = link[0];
-                            span.onClick(textView);
+                            if(span instanceof URLSpan) {
+                                String url = ((URLSpan) span).getURL();
+                                if(url.startsWith("/")){
+                                    Intent intent = new Intent(getActivity(), SectionActivity.class);
+                                    intent.setData(Uri.parse(Constants.Net.BASE_DOMAIN + url));
+                                    startActivity(intent);
+                                }
+                            } else {
+                                span.onClick(textView);
+                            }
                         }
                         break;
                 }

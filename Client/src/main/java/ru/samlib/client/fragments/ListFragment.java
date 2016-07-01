@@ -324,6 +324,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         swipeRefresh.setOnRefreshListener(() -> {
             if (!isLoading) {
                 refreshData(false);
+            } else {
+                swipeRefresh.setRefreshing(false);
             }
         });
         if (adapter == null) {

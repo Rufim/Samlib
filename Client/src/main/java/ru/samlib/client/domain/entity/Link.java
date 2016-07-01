@@ -24,8 +24,10 @@ public class Link implements Validatable, Linkable, Serializable {
     @OneToOne(mappedBy = "site")
     Author authorSite;
 
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @Transient
     Author author;
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    Author rootAuthor;
     @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Category category;
 
@@ -51,6 +53,19 @@ public class Link implements Validatable, Linkable, Serializable {
         this.link = link;
         this.annotation = annotation;
     }
+
+    public Author getAuthor() {
+        if(author == null) {
+            if(getCategory() != null) {
+                return author = getCategory().getAuthor();
+            }
+            if(getRootAuthor() != null) {
+                return author = getRootAuthor();
+            }
+        }
+        return author;
+    }
+
 
     public Link(String link) {
         this.link = link;

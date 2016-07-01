@@ -108,6 +108,7 @@ public class SectionActivity extends BaseActivity {
         }
     }
 
+
     public SectionActivityState getState() {
         return state;
     }

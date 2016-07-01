@@ -49,8 +49,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer id;
     String title;
     String link;
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @Transient
     Author author;
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    Author rootAuthor;
     String imageLink;
     Integer size;
     Integer sizeDiff;
@@ -107,6 +109,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         entity.setMd5(md5);
         entity.setCachedDate(cachedDate);
         entity.setAuthor(author);
+        entity.setRootAuthor(rootAuthor);
         entity.setUpdateDate(updateDate);
         entity.setGenres(genres);
         entity.setType(type);
@@ -137,10 +140,22 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public String getLink() {
-        if (link != null && !link.contains(author.getLink())) {
+        if (link != null && !link.contains(getAuthor().getLink())) {
             link = author.getLink() + link;
         }
         return link;
+    }
+
+    public Author getAuthor() {
+        if(author == null) {
+            if(getCategory() != null) {
+                return author = getCategory().getAuthor();
+            }
+            if(getRootAuthor() != null) {
+                return author = getRootAuthor();
+            }
+        }
+        return author;
     }
 
     public Link getIllustrationsLink() {

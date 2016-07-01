@@ -22,7 +22,6 @@ import java.util.List;
 /**
  * Created by Rufim on 22.05.2014.
  */
-@NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
@@ -62,11 +61,11 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     @Transient
     List<Work> recommendations = new ArrayList<>();
     @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Category> categories = new ArrayList<>();
-    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Link> rootLinks = new ArrayList<>();
-    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Work> rootWorks = new ArrayList<>();
+    List<Category> categories;
+    @OneToMany(mappedBy = "rootAuthor", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<Link> rootLinks;
+    @OneToMany(mappedBy = "rootAuthor", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<Work> rootWorks;
     @Transient
     List<Author> friendList  = new ArrayList<>();
     @Transient
@@ -76,6 +75,14 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
     @Transient
     boolean parsed = false;
+
+    public Author() {
+        if(!(getClass().equals(AuthorEntity.class))) {
+            categories = new ArrayList<>();
+            rootLinks = new ArrayList<>();
+            rootWorks = new ArrayList<>();
+        }
+    }
 
     public Author(Author other) {
         this.id = other.getId();
@@ -137,12 +144,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         entity.setParsed(parsed);
         entity.setSite(site);
         entity.setLastUpdateDate(lastUpdateDate);
-        entity.categories = null;
-        entity.rootLinks = null;
-        entity.rootWorks = null;
-        //entity.recommendations = null;
-        //entity.friendList = null;
-       // entity.friendOfList = null;
         for (Category category : categories) {
             category.setAuthor(entity);
             entity.addCategory(category.createEntry());
@@ -152,11 +153,11 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
             entity.addRecommendation(recommendation.createEntity());
         }
         for (Work rootWork : rootWorks) {
-            rootWork.setAuthor(entity);
+            rootWork.setRootAuthor(entity);
             entity.addRootLink(rootWork.createEntity());
         }
         for (Link rootLink : rootLinks) {
-            rootLink.setAuthor(entity);
+            rootLink.setRootAuthor(entity);
             entity.addRootLink(rootLink.createEntity());
         }
         for (Author author : friendList) {
@@ -170,6 +171,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
 
     public Author(String link) {
+        this();
         setLink(link);
     }
 
@@ -267,11 +269,11 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
     public List<Linkable> getLinkables()  {
         List<Linkable> linkables = new ArrayList<>();
-        if (rootLinks != null) {
-            linkables.addAll(rootLinks);
+        if (getRootLinks() != null) {
+            linkables.addAll(getRootWorks());
         }
-        if (rootWorks != null) {
-            linkables.addAll(rootWorks);
+        if (getRootWorks() != null) {
+            linkables.addAll(getRootLinks());
         }
         return linkables;
     }

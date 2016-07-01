@@ -17,7 +17,6 @@ import java.util.List;
 /**
  * Created by Rufim on 01.07.2015.
  */
-@NoArgsConstructor
 @Data
 @Entity
 public class Category implements Linkable, Serializable, Parsable {
@@ -33,13 +32,20 @@ public class Category implements Linkable, Serializable, Parsable {
     Author author;
     Type type = Type.OTHER;
     @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Work> works = new ArrayList<>();
+    List<Work> works;
     @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Link> links = new ArrayList<>();
+    List<Link> links;
     String link;
 
     @Transient
     boolean parsed = false;
+
+    public Category() {
+        if(!(getClass().equals(CategoryEntity.class))) {
+            works = new ArrayList<>();
+            links = new ArrayList<>();
+        }
+    }
 
     public CategoryEntity createEntry(){
         if(getClass() == CategoryEntity.class) return (CategoryEntity) this;
@@ -51,15 +57,11 @@ public class Category implements Linkable, Serializable, Parsable {
         entity.setParsed(parsed);
         entity.setTitle(title);
         entity.setType(type);
-        entity.works = null;
-        entity.links = null;
         for (Work work : works) {
-            work.setAuthor(author);
             work.setCategory(entity);
             entity.getWorks().add(work.createEntity());
         }
         for (Link link1 : links) {
-            link1.setAuthor(author);
             link1.setCategory(entity);
             entity.getLinks().add(link1.createEntity());
         }
