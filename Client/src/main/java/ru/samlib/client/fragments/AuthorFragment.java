@@ -169,7 +169,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             saveLister();
             setDataSource((skip, size) -> {
                 if (category != null) {
-                    if (!category.isParsed()) {
+                    if (!category.isParsed() && !(category instanceof CategoryEntity)) {
                         try {
                             category = new CategoryParser(category).parse();
                         } catch (MalformedURLException e) {

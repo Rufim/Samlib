@@ -50,9 +50,9 @@ public class AuthorParser extends Parser {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
             } else {
                 rawFile = HtmlClient.executeRequest(request);
+                author.getRecommendations().clear();
                 if(author.getId() == null) {
                     author.getCategories().clear();
-                    author.getRecommendations().clear();
                 }
             }
             if (rawFile.isDownloadOver) {
@@ -191,6 +191,11 @@ public class AuthorParser extends Parser {
             }
             Log.e(TAG, "Author " + author.getTitle() + " parsed");
             if (author.getId() != null) {
+                for (Category category : categories) {
+                    if(category.getLink() != null) {
+                        new CategoryParser(category).parse();
+                    }
+                }
                 merge(author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {
