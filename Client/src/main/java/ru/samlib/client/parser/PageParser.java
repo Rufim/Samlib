@@ -30,6 +30,13 @@ public abstract class PageParser<I extends Validatable> extends RowParser<I> imp
         return lastPage;
     }
 
+    public int requestLastPage() throws IOException {
+     if(lastPage > 0) return  lastPage;
+        lister.setPage(request, index);
+        Document doc = getDocument(request);
+        return lastPage = lister.getLastPage(doc);
+    }
+
     @Override
     public List<I> getPage(int index) throws IOException {
         List<I> elementList = new ArrayList<>();

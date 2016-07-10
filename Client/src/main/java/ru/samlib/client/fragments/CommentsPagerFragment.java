@@ -39,16 +39,18 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     private CommentsParser parser;
 
     public static void show(FragmentBuilder builder, @IdRes int container, String link) {
-        show(builder, container, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+        show(builder, container, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
     }
 
     public static void show(BaseFragment fragment, String link) {
-        show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+        show(fragment, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
     }
 
     public static void show(BaseFragment fragment, Work work) {
-        show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.WORK, work);
+        show(fragment, CommentsPagerFragment.class, Constants.ArgsName.WORK, work);
     }
+
+
 
     @Override
     public boolean allowBackPress() {
@@ -80,13 +82,9 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
             try {
                 parser = new CommentsParser(work, false);
                 setDataSource((skip, size) -> {
-                    int lastPage = parser.getLastPage();
-                    if(lastPage < 0) {
-                        parser.getPage(0);
-                        lastPage = parser.getLastPage();
-                    }
+                    int lastPage = parser.requestLastPage();
                     ArrayList<Integer> indexes = new ArrayList();
-                    for (int i = skip; i < lastPage && i < size; i++) {
+                    for (int i = skip; i <= lastPage && i < size; i++) {
                         indexes.add(i);
                     }
                     return indexes;
@@ -133,7 +131,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
             @Override
             public CharSequence getPageTitle(int position) {
-                return "Страница:" + String.valueOf(position);
+                return "Страница: " + String.valueOf(position);
             }
         };
     }

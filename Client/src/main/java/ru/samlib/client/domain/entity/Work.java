@@ -159,11 +159,11 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public Link getIllustrationsLink() {
-        return new Link(ILLUSTRATION_PREFIX + link.replace(HTML_SUFFIX, "/index" + HTML_SUFFIX));
+        return new Link(ILLUSTRATION_PREFIX + getLink().replace(HTML_SUFFIX, "/index" + HTML_SUFFIX));
     }
 
     public Link getCommentsLink() {
-        return new Link(COMMENT_PREFIX + link.replace(HTML_SUFFIX, ""));
+        return new Link(COMMENT_PREFIX + getLink().replace(HTML_SUFFIX, ""));
     }
 
     public String getTypeName() {

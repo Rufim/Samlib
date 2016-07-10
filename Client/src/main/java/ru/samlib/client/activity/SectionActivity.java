@@ -103,7 +103,7 @@ public class SectionActivity extends BaseActivity {
                 IllustrationPagerFragment.show(builder, id, link);
             }
             if (Linkable.isCommentsLink(link)) {
-                CommentsFragment.show(builder, id, link);
+                CommentsPagerFragment.show(builder, id, link);
             }
         }
     }

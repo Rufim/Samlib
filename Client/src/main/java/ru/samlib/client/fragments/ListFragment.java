@@ -439,7 +439,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
                 currentCount = adapter.getAbsoluteItemCount();
                 isLoading = false;
                 dataTask = null;
-                if(needMore <= 0) {
+                if(needMore <= 0 || isEnd) {
                     if (onElementsLoadedTask != null) {
                         onElementsLoadedTask.execute(LoadedTaskParams);
                     }
