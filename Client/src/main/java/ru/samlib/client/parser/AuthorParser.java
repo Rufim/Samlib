@@ -190,12 +190,13 @@ public class AuthorParser extends Parser {
                 scanner.close();
             }
             Log.e(TAG, "Author " + author.getTitle() + " parsed");
-            if (author.getId() != null) {
-                for (Category category : categories) {
-                    if(category.getLink() != null) {
-                        new CategoryParser(category).parse();
-                    }
+            for (Category category : categories) {
+                if (category.getLink() != null) {
+                    new CategoryParser(category).parse();
+                    category.setParsed(true);
                 }
+            }
+            if (author.getId() != null) {
                 merge(author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {
