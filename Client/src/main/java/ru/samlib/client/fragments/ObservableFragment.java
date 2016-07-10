@@ -103,6 +103,9 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
     public void refreshData(boolean showProgress) {
         swipeRefresh.setRefreshing(true);
         loading = true;
+        adapter.clear();
+        adapter.getItems().addAll(getDataStore().select(AuthorEntity.class).limit(currentCount).get().toList());
+        adapter.notifyDataSetChanged();
         new Thread(() -> {
             ObservableUpdateJob.updateObservable(observableService, getContext());
         }).start();

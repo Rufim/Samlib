@@ -9,10 +9,10 @@ ext {
     buildToolsProjectVersion = '23.0.3'
     supportLibraryVersion = '23.3.0'
     versionProjectCode = 1
-    versionProjectName = "0.0.1"
+    versionProjectName = "0.1.0"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
-    requeryVersion = '1.0.0-beta23'
+    requeryVersion = '1.0.0-rc1'
     daggerVersion = '2.4'
     lombokVersion = '1.16.4'
 }

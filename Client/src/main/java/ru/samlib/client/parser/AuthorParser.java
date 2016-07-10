@@ -287,16 +287,16 @@ public class AuthorParser extends Parser {
         if (!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
-                newWork.getCategory().getAuthor().hasNewUpdates();
                 if(category != null) {
                     category.getAuthor().hasNewUpdates();
-                    newWork.setAuthor(author);
-                    newWork.setCategory(null);
+                    newWork.setRootAuthor(null);
+                    newWork.setCategory(category);
                 }
                 if(author != null) {
                     author.hasNewUpdates();
-                    newWork.setAuthor(null);
-                    newWork.setCategory(category);
+                    newWork.setAuthor(author);
+                    newWork.setRootAuthor(author);
+                    newWork.setCategory(null);
                 }
                 oldWorks.add(newWork.createEntity());
             }

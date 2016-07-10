@@ -18,7 +18,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     private static final int EMPTY_HEADER = -1;
 
     private final int[] layoutIds;
-    protected final int firstIsHeader;
+    protected int firstIsHeader;
 
     public MultiItemListAdapter(boolean firstIsHeader, @LayoutRes int... layoutIds) {
         super(-1);
@@ -38,7 +38,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     @Override
     public ViewHolder getHolder(int itemIndex) {
         for (ItemListAdapter.ViewHolder holder : getCurrentHolders()) {
-            if (holder.getAdapterPosition() - firstIsHeader == itemIndex) {
+            if (holder.getAdapterPosition() - getFirstIsHeader() == itemIndex) {
                 return holder;
             }
         }
@@ -83,7 +83,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
 
     @Override
     public int getItemViewType(int position) {
-        if (firstIsHeader != 0 && position == 0) {
+        if (getFirstIsHeader() != 0 && position == 0) {
             return layoutIds[0];
         }
         I item = getItem(position);
@@ -101,19 +101,19 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     @Override
     public void addItem(I item) {
         this.items.add(item);
-        notifyItemInserted(this.items.size() + firstIsHeader);
+        notifyItemInserted(this.items.size() + getFirstIsHeader());
     }
 
     @Override
     public void addItem(int position, I item) {
         this.items.add(position, item);
-        notifyItemInserted(position + firstIsHeader);
+        notifyItemInserted(position + getFirstIsHeader());
     }
 
     @Override
     public I removeItem(int position) {
         final I item = this.items.remove(position);
-        notifyItemRemoved(position + firstIsHeader);
+        notifyItemRemoved(position + getFirstIsHeader());
         return item;
     }
 
@@ -121,7 +121,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     public void moveItem(int fromPosition, int toPosition) {
         final I item = this.items.remove(fromPosition);
         this.items.add(toPosition, item);
-        notifyItemMoved(fromPosition + firstIsHeader, toPosition + firstIsHeader);
+        notifyItemMoved(fromPosition + getFirstIsHeader(), toPosition + getFirstIsHeader());
     }
 
     private List<I> toFlatList(List<I> items) {
@@ -133,8 +133,8 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
     }
 
     public I getItem(int position) {
-        return this.items.get(position - firstIsHeader);
-        //return getItem(items, position - firstIsHeader, new AtomicInteger(0));
+        return this.items.get(position - getFirstIsHeader());
+        //return getItem(items, position - getgetFirstIsHeader()(), new AtomicInteger(0));
     }
 
     private I getItem(List<I> items, int position, AtomicInteger countWrapper) {
@@ -161,7 +161,7 @@ public abstract class MultiItemListAdapter<I> extends ItemListAdapter<I> {
 
 
     private int countItems() {
-        return super.getItemCount() + firstIsHeader;
+        return super.getItemCount() + getFirstIsHeader();
     }
 
     private int countItems(List<I> items) {
