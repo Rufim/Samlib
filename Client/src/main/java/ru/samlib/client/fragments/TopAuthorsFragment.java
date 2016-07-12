@@ -37,7 +37,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
     }
 
     @Override
-    protected ItemListAdapter getAdapter() {
+    protected ItemListAdapter newAdapter() {
         return new TopAuthorsAdapter();
     }
 

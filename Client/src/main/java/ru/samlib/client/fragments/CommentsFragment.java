@@ -59,7 +59,7 @@ public class CommentsFragment extends ListFragment<Comment> {
     }
 
     @Override
-    protected ItemListAdapter<Comment> getAdapter() {
+    protected ItemListAdapter<Comment> newAdapter() {
         return new CommentsAdapter(R.layout.item_comment);
     }
 

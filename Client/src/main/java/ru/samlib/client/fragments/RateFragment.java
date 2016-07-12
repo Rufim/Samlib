@@ -33,7 +33,7 @@ public class RateFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected ItemListAdapter getAdapter() {
+    protected ItemListAdapter newAdapter() {
         return new RateArrayAdapter();
     }
 

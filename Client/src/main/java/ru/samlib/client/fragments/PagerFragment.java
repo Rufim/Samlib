@@ -61,7 +61,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
         if (currentItems == null) {
             currentItems = new ArrayList<>();
         }
-        adapter = getAdapter(currentItems);
+        adapter = newAdapter(currentItems);
         currentItems = adapter.getItems();
         pager.setAdapter(adapter);
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -146,7 +146,7 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
     }
 
 
-    public abstract FragmentPagerAdapter<I, F> getAdapter(List<I> currentItems);
+    public abstract FragmentPagerAdapter<I, F> newAdapter(List<I> currentItems);
 
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 

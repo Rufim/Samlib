@@ -45,7 +45,7 @@ public class SearchFragment extends ListFragment {
     }
 
     @Override
-    protected ItemListAdapter getAdapter() {
+    protected ItemListAdapter newAdapter() {
         return new SearchArrayAdapter();
     }
 

@@ -210,20 +210,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Fragment
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        MenuItem searchItem = menu.findItem(R.id.search);
-
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        SearchView searchView = null;
-        if (searchItem != null) {
-            searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-            // searchView.setOnQueryTextListener(this);
-            // MenuItemCompat.setOnActionExpandListener(searchItem, this);
-        }
-        if (searchView != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        }
+        getMenuInflater().inflate(R.menu.global, menu);
         return super.onCreateOptionsMenu(menu);
     }
 

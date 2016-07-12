@@ -119,7 +119,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     }
 
     @Override
-    public FragmentPagerAdapter<Integer, CommentsFragment> getAdapter(List<Integer> currentItems) {
+    public FragmentPagerAdapter<Integer, CommentsFragment> newAdapter(List<Integer> currentItems) {
         return new FragmentPagerAdapter<Integer, CommentsFragment>(getChildFragmentManager(), currentItems) {
             @Override
             public Fragment getItem(int position) {

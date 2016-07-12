@@ -44,7 +44,7 @@ public class HistoryFragment extends FilterDialogListFragment {
     }
 
     @Override
-    protected ItemListAdapter getAdapter() {
+    protected ItemListAdapter newAdapter() {
         return new HistoryAdapter();
     }
 

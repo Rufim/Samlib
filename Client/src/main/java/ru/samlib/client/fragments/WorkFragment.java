@@ -402,7 +402,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     @Override
-    protected ItemListAdapter<String> getAdapter() {
+    protected ItemListAdapter<String> newAdapter() {
         return new WorkFragmentAdaptor();
     }
 

@@ -128,7 +128,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
 
 
     @Override
-    protected ItemListAdapter getAdapter() {
+    protected ItemListAdapter newAdapter() {
         return new FavoritesAdapter();
     }
 

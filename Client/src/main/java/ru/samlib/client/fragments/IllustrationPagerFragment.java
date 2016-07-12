@@ -107,7 +107,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
     }
 
     @Override
-    public FragmentPagerAdapter<Image, IllustrationFragment> getAdapter(List<Image> currentItems) {
+    public FragmentPagerAdapter<Image, IllustrationFragment> newAdapter(List<Image> currentItems) {
         return new FragmentPagerAdapter<Image, IllustrationFragment>(getChildFragmentManager(), currentItems) {
             @Override
             public Fragment getItem(int position) {

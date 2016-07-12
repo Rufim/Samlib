@@ -1,5 +1,7 @@
 package ru.samlib.client.fragments;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.graphics.PointF;
 import android.os.*;
 import android.support.v4.view.MenuItemCompat;
@@ -90,7 +92,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         }
     }
 
-    protected ItemListAdapter.FilterEvent getNewFilterEvent(String query) {
+    protected ItemListAdapter.FilterEvent newFilterEvent(String query) {
         return new ItemListAdapter.FilterEvent(query);
     }
 
@@ -105,8 +107,8 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if(lastSearchQuery == null) {
-            lastSearchQuery = getNewFilterEvent(query);
+        if (lastSearchQuery == null) {
+            lastSearchQuery = newFilterEvent(query);
         } else {
             lastSearchQuery.query = query;
         }
@@ -122,9 +124,13 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         adapter.enterFilteringMode();
         if (filterTask == null) {
             lastSearchQuery = null;
-            filterTask = new FilterTask(filterEvent);
+            filterTask = newFilterTask(filterEvent);
             getActivity().runOnUiThread(filterTask);
         }
+    }
+
+    public FilterTask newFilterTask(ItemListAdapter.FilterEvent filterEvent) {
+        return new FilterTask(filterEvent);
     }
 
     protected void onSearchViewClose(SearchView searchView) {
@@ -138,8 +144,12 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.search, menu);
         MenuItem searchItem = menu.findItem(R.id.search);
         if (searchItem != null) {
+            searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+            SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
             searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
             if (enableFiltering) {
                 searchView.setQueryHint(getString(R.string.filter_hint));
@@ -202,7 +212,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
         loadItems(count, showProgress, null, null);
     }
 
-    protected abstract ItemListAdapter<I> getAdapter();
+    protected abstract ItemListAdapter<I> newAdapter();
 
     protected DataSource<I> getDataSource() throws Exception {
         return dataSource;
@@ -329,7 +339,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             }
         });
         if (adapter == null) {
-            adapter = getAdapter();
+            adapter = newAdapter();
         }
         try {
             setDataSource(getDataSource());

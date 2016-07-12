@@ -201,7 +201,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected ItemListAdapter<Linkable> getAdapter() {
+    protected ItemListAdapter<Linkable> newAdapter() {
         return new AuthorFragmentAdaptor();
     }
 
