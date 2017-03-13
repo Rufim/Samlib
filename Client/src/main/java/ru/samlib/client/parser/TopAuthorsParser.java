@@ -1,12 +1,11 @@
 package ru.samlib.client.parser;
 
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.lister.DefaultJsoupSelector;
-import ru.samlib.client.lister.DefaultPageLister;
-
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.samlib.client.domain.Validatable;
+import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.lister.DefaultJsoupSelector;
+import ru.samlib.client.lister.DefaultPageLister;
 
 import java.net.MalformedURLException;
 

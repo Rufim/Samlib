@@ -5,7 +5,6 @@ import com.annimon.stream.Stream;
 import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Findable;
 import ru.samlib.client.domain.Linkable;

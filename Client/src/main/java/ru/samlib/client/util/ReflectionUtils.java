@@ -1,8 +1,6 @@
 package ru.samlib.client.util;
 
 
-import ru.samlib.client.R;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

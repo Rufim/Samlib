@@ -3,7 +3,6 @@ package ru.samlib.client.domain.entity;
 import io.requery.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Validatable;
 

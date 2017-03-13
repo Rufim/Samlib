@@ -8,7 +8,6 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
-
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;

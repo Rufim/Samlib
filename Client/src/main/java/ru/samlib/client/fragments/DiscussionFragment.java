@@ -2,15 +2,10 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.entity.Discussion;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;

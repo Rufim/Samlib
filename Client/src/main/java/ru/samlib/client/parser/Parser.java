@@ -3,16 +3,14 @@ package ru.samlib.client.parser;
 import android.os.SystemClock;
 import android.support.v4.util.LruCache;
 import android.util.Log;
-import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.net.CachedResponse;
-import ru.samlib.client.net.Request;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import ru.samlib.client.domain.Constants;
+import ru.samlib.client.net.CachedResponse;
+import ru.samlib.client.net.HtmlClient;
+import ru.samlib.client.net.Request;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

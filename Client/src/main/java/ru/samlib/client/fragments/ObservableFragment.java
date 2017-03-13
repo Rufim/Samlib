@@ -1,14 +1,12 @@
 package ru.samlib.client.fragments;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -28,7 +26,6 @@ import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.service.ObservableService;
-import ru.samlib.client.util.GuiUtils;
 
 import javax.inject.Inject;
 import java.io.IOException;

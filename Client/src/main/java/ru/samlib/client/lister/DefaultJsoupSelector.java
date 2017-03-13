@@ -1,7 +1,5 @@
 package ru.samlib.client.lister;
 
-import ru.samlib.client.lister.JsoupRowSelector;
-
 /**
  * Created by Dmitry on 30.10.2015.
  */

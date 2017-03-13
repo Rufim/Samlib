@@ -1,18 +1,12 @@
 package ru.samlib.client.dialog;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
-import android.view.View;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
-import ru.samlib.client.R;
 import ru.samlib.client.domain.events.Event;
-import ru.samlib.client.fragments.BaseFragment;
 import ru.samlib.client.util.FragmentBuilder;
 
 /**

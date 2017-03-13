@@ -6,9 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayout;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ScrollView;
 import android.widget.Switch;
@@ -18,7 +16,6 @@ import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.fragments.FilterDialogListFragment;
-
 
 import java.util.ArrayList;
 import java.util.EnumSet;

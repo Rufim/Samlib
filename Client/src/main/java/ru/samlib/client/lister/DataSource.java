@@ -1,7 +1,6 @@
 package ru.samlib.client.lister;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.util.List;
 
 /**

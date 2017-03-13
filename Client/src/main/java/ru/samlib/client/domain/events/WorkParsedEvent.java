@@ -1,6 +1,5 @@
 package ru.samlib.client.domain.events;
 
-import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Work;
 
 /**

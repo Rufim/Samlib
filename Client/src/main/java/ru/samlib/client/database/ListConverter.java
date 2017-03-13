@@ -1,6 +1,5 @@
 package ru.samlib.client.database;
 
-import android.util.Log;
 import io.requery.Converter;
 import io.requery.Nullable;
 import net.vrallev.android.cat.Cat;

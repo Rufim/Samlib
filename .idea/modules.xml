@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Client/Client.iml" filepath="$PROJECT_DIR$/.idea/modules/Client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Samlib.iml" filepath="$PROJECT_DIR$/Samlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Samlib.iml" filepath="$PROJECT_DIR$/.idea/modules/Samlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/Samlib.iml" filepath="$PROJECT_DIR$/Samlib.iml" />
     </modules>

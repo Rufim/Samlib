@@ -7,13 +7,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
-import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Bookmark;
+import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.util.*;
+import ru.samlib.client.util.JsoupUtils;
+import ru.samlib.client.util.ParserUtils;
+import ru.samlib.client.util.SystemUtils;
+import ru.samlib.client.util.TextUtils;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;

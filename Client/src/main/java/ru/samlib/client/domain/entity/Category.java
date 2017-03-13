@@ -3,8 +3,6 @@ package ru.samlib.client.domain.entity;
 import android.graphics.Color;
 import io.requery.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.samlib.client.domain.Linkable;

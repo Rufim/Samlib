@@ -1,15 +1,11 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
-
-import org.jsoup.Jsoup;
-import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.lister.*;
-
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import ru.samlib.client.util.TextUtils;
+import ru.samlib.client.domain.Validatable;
+import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.lister.PageLister;
+import ru.samlib.client.lister.RowSelector;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

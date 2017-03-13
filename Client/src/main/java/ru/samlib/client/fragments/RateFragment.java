@@ -1,6 +1,5 @@
 package ru.samlib.client.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
@@ -12,7 +11,6 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.RateParser;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 

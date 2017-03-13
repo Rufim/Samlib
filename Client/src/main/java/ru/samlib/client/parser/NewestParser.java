@@ -1,11 +1,11 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Work;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.util.TextUtils;

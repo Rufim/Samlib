@@ -1,6 +1,5 @@
 package ru.samlib.client.fragments;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.text.method.LinkMovementMethod;
@@ -9,16 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import de.greenrobot.event.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.CommentsParsedEvent;
-import ru.samlib.client.domain.events.ScrollToCommentEvent;
-import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.parser.CommentsParser;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.GuiUtils;
@@ -26,10 +21,6 @@ import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.URLSpanNoUnderline;
 
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by 0shad on 31.10.2015.

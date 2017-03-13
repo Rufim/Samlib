@@ -10,11 +10,11 @@ import android.view.MenuItem;
 import android.view.View;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
-import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.TextUtils;
 

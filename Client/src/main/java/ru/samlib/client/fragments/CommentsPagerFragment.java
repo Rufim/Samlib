@@ -1,6 +1,5 @@
 package ru.samlib.client.fragments;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
@@ -12,17 +11,12 @@ import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.FragmentPagerAdapter;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Comment;
-import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.*;
-import ru.samlib.client.lister.DataSource;
+import ru.samlib.client.domain.events.CommentPageEvent;
+import ru.samlib.client.domain.events.CommentsParsedEvent;
 import ru.samlib.client.parser.CommentsParser;
-import ru.samlib.client.parser.IllustrationsParser;
 import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.TextUtils;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;

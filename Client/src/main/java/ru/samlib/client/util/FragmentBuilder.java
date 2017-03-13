@@ -6,16 +6,15 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.View;
 import com.google.gson.internal.Primitives;
-import ru.samlib.client.R;
-import ru.samlib.client.domain.Constants;
 import ru.samlib.client.fragments.ErrorFragment;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by 0shad on 13.07.2015.

@@ -1,18 +1,13 @@
 package ru.samlib.client.parser;
 
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Genre;
-import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DefaultJsoupSelector;
 import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.net.Request;
-import ru.samlib.client.util.JsoupUtils;
 import ru.samlib.client.util.ParserUtils;
 
-import java.math.BigDecimal;
 import java.net.MalformedURLException;
 
 /**

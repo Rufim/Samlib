@@ -2,22 +2,13 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.parser.IllustrationsParser;
-import ru.samlib.client.parser.RateParser;
 import ru.samlib.client.parser.TopAuthorsParser;
-
-import java.net.MalformedURLException;
 
 /**
  * Created by Rufim on 16.01.2015.

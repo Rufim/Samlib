@@ -1,7 +1,7 @@
 package ru.samlib.client.domain.events;
 
 import ru.samlib.client.domain.entity.Image;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**

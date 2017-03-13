@@ -15,7 +15,6 @@ import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.IllustrationSelectedEvent;
 import ru.samlib.client.domain.events.IllustrationsParsedEvent;
-import ru.samlib.client.domain.events.ScrollToCommentEvent;
 import ru.samlib.client.parser.IllustrationsParser;
 import ru.samlib.client.util.FragmentBuilder;
 import ru.samlib.client.util.TextUtils;

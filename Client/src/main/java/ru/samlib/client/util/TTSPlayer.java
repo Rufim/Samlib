@@ -7,7 +7,10 @@ import android.widget.Toast;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.samlib.client.domain.entity.Work;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by 0shad on 01.08.2015.

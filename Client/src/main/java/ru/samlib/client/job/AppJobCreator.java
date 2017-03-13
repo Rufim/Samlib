@@ -7,7 +7,6 @@ import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import ru.samlib.client.util.SystemUtils;
 
-
 import java.util.Set;
 
 /**

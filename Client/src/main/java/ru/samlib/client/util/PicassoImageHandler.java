@@ -1,21 +1,16 @@
 package ru.samlib.client.util;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.SpannableStringBuilder;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Transformation;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Link;
 
 import java.net.MalformedURLException;
 import java.net.URL;

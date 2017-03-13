@@ -8,13 +8,12 @@ import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
-
 import de.greenrobot.event.EventBus;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.*;
+import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
@@ -23,9 +22,11 @@ import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.ObservableService;
 import ru.samlib.client.util.GuiUtils;
 
-;import javax.inject.Inject;
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+
+;
 
 /**
  * Created by 0shad on 01.03.2016.

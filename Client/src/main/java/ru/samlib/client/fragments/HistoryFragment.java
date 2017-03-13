@@ -3,28 +3,19 @@ package ru.samlib.client.fragments;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
-import de.greenrobot.event.EventBus;
-import lombok.Cleanup;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.database.SnappyHelper;
-import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.util.TextUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 
 /**

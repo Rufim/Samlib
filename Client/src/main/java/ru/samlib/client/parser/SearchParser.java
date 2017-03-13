@@ -1,18 +1,16 @@
 package ru.samlib.client.parser;
 
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.Valuable;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import ru.samlib.client.domain.Validatable;
+import ru.samlib.client.domain.Valuable;
+import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.PageLister;
 import ru.samlib.client.net.Request;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.IOException;

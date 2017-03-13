@@ -2,7 +2,6 @@ package ru.samlib.client.util;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
-import ru.samlib.client.R;
 
 import java.io.*;
 import java.math.BigDecimal;

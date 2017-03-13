@@ -1,7 +1,6 @@
 package ru.samlib.client;
 
 import android.app.Application;
-
 import com.evernote.android.job.JobManager;
 import dagger.Module;
 import io.requery.Persistable;
@@ -12,6 +11,7 @@ import io.requery.rx.SingleEntityStore;
 import io.requery.sql.Configuration;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.TableCreationMode;
+import ru.samlib.client.dagger.AppComponent;
 import ru.samlib.client.dagger.AppModule;
 import ru.samlib.client.dagger.DaggerAppComponent;
 import ru.samlib.client.database.BigDecimalConverter;
@@ -19,7 +19,6 @@ import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Models;
 import ru.samlib.client.job.AppJobCreator;
-import ru.samlib.client.dagger.AppComponent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 

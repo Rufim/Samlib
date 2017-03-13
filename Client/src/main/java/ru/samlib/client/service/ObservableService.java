@@ -1,17 +1,14 @@
 package ru.samlib.client.service;
 
-import dagger.Module;
 import io.requery.Persistable;
 import io.requery.query.Condition;
 import io.requery.query.JoinAndOr;
 import io.requery.query.Result;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
-import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.*;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 
 

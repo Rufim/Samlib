@@ -5,11 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.KeyEvent;
-import ru.samlib.client.R;
-import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.service.TTSService;
-import ru.samlib.client.util.AndroidSystemUtils;
 import ru.samlib.client.util.TTSPlayer;
 
 /**

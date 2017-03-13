@@ -5,8 +5,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.domain.entity.Link;
-import ru.samlib.client.lister.DataSource;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.lister.RowSelector;

@@ -3,7 +3,6 @@ package ru.samlib.client.dagger;
 import dagger.Component;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.fragments.AuthorFragment;
-import ru.samlib.client.fragments.BaseFragment;
 import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.service.ObservableService;

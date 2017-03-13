@@ -1,8 +1,7 @@
 package ru.samlib.client.lister;
 
-import ru.samlib.client.net.Request;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import ru.samlib.client.net.Request;
 import ru.samlib.client.util.TextUtils;
 
 /**
