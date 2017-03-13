@@ -310,7 +310,7 @@ public class WorkFragment extends ListFragment<String> {
             if(lastSearchQuery != null)  {
                 lastSearchQuery.query = query;
             } else {
-                lastSearchQuery = getNewFilterEvent(query);
+                lastSearchQuery = newFilterEvent(query);
             }
             scrollToIndex(index.first, index.second);
         }

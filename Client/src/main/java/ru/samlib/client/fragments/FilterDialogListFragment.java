@@ -32,7 +32,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
     }
 
     @Override
-    protected ItemListAdapter.FilterEvent getNewFilterEvent(String query) {
+    protected ItemListAdapter.FilterEvent newFilterEvent(String query) {
         return new FilterEvent(query);
     }
 

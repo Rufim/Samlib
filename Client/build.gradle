@@ -11,7 +11,7 @@ ext {
     versionProjectName = "0.1.0"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
-    requeryVersion = '1.2.0'
+    requeryVersion = '1.1.0'
     daggerVersion = '2.4'
     lombokVersion = '1.16.4'
 }
@@ -80,6 +80,7 @@ android {
     }
 
     lintOptions {
+        abortOnError false
         disable 'InvalidPackage', 'MissingPrefix', 'WrongConstant'
     }
 

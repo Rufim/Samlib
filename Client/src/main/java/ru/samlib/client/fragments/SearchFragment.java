@@ -66,7 +66,7 @@ public class SearchFragment extends ListFragment {
         public SearchArrayAdapter() {
             super(R.layout.item_search);
             enterFilteringMode();
-            lastSearchQuery = getNewFilterEvent(query);
+            lastSearchQuery = newFilterEvent(query);
         }
 
         @Override
