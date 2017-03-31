@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import butterknife.Bind;
+import butterknife.BindView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import ru.samlib.client.R;
@@ -24,11 +24,11 @@ import java.lang.reflect.Field;
  */
 public class IllustrationFragment extends BaseFragment {
 
-    @Bind(R.id.load_progress)
+    @BindView(R.id.load_progress)
     ProgressBar progressBar;
-    @Bind(R.id.loading_text)
+    @BindView(R.id.loading_text)
     TextView loadingText;
-    @Bind(R.id.illustration)
+    @BindView(R.id.illustration)
     ImageView illustration;
     Image image;
 

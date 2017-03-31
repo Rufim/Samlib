@@ -20,6 +20,7 @@ import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
@@ -35,7 +36,7 @@ import java.util.List;
 /**
  * Created by 0shad on 16.06.2016.
  */
-public class ObservableFragment extends ListFragment<AuthorEntity>{
+public class ObservableFragment extends ListFragment<Author>{
 
     @Inject
     ObservableService observableService;
@@ -58,10 +59,10 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
     }
 
     @Override
-    protected DataSource<AuthorEntity> getDataSource() throws Exception {
-        return new DataSource<AuthorEntity>() {
+    protected DataSource<Author> getDataSource() throws Exception {
+        return new DataSource<Author>() {
             @Override
-            public List<AuthorEntity> getItems(int skip, int size) throws IOException {
+            public List<Author> getItems(int skip, int size) throws IOException {
                 EntityDataStore<Persistable> dataStore = getDataStore();
                 return Stream.of(dataStore.select(AuthorEntity.class).get().toList()).skip(skip).limit(size).collect(Collectors.toList());
             }
@@ -108,7 +109,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         }).start();
     }
 
-    private void initializeAuthor(AuthorEntity author) {
+    private void initializeAuthor(Author author) {
       if(author.isHasUpdates()) {
           final int index;
           for (int i = 0; i < adapter.getItems().size(); i++) {
@@ -129,7 +130,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends MultiItemListAdapter<AuthorEntity> {
+    protected class FavoritesAdapter extends MultiItemListAdapter<Author> {
 
         public FavoritesAdapter() {
             super(false, R.layout.item_favorites);
@@ -138,13 +139,13 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         @Override
         public void onClick(View view, int position) {
             if(!loading) {
-                AuthorEntity authorEntity = getItem(position);
-                authorEntity.setHasUpdates(false);
-                getDataStore().update(authorEntity);
+                Author author = getItem(position);
+                author.setHasUpdates(false);
+                getDataStore().update(author.createEntry());
                 adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
-                Author author = new Author(authorEntity.getLink());
-                author.setId(authorEntity.getId());
+                author = new Author(author.getLink());
+                author.setId(author.getId());
                 i.putExtra(Constants.ArgsName.AUTHOR, author);
                 startActivity(i);
             }
@@ -172,7 +173,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity>{
         }
 
         @Override
-        public int getLayoutId(AuthorEntity item) {
+        public int getLayoutId(Author item) {
             return R.layout.item_favorites;
         }
     }

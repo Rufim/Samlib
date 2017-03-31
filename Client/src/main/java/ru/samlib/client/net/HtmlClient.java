@@ -94,17 +94,17 @@ public class HtmlClient {
         return async.cachedResponse;
     }
 
-    public static CachedResponse executeRequest(Request request) {
+    public static CachedResponse executeRequest(Request request) throws IOException {
        return executeRequest(request, Long.MAX_VALUE);
     }
 
-    public static CachedResponse executeRequest(Request request, long minBodySize) {
+    public static CachedResponse executeRequest(Request request, long minBodySize) throws IOException {
         CachedResponse cachedResponse = null;
         HtmlClient client = HtmlClient.getInstance();
         try {
             cachedResponse = client.takeHtmlAsync(request, minBodySize);
         } catch (Exception e) {
-            Log.e(TAG, "Error when ", e);
+            throw new IOException("Error when try to get html ", e);
         }
         return cachedResponse;
     }

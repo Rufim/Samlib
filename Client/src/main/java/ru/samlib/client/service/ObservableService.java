@@ -29,9 +29,9 @@ public class ObservableService {
 
     private JoinAndOr<Result<AuthorEntity>> getAuthorQuery() {
         return dataStore.select(AuthorEntity.class).distinct()
-                .leftJoin(CategoryEntity.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.ID))
-                .leftJoin(WorkEntity.class).on(WorkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
-                .leftJoin(LinkEntity.class).on(LinkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
+                .leftJoin(Category.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.ID))
+                .leftJoin(Work.class).on(WorkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
+                .leftJoin(Link.class).on(LinkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
     }
 
     public AuthorEntity insertAuthor(AuthorEntity entity) {
@@ -42,10 +42,10 @@ public class ObservableService {
         return doActionAuthor(Action.UPDATE, entity);
     }
 
-    public AuthorEntity doActionAuthor(Action action, AuthorEntity authorEntity) {
-        AuthorEntity result =  (AuthorEntity) doAction(action, authorEntity);
+    public AuthorEntity doActionAuthor(Action action, AuthorEntity Author) {
+        AuthorEntity result =  (AuthorEntity) doAction(action, Author);
         if(action.equals(Action.UPDATE)) {
-            for (Category category : authorEntity.getCategories()) {
+            for (Category category : Author.getCategories()) {
                 doAction(action, category);
             }
         }

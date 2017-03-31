@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
@@ -23,11 +23,11 @@ public class ErrorFragment extends BaseFragment {
     private static final String TAG = ErrorFragment.class.getSimpleName();
 
 
-    @Bind(R.id.error_image)
+    @BindView(R.id.error_image)
     ImageView errorImage;
-    @Bind(R.id.error_text)
+    @BindView(R.id.error_text)
     TextView errorMessage;
-    @Bind(R.id.refresh)
+    @BindView(R.id.refresh)
     SwipeRefreshLayout swipeRefresh;
     Class<BaseFragment> fragmentClass;
     Bundle fragmentArgs;

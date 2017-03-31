@@ -68,7 +68,6 @@ public  class BaseDialog extends DialogFragment implements DialogInterface.OnCli
         if (getDialog() != null && getRetainInstance())
             getDialog().setDismissMessage(null);
         super.onDestroyView();
-        ButterKnife.unbind(this);
     }
 
 }

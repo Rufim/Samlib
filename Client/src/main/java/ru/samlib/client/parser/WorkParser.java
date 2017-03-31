@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import android.accounts.NetworkErrorException;
 import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,6 +19,7 @@ import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.SystemUtils;
 import ru.samlib.client.util.TextUtils;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +49,7 @@ public class WorkParser extends Parser {
         this.work = new Work(workLink);
     }
 
-    public Work parse(boolean fullDownload, boolean processChapters) {
+    public Work parse(boolean fullDownload, boolean processChapters) throws IOException {
         CachedResponse rawContent = null;
         if (work.getRawContent() == null && !fullDownload) {
             rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE);

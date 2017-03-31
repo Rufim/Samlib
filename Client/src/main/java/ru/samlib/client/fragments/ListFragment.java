@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.accounts.NetworkErrorException;
 import android.app.SearchManager;
 import android.content.Context;
 import android.graphics.PointF;
@@ -14,7 +15,7 @@ import android.view.*;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import butterknife.Bind;
+import butterknife.BindView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.ItemListAdapter;
 import ru.samlib.client.adapter.MultiItemListAdapter;
@@ -34,15 +35,15 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
 
     private final int filteringCooldown = 300;
 
-    @Bind(R.id.load_progress)
+    @BindView(R.id.load_progress)
     protected ProgressBar progressBar;
-    @Bind(R.id.loading_text)
+    @BindView(R.id.loading_text)
     protected TextView loadingText;
-    @Bind(R.id.load_more)
+    @BindView(R.id.load_more)
     protected ProgressBar loadMoreBar;
-    @Bind(R.id.items)
+    @BindView(R.id.items)
     protected RecyclerView itemList;
-    @Bind(R.id.refresh)
+    @BindView(R.id.refresh)
     protected SwipeRefreshLayout swipeRefresh;
 
     protected SearchView searchView;
@@ -426,12 +427,16 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             List<I> items = null;
             try {
                 items = dataSource.getItems(currentCount, count);
-                if (items.size() == 0) {
+                if (items == null || items.size() == 0) {
                     return items;
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e(TAG, "Cant get new Items", e);
-                ErrorFragment.show(ListFragment.this, R.string.error_network);
+               if( e instanceof IOException) {
+                   ErrorFragment.show(ListFragment.this, R.string.error_network);
+               } else {
+                   ErrorFragment.show(ListFragment.this, R.string.error);
+               }
             }
             return items;
         }
@@ -441,7 +446,7 @@ public abstract class ListFragment<I> extends BaseFragment implements SearchView
             super.onPostExecute(result);
             if (itemList != null) {
                 int needMore = 0;
-                if (result.size() == 0) {
+                if (result == null || result.size() == 0) {
                     isEnd = true;
                 } else {
                     needMore = count - adapter.addItems(result).size();

@@ -12,6 +12,8 @@ import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,12 +40,12 @@ public class AuthorParser extends Parser {
         author.setLink(authorLink);
     }
 
-    public Author parse() {
+    public Author parse() throws IOException {
         try {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
-            if(author.getId() != null) {
+            if (author.getId() != null) {
                 request.saveInCache(false);
             }
             if (author.getCategories().isEmpty()) {
@@ -51,7 +53,7 @@ public class AuthorParser extends Parser {
             } else {
                 rawFile = HtmlClient.executeRequest(request);
                 author.getRecommendations().clear();
-                if(author.getId() == null) {
+                if (author.getId() == null) {
                     author.getCategories().clear();
                 }
             }
@@ -206,6 +208,9 @@ public class AuthorParser extends Parser {
             }
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
+            if (e instanceof IOException) {
+                throw e;
+            }
         }
         return author;
     }

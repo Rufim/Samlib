@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import butterknife.Bind;
+import butterknife.BindView;
 import ru.samlib.client.R;
 import ru.samlib.client.adapter.FragmentPagerAdapter;
 import ru.samlib.client.lister.DataSource;
@@ -25,11 +25,11 @@ public abstract class PagerFragment<I, F extends BaseFragment> extends BaseFragm
 
     private static final String TAG = PagerFragment.class.getSimpleName();
 
-    @Bind(R.id.load_more)
+    @BindView(R.id.load_more)
     protected ProgressBar loadMoreBar;
-    @Bind(R.id.pager_header)
+    @BindView(R.id.pager_header)
     protected PagerTabStrip pagerHeader;
-    @Bind(R.id.pager)
+    @BindView(R.id.pager)
     protected ViewPager pager;
     protected FragmentPagerAdapter<I, F> adapter;
     protected DataSource<I> dataSource;

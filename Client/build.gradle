@@ -1,19 +1,19 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
 
 
 ext {
-    compileSdkProjectVersion = 23
-    buildToolsProjectVersion = '23.0.3'
-    supportLibraryVersion = '23.3.0'
+    compileSdkProjectVersion = 25
+    buildToolsProjectVersion = '25.0.2'
+    supportLibraryVersion = '25.2.0'
     versionProjectCode = 1
     versionProjectName = "0.1.0"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
     requeryVersion = '1.1.0'
     daggerVersion = '2.4'
-    lombokVersion = '1.16.4'
+    lombokVersion = '1.16.16'
+    butterknifeVersion = '8.5.1'
 }
 
 android {
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "ru.samlib.client"
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 25
         versionCode versionProjectCode
         versionName versionProjectName
     }
@@ -95,35 +95,35 @@ retrolambda {
 
 dependencies {
     compile fileTree(include: ["*.jar"], dir: "libs")
-    apt "org.projectlombok:lombok:$lombokVersion"
-    apt "com.google.dagger:dagger-compiler:$daggerVersion"
-    apt "com.jakewharton:butterknife:7.0.1"
-    apt "io.requery:requery-processor:$requeryVersion"   // use an APT plugin
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
+    annotationProcessor "com.jakewharton:butterknife-compiler:$butterknifeVersion"
+    annotationProcessor "io.requery:requery-processor:$requeryVersion"   // use an APT plugin
     provided "javax.annotation:jsr250-api:1.0"
     provided "org.projectlombok:lombok:$lombokVersion"
-    compile "com.android.support:appcompat-v7:$supportLibraryVersion"
     compile "com.android.support:gridlayout-v7:$supportLibraryVersion"
     compile "com.android.support:cardview-v7:$supportLibraryVersion"
-    compile "com.android.support:recyclerview-v7:$supportLibraryVersion"
     compile "com.android.support:design:$supportLibraryVersion"
     compile "com.android.support:support-annotations:$supportLibraryVersion"
 
     compile "org.jsoup:jsoup:1.8.3"
     compile "com.annimon:stream:1.0.1"
-    compile "com.jakewharton:butterknife:7.0.1"
+    compile "com.jakewharton:butterknife:$butterknifeVersion"
     compile "de.greenrobot:eventbus:2.4.0"
     compile "com.squareup.picasso:picasso:2.5.2"
     compile "com.google.code.gson:gson:2.4"
-    compile "uk.co.chrisjenx:calligraphy:2.1.0"
+    compile "uk.co.chrisjenx:calligraphy:2.2.0"
     compile "com.google.dagger:dagger:$daggerVersion"
     //   compile "com.github.User:Repo:Tag"  for github repos
     compile "com.github.NightWhistler:HtmlSpanner:0.4"
-    compile "xyz.danoz:recyclerviewfastscroller:0.1.3"
+    compile ("xyz.danoz:recyclerviewfastscroller:0.1.3") {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
     compile "com.snappydb:snappydb-lib:0.5.2"
     compile "io.reactivex:rxjava:1.1.5"
     compile "io.reactivex:rxandroid:1.1.0"
     compile "com.evernote:android-job:1.0.7"
-    compile "net.vrallev.android:cat:1.0.3"
+    compile "net.vrallev.android:cat:1.0.4"
 
     compile "io.requery:requery:$requeryVersion"
     compile "io.requery:requery-android:$requeryVersion" // for android

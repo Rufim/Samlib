@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ScrollView;
 import android.widget.Switch;
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Gender;
@@ -25,17 +25,17 @@ import java.util.EnumSet;
  */
 public class FilterDialog extends BaseDialog {
 
-    @Bind(R.id.dialog_filter_switch_mode)
+    @BindView(R.id.dialog_filter_switch_mode)
     Switch dialogFilterSwitchMode;
-    @Bind(R.id.dialog_filter_grid)
+    @BindView(R.id.dialog_filter_grid)
     GridLayout dialogFilterGrid;
-    @Bind(R.id.scrollView)
+    @BindView(R.id.scrollView)
     ScrollView scrollView;
-    @Bind(R.id.dialog_filter_male)
+    @BindView(R.id.dialog_filter_male)
     CheckBox dialogFilterMale;
-    @Bind(R.id.dialog_filter_female)
+    @BindView(R.id.dialog_filter_female)
     CheckBox dialogFilterFemale;
-    @Bind(R.id.dialog_filter_undefined)
+    @BindView(R.id.dialog_filter_undefined)
     CheckBox dialogFilterUndefined;
     View rootView;
     ArrayList<Genre> genreList;

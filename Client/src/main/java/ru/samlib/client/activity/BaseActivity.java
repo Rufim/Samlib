@@ -20,7 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.greenrobot.event.EventBus;
 import ru.samlib.client.R;
@@ -36,17 +36,17 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
  */
 public abstract class BaseActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener {
 
-    @Bind(R.id.container)
+    @BindView(R.id.container)
     protected FrameLayout container;
-    @Bind(R.id.container_details)
+    @BindView(R.id.container_details)
     protected FrameLayout containerDetails;
-    @Bind(R.id.drawer_layout)
+    @BindView(R.id.drawer_layout)
     protected DrawerLayout drawerLayout;
-    @Bind(R.id.navigation_drawer)
+    @BindView(R.id.navigation_drawer)
     protected NavigationView navigationView;
-    @Bind(R.id.toolbar)
+    @BindView(R.id.toolbar)
     protected Toolbar toolbar;
-    @Bind(R.id.main_border)
+    @BindView(R.id.main_border)
     protected View mainBorder;
 
     protected ActionBar actionBar;

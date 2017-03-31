@@ -57,6 +57,7 @@ public class Category implements Linkable, Serializable, Parsable {
         entity.setType(type);
         for (Work work : works) {
             work.setCategory(entity);
+            work.setAuthor(entity.getAuthor());
             entity.getWorks().add(work.createEntity());
         }
         for (Link link1 : links) {

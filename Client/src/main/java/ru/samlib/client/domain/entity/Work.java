@@ -49,7 +49,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer id;
     String title;
     String link;
-    @Transient
+    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Author author;
     @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
     Author rootAuthor;

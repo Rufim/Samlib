@@ -116,7 +116,6 @@ public class BaseFragment extends Fragment implements BaseActivity.BackCallback 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.unbind(this);
     }
 
 

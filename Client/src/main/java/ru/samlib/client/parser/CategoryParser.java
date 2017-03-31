@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import android.accounts.NetworkErrorException;
 import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,6 +15,8 @@ import ru.samlib.client.util.ParserUtils;
 import ru.samlib.client.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Scanner;
 
@@ -37,7 +40,7 @@ public class CategoryParser extends Parser{
         category.setLink(categoryLink);
     }
 
-    public Category parse() {
+    public Category parse() throws IOException {
         boolean hasNotAuthor = category.getAuthor() == null;
         Author author;
         if(hasNotAuthor) {
@@ -48,7 +51,7 @@ public class CategoryParser extends Parser{
             Document headDoc;
             Elements elements;
             CachedResponse rawFile = HtmlClient.executeRequest(request);
-            String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(),  false,
+            String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(), false,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
@@ -56,7 +59,7 @@ public class CategoryParser extends Parser{
             if (parts.length > 0) {
                 String title = parts[0];
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
-                if(hasNotAuthor) {
+                if (hasNotAuthor) {
                     author.setFullName(titles[0]);
                 }
                 category.setTitle(titles[1].trim());
@@ -86,7 +89,7 @@ public class CategoryParser extends Parser{
                             new TextUtils.Splitter("<a href=\\./>", "<ul>"))[0];
                     category.setAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(annotation.substring(annotation.indexOf(":") + 1))));
                 }
-                if(hasNotAuthor) {
+                if (hasNotAuthor) {
                     for (Element a : headDoc.select("ul").select("a")) {
                         Category category = new Category();
                         category.setTitle(a.text());
@@ -125,6 +128,9 @@ public class CategoryParser extends Parser{
             Log.e(TAG, "Category " + category.getTitle() + " parsed");
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);
+            if (e instanceof IOException) {
+                throw e;
+            }
         }
         category.setParsed(true);
         return category;

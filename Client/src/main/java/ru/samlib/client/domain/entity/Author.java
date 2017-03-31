@@ -59,10 +59,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     @Transient
     List<Work> recommendations = new ArrayList<>();
-    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @OneToMany(mappedBy = "author",cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Category> categories;
     @OneToMany(mappedBy = "rootAuthor", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Link> rootLinks;
+    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<Work> works;
     @OneToMany(mappedBy = "rootAuthor", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> rootWorks;
     @Transient
