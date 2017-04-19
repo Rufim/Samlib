@@ -1,7 +1,7 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.lister.RowSelector;
 
 import java.io.IOException;

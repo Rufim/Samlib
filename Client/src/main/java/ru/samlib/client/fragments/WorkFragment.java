@@ -20,12 +20,16 @@ import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.util.*;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.adapter.MultiItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.domain.Constants;
@@ -63,24 +67,25 @@ public class WorkFragment extends ListFragment<String> {
         SEARCH, SPEAK, NORMAL
     }
 
-    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
-        show(builder, container, WorkFragment.class, Constants.ArgsName.LINK, link);
+    public static WorkFragment show(FragmentBuilder builder, @IdRes int container, String link) {
+        return show(builder.putArg(Constants.ArgsName.LINK, link), container, WorkFragment.class);
     }
 
-    public static void show(FragmentBuilder builder, @IdRes int container, Work work) {
-        show(builder, container, WorkFragment.class, Constants.ArgsName.WORK, work);
+    public static WorkFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
+        return show(builder.putArg( Constants.ArgsName.WORK, work), container, WorkFragment.class);
     }
 
-    public static void show(BaseFragment fragment, String link) {
-        show(fragment, WorkFragment.class, Constants.ArgsName.LINK, link);
+    public static WorkFragment show(BaseFragment fragment, String link) {
+        return show(fragment, WorkFragment.class, Constants.ArgsName.LINK, link);
     }
 
-    public static void show(BaseFragment fragment, Work work) {
-        show(fragment, WorkFragment.class, Constants.ArgsName.WORK, work);
+    public static WorkFragment show(BaseFragment fragment, Work work) {
+        return show(fragment, WorkFragment.class, Constants.ArgsName.WORK, work);
     }
 
     public WorkFragment() {
         pageSize = 30000;
+        enableSearch = true;
         setDataSource(((skip, size) -> {
             while (work == null) {
                 SystemClock.sleep(100);
@@ -332,6 +337,7 @@ public class WorkFragment extends ListFragment<String> {
         }
     }
 
+    @Subscribe
     public void onEvent(ChapterSelectedEvent event) {
         scrollToIndex(event.bookmark.getIndentIndex());
     }

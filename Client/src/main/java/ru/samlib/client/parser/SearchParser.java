@@ -11,7 +11,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.PageLister;
 import ru.samlib.client.net.Request;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

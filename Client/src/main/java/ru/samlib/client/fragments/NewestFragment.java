@@ -5,11 +5,11 @@ import android.net.Uri;
 import android.view.View;
 import android.widget.TextView;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.NewestParser;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.util.Locale;
 

@@ -3,6 +3,7 @@ package ru.samlib.client.util;
 import android.util.Log;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.entity.*;
 
 import java.math.BigDecimal;

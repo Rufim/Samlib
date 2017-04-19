@@ -7,7 +7,7 @@ import com.snappydb.DBFactory;
 import com.snappydb.SnappydbException;
 import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.util.SystemUtils;
+import ru.kazantsev.template.util.SystemUtils;
 
 import java.io.Closeable;
 import java.io.Serializable;

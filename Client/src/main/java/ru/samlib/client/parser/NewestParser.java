@@ -6,9 +6,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.lister.JsoupRowSelector;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

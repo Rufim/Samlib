@@ -10,14 +10,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
 import io.requery.Persistable;
 import io.requery.sql.EntityDataStore;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.adapter.MultiItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Author;
@@ -25,7 +28,7 @@ import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.service.ObservableService;
 
 import javax.inject.Inject;
@@ -36,7 +39,7 @@ import java.util.List;
 /**
  * Created by 0shad on 16.06.2016.
  */
-public class ObservableFragment extends ListFragment<Author>{
+public class ObservableFragment extends ListFragment<Author> {
 
     @Inject
     ObservableService observableService;
@@ -49,6 +52,7 @@ public class ObservableFragment extends ListFragment<Author>{
     }
 
     public ObservableFragment() {
+        enableSearch = true;
         enableFiltering = true;
     }
 
@@ -63,7 +67,7 @@ public class ObservableFragment extends ListFragment<Author>{
         return new DataSource<Author>() {
             @Override
             public List<Author> getItems(int skip, int size) throws IOException {
-                EntityDataStore<Persistable> dataStore = getDataStore();
+                EntityDataStore<Persistable> dataStore =  App.getInstance().getDataStore();
                 return Stream.of(dataStore.select(AuthorEntity.class).get().toList()).skip(skip).limit(size).collect(Collectors.toList());
             }
         };
@@ -87,12 +91,13 @@ public class ObservableFragment extends ListFragment<Author>{
         super.onStop();
     }
 
-
+    @Subscribe
     public void onEvent(AuthorUpdatedEvent event) {
         initializeAuthor(event.author);
     }
 
-    public void onEventMainThread(ObservableCheckedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(ObservableCheckedEvent event) {
         loading = false;
         swipeRefresh.setRefreshing(false);
     }
@@ -102,7 +107,7 @@ public class ObservableFragment extends ListFragment<Author>{
         swipeRefresh.setRefreshing(true);
         loading = true;
         adapter.clear();
-        adapter.getItems().addAll(getDataStore().select(AuthorEntity.class).limit(currentCount).get().toList());
+        adapter.getItems().addAll(App.getInstance().getDataStore().select(AuthorEntity.class).limit(currentCount).get().toList());
         adapter.notifyDataSetChanged();
         new Thread(() -> {
             ObservableUpdateJob.updateObservable(observableService, getContext());
@@ -141,7 +146,7 @@ public class ObservableFragment extends ListFragment<Author>{
             if(!loading) {
                 Author author = getItem(position);
                 author.setHasUpdates(false);
-                getDataStore().update(author.createEntry());
+                 App.getInstance().getDataStore().update(author.createEntry());
                 adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
                 author = new Author(author.getLink());

@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
+import ru.kazantsev.template.util.DynamicImageSpan;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 

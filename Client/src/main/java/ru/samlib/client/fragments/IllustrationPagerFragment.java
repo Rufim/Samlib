@@ -7,17 +7,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
+import ru.kazantsev.template.fragments.PagerFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.FragmentPagerAdapter;
+import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.IllustrationSelectedEvent;
 import ru.samlib.client.domain.events.IllustrationsParsedEvent;
 import ru.samlib.client.parser.IllustrationsParser;
-import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.FragmentBuilder;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -31,16 +35,16 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
     private Work work;
 
-    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
-        show(builder, container, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+    public static IllustrationPagerFragment show(FragmentBuilder builder, @IdRes int container, String link) {
+        return show(builder.putArg(Constants.ArgsName.LINK, link), container, IllustrationPagerFragment.class);
     }
 
-    public static void show(BaseFragment fragment, String link) {
-        show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
+    public static IllustrationPagerFragment show(BaseFragment fragment, String link) {
+        return show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
     }
 
-    public static void show(BaseFragment fragment, Work work) {
-        show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.WORK, work);
+    public static IllustrationPagerFragment show(BaseFragment fragment, Work work) {
+        return show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.WORK, work);
     }
 
     @Override
@@ -95,6 +99,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
         super.onStop();
     }
 
+    @Subscribe
     public void onEvent(IllustrationSelectedEvent event) {
         pager.setCurrentItem(event.index);
     }

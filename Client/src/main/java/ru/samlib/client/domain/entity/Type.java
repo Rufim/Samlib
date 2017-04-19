@@ -2,7 +2,7 @@ package ru.samlib.client.domain.entity;
 
 import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 /**
  * Created by Rufim on 02.07.2015.

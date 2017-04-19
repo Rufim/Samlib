@@ -4,6 +4,7 @@ import android.text.SpannableStringBuilder;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
+import ru.kazantsev.template.util.URLSpanNoUnderline;
 
 /**
  * Created by Dmitry on 21.10.2015.

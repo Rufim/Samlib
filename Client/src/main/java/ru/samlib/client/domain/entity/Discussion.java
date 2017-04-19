@@ -1,8 +1,9 @@
 package ru.samlib.client.domain.entity;
 
 import lombok.Data;
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.domain.Findable;
+
+import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.kazantsev.template.domain.Findable;
 import ru.samlib.client.domain.Validatable;
 
 import java.util.Date;

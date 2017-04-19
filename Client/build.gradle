@@ -11,7 +11,7 @@ ext {
     baseScheme = 'http'
     baseHost = 'budclub.ru'
     requeryVersion = '1.1.0'
-    daggerVersion = '2.4'
+    daggerVersion = '2.9'
     lombokVersion = '1.16.16'
     butterknifeVersion = '8.5.1'
 }
@@ -27,6 +27,8 @@ android {
         targetSdkVersion 25
         versionCode versionProjectCode
         versionName versionProjectName
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
 
@@ -102,14 +104,13 @@ dependencies {
     provided "javax.annotation:jsr250-api:1.0"
     provided "org.projectlombok:lombok:$lombokVersion"
     compile "com.android.support:gridlayout-v7:$supportLibraryVersion"
-    compile "com.android.support:cardview-v7:$supportLibraryVersion"
     compile "com.android.support:design:$supportLibraryVersion"
     compile "com.android.support:support-annotations:$supportLibraryVersion"
 
     compile "org.jsoup:jsoup:1.8.3"
-    compile "com.annimon:stream:1.0.1"
+    compile "com.annimon:stream:1.1.0"
     compile "com.jakewharton:butterknife:$butterknifeVersion"
-    compile "de.greenrobot:eventbus:2.4.0"
+    compile "org.greenrobot:eventbus:3.0.0"
     compile "com.squareup.picasso:picasso:2.5.2"
     compile "com.google.code.gson:gson:2.4"
     compile "uk.co.chrisjenx:calligraphy:2.2.0"
@@ -127,5 +128,17 @@ dependencies {
 
     compile "io.requery:requery:$requeryVersion"
     compile "io.requery:requery-android:$requeryVersion" // for android
+    compile 'com.android.support:multidex:1.0.1'
+    compile "com.github.Rufim:AndroidTemplate:0.5.7"
+    testCompile 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    androidTestAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
+    testAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
+    androidTestCompile "com.google.dagger:dagger:$daggerVersion"
+    androidTestCompile ('com.android.support.test:runner:0.5', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
 
 }

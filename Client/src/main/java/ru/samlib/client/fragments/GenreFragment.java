@@ -5,12 +5,13 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.GenreParser;
 
 import java.util.ArrayList;

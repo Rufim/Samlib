@@ -8,7 +8,7 @@ import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.lister.RowSelector;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

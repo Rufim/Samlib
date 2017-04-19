@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.domain.Findable;
+
+import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.kazantsev.template.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -128,7 +129,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
     public void setLink(String link) {
         if (link == null) return;
-        link = ru.samlib.client.util.TextUtils.eraseHost(link);
+        link = ru.kazantsev.template.util.TextUtils.eraseHost(link);
         if (link.contains("/")) {
             if (author == null) {
                 author = new Author(link.substring(0, link.lastIndexOf("/")));

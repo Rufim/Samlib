@@ -8,7 +8,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.net.Request;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.net.MalformedURLException;
 

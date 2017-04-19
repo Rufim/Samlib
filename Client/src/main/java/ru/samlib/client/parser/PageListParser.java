@@ -3,7 +3,7 @@ package ru.samlib.client.parser;
 import android.util.Log;
 import org.jsoup.nodes.Document;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.lister.PageLister;
 import ru.samlib.client.lister.RowSelector;
 

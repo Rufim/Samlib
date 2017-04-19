@@ -3,14 +3,16 @@ package ru.samlib.client.fragments;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;
-import ru.samlib.client.domain.events.Event;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.domain.event.Event;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -22,6 +24,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
 
 
     public FilterDialogListFragment() {
+        enableSearch = true;
         enableFiltering = true;
     }
 
@@ -67,6 +70,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
         super.onStop();
     }
 
+    @Subscribe
     public void onEvent(FilterEvent event) {
         if (event.isEmpty()) {
             adapter.exitFilteringMode();

@@ -9,11 +9,11 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.lister.DataSource;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Locale;

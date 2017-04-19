@@ -9,7 +9,7 @@ import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,9 +35,7 @@ public class AuthorParser extends Parser {
     }
 
     public AuthorParser(String authorLink) throws MalformedURLException {
-        setPath(authorLink);
-        author = new Author();
-        author.setLink(authorLink);
+         this(new Author(authorLink));
     }
 
     public Author parse() throws IOException {

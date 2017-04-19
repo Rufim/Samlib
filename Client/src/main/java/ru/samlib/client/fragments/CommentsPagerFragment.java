@@ -7,15 +7,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
+import ru.kazantsev.template.fragments.PagerFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.FragmentPagerAdapter;
+import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.CommentPageEvent;
 import ru.samlib.client.domain.events.CommentsParsedEvent;
 import ru.samlib.client.parser.CommentsParser;
-import ru.samlib.client.util.FragmentBuilder;
+import ru.kazantsev.template.util.FragmentBuilder;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -24,7 +28,7 @@ import java.util.List;
 /**
  * Created by 0shad on 05.11.2015.
  */
-public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragment>  {
+public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragment> {
 
     private static final String TAG = CommentsPagerFragment.class.getSimpleName();
 
@@ -32,16 +36,16 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
     private CommentsParser parser;
 
-    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
-        show(builder, container, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
+    public static CommentsPagerFragment show(FragmentBuilder builder, @IdRes int container, String link) {
+        return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsPagerFragment.class);
     }
 
-    public static void show(BaseFragment fragment, String link) {
-        show(fragment, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
+    public static CommentsPagerFragment show(BaseFragment fragment, String link) {
+        return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
     }
 
-    public static void show(BaseFragment fragment, Work work) {
-        show(fragment, CommentsPagerFragment.class, Constants.ArgsName.WORK, work);
+    public static CommentsPagerFragment show(BaseFragment fragment, Work work) {
+        return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.WORK, work);
     }
 
 
@@ -106,6 +110,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         super.onStop();
     }
 
+    @Subscribe
     public void onEvent(CommentPageEvent event) {
         if (event.pageIndex > 0) {
             pager.setCurrentItem(event.pageIndex);

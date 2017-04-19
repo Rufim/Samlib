@@ -1,6 +1,6 @@
 package ru.samlib.client.domain.entity;
 
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 /**
  * Created by Rufim on 03.07.2015.

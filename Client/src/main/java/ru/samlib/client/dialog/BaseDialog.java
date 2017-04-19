@@ -5,9 +5,9 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import butterknife.ButterKnife;
-import de.greenrobot.event.EventBus;
-import ru.samlib.client.domain.events.Event;
-import ru.samlib.client.util.FragmentBuilder;
+import org.greenrobot.eventbus.EventBus;
+import ru.kazantsev.template.domain.event.Event;
+import ru.kazantsev.template.util.FragmentBuilder;
 
 /**
  * Created by Dmitry on 20.10.2015.

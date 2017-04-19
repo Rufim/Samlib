@@ -23,9 +23,9 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
-import ru.samlib.client.util.AndroidSystemUtils;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.util.TTSPlayer;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 /**
  * Created by Dmitry on 01.09.2015.

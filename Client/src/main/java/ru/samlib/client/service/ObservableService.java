@@ -78,6 +78,10 @@ public class ObservableService {
         doAction(Action.DELETE, entity);
     }
 
+    public void deleteAuthor(Author author) {
+        doAction(Action.DELETE, getAuthorByLink(author.getLink()));
+    }
+
     public AuthorEntity getAuthorById(Integer id) {
         return getAuthorQuery().where(AuthorEntity.ID.eq(id)).get().first();
     }

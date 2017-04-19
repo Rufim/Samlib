@@ -11,11 +11,13 @@ import android.widget.TextView;
 import butterknife.BindView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.util.PicassoTransformImage;
-import ru.samlib.client.util.SystemUtils;
+import ru.kazantsev.template.util.SystemUtils;
 
 import java.lang.reflect.Field;
 

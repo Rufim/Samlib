@@ -15,12 +15,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.adapter.MultiItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.*;
@@ -30,8 +34,8 @@ import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.service.ObservableService;
-import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.GuiUtils;
+import ru.kazantsev.template.util.FragmentBuilder;
+import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.PicassoImageHandler;
 
@@ -54,24 +58,25 @@ public class AuthorFragment extends ListFragment<Linkable> {
     @Inject
     ObservableService observableService;
 
-    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
-        show(builder, container, AuthorFragment.class, Constants.ArgsName.LINK, link);
+    public static AuthorFragment show(FragmentBuilder builder, @IdRes int container, String link) {
+        return show(builder.putArg(Constants.ArgsName.LINK, link), container, AuthorFragment.class);
     }
 
-    public static void show(FragmentBuilder builder, @IdRes int container, Author author) {
-        show(builder, container, AuthorFragment.class, Constants.ArgsName.AUTHOR, author);
+    public static AuthorFragment show(FragmentBuilder builder, @IdRes int container, Author author) {
+        return show(builder.putArg(Constants.ArgsName.AUTHOR, author), container, AuthorFragment.class);
     }
 
-    public static void show(BaseFragment fragment, String link) {
-        show(fragment, AuthorFragment.class, Constants.ArgsName.LINK, link);
+    public static AuthorFragment show(BaseFragment fragment, String link) {
+        return show(fragment, AuthorFragment.class, Constants.ArgsName.LINK, link);
     }
 
-    public static void show(BaseFragment fragment, Author author) {
-        show(fragment, AuthorFragment.class, Constants.ArgsName.AUTHOR, author);
+    public static AuthorFragment show(BaseFragment fragment, Author author) {
+        return show(fragment, AuthorFragment.class, Constants.ArgsName.AUTHOR, author);
     }
 
     public AuthorFragment() {
         pageSize = 10;
+        enableSearch = true;
         setDataSource((skip, size) -> {
             while (author == null) {
                 SystemClock.sleep(10);
@@ -137,7 +142,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 } else {
                     Author save = new Author(author);
                     save.setId(null);
-                    observableService.deleteAuthor((AuthorEntity) author);
+                    observableService.deleteAuthor(observableService.getAuthorByLink(author.getLink()));
                     for (Linkable linkable : adapter.getItems()) {
                        save.addRootLink(linkable);
                     }
@@ -165,6 +170,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         return author;
     }
 
+    @Subscribe
     public void onEvent(CategorySelectedEvent event) {
         if (category == null) {
             saveLister();
@@ -258,7 +264,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 if(work.isChanged() && work.getId() != null) {
                     work.setChanged(false);
                     work.setSizeDiff(null);
-                    getDataStore().update((WorkEntity) work);
+                    App.getInstance().getDataStore().update((WorkEntity) work);
                 }
                 WorkFragment.show(AuthorFragment.this, linkable.getLink());
             } else {

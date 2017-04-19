@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.widget.Toast;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.entity.Work;
 
 import java.util.ArrayList;

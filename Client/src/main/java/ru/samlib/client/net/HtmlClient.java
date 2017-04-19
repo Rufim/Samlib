@@ -2,7 +2,7 @@ package ru.samlib.client.net;
 
 import android.util.Log;
 import ru.samlib.client.App;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.File;
 import java.io.IOException;

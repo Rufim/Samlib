@@ -5,7 +5,7 @@ import com.evernote.android.job.Job;
 import com.evernote.android.job.JobCreator;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
-import ru.samlib.client.util.SystemUtils;
+import ru.kazantsev.template.util.SystemUtils;
 
 import java.util.Set;
 

@@ -1,6 +1,7 @@
 package ru.samlib.client;
 
 import android.app.Application;
+import android.support.multidex.MultiDexApplication;
 import com.evernote.android.job.JobManager;
 import dagger.Module;
 import io.requery.Persistable;
@@ -23,13 +24,14 @@ import ru.samlib.client.job.ObservableUpdateJob;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Rufim on 03.07.2015.
  */
 @Module
-public class App extends Application {
+public class App extends MultiDexApplication {
 
     private static App singleton;
 

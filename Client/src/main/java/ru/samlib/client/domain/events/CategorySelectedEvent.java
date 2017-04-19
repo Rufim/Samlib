@@ -1,5 +1,6 @@
 package ru.samlib.client.domain.events;
 
+import ru.kazantsev.template.domain.event.Event;
 import ru.samlib.client.domain.entity.Category;
 
 /**

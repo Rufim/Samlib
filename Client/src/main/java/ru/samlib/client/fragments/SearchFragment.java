@@ -9,15 +9,17 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.SearchParser;
-import ru.samlib.client.util.GuiUtils;
+import ru.kazantsev.template.util.GuiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,7 @@ import java.util.List;
 /**
  * Created by Dmitry on 23.06.2015.
  */
-public class SearchFragment extends ListFragment {
+public class SearchFragment extends ListFragment<Linkable> {
 
     private String query;
 
@@ -35,8 +37,8 @@ public class SearchFragment extends ListFragment {
         return newInstance(SearchFragment.class, args);
     }
 
-    public static void show(Fragment fragment, String quaery) {
-        show(fragment, SearchFragment.class, Constants.ArgsName.SEARCH_QUERY, quaery);
+    public static SearchFragment show(BaseFragment fragment, String quaery) {
+        return show(fragment, SearchFragment.class, Constants.ArgsName.SEARCH_QUERY, quaery);
     }
 
     public SearchFragment() {
@@ -44,13 +46,13 @@ public class SearchFragment extends ListFragment {
     }
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter<Linkable> newAdapter() {
         return new SearchArrayAdapter();
     }
 
 
     @Override
-    protected DataSource getDataSource() throws Exception {
+    protected DataSource<Linkable> getDataSource() throws Exception {
         query = getArguments().getString(Constants.ArgsName.SEARCH_QUERY);
         return new SearchParser(query);
     }

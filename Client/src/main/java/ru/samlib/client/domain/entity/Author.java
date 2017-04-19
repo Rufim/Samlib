@@ -5,12 +5,13 @@ import com.annimon.stream.Stream;
 import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.samlib.client.adapter.ItemListAdapter;
-import ru.samlib.client.domain.Findable;
+
+import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.kazantsev.template.domain.Findable;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

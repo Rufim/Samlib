@@ -78,9 +78,9 @@
     <!-- Меню -->
     <string name="work_speaking">Режим чтения</string>
     <string name="work_to_author">К автору</string>
-    <string name="work_save">Сохранть</string>
-    <string name="work_share">Поделться</string>
-    <string name="work_open_with">Открыть в...</string>
+    <string name="work_save">Сохранить</string>
+    <string name="work_share">Поделиться</string>
+    <string name="work_open_with">Открыть в…</string>
     <string name="newest_filter">Фильтр по категориям</string>
     <string name="dialog_filter_text">Текст:</string>
     <string name="dialog_filter_switch_mode">Исключающий фильтр</string>

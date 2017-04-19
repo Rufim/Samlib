@@ -4,10 +4,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
 import android.widget.TextView;
+import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.lister.DataSource;
+import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.TopAuthorsParser;
 
 /**
@@ -18,6 +19,10 @@ public class TopAuthorsFragment extends ListFragment<Author> {
 
     public static TopAuthorsFragment newInstance() {
         return newInstance(TopAuthorsFragment.class);
+    }
+
+    public TopAuthorsFragment() {
+        enableSearch = true;
     }
 
     @Override

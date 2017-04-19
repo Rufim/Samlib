@@ -16,8 +16,8 @@ import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.JsoupUtils;
 import ru.samlib.client.util.ParserUtils;
-import ru.samlib.client.util.SystemUtils;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.SystemUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

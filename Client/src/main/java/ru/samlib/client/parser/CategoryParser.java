@@ -12,7 +12,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

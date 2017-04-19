@@ -4,29 +4,40 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
 import android.view.MenuItem;
 import android.view.View;
+import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.activity.BaseActivity;
+import ru.kazantsev.template.domain.event.FragmentAttachedEvent;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.util.FragmentBuilder;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Genre;
-import ru.samlib.client.domain.events.FragmentAttachedEvent;
 import ru.samlib.client.fragments.*;
-import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.TextUtils;
+ 
+import ru.kazantsev.template.util.TextUtils;
 
 
 public class MainActivity extends BaseActivity {
+    
+    private boolean doubleBackToExitPressedOnce = false;
 
+    public static MainActivity singleInstance;
 
-    private CharSequence title;
+    public static MainActivity getInstance() {
+        return singleInstance;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        singleInstance = this;
         getMenuInflater().inflate(R.menu.drawer, navigationView.getMenu());
         if (savedInstanceState != null) {
             Fragment fr = getLastFragment(savedInstanceState);
@@ -99,12 +110,28 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() <= 0) {
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+            this.doubleBackToExitPressedOnce = true;
+            showSnackbar(R.string.back_to_exit);
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     protected void onDrawerClosed(View drawerView) {}
 
     @Override
     protected void onDrawerOpened(View drawerView) {}
 
     @Override
+    @Subscribe
     public void onEvent(FragmentAttachedEvent fragmentAttached) {}
 
     protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {

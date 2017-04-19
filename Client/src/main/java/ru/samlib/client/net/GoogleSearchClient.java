@@ -6,8 +6,8 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.google.ResponseData;
 import ru.samlib.client.domain.google.Result;
-import ru.samlib.client.lister.DataSource;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.lister.DataSource;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

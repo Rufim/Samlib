@@ -6,7 +6,7 @@ import ru.samlib.client.domain.entity.Discussion;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.lister.JsoupRowSelector;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.net.MalformedURLException;
 

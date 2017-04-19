@@ -9,16 +9,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.samlib.client.R;
-import ru.samlib.client.adapter.ItemListAdapter;
+import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.parser.CommentsParser;
-import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.GuiUtils;
+import ru.kazantsev.template.util.FragmentBuilder;
+import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
-import ru.samlib.client.util.URLSpanNoUnderline;
+import ru.kazantsev.template.util.URLSpanNoUnderline;
 
 import java.net.MalformedURLException;
 
@@ -33,19 +36,20 @@ public class CommentsFragment extends ListFragment<Comment> {
     private CommentsParser parser;
     private int showPage = -1;
 
-    public static void show(FragmentBuilder builder, @IdRes int container, String link) {
-        show(builder, container, CommentsFragment.class, Constants.ArgsName.LINK, link);
+    public static CommentsFragment show(FragmentBuilder builder, @IdRes int container, String link) {
+        return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsFragment.class);
     }
 
-    public static void show(BaseFragment fragment, String link) {
-        show(fragment, CommentsFragment.class, Constants.ArgsName.LINK, link);
+    public static CommentsFragment show(BaseFragment fragment, String link) {
+        return show(fragment, CommentsFragment.class, Constants.ArgsName.LINK, link);
     }
 
-    public static void show(BaseFragment fragment, Work work) {
-        show(fragment, CommentsFragment.class, Constants.ArgsName.WORK, work);
+    public CommentsFragment show(BaseFragment fragment, Work work) {
+        return show(fragment, CommentsFragment.class, Constants.ArgsName.WORK, work);
     }
 
     public CommentsFragment() {
+        enableSearch = true;
         retainInstance = false;
     }
 

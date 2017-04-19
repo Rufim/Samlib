@@ -17,6 +17,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import ru.kazantsev.template.activity.BaseActivity;
+import ru.kazantsev.template.domain.event.FragmentAttachedEvent;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
@@ -28,9 +32,9 @@ import ru.samlib.client.fragments.AuthorFragment;
 import ru.samlib.client.fragments.CommentsPagerFragment;
 import ru.samlib.client.fragments.IllustrationPagerFragment;
 import ru.samlib.client.fragments.WorkFragment;
-import ru.samlib.client.util.FragmentBuilder;
-import ru.samlib.client.util.GuiUtils;
-import ru.samlib.client.util.TextUtils;
+import ru.kazantsev.template.util.FragmentBuilder;
+import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.TextUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -237,6 +241,7 @@ public class SectionActivity extends BaseActivity {
     }
 
     @Override
+    @Subscribe
     public void onEvent(FragmentAttachedEvent fragmentAttached) {
 
     }
@@ -254,19 +259,23 @@ public class SectionActivity extends BaseActivity {
         }
     }
 
-    public void onEventMainThread(AuthorParsedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(AuthorParsedEvent event) {
         initializeAuthor(event.author);
     }
 
-    public void onEventMainThread(WorkParsedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(WorkParsedEvent event) {
         initializeWork(event.work);
     }
 
-    public void onEventMainThread(CommentsParsedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(CommentsParsedEvent event) {
         initializeComments(event.lastPage);
     }
 
-    public void onEventMainThread(IllustrationsParsedEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(IllustrationsParsedEvent event) {
         initializeIllustrations(event.images);
     }
 
