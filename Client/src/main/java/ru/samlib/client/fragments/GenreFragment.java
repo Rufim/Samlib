@@ -2,8 +2,11 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
@@ -31,6 +34,17 @@ public class GenreFragment extends ListFragment<Work> {
         GenreParser genreParser = new GenreParser((Genre) getArguments().getSerializable(Constants.ArgsName.Type));
         pageSize = genreParser.getPageSize();
         return genreParser;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Genre genre = (Genre) getArguments().getSerializable(Constants.ArgsName.Type);
+        if(genre.equals(Genre.LITREVIEW)) {
+            getActivity().setTitle(R.string.drawer_review);
+        } else {
+            getActivity().setTitle(genre.getTitle());
+        }
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override

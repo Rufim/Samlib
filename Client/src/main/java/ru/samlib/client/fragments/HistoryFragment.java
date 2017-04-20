@@ -2,8 +2,11 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -32,6 +35,12 @@ public class HistoryFragment extends FilterDialogListFragment {
      */
     public static HistoryFragment newInstance() {
         return newInstance(HistoryFragment.class);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle(R.string.drawer_history);
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override

@@ -54,11 +54,12 @@ public class ObservableFragment extends ListFragment<Author> {
     public ObservableFragment() {
         enableSearch = true;
         enableFiltering = true;
+        enableScrollbar = false;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        enableScrollbar = false;
+        getActivity().setTitle(R.string.drawer_observable);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 

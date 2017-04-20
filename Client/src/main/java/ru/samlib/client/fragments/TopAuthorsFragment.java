@@ -2,7 +2,10 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
@@ -23,6 +26,12 @@ public class TopAuthorsFragment extends ListFragment<Author> {
 
     public TopAuthorsFragment() {
         enableSearch = true;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle(R.string.drawer_top);
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override

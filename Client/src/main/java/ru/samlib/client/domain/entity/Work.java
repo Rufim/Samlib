@@ -50,9 +50,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer id;
     String title;
     String link;
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @ManyToOne
     Author author;
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @ManyToOne
     Author rootAuthor;
     String imageLink;
     Integer size;
@@ -63,7 +63,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer expertKudoed;
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @ManyToOne
     Category category;
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;

@@ -2,7 +2,10 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -31,6 +34,14 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
     protected ItemListAdapter newAdapter() {
         return new NewestArrayAdapter();
     }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle(R.string.drawer_discuss);
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
 
     @Override
     protected DataSource<Discussion> getDataSource() throws Exception {

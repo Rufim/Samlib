@@ -2,7 +2,10 @@ package ru.samlib.client.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -34,6 +37,12 @@ public class NewestFragment extends FilterDialogListFragment {
     @Override
     protected DataSource getDataSource() throws Exception {
         return new NewestParser();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle(R.string.drawer_new);
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     protected class NewestArrayAdapter extends ItemListAdapter<Work> {

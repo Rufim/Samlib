@@ -47,7 +47,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     boolean hasAbout = false;
     boolean hasUpdates = false;
     boolean newest = false;
-    @Transient
     boolean notNotified = false;
     Date lastUpdateDate;
     Integer size;

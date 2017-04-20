@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.kazantsev.template.fragments.BaseFragment;
@@ -50,6 +52,11 @@ public class SearchFragment extends ListFragment<Linkable> {
         return new SearchArrayAdapter();
     }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle(R.string.search);
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
 
     @Override
     protected DataSource<Linkable> getDataSource() throws Exception {

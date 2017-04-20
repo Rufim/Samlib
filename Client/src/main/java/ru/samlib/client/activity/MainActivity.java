@@ -45,8 +45,7 @@ public class MainActivity extends BaseActivity {
                 setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
             }
         } else {
-            replaceFragment(getResString(R.string.drawer_new), NewestFragment.class);
-            setTitle(R.string.drawer_new);
+            replaceFragment(NewestFragment.class);
         }
 
     }
@@ -69,7 +68,7 @@ public class MainActivity extends BaseActivity {
             //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
         if (intent.getAction() == null && ObservableFragment.class.getSimpleName().equals(intent.getStringExtra(Constants.ArgsName.FRAGMENT_CLASS))) {
-            replaceFragment(getString(R.string.drawer_observable), ObservableFragment.class);
+            replaceFragment(ObservableFragment.class);
         }
     }
 
@@ -77,33 +76,30 @@ public class MainActivity extends BaseActivity {
     public boolean onNavigationItemSelected(MenuItem item) {
         // update the main content by replacing fragments
         Integer itemId = item.getItemId();
-        String title = item.getTitle().toString();
         switch (itemId) {
             case R.id.drawer_rate:
-                replaceFragment(title, RateFragment.class);
+                replaceFragment(RateFragment.class);
                 break;
             case R.id.drawer_top:
-                replaceFragment(title, TopAuthorsFragment.class);
+                replaceFragment(TopAuthorsFragment.class);
                 break;
             case R.id.drawer_new:
-                replaceFragment(title, NewestFragment.class);
+                replaceFragment(NewestFragment.class);
                 break;
             case R.id.drawer_discuss:
-                replaceFragment(title, DiscussionFragment.class);
+                replaceFragment(DiscussionFragment.class);
                 break;
             case R.id.drawer_review:
-                replaceFragment(GenreFragment.class, new FragmentBuilder(getSupportFragmentManager())
-                        .putArg(Constants.ArgsName.TITLE, title)
-                        .putArg(Constants.ArgsName.Type, Genre.LITREVIEW));
+                replaceFragment(GenreFragment.class, newFragmentBuilder().putArg(Constants.ArgsName.Type, Genre.LITREVIEW));
                 break;
             case R.id.drawer_history:
-                replaceFragment(title, HistoryFragment.class);
+                replaceFragment(HistoryFragment.class);
                 break;
             case R.id.drawer_observable:
-                replaceFragment(title, ObservableFragment.class);
+                replaceFragment(ObservableFragment.class);
                 break;
             default:
-                replaceFragment(title, BaseFragment.class);
+                replaceFragment(BaseFragment.class);
                 break;
         }
         return false;
@@ -133,12 +129,5 @@ public class MainActivity extends BaseActivity {
     @Override
     @Subscribe
     public void onEvent(FragmentAttachedEvent fragmentAttached) {}
-
-    protected <F extends BaseFragment> void replaceFragment(String title, Class<F> fragmentClass) {
-        FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
-        builder.putArg(Constants.ArgsName.TITLE, title);
-        replaceFragment(fragmentClass, builder);
-    }
-
 
 }
