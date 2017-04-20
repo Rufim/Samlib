@@ -43,6 +43,7 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -75,9 +76,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     public AuthorFragment() {
-        pageSize = 10;
         enableSearch = true;
+        enableScrollbar = true;
         setDataSource((skip, size) -> {
+            if(skip != 0) return null;
             while (author == null) {
                 SystemClock.sleep(10);
             }
@@ -107,10 +109,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     return new ArrayList<>();
                 }
             }
-            return Stream.of(author.getStaticCategory())
-                    .skip(skip)
-                    .limit(size)
-                    .collect(Collectors.toList());
+            return new ArrayList<>(author.getStaticCategory());
         });
     }
 
@@ -175,6 +174,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (category == null) {
             saveLister();
             setDataSource((skip, size) -> {
+                if(skip != 0) return null;
                 if (category != null) {
                     if (!category.isParsed() && !(category instanceof CategoryEntity)) {
                         try {
@@ -184,10 +184,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             return new ArrayList<>();
                         }
                     }
-                    return Stream.of(category)
-                            .skip(skip)
-                            .limit(size)
-                            .collect(Collectors.toList());
+                    return Arrays.asList(category);
+
                 } else {
                     return new ArrayList<>();
                 }

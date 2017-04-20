@@ -84,9 +84,9 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public WorkFragment() {
-        pageSize = 30000;
         enableSearch = true;
         setDataSource(((skip, size) -> {
+            if(skip != 0) return null;
             while (work == null) {
                 SystemClock.sleep(100);
             }
@@ -95,9 +95,9 @@ public class WorkFragment extends ListFragment<String> {
                 try {
                     Work savedWork = snappyHelper.getWork(work.getLink());
                     if(savedWork != null) {
-                        work = new WorkParser(savedWork).parse(false, false);
+                        work = new WorkParser(savedWork).parse(true, false);
                     } else {
-                        work = new WorkParser(work).parse(false, false);
+                        work = new WorkParser(work).parse(true, false);
                     }
                     if(work.isChanged()) {
                         work.setCachedDate(new Date());
@@ -116,11 +116,7 @@ public class WorkFragment extends ListFragment<String> {
                 }
             }
             if(work.isParsed()){
-                pageSize += pageSize;
-                return Stream.of(work.getIndents())
-                        .skip(skip)
-                        .limit(size)
-                        .collect(Collectors.toList());
+                return work.getIndents();
             } else {
                 return new ArrayList<>();
             }
