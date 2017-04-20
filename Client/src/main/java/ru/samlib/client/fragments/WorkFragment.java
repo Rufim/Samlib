@@ -85,6 +85,7 @@ public class WorkFragment extends ListFragment<String> {
 
     public WorkFragment() {
         enableSearch = true;
+        enableScrollbar = true;
         setDataSource(((skip, size) -> {
             if(skip != 0) return null;
             while (work == null) {
@@ -420,7 +421,7 @@ public class WorkFragment extends ListFragment<String> {
         private int lastOffset = 0;
 
         public WorkFragmentAdaptor() {
-            super(true, R.layout.header_work_list, R.layout.item_indent);
+            super(true, false, R.layout.header_work_list, R.layout.item_indent);
         }
 
         @Override

@@ -68,7 +68,7 @@ public class ObservableFragment extends ListFragment<Author> {
         return new DataSource<Author>() {
             @Override
             public List<Author> getItems(int skip, int size) throws IOException {
-                EntityDataStore<Persistable> dataStore =  App.getInstance().getDataStore();
+                EntityDataStore<Persistable> dataStore = App.getInstance().getDataStore();
                 return Stream.of(dataStore.select(AuthorEntity.class).get().toList()).skip(skip).limit(size).collect(Collectors.toList());
             }
         };
@@ -116,18 +116,18 @@ public class ObservableFragment extends ListFragment<Author> {
     }
 
     private void initializeAuthor(Author author) {
-      if(author.isHasUpdates()) {
-          final int index;
-          for (int i = 0; i < adapter.getItems().size(); i++) {
-              if(author.getLink().equals(adapter.getItems().get(i).getLink()))  {
-                  index = i;
-                  adapter.getItems().set(i, author);
-                  Handler handler = new Handler(Looper.getMainLooper());
-                  handler.post(() -> adapter.notifyItemChanged(index));
-                  break;
-              }
-          }
-      }
+        if (author.isHasUpdates()) {
+            final int index;
+            for (int i = 0; i < adapter.getItems().size(); i++) {
+                if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
+                    index = i;
+                    adapter.getItems().set(i, author);
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(() -> adapter.notifyItemChanged(index));
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -136,18 +136,18 @@ public class ObservableFragment extends ListFragment<Author> {
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends MultiItemListAdapter<Author> {
+    protected class FavoritesAdapter extends ItemListAdapter<Author> {
 
         public FavoritesAdapter() {
-            super(false, R.layout.item_favorites);
+            super(R.layout.item_favorites);
         }
 
         @Override
         public void onClick(View view, int position) {
-            if(!loading) {
-                Author author = getItem(position);
+            if (!loading) {
+                Author author = getItems().get(position);
                 author.setHasUpdates(false);
-                 App.getInstance().getDataStore().update(author.createEntry());
+                App.getInstance().getDataStore().update(author.createEntry());
                 adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
                 author = new Author(author.getLink());
@@ -159,29 +159,21 @@ public class ObservableFragment extends ListFragment<Author> {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            switch (holder.getItemViewType()) {
-                case R.layout.item_favorites:
-                    TextView authorTextView = holder.getView(R.id.favorites_author);
-                    TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
-                    TextView newText = holder.getView(R.id.favorites_update);
-                    TextView annotationTextView = holder.getView(R.id.favorites_annotation);
-                    Author author = getItem(position);
-                    authorTextView.setText(author.getFullName());
-                    lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
-                    annotationTextView.setText(author.getAnnotation());
-                    if (author.isHasUpdates()) {
-                        newText.setVisibility(View.VISIBLE);
-                    } else {
-                        newText.setVisibility(View.GONE);
-                    }
-                    break;
+            TextView authorTextView = holder.getView(R.id.favorites_author);
+            TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
+            TextView newText = holder.getView(R.id.favorites_update);
+            TextView annotationTextView = holder.getView(R.id.favorites_annotation);
+            Author author = getItems().get(position);
+            authorTextView.setText(author.getFullName());
+            lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
+            annotationTextView.setText(author.getAnnotation());
+            if (author.isHasUpdates()) {
+                newText.setVisibility(View.VISIBLE);
+            } else {
+                newText.setVisibility(View.GONE);
             }
         }
 
-        @Override
-        public int getLayoutId(Author item) {
-            return R.layout.item_favorites;
-        }
     }
 
 
