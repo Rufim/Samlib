@@ -16,14 +16,14 @@ import java.util.List;
  * Created by 0shad on 26.06.2016.
  */
 
-public class ObservableService {
+public class DatabaseService {
 
-    enum Action {INSERT, UPDATE, DELETE, UPSERT}
+    public enum Action {INSERT, UPDATE, DELETE, UPSERT}
 
     @Inject
     EntityDataStore<Persistable> dataStore;
 
-    public ObservableService() {
+    public DatabaseService() {
         App.getInstance().getComponent().inject(this);
     }
 
@@ -52,7 +52,7 @@ public class ObservableService {
         return result;
     }
 
-    private Persistable doAction(Action action, Object value) {
+    public Persistable doAction(Action action, Object value) {
         Persistable result = null;
         if (value instanceof Persistable) {
             Persistable entity = (Persistable) value;
@@ -94,4 +94,21 @@ public class ObservableService {
         return getAuthorQuery().get().toList();
     }
 
+    public Bookmark getBookmark(String link) {
+        return dataStore.select(BookmarkEntity.class).distinct()
+                .leftJoin(WorkEntity.class).on(BookmarkEntity.WORK_ID.equal(WorkEntity.ID)).where(WorkEntity.LINK.eq(link)).get().firstOrNull();
+    }
+
+    public WorkEntity getWork(String link) {
+        return dataStore.select(WorkEntity.class).distinct().where(WorkEntity.LINK.eq(link)).get().firstOrNull();
+    }
+
+    public Work insertOrUpdateWork(Work work) {
+        if(work.getId() == null) {
+            return (Work) doAction(Action.INSERT, work.createEntity());
+        } else if(work instanceof WorkEntity) {
+            return (Work) doAction(Action.UPDATE, work);
+        }
+        return work;
+    }
 }

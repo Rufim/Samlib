@@ -6,7 +6,7 @@ import io.requery.Persistable;
 import io.requery.rx.SingleEntityStore;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
-import ru.samlib.client.service.ObservableService;
+import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Singleton;
 
@@ -42,8 +42,8 @@ public class AppModule {
 
     @Provides
     @Singleton
-    ObservableService provideObservableService() {
-        return new ObservableService();
+    DatabaseService provideObservableService() {
+        return new DatabaseService();
     }
 
 }

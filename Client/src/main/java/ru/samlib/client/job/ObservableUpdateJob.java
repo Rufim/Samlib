@@ -13,14 +13,13 @@ import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.kazantsev.template.domain.event.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.parser.AuthorParser;
-import ru.samlib.client.service.ObservableService;
+import ru.samlib.client.service.DatabaseService;
 import ru.kazantsev.template.util.GuiUtils;
 
 import javax.inject.Inject;
@@ -36,7 +35,7 @@ public class ObservableUpdateJob extends Job {
 
 
     @Inject
-    ObservableService observableService;
+    DatabaseService databaseService;
 
     private static final String TAG = ObservableUpdateJob.class.getSimpleName();
     public static int jobId = -1;
@@ -52,7 +51,7 @@ public class ObservableUpdateJob extends Job {
             return Result.SUCCESS;
         }
         try {
-            updateObservable(observableService, getContext());
+            updateObservable(databaseService, getContext());
         } catch (Exception e) {
             Log.e(TAG, "Unknown exception", e);
             return Result.FAILURE;
@@ -67,7 +66,7 @@ public class ObservableUpdateJob extends Job {
         EventBus.getDefault().post(event);
     }
 
-    public static void updateObservable(ObservableService service, Context context) {
+    public static void updateObservable(DatabaseService service, Context context) {
         List<CharSequence> notifyAuthors = new ArrayList<>();
         Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {

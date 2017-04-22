@@ -1,15 +1,13 @@
 package ru.samlib.client.domain.entity;
 
-import io.requery.Entity;
-import io.requery.Generated;
-import io.requery.Key;
-import io.requery.OneToOne;
+import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Created by 0shad on 23.07.2015.
@@ -25,6 +23,7 @@ public class Bookmark implements Serializable {
     Double percent = 0d;
     Integer indentIndex = 0;
     String indent;
+    @ForeignKey(update = ReferentialAction.CASCADE)
     @OneToOne
     Work work;
 

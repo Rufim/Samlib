@@ -17,8 +17,6 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.*;
 import android.widget.TextView;
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -26,6 +24,7 @@ import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.util.*;
+import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -35,13 +34,16 @@ import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
+import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -62,6 +64,9 @@ public class WorkFragment extends ListFragment<String> {
     private PowerManager.WakeLock screenLock;
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
+
+    @Inject
+    DatabaseService databaseService;
 
     private enum Mode {
         SEARCH, SPEAK, NORMAL
@@ -92,28 +97,21 @@ public class WorkFragment extends ListFragment<String> {
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
-                SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "DS");
                 try {
-                    Work savedWork = snappyHelper.getWork(work.getLink());
-                    if(savedWork != null) {
-                        work = new WorkParser(savedWork).parse(true, false);
-                    } else {
-                        work = new WorkParser(work).parse(true, false);
-                    }
-                    if(work.isChanged()) {
-                        work.setCachedDate(new Date());
-                        snappyHelper.putWork(work);
+                    work = new WorkParser(work).parse(true, false);
+                    work.setCachedDate(new Date());
+                    if(work.isChanged() && work.getId() != null) {
                         work.setChanged(false);
+                        work.setSizeDiff(null);
                     }
+                    work = databaseService.insertOrUpdateWork(work);
                     if(!work.isParsed()) {
                         WorkParser.processChapters(work);
                     }
                     postEvent(new WorkParsedEvent(work));
-                } catch (MalformedURLException | SnappydbException e) {
+                } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
-                } finally {
-                    SnappyHelper.close(snappyHelper);
                 }
             }
             if(work.isParsed()){
@@ -124,11 +122,17 @@ public class WorkFragment extends ListFragment<String> {
         }));
     }
 
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        App.getInstance().getComponent().inject(this);
+        super.onCreate(savedInstanceState);
+    }
+
     @Override
     protected void firstLoad(boolean scroll) {
-        SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "FL");
         try {
-            Bookmark bookmark = snappyHelper.getSavedPosition(work);
+            Bookmark bookmark = work.getBookmark();
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll) {
@@ -139,10 +143,8 @@ public class WorkFragment extends ListFragment<String> {
             } else {
                 stopLoading();
             }
-        } catch (SnappydbException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Unknown exception", e);
-        } finally {
-            SnappyHelper.close(snappyHelper);
         }
     }
 
@@ -161,21 +163,24 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onPause() {
         super.onPause();
-       SnappyHelper snappyHelper = new SnappyHelper(getActivity(), "P");
         try {
             int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
             int size = adapter.getItems().size();
             if(size > index && index > 0) {
                 String indent = adapter.getItems().get(index);
-                Bookmark bookmark = new Bookmark(indent);
+                Bookmark bookmark = work.getBookmark();
+                if(bookmark == null) {
+                    bookmark = new Bookmark(indent);
+                } else {
+                    bookmark.setIndent(indent);
+                }
                 bookmark.setIndentIndex(indexLast - 1);
-                snappyHelper.putSavedPosition(bookmark, work);
+                work.setBookmark(bookmark.createEntry());
+                databaseService.insertOrUpdateWork(work);
             }
-        } catch (SnappydbException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Unknown exception", e);
-        } finally {
-            SnappyHelper.close(snappyHelper);
         }
         // sanity check for null as this is a public method
         if (screenLock != null) {
@@ -351,6 +356,10 @@ public class WorkFragment extends ListFragment<String> {
         } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
+                WorkEntity entity;
+                if((entity = databaseService.getWork(work.getLink())) != null) {
+                   work = entity;
+                }
                 clearData();
             }
         }

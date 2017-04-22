@@ -13,7 +13,6 @@ import android.view.*;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -33,7 +32,7 @@ import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.CategoryParser;
-import ru.samlib.client.service.ObservableService;
+import ru.samlib.client.service.DatabaseService;
 import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
@@ -57,7 +56,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     private Author author;
     private Category category;
     @Inject
-    ObservableService observableService;
+    DatabaseService databaseService;
 
     public static AuthorFragment show(FragmentBuilder builder, @IdRes int container, String link) {
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, AuthorFragment.class);
@@ -86,19 +85,19 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 try {
                     if(author.getId() == null) {
-                        AuthorEntity authorEntity = observableService.getAuthorByLink(author.getLink());
+                        AuthorEntity authorEntity = databaseService.getAuthorByLink(author.getLink());
                         if (authorEntity != null) {
                             author = authorEntity;
                         }
                         author = new AuthorParser(author).parse();
                         if (authorEntity != null) {
-                            observableService.updateAuthor(authorEntity);
+                            databaseService.updateAuthor(authorEntity);
                             if(authorEntity.isHasUpdates()) {
                                 postEvent(new AuthorUpdatedEvent(authorEntity));
                             }
                         }
                     } else {
-                        author = observableService.getAuthorById(author.getId());
+                        author = databaseService.getAuthorById(author.getId());
                     }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
@@ -135,13 +134,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if(!item.isChecked()) {
-                    author = observableService.insertAuthor(author.createEntry());
+                    author = databaseService.insertAuthor(author.createEntry());
                     item.setChecked(true);
                     return true;
                 } else {
                     Author save = new Author(author);
                     save.setId(null);
-                    observableService.deleteAuthor(observableService.getAuthorByLink(author.getLink()));
+                    databaseService.deleteAuthor(databaseService.getAuthorByLink(author.getLink()));
                     for (Linkable linkable : adapter.getItems()) {
                        save.addRootLink(linkable);
                     }
@@ -258,12 +257,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public void openLinkable(Linkable linkable) {
             if (linkable.isWork()) {
-                Work work = (Work) linkable;
-                if(work.isChanged() && work.getId() != null) {
-                    work.setChanged(false);
-                    work.setSizeDiff(null);
-                    App.getInstance().getDataStore().update((WorkEntity) work);
-                }
                 WorkFragment.show(AuthorFragment.this, linkable.getLink());
             } else {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));

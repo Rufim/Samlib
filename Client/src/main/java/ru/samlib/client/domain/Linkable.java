@@ -1,5 +1,6 @@
 package ru.samlib.client.domain;
 
+import android.annotation.SuppressLint;
 import ru.kazantsev.template.util.TextUtils;
 
 /**
@@ -12,14 +13,17 @@ public interface Linkable {
 
     public String getAnnotation();
 
+    @SuppressLint("NewApi")
     public default String getFullLink() {
         return Constants.Net.BASE_DOMAIN + TextUtils.cleanupSlashes(getLink());
     }
 
+    @SuppressLint("NewApi")
     public default boolean isWork() {
         return isWorkLink(getLink());
     }
 
+    @SuppressLint("NewApi")
     public default boolean isAuthor() {
         return isAuthorLink(getLink());
     }

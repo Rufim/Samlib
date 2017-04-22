@@ -74,11 +74,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean changed = false;
-    @ForeignKey
-    @OneToOne
+    @OneToOne(cascade = CascadeAction.SAVE)
     Bookmark bookmark;
     String md5;
-
 
     @Transient
     CachedResponse cachedResponse;

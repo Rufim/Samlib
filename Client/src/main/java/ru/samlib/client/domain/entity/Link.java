@@ -25,9 +25,9 @@ public class Link implements Validatable, Linkable, Serializable {
 
     @Transient
     Author author;
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @ManyToOne
     Author rootAuthor;
-    @ManyToOne(cascade = {CascadeAction.SAVE, CascadeAction.DELETE})
+    @ManyToOne
     Category category;
 
     String title;

@@ -20,16 +20,14 @@ import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
-import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.kazantsev.template.lister.DataSource;
-import ru.samlib.client.service.ObservableService;
+import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -42,7 +40,7 @@ import java.util.List;
 public class ObservableFragment extends ListFragment<Author> {
 
     @Inject
-    ObservableService observableService;
+    DatabaseService databaseService;
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
     private boolean loading;
@@ -111,7 +109,7 @@ public class ObservableFragment extends ListFragment<Author> {
         adapter.getItems().addAll(App.getInstance().getDataStore().select(AuthorEntity.class).limit(currentCount).get().toList());
         adapter.notifyDataSetChanged();
         new Thread(() -> {
-            ObservableUpdateJob.updateObservable(observableService, getContext());
+            ObservableUpdateJob.updateObservable(databaseService, getContext());
         }).start();
     }
 
