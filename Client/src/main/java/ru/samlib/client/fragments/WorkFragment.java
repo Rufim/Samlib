@@ -174,7 +174,7 @@ public class WorkFragment extends ListFragment<String> {
                     bookmark.setIndent(indent);
                 }
                 bookmark.setIndentIndex(indexLast - 1);
-                work.setBookmark(bookmark);
+                work.setBookmark(bookmark.createEntry());
                 databaseService.insertOrUpdateWork(work);
             }
         } catch (Exception e) {

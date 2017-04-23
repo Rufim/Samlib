@@ -118,7 +118,7 @@ public class DatabaseService {
                 return (WorkEntity) doAction(Action.UPDATE, workEntity);
             }
         } else {
-            return (WorkEntity) doAction(Action.UPDATE, workEntity);
+            return (WorkEntity) doAction(Action.UPDATE, work);
         }
     }
 

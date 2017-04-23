@@ -144,7 +144,9 @@ public class WorkParser extends Parser {
                     category.setTitle(text);
                     category.setLink(lis.attr("href"));
                     category.setAuthor(work.getAuthor());
-                    work.setCategory(category);
+                    if (work.getCategory() == null || !work.getCategory().equals(category)) {
+                        work.setCategory(category);
+                    }
                 }
             }
 

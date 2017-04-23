@@ -277,7 +277,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     break;
                 case R.layout.item_section:
                     Category category = (Category) getItem(position);
-                    GuiUtils.setTextOrHide(holder.getView(R.id.section_label), category.getTitle());
+                    GuiUtils.setTextOrHide(holder.getView(R.id.section_label), category.getTitle() + ":");
                     if (category.getAnnotation() != null) {
                         HtmlSpanner spanner = new HtmlSpanner();
                         TextView annotationView = holder.getView(R.id.section_annotation);
