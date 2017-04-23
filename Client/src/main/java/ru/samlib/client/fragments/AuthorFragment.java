@@ -213,8 +213,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!incomingAuthor.equals(author)) {
                 intentAuthor = incomingAuthor;
             }
-        }
-        if (link != null) {
+        } else if (link != null) {
             if (author == null || !author.getLink().equals(link)) {
                 intentAuthor = new Author(link);
             }
