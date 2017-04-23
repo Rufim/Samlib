@@ -43,15 +43,15 @@ public class AuthorParser extends Parser {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
-            if (author.getId() != null) {
+            if (author.isEntity()) {
                 request.saveInCache(false);
             }
             if (author.getCategories().isEmpty()) {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
             } else {
                 rawFile = HtmlClient.executeRequest(request);
-                author.getRecommendations().clear();
-                if (author.getId() == null) {
+                author.setRecommendations(new ArrayList<>());
+                if (!author.isEntity()) {
                     author.getCategories().clear();
                 }
             }
@@ -196,7 +196,7 @@ public class AuthorParser extends Parser {
                     category.setParsed(true);
                 }
             }
-            if (author.getId() != null) {
+            if (author.isEntity() && author.isObservable()) {
                 merge(author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {

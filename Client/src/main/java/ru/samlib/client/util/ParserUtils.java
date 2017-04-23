@@ -7,6 +7,8 @@ import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.entity.*;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by Rufim on 04.07.2015.
@@ -149,13 +151,13 @@ public class ParserUtils {
                 author.setEmail(element.select("u").text());
                 break;
             case "Родился:":
-                author.setDateBirth(TextUtils.parseData(content));
+                author.setDateBirth(parseData(content));
                 break;
             case "Живет:":
                 author.setAddress(content);
                 break;
             case "Обновлялось:":
-                author.setLastUpdateDate(TextUtils.parseData(content));
+                author.setLastUpdateDate(parseData(content));
                 break;
             case "Объем:":
                 split = content.split("/");
@@ -185,5 +187,40 @@ public class ParserUtils {
                 Log.e(TAG, "Unknown element parsed: " + element.text());
         }
     }
+
+    public static Date parseData(String text) {
+        Calendar calendar = Calendar.getInstance();
+        if (text.contains(":")) {
+            String[] time = text.split(":");
+            int hours = Integer.parseInt(time[0]);
+            calendar.set(Calendar.MINUTE, Integer.parseInt(time[1]));
+            calendar.set(Calendar.HOUR_OF_DAY, hours);
+            return calendar.getTime();
+        } else if (text.contains("/")) {
+            String[] date = text.split("/");
+            if (date.length == 3) {
+                calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
+                calendar.set(Calendar.MONTH, Integer.parseInt(date[1]) - 1);
+                calendar.set(Calendar.YEAR, Integer.parseInt(date[2]));
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MILLISECOND, 0);
+                return calendar.getTime();
+            } else if (date.length == 2) {
+                calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
+                calendar.set(Calendar.MONTH, Integer.parseInt(date[1]) - 1);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MILLISECOND, 0);
+                return calendar.getTime();
+            }
+        }
+        return null;
+    }
+
 
 }

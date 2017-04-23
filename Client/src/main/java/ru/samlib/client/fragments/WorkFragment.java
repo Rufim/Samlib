@@ -100,10 +100,6 @@ public class WorkFragment extends ListFragment<String> {
                 try {
                     work = new WorkParser(work).parse(true, false);
                     work.setCachedDate(new Date());
-                    if(work.isChanged() && work.getId() != null) {
-                        work.setChanged(false);
-                        work.setSizeDiff(null);
-                    }
                     WorkEntity entity = databaseService.insertOrUpdateWork(work);
                     WorkParser.processChapters(work);
                     if(entity != work) {

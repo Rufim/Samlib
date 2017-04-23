@@ -13,6 +13,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.NewestParser;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.util.SamlibGuiUtils;
 
 import java.util.Locale;
 
@@ -81,7 +82,7 @@ public class NewestFragment extends FilterDialogListFragment {
             TextView timeTextView = holder.getView(R.id.newest_item_time);
             TextView genresView = holder.getView(R.id.newest_item_genres);
             Work work = getItems().get(position);
-            workTextView.setText(work.getTitle());
+            workTextView.setText(SamlibGuiUtils.generateText(getContext(), work.getTitle(), work.getSize() + "k", R.color.light_grey, 0.7f));
             genresView.setText(work.printGenres());
             authorTextView.setText(work.getAuthor().getShortName());
             timeTextView.setText(TextUtils.getShortFormattedDate(work.getUpdateDate(), currentLocale));

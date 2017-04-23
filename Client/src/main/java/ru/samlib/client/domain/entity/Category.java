@@ -3,6 +3,7 @@ package ru.samlib.client.domain.entity;
 import android.graphics.Color;
 import io.requery.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.samlib.client.domain.Linkable;
@@ -17,6 +18,7 @@ import java.util.List;
  */
 @Data
 @Entity
+@EqualsAndHashCode(callSuper = false, of = {"title","link"})
 public class Category implements Linkable, Serializable, Parsable {
 
     private static final long serialVersionUID = 6549621729790810154L;
@@ -124,5 +126,7 @@ public class Category implements Linkable, Serializable, Parsable {
     public String toString() {
         return title;
     }
+
+
 
 }

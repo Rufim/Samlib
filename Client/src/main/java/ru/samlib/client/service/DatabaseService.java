@@ -1,5 +1,7 @@
 package ru.samlib.client.service;
 
+import com.annimon.stream.Stream;
+import io.requery.Nullable;
 import io.requery.Persistable;
 import io.requery.query.Condition;
 import io.requery.query.JoinAndOr;
@@ -7,6 +9,7 @@ import io.requery.query.Result;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.*;
+import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.WorkParser;
 
 import javax.inject.Inject;
@@ -30,9 +33,9 @@ public class DatabaseService {
 
     private JoinAndOr<Result<AuthorEntity>> getAuthorQuery() {
         return dataStore.select(AuthorEntity.class).distinct()
-                .leftJoin(Category.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.ID))
-                .leftJoin(Work.class).on(WorkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
-                .leftJoin(Link.class).on(LinkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
+                .leftJoin(Category.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.LINK))
+                .leftJoin(Work.class).on(WorkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.LINK).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
+                .leftJoin(Link.class).on(LinkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.LINK).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
     }
 
     public AuthorEntity insertObservableAuthor(AuthorEntity entity) {
@@ -81,14 +84,10 @@ public class DatabaseService {
     }
 
     public void deleteAuthor(Author author) {
-        doAction(Action.DELETE, getAuthorByLink(author.getLink()));
+        doAction(Action.DELETE, getAuthor(author.getLink()));
     }
 
-    public AuthorEntity getAuthorById(Integer id) {
-        return getAuthorQuery().where(AuthorEntity.ID.eq(id)).get().first();
-    }
-
-    public AuthorEntity getAuthorByLink(String link) {
+    public AuthorEntity getAuthor(String link) {
         return getAuthorQuery().where(AuthorEntity.LINK.eq(link)).get().firstOrNull();
     }
 
@@ -109,17 +108,42 @@ public class DatabaseService {
     }
 
     public WorkEntity insertOrUpdateWork(Work work) {
+        WorkEntity workEntity = null;
         if (!(work instanceof WorkEntity)) {
-            work = work.createEntity();
-            WorkEntity workEntity = getWork(work.getLink());
-            if (workEntity != null) {
-                 work.setId(workEntity.getId());
+           workEntity = getWork(work.getLink());
+            if (workEntity == null) {
+                return (WorkEntity) doAction(Action.INSERT, work.createEntity());
+            } else {
+                updateWork(workEntity, work);
+                return (WorkEntity) doAction(Action.UPDATE, workEntity);
+            }
+        } else {
+            return (WorkEntity) doAction(Action.UPDATE, workEntity);
+        }
+    }
+
+
+    public static void updateWork(Work into, Work from) {
+        into.setTitle(from.getTitle());
+        into.setLink(from.getLink());
+        into.setRate(from.getRate());
+        into.setKudoed(from.getKudoed());
+        into.setGenres(from.getGenres());
+        into.setType(from.getType());
+        into.setAnnotationBlocks(from.getAnnotationBlocks());
+        if (into.getCategory() != null && from.getCategory() != null && !into.getCategory().equals(from.getCategory())) {
+            Category category = Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(from.getCategory())).findFirst().orElse(null);
+            if(category == null) {
+                into.setCategory(from.getCategory().createEntry());
+                into.getAuthor().getCategories().add(into.getCategory());
+            } else {
+                category.addLink(into);
             }
         }
-        if (work.getId() == null) {
-            return (WorkEntity) doAction(Action.INSERT, work.createEntity());
-        } else {
-            return (WorkEntity) doAction(Action.UPDATE, work.createEntity());
-        }
+        into.setState(from.getState());
+        into.setHasIllustration(from.isHasIllustration());
+        into.setHasComments(from.isHasComments());
+        into.setBookmark(from.getBookmark().createEntry());
+        into.setChanged(from.isChanged());
     }
 }

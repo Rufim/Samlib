@@ -37,6 +37,7 @@ import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.PicassoImageHandler;
+import ru.samlib.client.util.SamlibGuiUtils;
 
 import javax.inject.Inject;
 import java.net.MalformedURLException;
@@ -220,7 +221,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         }
         if (intentAuthor != null) {
             AuthorEntity entity;
-            if ((entity = databaseService.getAuthorByLink(intentAuthor.getLink())) != null) {
+            if ((entity = databaseService.getAuthor(intentAuthor.getLink())) != null) {
                 author = entity;
             } else {
                 author = intentAuthor;
@@ -302,11 +303,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         break;
                     }
                     Work work = (Work) getItem(position);
-                    GuiUtils.setText(holder.getView(R.id.work_item_title), work.getTitle());
                     String rate_and_size = "";
                     if (work.getSize() != null) {
                         rate_and_size += work.getSize() + "k";
-                        if (work.getSizeDiff() != null) {
+                        if (work.getSizeDiff() != null && author.isObservable()) {
                             if (work.getSizeDiff() > 0) {
                                 rate_and_size += " (+" + work.getSizeDiff() + ")";
                             } else {
@@ -317,7 +317,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     if (work.getRate() != null) {
                         rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
                     }
-                    GuiUtils.setTextOrHide(holder.getView(R.id.work_item_rate_and_size), rate_and_size);
+                    GuiUtils.setText(holder.getView(R.id.work_item_title), SamlibGuiUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
                     Button illustrationButton = holder.getView(R.id.illustration_button);
                     if (work.isHasIllustration()) {
                         illustrationButton.setVisibility(View.VISIBLE);
@@ -347,7 +347,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     } else {
                         holder.getView(R.id.work_annotation).setVisibility(View.GONE);
                     }
-                    if (work.isChanged() && work.getId() != null) {
+                    if (work.isChanged() &&  author.isObservable()) {
                         holder.getView(R.id.work_item_update).setVisibility(View.VISIBLE);
                         if (work.getSizeDiff() != null) {
                             GuiUtils.setText(holder.getView(R.id.work_item_update), R.string.favorites_update);

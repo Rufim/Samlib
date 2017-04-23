@@ -46,13 +46,11 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     public static final String ILLUSTRATION_PREFIX = "/img";
 
     @Key
-    @Generated
-    Integer id;
-    String title;
     String link;
+    String title;
     @ManyToOne
     Author author;
-    @ManyToOne(cascade = CascadeAction.NONE)
+    @ManyToOne
     Author rootAuthor;
     String imageLink;
     Integer size;
@@ -126,7 +124,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setHasComments(hasComments);
             entity.setHasIllustration(hasIllustration);
             entity.setAnnotationBlocks(annotationBlocks);
-            entity.setId(id);
             entity.setSizeDiff(sizeDiff);
             entity.setSize(size);
             entity.setCategory(category == null ? null : category.createEntry());
@@ -252,6 +249,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return author != null && author.validate() && title != null && link != null;
     }
 
+
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
 
     @Override
     public boolean find(ItemListAdapter.FilterEvent query) {

@@ -31,8 +31,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
     private static final String AVATAR = ".photo2.jpg";
 
-    @Key @Generated
-    Integer id;
+    @Key
     String link;
     String fullName;;
     String shortName;
@@ -87,7 +86,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public Author(Author other) {
-        this.id = other.getId();
         this.link = other.getLink();
         this.fullName = other.getFullName();
         this.shortName = other.getShortName();
@@ -122,10 +120,9 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public AuthorEntity createEntry() {
-        if(getClass() == AuthorEntity.class) return (AuthorEntity) this;
+        if(isEntity()) return (AuthorEntity) this;
         AuthorEntity entity = new AuthorEntity();
         entity.setHasUpdates(hasUpdates);
-        entity.setId(id);
         entity.setHasAvatar(hasAvatar);
         entity.setHasAbout(hasAbout);
         entity.setObservable(observable);
@@ -171,6 +168,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
             entity.addFriendOf(author.createEntry());
         }
         return entity;
+    }
+
+    public boolean isEntity() {
+        return getClass() == AuthorEntity.class;
     }
 
 

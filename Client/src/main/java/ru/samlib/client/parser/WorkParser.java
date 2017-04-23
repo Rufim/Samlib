@@ -21,10 +21,7 @@ import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -60,15 +57,9 @@ public class WorkParser extends Parser {
             return work;
         }
         try {
-            Date oldUpdateDate = work.getUpdateDate();
-            work.setChanged(false);
             work = parseWork(rawContent, work);
             Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
-            if(oldUpdateDate == null || (oldUpdateDate.getTime() != work.getUpdateDate().getTime())) {
-                work.setChanged(true);
-            } else {
-                work.setChanged(false);
-            }
+            work.setChanged(false);
             if(processChapters) {
                 processChapters(work);
             }
@@ -125,14 +116,14 @@ public class WorkParser extends Parser {
         }
         if (data.length > 0) {
             if (data.length == 2) {
-                work.setUpdateDate(TextUtils.parseData(data[0]));
+                work.setUpdateDate(ParserUtils.parseData(data[0]));
                 if(!data[1].contains("Статистика")) {
                     work.setSize(Integer.parseInt(data[1]));
                 }
             }
             if (data.length == 3) {
-                work.setCreateDate(TextUtils.parseData(data[0]));
-                work.setUpdateDate(TextUtils.parseData(data[1]));
+                work.setCreateDate(ParserUtils.parseData(data[0]));
+                work.setUpdateDate(ParserUtils.parseData(data[1]));
                 work.setSize(Integer.parseInt(data[2]));
             }
         }
@@ -222,13 +213,13 @@ public class WorkParser extends Parser {
                 Element el = (Element) node;
                 if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
                     if (!el.text().isEmpty()) {
-                        indents.add(TextUtils.linkifyHtml(el.outerHtml()));
+                        indents.add(TextUtils.linkifyHtml(el.text()));
                     }
                 } else {
                     if (indents.isEmpty()) {
-                        indents.add(el.outerHtml());
+                        indents.add(el.text());
                     } else {
-                        indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.outerHtml());
+                        indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.text());
                     }
                 }
             } else if (node instanceof TextNode) {
@@ -250,7 +241,6 @@ public class WorkParser extends Parser {
         }
         work.setParsed(true);
     }
-
 
     public static Element replaceTables(Element el) {
         Elements tables = el.select("table");
