@@ -78,22 +78,18 @@ public class AuthorFragment extends ListFragment<Linkable> {
         enableSearch = true;
         enableScrollbar = true;
         setDataSource((skip, size) -> {
-            if(skip != 0) return null;
+            if (skip != 0) return null;
             while (author == null) {
                 SystemClock.sleep(10);
             }
             if (!author.isParsed()) {
                 try {
-                    if(author.getId() == null) {
-                        author = new AuthorParser(author).parse();
-                        if (author instanceof AuthorEntity && author.isObservable()) {
-                            databaseService.updateAuthor(author.createEntry()).setParsed(true);
-                            if(author.isHasUpdates()) {
-                                postEvent(new AuthorUpdatedEvent(author));
-                            }
+                    author = new AuthorParser(author).parse();
+                    if (author.isObservable()) {
+                        databaseService.updateAuthor(author.createEntry()).setParsed(true);
+                        if (author.isHasUpdates()) {
+                            postEvent(new AuthorUpdatedEvent(author));
                         }
-                    } else {
-                        author = databaseService.getAuthorById(author.getId());
                     }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
@@ -118,7 +114,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.author, menu);
         MenuItem item = menu.findItem(R.id.action_author_observable);
-        if(author.isObservable()) {
+        if (author.isObservable()) {
             item.setChecked(true);
         } else {
             item.setChecked(false);
@@ -129,7 +125,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
-                if(!item.isChecked()) {
+                if (!item.isChecked()) {
                     author = databaseService.insertObservableAuthor(author.createEntry());
                     item.setChecked(true);
                     return true;
@@ -164,7 +160,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (category == null) {
             saveLister();
             setDataSource((skip, size) -> {
-                if(skip != 0) return null;
+                if (skip != 0) return null;
                 if (category != null) {
                     if (!category.isParsed() && !(category instanceof CategoryEntity)) {
                         try {
@@ -186,6 +182,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
+    public void refreshData(boolean showProgress) {
+        author.setParsed(false);
+        super.refreshData(showProgress);
+    }
+
+
+    @Override
     public boolean allowBackPress() {
         category = null;
         if (!restoreLister()) {
@@ -204,21 +207,26 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
+        Author intentAuthor = null;
         setHasOptionsMenu(true);
         if (incomingAuthor != null) {
             if (!incomingAuthor.equals(author)) {
-                author = incomingAuthor;
-                clearData();
+                intentAuthor = incomingAuthor;
             }
-        } else if (link != null) {
+        }
+        if (link != null) {
             if (author == null || !author.getLink().equals(link)) {
-                author = new Author(link);
-                AuthorEntity entity;
-                if((entity = databaseService.getAuthorByLink(author.getLink())) != null) {
-                    author = entity;
-                }
-                clearData();
+                intentAuthor = new Author(link);
             }
+        }
+        if (intentAuthor != null) {
+            AuthorEntity entity;
+            if ((entity = databaseService.getAuthorByLink(intentAuthor.getLink())) != null) {
+                author = entity;
+            } else {
+                author = intentAuthor;
+            }
+            clearData();
         }
         if (author.isParsed()) {
             EventBus.getDefault().post(new AuthorParsedEvent(author));
@@ -299,8 +307,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     String rate_and_size = "";
                     if (work.getSize() != null) {
                         rate_and_size += work.getSize() + "k";
-                        if(work.getSizeDiff() != null) {
-                            if(work.getSizeDiff() > 0) {
+                        if (work.getSizeDiff() != null) {
+                            if (work.getSizeDiff() > 0) {
                                 rate_and_size += " (+" + work.getSizeDiff() + ")";
                             } else {
                                 rate_and_size += " (" + work.getSizeDiff() + ")";
