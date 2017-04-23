@@ -99,7 +99,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
             entity.setAuthor(author == null ? null : author.createEntry());
             entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
-            entity.setCategory(category == null ? null : category.createEntry());
+            entity.setCategory(category == null ? null : category.createEntity());
             if(entity.getCategory() != null) {
                 entity.getCategory().setAuthor(entity.getAuthor());
             }
@@ -126,7 +126,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setAnnotationBlocks(annotationBlocks);
             entity.setSizeDiff(sizeDiff);
             entity.setSize(size);
-            entity.setCategory(category == null ? null : category.createEntry());
+            entity.setCategory(category == null ? null : category.createEntity());
             if (entity.getCategory() != null) {
                 entity.getCategory().setAuthor(entity.getAuthor());
             }

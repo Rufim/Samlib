@@ -1,7 +1,6 @@
 package ru.samlib.client.service;
 
 import com.annimon.stream.Stream;
-import io.requery.Nullable;
 import io.requery.Persistable;
 import io.requery.query.Condition;
 import io.requery.query.JoinAndOr;
@@ -9,8 +8,6 @@ import io.requery.query.Result;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.*;
-import ru.samlib.client.parser.AuthorParser;
-import ru.samlib.client.parser.WorkParser;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -40,6 +37,10 @@ public class DatabaseService {
 
     public AuthorEntity insertObservableAuthor(AuthorEntity entity) {
         entity.setObservable(true);
+        Author author;
+        if((author = getAuthor(entity.getLink())) != null) {
+           return updateAuthor((AuthorEntity) author);
+        }
         return doActionAuthor(Action.INSERT, entity);
     }
 
@@ -123,7 +124,32 @@ public class DatabaseService {
     }
 
 
-    public static void updateWork(Work into, Work from) {
+    public AuthorEntity resolveAuthor(Author author) {
+          AuthorEntity authorEntity = getAuthor(author.getLink());
+          if(authorEntity != null) {
+              return authorEntity;
+          }
+          return author.createEntry();
+    }
+
+    public CategoryEntity resolveCategory(Work into, Category category) {
+        if(into.getAuthor().isEntity()) {
+            CategoryEntity result = (CategoryEntity) Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
+            if (result == null) {
+                into.setCategory(category.createEntity());
+                into.getAuthor().getCategories().add(into.getCategory());
+                result = (CategoryEntity) into.getCategory();
+            } else {
+                result.addLink(into);
+            }
+            return result;
+        } else {
+            into.setCategory(into.getCategory().createEntity());
+            return (CategoryEntity) into.getCategory();
+        }
+    }
+
+    public void updateWork(Work into, Work from) {
         into.setTitle(from.getTitle());
         into.setLink(from.getLink());
         into.setRate(from.getRate());
@@ -132,13 +158,7 @@ public class DatabaseService {
         into.setType(from.getType());
         into.setAnnotationBlocks(from.getAnnotationBlocks());
         if (into.getCategory() != null && from.getCategory() != null && !into.getCategory().equals(from.getCategory())) {
-            Category category = Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(from.getCategory())).findFirst().orElse(null);
-            if(category == null) {
-                into.setCategory(from.getCategory().createEntry());
-                into.getAuthor().getCategories().add(into.getCategory());
-            } else {
-                category.addLink(into);
-            }
+            resolveCategory(into, from.getCategory());
         }
         into.setState(from.getState());
         into.setHasIllustration(from.isHasIllustration());

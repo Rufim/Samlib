@@ -147,7 +147,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         entity.setLastUpdateDate(lastUpdateDate);
         for (Category category : categories) {
             category.setAuthor(entity);
-            entity.addCategory(category.createEntry());
+            entity.addCategory(category.createEntity());
         }
         for (Work recommendation : recommendations) {
             recommendation.setAuthor(entity);

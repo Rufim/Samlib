@@ -13,7 +13,6 @@ import ru.kazantsev.template.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -243,7 +242,7 @@ public class AuthorParser extends Parser {
         }
         if(!newCategories.isEmpty()) {
             for (Category newCategory : newCategories) {
-                oldCategories.add(newCategory.createEntry());
+                oldCategories.add(newCategory.createEntity());
                 newCategory.getAuthor().hasNewUpdates();
             }
         }

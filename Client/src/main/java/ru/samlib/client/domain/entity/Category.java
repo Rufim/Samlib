@@ -48,7 +48,7 @@ public class Category implements Linkable, Serializable, Parsable {
         }
     }
 
-    public CategoryEntity createEntry() {
+    public CategoryEntity createEntity() {
         if (getClass() == CategoryEntity.class) return (CategoryEntity) this;
         CategoryEntity entity = new CategoryEntity();
         entity.setAnnotation(annotation);
