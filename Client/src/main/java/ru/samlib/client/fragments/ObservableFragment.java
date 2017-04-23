@@ -32,12 +32,13 @@ import ru.samlib.client.service.DatabaseService;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by 0shad on 16.06.2016.
  */
-public class ObservableFragment extends ListFragment<Author> {
+public class ObservableFragment extends ListFragment<AuthorEntity> {
 
     @Inject
     DatabaseService databaseService;
@@ -62,12 +63,11 @@ public class ObservableFragment extends ListFragment<Author> {
     }
 
     @Override
-    protected DataSource<Author> getDataSource() throws Exception {
-        return new DataSource<Author>() {
+    protected DataSource<AuthorEntity> getDataSource() throws Exception {
+        return new DataSource<AuthorEntity>() {
             @Override
-            public List<Author> getItems(int skip, int size) throws IOException {
-                EntityDataStore<Persistable> dataStore = App.getInstance().getDataStore();
-                return Stream.of(dataStore.select(AuthorEntity.class).get().toList()).skip(skip).limit(size).collect(Collectors.toList());
+            public List<AuthorEntity> getItems(int skip, int size) throws IOException {
+                return new ArrayList<>(databaseService.getObservableAuthors(skip, size));
             }
         };
     }
@@ -106,7 +106,7 @@ public class ObservableFragment extends ListFragment<Author> {
         swipeRefresh.setRefreshing(true);
         loading = true;
         adapter.clear();
-        adapter.getItems().addAll(App.getInstance().getDataStore().select(AuthorEntity.class).limit(currentCount).get().toList());
+        adapter.getItems().addAll(databaseService.getObservableAuthors(0, currentCount));
         adapter.notifyDataSetChanged();
         new Thread(() -> {
             ObservableUpdateJob.updateObservable(databaseService, getContext());
@@ -119,7 +119,7 @@ public class ObservableFragment extends ListFragment<Author> {
             for (int i = 0; i < adapter.getItems().size(); i++) {
                 if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
                     index = i;
-                    adapter.getItems().set(i, author);
+                    adapter.getItems().set(i, author.createEntry());
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(() -> adapter.notifyItemChanged(index));
                     break;
@@ -134,7 +134,7 @@ public class ObservableFragment extends ListFragment<Author> {
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends ItemListAdapter<Author> {
+    protected class FavoritesAdapter extends ItemListAdapter<AuthorEntity> {
 
         public FavoritesAdapter() {
             super(R.layout.item_favorites);
@@ -143,12 +143,12 @@ public class ObservableFragment extends ListFragment<Author> {
         @Override
         public void onClick(View view, int position) {
             if (!loading) {
-                Author author = getItems().get(position);
-                author.setHasUpdates(false);
-                App.getInstance().getDataStore().update(author.createEntry());
+                AuthorEntity authorEntity = getItems().get(position);
+                authorEntity.setHasUpdates(false);
+                App.getInstance().getDataStore().update(authorEntity);
                 adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
-                author = new Author(author.getLink());
+                Author author = new Author(authorEntity.getLink());
                 author.setId(author.getId());
                 i.putExtra(Constants.ArgsName.AUTHOR, author);
                 startActivity(i);
@@ -163,7 +163,9 @@ public class ObservableFragment extends ListFragment<Author> {
             TextView annotationTextView = holder.getView(R.id.favorites_annotation);
             Author author = getItems().get(position);
             authorTextView.setText(author.getFullName());
-            lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
+            if(author.getLastUpdateDate() != null) {
+                lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
+            }
             annotationTextView.setText(author.getAnnotation());
             if (author.isHasUpdates()) {
                 newText.setVisibility(View.VISIBLE);

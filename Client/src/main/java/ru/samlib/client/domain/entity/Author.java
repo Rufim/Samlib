@@ -48,6 +48,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     boolean hasUpdates = false;
     boolean newest = false;
     boolean notNotified = false;
+    boolean observable = false;
     Date lastUpdateDate;
     Integer size;
     Integer workCount;
@@ -99,6 +100,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.hasAvatar = other.isHasAbout();
         this.hasAbout = other.isHasAbout();
         this.hasUpdates = other.isHasUpdates();
+        this.observable = other.isObservable();
         this.lastUpdateDate = other.getLastUpdateDate();
         this.newest = other.isNewest();
         this.size = other.getSize();
@@ -126,6 +128,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         entity.setId(id);
         entity.setHasAvatar(hasAvatar);
         entity.setHasAbout(hasAbout);
+        entity.setObservable(observable);
         entity.setDateBirth(dateBirth);
         entity.setRate(rate);
         entity.setSize(size);

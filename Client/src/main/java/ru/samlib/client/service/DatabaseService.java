@@ -7,6 +7,7 @@ import io.requery.query.Result;
 import io.requery.sql.EntityDataStore;
 import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.*;
+import ru.samlib.client.parser.WorkParser;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -34,7 +35,8 @@ public class DatabaseService {
                 .leftJoin(Link.class).on(LinkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.ID).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
     }
 
-    public AuthorEntity insertAuthor(AuthorEntity entity) {
+    public AuthorEntity insertObservableAuthor(AuthorEntity entity) {
+        entity.setObservable(true);
         return doActionAuthor(Action.INSERT, entity);
     }
 
@@ -43,8 +45,8 @@ public class DatabaseService {
     }
 
     public AuthorEntity doActionAuthor(Action action, AuthorEntity Author) {
-        AuthorEntity result =  (AuthorEntity) doAction(action, Author);
-        if(action.equals(Action.UPDATE)) {
+        AuthorEntity result = (AuthorEntity) doAction(action, Author);
+        if (action.equals(Action.UPDATE)) {
             for (Category category : Author.getCategories()) {
                 doAction(action, category);
             }
@@ -91,24 +93,33 @@ public class DatabaseService {
     }
 
     public List<AuthorEntity> getObservableAuthors() {
-        return getAuthorQuery().get().toList();
+        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).get().toList();
     }
 
-    public Bookmark getBookmark(String link) {
-        return dataStore.select(BookmarkEntity.class).distinct()
-                .leftJoin(WorkEntity.class).on(BookmarkEntity.WORK_ID.equal(WorkEntity.ID)).where(WorkEntity.LINK.eq(link)).get().firstOrNull();
+    public List<AuthorEntity> getObservableAuthors(int skip, int size) {
+        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).limit(size).offset(skip).get().toList();
+    }
+
+    public List<WorkEntity> getHistory(int skip, int size) {
+        return dataStore.select(WorkEntity.class).distinct().where(WorkEntity.BOOKMARK_ID.notNull()).orderBy(WorkEntity.CACHED_DATE.desc()).limit(size).offset(skip).get().toList();
     }
 
     public WorkEntity getWork(String link) {
-        return dataStore.select(WorkEntity.class).distinct().where(WorkEntity.LINK.eq(link)).get().firstOrNull();
+        return dataStore.select(WorkEntity.class).distinct().leftJoin(BookmarkEntity.class).on(WorkEntity.BOOKMARK_ID.eq(BookmarkEntity.ID)).where(WorkEntity.LINK.eq(link)).get().firstOrNull();
     }
 
-    public Work insertOrUpdateWork(Work work) {
-        if(work.getId() == null) {
-            return (Work) doAction(Action.INSERT, work.createEntity());
-        } else if(work instanceof WorkEntity) {
-            return (Work) doAction(Action.UPDATE, work);
+    public WorkEntity insertOrUpdateWork(Work work) {
+        if (!(work instanceof WorkEntity)) {
+            work = work.createEntity();
+            WorkEntity workEntity = getWork(work.getLink());
+            if (workEntity != null) {
+                 work.setId(workEntity.getId());
+            }
         }
-        return work;
+        if (work.getId() == null) {
+            return (WorkEntity) doAction(Action.INSERT, work.createEntity());
+        } else {
+            return (WorkEntity) doAction(Action.UPDATE, work.createEntity());
+        }
     }
 }

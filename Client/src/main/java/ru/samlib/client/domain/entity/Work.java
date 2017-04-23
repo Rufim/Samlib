@@ -52,7 +52,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     String link;
     @ManyToOne
     Author author;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeAction.NONE)
     Author rootAuthor;
     String imageLink;
     Integer size;
@@ -74,6 +74,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean changed = false;
+    @ForeignKey(update = ReferentialAction.CASCADE)
     @OneToOne(cascade = CascadeAction.SAVE)
     Bookmark bookmark;
     String md5;
@@ -94,34 +95,48 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public WorkEntity createEntity() {
-        if (getClass() == WorkEntity.class) return (WorkEntity) this;
-        WorkEntity entity = new WorkEntity();
-        entity.setTitle(title);
-        entity.setLink(getLink());
-        entity.setChanged(changed);
-        entity.setCreateDate(createDate);
-        entity.setDescription(description);
-        entity.setExpertKudoed(expertKudoed);
-        entity.setExpertRate(expertRate);
-        entity.setImageLink(imageLink);
-        entity.setBookmark(bookmark);
-        entity.setMd5(md5);
-        entity.setCachedDate(cachedDate);
-        entity.setAuthor(author);
-        entity.setRootAuthor(rootAuthor);
-        entity.setUpdateDate(updateDate);
-        entity.setGenres(genres);
-        entity.setType(type);
-        entity.setHasComments(hasComments);
-        entity.setHasIllustration(hasIllustration);
-        entity.setAnnotationBlocks(annotationBlocks);
-        entity.setId(id);
-        entity.setSizeDiff(sizeDiff);
-        entity.setSize(size);
-        entity.setCategory(category);
-        entity.setKudoed(kudoed);
-        entity.setRate(rate);
-        entity.setState(state);
+            WorkEntity entity;
+        if (getClass() == WorkEntity.class)  {
+            entity = (WorkEntity) this;
+            entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
+            entity.setAuthor(author == null ? null : author.createEntry());
+            entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
+            entity.setCategory(category == null ? null : category.createEntry());
+            if(entity.getCategory() != null) {
+                entity.getCategory().setAuthor(entity.getAuthor());
+            }
+        }  else {
+            entity = new WorkEntity();
+            entity.setTitle(title);
+            entity.setLink(getLink());
+            entity.setChanged(changed);
+            entity.setCreateDate(createDate);
+            entity.setDescription(description);
+            entity.setExpertKudoed(expertKudoed);
+            entity.setExpertRate(expertRate);
+            entity.setImageLink(imageLink);
+            entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
+            entity.setMd5(md5);
+            entity.setCachedDate(cachedDate);
+            entity.setAuthor(author == null ? null : author.createEntry());
+            entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
+            entity.setUpdateDate(updateDate);
+            entity.setGenres(genres);
+            entity.setType(type);
+            entity.setHasComments(hasComments);
+            entity.setHasIllustration(hasIllustration);
+            entity.setAnnotationBlocks(annotationBlocks);
+            entity.setId(id);
+            entity.setSizeDiff(sizeDiff);
+            entity.setSize(size);
+            entity.setCategory(category == null ? null : category.createEntry());
+            if (entity.getCategory() != null) {
+                entity.getCategory().setAuthor(entity.getAuthor());
+            }
+            entity.setKudoed(kudoed);
+            entity.setRate(rate);
+            entity.setState(state);
+        }
         return entity;
     }
 

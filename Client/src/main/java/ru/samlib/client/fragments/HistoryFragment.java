@@ -11,23 +11,29 @@ import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
+import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.domain.entity.WorkEntity;
+import ru.samlib.client.service.DatabaseService;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Locale;
 
 /**
  * Created by Dmitry on 29.12.2015.
  */
-public class HistoryFragment extends FilterDialogListFragment {
+public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
 
     private static final String TAG = HistoryFragment.class.getSimpleName();
 
+    @Inject
+    DatabaseService databaseService;
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -44,34 +50,30 @@ public class HistoryFragment extends FilterDialogListFragment {
     }
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter<WorkEntity> newAdapter() {
         return new HistoryAdapter();
     }
 
+
     @Override
-    protected DataSource getDataSource() throws Exception {
+    public void onCreate(Bundle savedInstanceState) {
+        App.getInstance().getComponent().inject(this);
+        super.onCreate(savedInstanceState);
+    }
+
+
+    @Override
+    protected DataSource<WorkEntity> getDataSource() throws Exception {
         return (skip, size) -> {
-            SnappyHelper helper = new SnappyHelper(getActivity(), TAG);
-            try {
-                if(adapter.getItems().isEmpty()) {
-                    return Stream.of(helper.getWorks())
-                            .skip(skip)
-                            .limit(size)
-                            .sorted((lhs, rhs) -> rhs.getCachedDate().compareTo(lhs.getCachedDate()))
-                            .collect(Collectors.toList());
-                } else {
-                    return new ArrayList<>();
-                }
-            } catch (SnappydbException e) {
-                Log.e(TAG, "Unknown exception", e);
+            if (adapter.getItems().isEmpty()) {
+                return new ArrayList<>(databaseService.getHistory(skip, size));
+            } else {
                 return new ArrayList<>();
-            } finally {
-                SnappyHelper.close(helper);
             }
         };
     }
 
-    protected class HistoryAdapter extends ItemListAdapter<Work> {
+    protected class HistoryAdapter extends ItemListAdapter<WorkEntity> {
 
         private final Locale currentLocale = getResources().getConfiguration().locale;
 

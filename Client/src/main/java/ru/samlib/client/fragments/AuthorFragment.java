@@ -85,15 +85,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 try {
                     if(author.getId() == null) {
-                        AuthorEntity authorEntity = databaseService.getAuthorByLink(author.getLink());
-                        if (authorEntity != null) {
-                            author = authorEntity;
-                        }
                         author = new AuthorParser(author).parse();
-                        if (authorEntity != null) {
-                            databaseService.updateAuthor(authorEntity);
-                            if(authorEntity.isHasUpdates()) {
-                                postEvent(new AuthorUpdatedEvent(authorEntity));
+                        if (author instanceof AuthorEntity && author.isObservable()) {
+                            databaseService.updateAuthor(author.createEntry()).setParsed(true);
+                            if(author.isHasUpdates()) {
+                                postEvent(new AuthorUpdatedEvent(author));
                             }
                         }
                     } else {
@@ -122,7 +118,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.author, menu);
         MenuItem item = menu.findItem(R.id.action_author_observable);
-        if(author instanceof AuthorEntity) {
+        if(author.isObservable()) {
             item.setChecked(true);
         } else {
             item.setChecked(false);
@@ -134,17 +130,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if(!item.isChecked()) {
-                    author = databaseService.insertAuthor(author.createEntry());
+                    author = databaseService.insertObservableAuthor(author.createEntry());
                     item.setChecked(true);
                     return true;
                 } else {
-                    Author save = new Author(author);
-                    save.setId(null);
-                    databaseService.deleteAuthor(databaseService.getAuthorByLink(author.getLink()));
-                    for (Linkable linkable : adapter.getItems()) {
-                       save.addRootLink(linkable);
-                    }
-                    author = save;
+                    author.setObservable(false);
+                    databaseService.updateAuthor(author.createEntry());
                     item.setChecked(false);
                     return true;
                 }
@@ -222,6 +213,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
         } else if (link != null) {
             if (author == null || !author.getLink().equals(link)) {
                 author = new Author(link);
+                AuthorEntity entity;
+                if((entity = databaseService.getAuthorByLink(author.getLink())) != null) {
+                    author = entity;
+                }
                 clearData();
             }
         }

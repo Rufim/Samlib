@@ -104,9 +104,11 @@ public class WorkFragment extends ListFragment<String> {
                         work.setChanged(false);
                         work.setSizeDiff(null);
                     }
-                    work = databaseService.insertOrUpdateWork(work);
-                    if(!work.isParsed()) {
-                        WorkParser.processChapters(work);
+                    WorkEntity entity = databaseService.insertOrUpdateWork(work);
+                    WorkParser.processChapters(work);
+                    if(entity != work) {
+                        entity.setParsed(true);
+                        entity.setIndents(work.getIndents());
                     }
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException e) {
@@ -176,7 +178,7 @@ public class WorkFragment extends ListFragment<String> {
                     bookmark.setIndent(indent);
                 }
                 bookmark.setIndentIndex(indexLast - 1);
-                work.setBookmark(bookmark.createEntry());
+                work.setBookmark(bookmark);
                 databaseService.insertOrUpdateWork(work);
             }
         } catch (Exception e) {

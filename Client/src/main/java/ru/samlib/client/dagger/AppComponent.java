@@ -3,6 +3,7 @@ package ru.samlib.client.dagger;
 import dagger.Component;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.fragments.AuthorFragment;
+import ru.samlib.client.fragments.HistoryFragment;
 import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.fragments.WorkFragment;
 import ru.samlib.client.job.ObservableUpdateJob;
@@ -22,4 +23,5 @@ public interface AppComponent {
     void inject(DatabaseService service);
     void inject(ObservableUpdateJob job);
     void inject(WorkFragment workFragment);
+    void inject(HistoryFragment historyFragment);
 }

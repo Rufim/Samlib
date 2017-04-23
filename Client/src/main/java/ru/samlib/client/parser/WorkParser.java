@@ -61,14 +61,13 @@ public class WorkParser extends Parser {
         }
         try {
             Date oldUpdateDate = work.getUpdateDate();
-            work.setChanged(true);
+            work.setChanged(false);
             work = parseWork(rawContent, work);
             Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
-            if (oldUpdateDate != null
-                    && oldUpdateDate.getTime() == work.getUpdateDate().getTime()
-                    && work.getIndents().size() > 0) {
+            if(oldUpdateDate == null || (oldUpdateDate.getTime() != work.getUpdateDate().getTime())) {
+                work.setChanged(true);
+            } else {
                 work.setChanged(false);
-                return work;
             }
             if(processChapters) {
                 processChapters(work);
@@ -164,8 +163,7 @@ public class WorkParser extends Parser {
             work.setRawContent(parts[2]);
         } else if(parts.length == 4){
             if (parts[2].contains("Аннотация")) {
-                work.getAnnotationBlocks().clear();
-                work.addAnnotation(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first()));
+                work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first())));
             }
             if (parts[3].contains("<!--Section Begins-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,

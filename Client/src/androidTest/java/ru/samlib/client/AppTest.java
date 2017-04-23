@@ -40,7 +40,7 @@ public class AppTest {
     @Test
     public void observableServiceTest() throws Exception {
         Author author = new AuthorParser("http://samlib.ru/s/sedrik/").parse();
-        AuthorEntity entity = databaseService.insertAuthor(author.createEntry());
+        AuthorEntity entity = databaseService.insertObservableAuthor(author.createEntry());
         databaseService.deleteAuthor(entity);
     }
 }
