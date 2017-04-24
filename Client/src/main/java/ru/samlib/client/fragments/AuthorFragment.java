@@ -387,7 +387,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_rate_and_size), rate_and_size);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_subtitle), work.getTypeName());
                     work_row.setOnClickListener(v -> {
-                        WorkFragment.show(AuthorFragment.this, (Work) v.getTag());
+                        WorkFragment.show(AuthorFragment.this, ((Work) v.getTag()).getLink());
                     });
                     work_row.setTag(work);
                     authorSuggestions.addView(work_row);
