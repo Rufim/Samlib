@@ -129,7 +129,7 @@ dependencies {
     compile "io.requery:requery:$requeryVersion"
     compile "io.requery:requery-android:$requeryVersion" // for android
     compile 'com.android.support:multidex:1.0.1'
-    compile "com.github.Rufim:AndroidTemplate:0.6.3"
+    compile project(':template')
     testCompile 'junit:junit:4.12'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'

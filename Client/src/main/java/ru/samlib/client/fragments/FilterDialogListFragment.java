@@ -26,6 +26,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
     public FilterDialogListFragment() {
         enableSearch = true;
         enableFiltering = true;
+        enableScrollbar = true;
     }
 
     @Override

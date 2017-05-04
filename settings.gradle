@@ -1,1 +1,4 @@
-include ':Client'
+include ':Client', ':template'
+Properties properties = new Properties()
+properties.load(new FileInputStream(new File(settingsDir, 'local.properties')))
+project(':template').projectDir = new File(properties.getProperty('template'))
