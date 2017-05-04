@@ -39,9 +39,9 @@ public class FilterDialog extends BaseDialog {
     CheckBox dialogFilterUndefined;
     View rootView;
     ArrayList<Genre> genreList;
-    EnumSet<Gender> genderSet = EnumSet.allOf(Gender.class);
+    EnumSet<Gender> genderSet;
     boolean excluding = false;
-
+    String query;
 
     @NonNull
     @Override
@@ -55,6 +55,9 @@ public class FilterDialog extends BaseDialog {
             } else {
                 addToGrid(genre, genreList.contains(genre));
             }
+        }
+        if(genderSet == null) {
+            genderSet = EnumSet.allOf(Gender.class);
         }
         for (Gender gender : genderSet) {
             switch (gender) {
@@ -83,6 +86,12 @@ public class FilterDialog extends BaseDialog {
             this.excluding = filterEvent.excluding;
             this.genreList = filterEvent.genres;
             this.genderSet = filterEvent.genders;
+            this.query = filterEvent.query;
+        } else {
+            this.excluding = false;
+            this.genreList = null;
+            this.genderSet = null;
+            this.query = null;
         }
     }
 
@@ -90,7 +99,7 @@ public class FilterDialog extends BaseDialog {
     public void onButtonPositive(DialogInterface dialog) {
         super.onButtonPositive(dialog);
         saveState();
-        postEvent(new FilterDialogListFragment.FilterEvent(genreList, genderSet, excluding));
+        postEvent(new FilterDialogListFragment.FilterEvent(query, genreList, genderSet, excluding));
     }
 
     private void saveState() {
@@ -115,7 +124,7 @@ public class FilterDialog extends BaseDialog {
 
     @Override
     public void onButtonNeutral(DialogInterface dialog) {
-        postEvent(new FilterDialogListFragment.FilterEvent(null, excluding));
+        postEvent(new FilterDialogListFragment.FilterEvent(query, null, excluding));
     }
 
     private void addToGrid(Genre genre, boolean checked) {

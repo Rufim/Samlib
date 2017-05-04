@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,6 +38,10 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
 
     @Override
     protected ItemListAdapter.FilterEvent newFilterEvent(String query) {
+        if(adapter != null && adapter.getLastQuery() != null) {
+            adapter.getLastQuery().query = query;
+            return adapter.getLastQuery();
+        }
         return new FilterEvent(query);
     }
 
@@ -47,11 +52,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
                 FilterDialog dialog = (FilterDialog) getFragmentManager().findFragmentByTag(FilterDialog.class.getSimpleName());
                 if (dialog == null) {
                     dialog = new FilterDialog();
-                    if(adapter.getLastQuery() != null) {
-                        dialog.setState((FilterEvent) adapter.getLastQuery());
-                    } else {
-                        dialog.setState(null);
-                    }
+                    dialog.setState((FilterEvent) adapter.getLastQuery());
                     dialog.show(getFragmentManager(), FilterDialog.class.getSimpleName());
                 }
                 return true;
@@ -91,14 +92,14 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
         public final boolean excluding;
         public final EnumSet<Gender> genders;
 
-        public FilterEvent(ArrayList<Genre> genres, EnumSet<Gender> genders, boolean excluding) {
+        public FilterEvent(String query, ArrayList<Genre> genres, EnumSet<Gender> genders, boolean excluding) {
             super(null);
             this.genres = genres;
             this.excluding = excluding;
             this.genders = genders;
         }
 
-        public FilterEvent(ArrayList<Genre> genres, boolean excluding) {
+        public FilterEvent(String query, ArrayList<Genre> genres, boolean excluding) {
             super(null);
             this.genres = genres;
             this.excluding = excluding;

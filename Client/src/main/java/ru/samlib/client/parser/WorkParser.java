@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 public class WorkParser extends Parser {
 
 
+    public static final int MAX_INDENT_SIZE = 1000;
+
     public enum INDENT_TAGS {
         DD, DIV, P, BR, PRE;
     }
@@ -215,17 +217,19 @@ public class WorkParser extends Parser {
                 Element el = (Element) node;
                 if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
                     if (!el.text().isEmpty()) {
-                        indents.add(TextUtils.linkifyHtml(el.text()));
+                        addIndent(indents, TextUtils.linkifyHtml(el.text()));
                     }
                 } else {
                     if (indents.isEmpty()) {
-                        indents.add(el.text());
+                        addIndent(indents, el.text());
                     } else {
-                        indents.set(indents.size() - 1, indents.get(indents.size() - 1) + el.text());
+                        String indent = indents.get(indents.size() - 1) + el.text();
+                        indents.remove(indents.size() - 1);
+                        addIndent(indents, indent);
                     }
                 }
             } else if (node instanceof TextNode) {
-                indents.add(TextUtils.linkifyHtml(((TextNode) node).text()));
+                addIndent(indents, TextUtils.linkifyHtml(((TextNode) node).text()));
             }
         }
         bookmarks.clear();
@@ -242,6 +246,21 @@ public class WorkParser extends Parser {
             }
         }
         work.setParsed(true);
+    }
+
+    private static void addIndent(List<String> indents, String indent) {
+        if(indent.length() > MAX_INDENT_SIZE + 500) {
+            for (int index = 0; indent.length() > index + MAX_INDENT_SIZE; index += MAX_INDENT_SIZE) {
+                if(indent.length() > index + (MAX_INDENT_SIZE + 500)) {
+                    indents.add(indent.substring(index, index + MAX_INDENT_SIZE));
+                } else {
+                    indents.add(indent.substring(index));
+                    break;
+                }
+            }
+        } else {
+            indents.add(indent);
+        }
     }
 
     public static Element replaceTables(Element el) {

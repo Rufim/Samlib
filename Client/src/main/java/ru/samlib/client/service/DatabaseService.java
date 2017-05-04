@@ -113,6 +113,14 @@ public class DatabaseService {
         if (!(work instanceof WorkEntity)) {
            workEntity = getWork(work.getLink());
             if (workEntity == null) {
+                Author author = work.getAuthor();
+                AuthorEntity authorEntity = getAuthor(author.getLink());
+                if(authorEntity != null) {
+                    work.setAuthor(authorEntity);
+                }
+                if (work.getCategory() != null) {
+                    resolveCategory(work, work.getCategory());
+                }
                 return (WorkEntity) doAction(Action.INSERT, work.createEntity());
             } else {
                 updateWork(workEntity, work);
@@ -134,15 +142,20 @@ public class DatabaseService {
 
     public CategoryEntity resolveCategory(Work into, Category category) {
         if(into.getAuthor().isEntity()) {
-            CategoryEntity result = (CategoryEntity) Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
+            Category result = Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
             if (result == null) {
                 into.setCategory(category.createEntity());
                 into.getAuthor().getCategories().add(into.getCategory());
                 result = (CategoryEntity) into.getCategory();
             } else {
+                if(!(result instanceof CategoryEntity)) {
+                    int index = into.getAuthor().getCategories().indexOf(result);
+                    result = result.createEntity();
+                    into.getAuthor().getCategories().set(index, result);
+                }
                 result.addLink(into);
             }
-            return result;
+            return (CategoryEntity) result;
         } else {
             into.setCategory(into.getCategory().createEntity());
             return (CategoryEntity) into.getCategory();
@@ -163,7 +176,9 @@ public class DatabaseService {
         into.setState(from.getState());
         into.setHasIllustration(from.isHasIllustration());
         into.setHasComments(from.isHasComments());
-        into.setBookmark(from.getBookmark().createEntry());
+        if(from.getBookmark() != null) {
+            into.setBookmark(from.getBookmark().createEntry());
+        }
         into.setChanged(from.isChanged());
     }
 }

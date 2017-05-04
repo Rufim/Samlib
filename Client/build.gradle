@@ -5,7 +5,7 @@ apply plugin: 'me.tatarka.retrolambda'
 ext {
     compileSdkProjectVersion = 25
     buildToolsProjectVersion = '25.0.2'
-    supportLibraryVersion = '25.2.0'
+    supportLibraryVersion = '25.3.1'
     versionProjectCode = 1
     versionProjectName = "0.1.0"
     baseScheme = 'http'

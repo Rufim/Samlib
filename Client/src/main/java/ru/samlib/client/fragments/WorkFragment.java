@@ -65,6 +65,7 @@ public class WorkFragment extends ListFragment<String> {
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
 
+
     @Inject
     DatabaseService databaseService;
 
@@ -165,7 +166,7 @@ public class WorkFragment extends ListFragment<String> {
             int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
             int size = adapter.getItems().size();
-            if(size > index && index > 0) {
+            if(size > index) {
                 String indent = adapter.getItems().get(index);
                 Bookmark bookmark = work.getBookmark();
                 if(bookmark == null) {
@@ -223,7 +224,7 @@ public class WorkFragment extends ListFragment<String> {
 
     @Override
     public void onSearchViewClose(SearchView searchView) {
-        lastSearchQuery = null;
+        adapter.setLastQuery(null);
         mode = Mode.NORMAL;
     }
 
@@ -313,11 +314,7 @@ public class WorkFragment extends ListFragment<String> {
         }
         Pair<Integer, Integer> index = searched.poll();
         if (index != null) {
-            if(lastSearchQuery != null)  {
-                lastSearchQuery.query = query;
-            } else {
-                lastSearchQuery = newFilterEvent(query);
-            }
+            adapter.setLastQuery(newFilterEvent(query));
             scrollToIndex(index.first, index.second);
         }
         return true;
@@ -334,7 +331,7 @@ public class WorkFragment extends ListFragment<String> {
             layoutManager.scrollToPosition(index);
         }
         if (Mode.SEARCH == mode) {
-            adapter.selectText(lastSearchQuery.toString(), false, colorFoundedText);
+            adapter.selectText(adapter.getLastQuery().toString(), false, colorFoundedText);
         }
     }
 
@@ -522,7 +519,7 @@ public class WorkFragment extends ListFragment<String> {
                     view.setText(spanner.fromHtml(indent));
                     break;
             }
-            selectText(holder, true, lastSearchQuery == null ? null : lastSearchQuery.query, colorFoundedText);
+            selectText(holder, true, adapter.getLastQuery() == null ? null : adapter.getLastQuery().query, colorFoundedText);
         }
 
     }
