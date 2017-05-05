@@ -8,12 +8,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
+import ru.samlib.client.util.HtmlToPlainText;
 import ru.samlib.client.util.JsoupUtils;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.SystemUtils;
@@ -30,12 +32,7 @@ import java.util.regex.Pattern;
 public class WorkParser extends Parser {
 
 
-    public static final int MAX_INDENT_SIZE = 1000;
-
-    public enum INDENT_TAGS {
-        DD, DIV, P, BR, PRE;
-    }
-
+    private static final int MAX_INDENT_SIZE = 900;
     private Work work;
 
     public WorkParser(Work work) throws MalformedURLException {
@@ -180,10 +177,11 @@ public class WorkParser extends Parser {
         List<String> indents = work.getIndents();
         List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
+        document.setBaseUri(Constants.Net.BASE_DOMAIN);
         document.outputSettings().prettyPrint(false);
         List<Node> rootNodes = new ArrayList<>();
-        Element body = replaceTables(document.body());
-        Elements rootElements = body.select("> *");
+        //Element body = replaceTables(document.body());
+        Elements rootElements = document.body().select("> *");
         Elements elements = rootElements.select("xxx7");
         if (elements.size() > 0) {
             for (Element element : elements) {
@@ -196,42 +194,24 @@ public class WorkParser extends Parser {
                     rootNodes.addAll(element.childNodes());
                 }
             } else {
-                rootNodes = body.childNodes();
+                elements = document.body().children();
             }
         }
-        if (rootNodes.size() > 0
-                && rootNodes.get(0) instanceof Element
-                && "font".equals(((Element) rootNodes.get(0)).tagName())
-                && rootNodes.size() == 1) {
-            rootNodes = rootNodes.get(0).childNodes();
+        indents.clear();
+        HtmlToPlainText plainText = new HtmlToPlainText();
+        for (Element element : elements) {
+            String text = plainText.getPlainText(element);
+            List<String> indentPart = Arrays.asList(TextUtils.splitByNewline(text));
+            indents.addAll(indentPart);
+            //TODO: optimise perfomance and use
+            /*for (String part : indentPart) {
+                addIndent(indents, part);
+            }*/
         }
         elements.clear();
         rootElements.clear();
-        indents.clear();
         Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        indents.addAll(Arrays.asList(JsoupUtils.ownText(document.body()).split("\\n")));
-        for (int i = 0; i < rootNodes.size(); i++) {
-            Node node = rootNodes.get(i);
-            if (node instanceof Element) {
-                Element el = (Element) node;
-                if (SystemUtils.parseEnum(el.tagName().toUpperCase(), INDENT_TAGS.class) != null) {
-                    if (!el.text().isEmpty()) {
-                        addIndent(indents, TextUtils.linkifyHtml(el.text()));
-                    }
-                } else {
-                    if (indents.isEmpty()) {
-                        addIndent(indents, el.text());
-                    } else {
-                        String indent = indents.get(indents.size() - 1) + el.text();
-                        indents.remove(indents.size() - 1);
-                        addIndent(indents, indent);
-                    }
-                }
-            } else if (node instanceof TextNode) {
-                addIndent(indents, TextUtils.linkifyHtml(((TextNode) node).text()));
-            }
-        }
         bookmarks.clear();
         bookmarks.add(new Bookmark("Начало"));
         for (int i = 0; i < indents.size(); i++) {
@@ -249,11 +229,20 @@ public class WorkParser extends Parser {
     }
 
     private static void addIndent(List<String> indents, String indent) {
-        if(indent.length() > MAX_INDENT_SIZE + 500) {
-            for (int index = 0; indent.length() > index + MAX_INDENT_SIZE; index += MAX_INDENT_SIZE) {
-                if(indent.length() > index + (MAX_INDENT_SIZE + 500)) {
-                    indents.add(indent.substring(index, index + MAX_INDENT_SIZE));
-                } else {
+        int maxOverflow = (int) (MAX_INDENT_SIZE + (MAX_INDENT_SIZE * 0.25));
+        if(indent.length() > maxOverflow) {
+            for (int index = 0; indent.length() > index + MAX_INDENT_SIZE;) {
+                if(indent.length() > index + maxOverflow) {
+                    StringBuilder accum = new StringBuilder(indent.substring(index, index + MAX_INDENT_SIZE));
+                    String nextChar;
+                    while (index < indent.length() && !isEmpty((nextChar = indent.substring(index + MAX_INDENT_SIZE, index + MAX_INDENT_SIZE + 1)))) {
+                        index++;
+                        accum.append(nextChar);
+                    }
+                    indents.add(accum.toString());
+                    index = index + MAX_INDENT_SIZE;
+                }
+                if(indent.length() <= index + MAX_INDENT_SIZE) {
                     indents.add(indent.substring(index));
                     break;
                 }
@@ -263,14 +252,9 @@ public class WorkParser extends Parser {
         }
     }
 
-    public static Element replaceTables(Element el) {
-        Elements tables = el.select("table");
-        Elements tds = el.select("td");
-        Elements trs = el.select("tr");
-        tables.unwrap();
-        tds.tagName("dd");
-        trs.unwrap();
-        return el;
+    private static boolean isEmpty(String sequence) {
+        if(sequence.equals("\n")) return false;
+        else return TextUtils.isEmpty(TextUtils.trim(sequence));
     }
 
 }

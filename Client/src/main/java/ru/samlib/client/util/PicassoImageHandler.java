@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.text.SpannableStringBuilder;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
+import net.nightwhistler.htmlspanner.SpanStack;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
 import org.htmlcleaner.TagNode;
 import ru.kazantsev.template.util.DynamicImageSpan;
@@ -30,7 +31,7 @@ public class  PicassoImageHandler extends TagNodeHandler {
     }
 
     @Override
-    public void handleTagNode(TagNode tagNode, final SpannableStringBuilder builder, final int start, int end) {
+    public void handleTagNode(TagNode tagNode, final SpannableStringBuilder builder, final int start, int end, SpanStack stack) {
         builder.append("￼");
         Drawable drawable = textView.getResources().getDrawable(R.drawable.ic_image_crop_original);
         int textSize = (int) (textView.getTextSize() * 1.25);

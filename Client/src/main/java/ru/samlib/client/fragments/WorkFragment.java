@@ -15,6 +15,7 @@ import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.*;
 import android.widget.TextView;
 import com.snappydb.SnappydbException;
@@ -514,9 +515,14 @@ public class WorkFragment extends ListFragment<String> {
                         }
                         return true;
                     });
+                    holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
                     view.setText(spanner.fromHtml(indent));
+                    // fix wrong height when use image spans
+                    view.setTextSize(20);
+                    view.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+                    // end
                     break;
             }
             selectText(holder, true, adapter.getLastQuery() == null ? null : adapter.getLastQuery().query, colorFoundedText);
