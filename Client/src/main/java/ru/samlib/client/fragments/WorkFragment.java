@@ -11,6 +11,7 @@ import android.support.annotation.IdRes;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
+import android.text.SpannedString;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.ClickableSpan;
@@ -82,7 +83,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
-        return show(builder.putArg( Constants.ArgsName.WORK, work), container, WorkFragment.class);
+        return show(builder.putArg(Constants.ArgsName.WORK, work), container, WorkFragment.class);
     }
 
     public static WorkFragment show(BaseFragment fragment, String link) {
@@ -97,14 +98,14 @@ public class WorkFragment extends ListFragment<String> {
         enableSearch = true;
         enableScrollbar = true;
         setDataSource(((skip, size) -> {
-            if(skip != 0) return null;
+            if (skip != 0) return null;
             while (work == null) {
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
                 try {
                     work = new WorkParser(work).parse(true, Parser.isCachedMode());
-                    if(!Parser.isCachedMode()) {
+                    if (!Parser.isCachedMode()) {
                         work.setCachedDate(new Date());
                         WorkEntity entity = databaseService.insertOrUpdateWork(work);
                         WorkParser.processChapters(work);
@@ -120,7 +121,7 @@ public class WorkFragment extends ListFragment<String> {
                     return new ArrayList<>();
                 }
             }
-            if(work.isParsed()){
+            if (work.isParsed()) {
                 return work.getIndents();
             } else {
                 return new ArrayList<>();
@@ -173,10 +174,10 @@ public class WorkFragment extends ListFragment<String> {
             int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
             int size = adapter.getItems().size();
-            if(size > index && work instanceof WorkEntity) {
+            if (size > index && work instanceof WorkEntity) {
                 String indent = adapter.getItems().get(index);
                 Bookmark bookmark = work.getBookmark();
-                if(bookmark == null) {
+                if (bookmark == null) {
                     bookmark = new Bookmark(indent);
                 } else {
                     bookmark.setIndent(indent);
@@ -360,8 +361,8 @@ public class WorkFragment extends ListFragment<String> {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 WorkEntity entity;
-                if((entity = databaseService.getWork(work.getLink())) != null) {
-                   work = entity;
+                if ((entity = databaseService.getWork(work.getLink())) != null) {
+                    work = entity;
                 }
                 clearData();
             }
@@ -469,9 +470,9 @@ public class WorkFragment extends ListFragment<String> {
                         ClickableSpan[] link = new SpannableString(textView.getText()).getSpans(lastOffset, lastOffset, ClickableSpan.class);
                         if (link.length != 0) {
                             ClickableSpan span = link[0];
-                            if(span instanceof URLSpan) {
+                            if (span instanceof URLSpan) {
                                 String url = ((URLSpan) span).getURL();
-                                if(url.startsWith("/")){
+                                if (url.startsWith("/")) {
                                     Intent intent = new Intent(getActivity(), SectionActivity.class);
                                     intent.setData(Uri.parse(Constants.Net.BASE_DOMAIN + url));
                                     startActivity(intent);
@@ -519,16 +520,27 @@ public class WorkFragment extends ListFragment<String> {
                             }
 
                             v.performClick();
+                            if(textView.getText() instanceof SpannedString && mode.equals(Mode.NORMAL)) {
+                                SpannedString spannableString = (SpannedString) textView.getText();
+                                URLSpanNoUnderline url[] = spannableString.getSpans(lastOffset, spannableString.length(), URLSpanNoUnderline.class);
+                                if(url.length > 0){
+                                    url[0].onClick(textView);
+                                }
+                            }
                         }
                         return true;
                     });
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
-                    view.setText("  " + spanner.fromHtml(indent));
+                    if(!indent.contains("<img")) {
+                        view.setText(spanner.fromHtml("&emsp;" + indent));
+                    } else {
+                        view.setText(spanner.fromHtml(indent));
+                    }
                     // fix wrong height when use image spans
                     view.setTextSize(20);
-                    view.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+                    view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
                     // end
                     break;
             }
