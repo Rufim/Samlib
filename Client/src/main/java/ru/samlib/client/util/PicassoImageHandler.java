@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.SpannableStringBuilder;
+import android.util.TypedValue;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import net.nightwhistler.htmlspanner.SpanStack;

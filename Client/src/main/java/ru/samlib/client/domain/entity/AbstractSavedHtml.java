@@ -7,6 +7,7 @@ import ru.kazantsev.template.net.CachedResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.util.Date;
 
 /**
  * Created by 0shad on 06.05.2017.
@@ -20,6 +21,7 @@ public abstract class AbstractSavedHtml {
     String filePath;
     String url;
     long size;
+    Date updated;
 
     protected AbstractSavedHtml(){};
 

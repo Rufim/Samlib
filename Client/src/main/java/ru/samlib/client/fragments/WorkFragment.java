@@ -11,6 +11,8 @@ import android.support.annotation.IdRes;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
@@ -491,6 +493,7 @@ public class WorkFragment extends ListFragment<String> {
                     TextView annotationView = holder.getView(R.id.work_annotation_header);
                     spanner.registerHandler("img", new PicassoImageHandler(annotationView));
                     spanner.registerHandler("a", new LinkHandler(annotationView));
+                    annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                     annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
                     break;
                 case R.layout.item_indent:

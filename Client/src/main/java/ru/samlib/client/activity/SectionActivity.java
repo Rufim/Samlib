@@ -230,21 +230,6 @@ public class SectionActivity extends BaseActivity {
         return false;
     }
 
-    @Override
-    protected void onDrawerClosed(View drawerView) {
-
-    }
-
-    @Override
-    protected void onDrawerOpened(View drawerView) {
-
-    }
-
-    @Override
-    @Subscribe
-    public void onEvent(FragmentAttachedEvent fragmentAttached) {
-
-    }
 
     @Override
     public void onBackPressed() {

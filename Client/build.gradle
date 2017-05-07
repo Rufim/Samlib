@@ -107,6 +107,7 @@ dependencies {
     compile "com.android.support:design:$supportLibraryVersion"
     compile "com.android.support:support-annotations:$supportLibraryVersion"
 
+    compile "org.jetbrains:annotations-java5:15.0"
     compile "org.jsoup:jsoup:1.8.3"
     compile "com.annimon:stream:1.1.0"
     compile "com.jakewharton:butterknife:$butterknifeVersion"

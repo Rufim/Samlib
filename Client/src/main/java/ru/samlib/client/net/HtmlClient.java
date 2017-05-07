@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -127,10 +128,12 @@ public class HtmlClient {
                 savedHtml = new SavedHtml(cachedResponse);
                 savedHtml.setSize(cachedResponse.length());
                 savedHtml.setUrl(url);
+                savedHtml.setUpdated(new Date());
                 app.getDataStore().insert(savedHtml);
             } else {
                 savedHtml.setSize(cachedResponse.length());
                 savedHtml.setUrl(url);
+                savedHtml.setUpdated(new Date());
                 app.getDataStore().update(savedHtml);
             }
         }

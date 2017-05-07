@@ -181,4 +181,14 @@ public class DatabaseService {
         }
         into.setChanged(from.isChanged());
     }
+
+
+    public List<SavedHtml> selectCachedEntities() {
+        return dataStore.select(SavedHtml.class).distinct().orderBy(SavedHtml.UPDATED.asc()).get().toList();
+    }
+
+    public void deleteCachedEntities(List<SavedHtml> delete) {
+         dataStore.delete(delete);
+    }
+
 }

@@ -20,6 +20,7 @@ import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Models;
 import ru.samlib.client.job.AppJobCreator;
+import ru.samlib.client.job.CleanCacheJob;
 import ru.samlib.client.job.ObservableUpdateJob;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -56,6 +57,7 @@ public class App extends MultiDexApplication {
         component = DaggerAppComponent.builder()
                 .appModule(new AppModule(singleton)).build();
         ObservableUpdateJob.startSchedule();
+        CleanCacheJob.startSchedule();
     }
 
     @Override

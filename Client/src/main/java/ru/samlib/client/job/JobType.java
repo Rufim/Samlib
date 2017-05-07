@@ -7,7 +7,8 @@ import com.evernote.android.job.Job;
  * Created by 0shad on 01.03.2016.
  */
 public enum JobType {
-    UPDATE_OBSERVABLE(ObservableUpdateJob.class);
+    UPDATE_OBSERVABLE(ObservableUpdateJob.class),
+    CLEAN_CACHE(CleanCacheJob.class);
 
     private static final String TAG = JobType.class.getSimpleName();
 

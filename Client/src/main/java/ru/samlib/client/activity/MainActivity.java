@@ -30,6 +30,8 @@ public class MainActivity extends BaseActivity {
     
     private boolean doubleBackToExitPressedOnce = false;
 
+    private boolean online = false;
+
     public static MainActivity singleInstance;
 
     public static MainActivity getInstance() {
@@ -40,20 +42,19 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         singleInstance = this;
-        boolean online = AndroidSystemUtils.isNetworkAvailable(this);
-        if(online) {
-            getMenuInflater().inflate(R.menu.drawer, navigationView.getMenu());
+        online = AndroidSystemUtils.isNetworkAvailable(this);
+        if (online) {
+            navigationView.inflateMenu(R.menu.drawer);
         } else {
-            getMenuInflater().inflate(R.menu.drawer_offline, navigationView.getMenu());
+            navigationView.inflateMenu(R.menu.drawer_offline);
         }
         if (savedInstanceState == null) {
             if(online) {
-                Parser.setCachedMode(false);
                 replaceFragment(NewestFragment.class);
             } else {
-                Parser.setCachedMode(true);
                 replaceFragment(HistoryFragment.class);
             }
+            Parser.setCachedMode(!online);
         }
 
     }
@@ -129,13 +130,24 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void onDrawerClosed(View drawerView) {}
-
-    @Override
-    protected void onDrawerOpened(View drawerView) {}
-
-    @Override
-    @Subscribe
-    public void onEvent(FragmentAttachedEvent fragmentAttached) {}
+    protected void onDrawerOpened(View drawerView) {
+        boolean online = AndroidSystemUtils.isNetworkAvailable(this);
+        if(online != this.online) {
+            this.online = online;
+            Parser.setCachedMode(!online);
+            int id = getCheckedNavigationItem();
+            navigationView.getMenu().clear();
+            if (online) {
+                navigationView.inflateMenu(R.menu.drawer);
+            } else {
+                navigationView.inflateMenu(R.menu.drawer_offline);
+            }
+            if(navigationView.getMenu().findItem(id) != null) {
+                navigationView.setCheckedItem(id);
+            } else {
+                navigationView.getMenu().findItem(getCheckedNavigationItem()).setChecked(false);
+            }
+        }
+    }
 
 }

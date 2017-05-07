@@ -8,6 +8,7 @@ import android.provider.Browser;
 import android.support.annotation.IdRes;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.*;
 import android.widget.Button;
@@ -284,6 +285,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         TextView annotationView = holder.getView(R.id.section_annotation);
                         spanner.registerHandler("img", new PicassoImageHandler(annotationView));
                         spanner.registerHandler("a", new LinkHandler(annotationView));
+                        annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                         annotationView.setText(spanner.fromHtml(category.processAnnotation(getResources().getColor(R.color.SeaGreen))));
                         annotationView.setVisibility(View.VISIBLE);
                     } else {

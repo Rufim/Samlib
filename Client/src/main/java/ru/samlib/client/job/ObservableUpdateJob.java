@@ -55,8 +55,6 @@ public class ObservableUpdateJob extends Job {
         } catch (Exception e) {
             Log.e(TAG, "Unknown exception", e);
             return Result.FAILURE;
-        } finally {
-
         }
         return Result.SUCCESS;
     }
