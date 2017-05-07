@@ -1,6 +1,7 @@
 package ru.samlib.client.util;
 
 import android.text.SpannableStringBuilder;
+import android.text.style.URLSpan;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.SpanStack;
 import net.nightwhistler.htmlspanner.TagNodeHandler;
@@ -20,7 +21,7 @@ public class LinkHandler extends TagNodeHandler {
 
     public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end, SpanStack stack) {
         String href = node.getAttributeByName("href");
-        builder.setSpan(new URLSpanNoUnderline(href), start, end, 33);
+        stack.pushSpan(new URLSpanNoUnderline(href), start, end);
     }
 
 

@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.text.SpannableStringBuilder;
+import android.text.style.ImageSpan;
 import android.util.TypedValue;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
@@ -38,8 +39,7 @@ public class  PicassoImageHandler extends TagNodeHandler {
         int textSize = (int) (textView.getTextSize() * 1.25);
         drawable.setBounds(0, 0, textSize, textSize);
         final DynamicImageSpan imageSpan = new DynamicImageSpan(drawable);
-        final int trueEnd = end;
-        builder.setSpan(imageSpan, start, builder.length(), 33);
+        stack.pushSpan(imageSpan, start, builder.length());
         new AsyncTask<TagNode, Void, Bitmap>() {
 
             @Override
