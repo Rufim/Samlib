@@ -1,7 +1,7 @@
 package ru.samlib.client.lister;
 
 import org.jsoup.nodes.Document;
-import ru.samlib.client.net.Request;
+import ru.kazantsev.template.net.Request;
 
 /**
  * Created by Rufim on 29.06.2015.

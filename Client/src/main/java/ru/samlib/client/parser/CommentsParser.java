@@ -7,7 +7,7 @@ import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.lister.RawRowSelector;
-import ru.samlib.client.net.Request;
+import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.net.MalformedURLException;
@@ -34,12 +34,12 @@ public class CommentsParser extends PageParser<Comment> {
 
             @Override
             public void setPage(Request request, int index) {
-                request.setParam("PAGE", (index + 1));
+                request.addParam("PAGE", (index + 1));
             }
 
         });
         if(reverse) {
-            request.setParam("ORDER", "reverse");
+            request.addParam("ORDER", "reverse");
         }
     }
 

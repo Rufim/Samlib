@@ -38,6 +38,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
+import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
@@ -100,13 +101,16 @@ public class WorkFragment extends ListFragment<String> {
             }
             if (!work.isParsed()) {
                 try {
-                    work = new WorkParser(work).parse(true, false);
-                    work.setCachedDate(new Date());
-                    WorkEntity entity = databaseService.insertOrUpdateWork(work);
-                    WorkParser.processChapters(work);
-                    if(entity != work) {
-                        entity.setParsed(true);
-                        entity.setIndents(work.getIndents());
+                    work = new WorkParser(work).parse(true, Parser.isCachedMode());
+                    if(!Parser.isCachedMode()) {
+                        work.setCachedDate(new Date());
+                        WorkEntity entity = databaseService.insertOrUpdateWork(work);
+                        WorkParser.processChapters(work);
+                        if (entity != work) {
+                            entity.setParsed(true);
+                            entity.setIndents(work.getIndents());
+                            work = entity;
+                        }
                     }
                     postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException e) {
@@ -167,7 +171,7 @@ public class WorkFragment extends ListFragment<String> {
             int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
             int size = adapter.getItems().size();
-            if(size > index) {
+            if(size > index && work instanceof WorkEntity) {
                 String indent = adapter.getItems().get(index);
                 Bookmark bookmark = work.getBookmark();
                 if(bookmark == null) {
@@ -518,7 +522,7 @@ public class WorkFragment extends ListFragment<String> {
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
-                    view.setText(spanner.fromHtml(indent));
+                    view.setText("  " + spanner.fromHtml(indent));
                     // fix wrong height when use image spans
                     view.setTextSize(20);
                     view.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);

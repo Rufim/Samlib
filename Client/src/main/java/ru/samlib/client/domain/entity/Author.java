@@ -196,6 +196,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
                 this.link = link;
             }
         }
+        this.link = this.link.replace("//", "/");
     }
 
     public Gender getGender(){

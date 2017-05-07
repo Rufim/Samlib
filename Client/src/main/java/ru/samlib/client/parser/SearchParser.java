@@ -3,14 +3,14 @@ package ru.samlib.client.parser;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.kazantsev.template.domain.Valuable;
 import ru.samlib.client.domain.Validatable;
-import ru.samlib.client.domain.Valuable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.JsoupRowSelector;
 import ru.samlib.client.lister.PageLister;
-import ru.samlib.client.net.Request;
+import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class SearchParser extends PageListParser {
         }, new PageLister() {
             @Override
             public void setPage(Request request, int index) {
-                request.setParam(SearchParams.PAGE, index + 1);
+                request.addParam(SearchParams.PAGE, index + 1);
             }
 
             @Override
@@ -63,16 +63,16 @@ public class SearchParser extends PageListParser {
 
     public SearchParser(String query) throws MalformedURLException {
         this();
-        request.setParam(SearchParams.FIND, query);
+        request.addParam(SearchParams.FIND, query);
     }
 
     public void setQuery(String query) {
-        request.setParam(SearchParams.FIND, query);
+        request.addParam(SearchParams.FIND, query);
     }
 
     //TODO: Need to be implemented with filters
     public List search(String string, int skip, int size) throws IOException {
-        request.setParam(SearchParams.FIND, string);
+        request.addParam(SearchParams.FIND, string);
         return getItems(skip, size);
     }
 

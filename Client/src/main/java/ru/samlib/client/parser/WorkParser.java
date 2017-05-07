@@ -8,12 +8,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.net.CachedResponse;
+
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.HtmlToPlainText;
 import ru.samlib.client.util.JsoupUtils;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
 public class WorkParser extends Parser {
 
 
-    private static final int MAX_INDENT_SIZE = 900;
+    private static final int MAX_INDENT_SIZE = 700;
     private Work work;
 
     public WorkParser(Work work) throws MalformedURLException {
@@ -48,9 +49,9 @@ public class WorkParser extends Parser {
     public Work parse(boolean fullDownload, boolean processChapters) throws IOException {
         CachedResponse rawContent = null;
         if (work.getRawContent() == null && !fullDownload) {
-            rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
+            rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached);
         } else {
-            rawContent = HtmlClient.executeRequest(request);
+            rawContent = HtmlClient.executeRequest(request, cached);
         }
         if (rawContent == null) {
             return work;
@@ -71,7 +72,7 @@ public class WorkParser extends Parser {
 
     public static Work parseWork(CachedResponse file, Work work) {
         if (work == null) {
-            work = new Work(file.getRequest().getBaseUrl().getPath());
+            work = new Work(file.getRequest().getBaseUrl().getPath().replace("//","/"));
         }
         String[] parts;
         if(!work.getLink().matches(work.getAuthor().getLink() +"/rating\\d.shtml")) {
@@ -204,9 +205,9 @@ public class WorkParser extends Parser {
             List<String> indentPart = Arrays.asList(TextUtils.splitByNewline(text));
             indents.addAll(indentPart);
             //TODO: optimise perfomance and use
-            /*for (String part : indentPart) {
-                addIndent(indents, part);
-            }*/
+            //for (String part : indentPart) {
+            //    addIndent(indents, part);
+            //}
         }
         elements.clear();
         rootElements.clear();
@@ -234,13 +235,16 @@ public class WorkParser extends Parser {
             for (int index = 0; indent.length() > index + MAX_INDENT_SIZE;) {
                 if(indent.length() > index + maxOverflow) {
                     StringBuilder accum = new StringBuilder(indent.substring(index, index + MAX_INDENT_SIZE));
-                    String nextChar;
-                    while (index < indent.length() && !isEmpty((nextChar = indent.substring(index + MAX_INDENT_SIZE, index + MAX_INDENT_SIZE + 1)))) {
-                        index++;
-                        accum.append(nextChar);
+                    index = index + MAX_INDENT_SIZE;
+                    int size = index;
+                    while (index < indent.length() && indent.charAt(size) != ' ') {
+                        size++;
+                    }
+                    if(size > 0) {
+                        accum.append(indent.substring(index, size));
+                        index += size;
                     }
                     indents.add(accum.toString());
-                    index = index + MAX_INDENT_SIZE;
                 }
                 if(indent.length() <= index + MAX_INDENT_SIZE) {
                     indents.add(indent.substring(index));

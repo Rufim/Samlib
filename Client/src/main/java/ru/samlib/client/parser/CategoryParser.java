@@ -9,7 +9,7 @@ import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.net.CachedResponse;
+import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
@@ -50,7 +50,7 @@ public class CategoryParser extends Parser{
         try {
             Document headDoc;
             Elements elements;
-            CachedResponse rawFile = HtmlClient.executeRequest(request);
+            CachedResponse rawFile = HtmlClient.executeRequest(request, cached);
             String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(), false,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),

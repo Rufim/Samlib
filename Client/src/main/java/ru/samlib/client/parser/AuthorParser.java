@@ -6,7 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.samlib.client.domain.entity.*;
-import ru.samlib.client.net.CachedResponse;
+import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
@@ -42,19 +42,16 @@ public class AuthorParser extends Parser {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
-            if (author.isEntity()) {
-                request.saveInCache(false);
-            }
             if (author.getCategories().isEmpty()) {
-                rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE);
+                rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached);
             } else {
-                rawFile = HtmlClient.executeRequest(request);
+                rawFile = HtmlClient.executeRequest(request, cached);
                 author.setRecommendations(new ArrayList<>());
                 if (!author.isEntity()) {
                     author.getCategories().clear();
                 }
             }
-            if (rawFile.isDownloadOver) {
+            if (rawFile.isDownloadOver()) {
                 author.setParsed(true);
             }
             String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(), false,

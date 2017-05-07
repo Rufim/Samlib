@@ -1,7 +1,7 @@
 package ru.samlib.client.lister;
 
 import org.jsoup.nodes.Document;
-import ru.samlib.client.net.Request;
+import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.TextUtils;
 
 /**

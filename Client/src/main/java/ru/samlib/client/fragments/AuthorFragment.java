@@ -32,6 +32,7 @@ import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.CategorySelectedEvent;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.CategoryParser;
+import ru.samlib.client.parser.Parser;
 import ru.samlib.client.service.DatabaseService;
 import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
@@ -86,7 +87,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 try {
                     author = new AuthorParser(author).parse();
-                    if (author.isObservable()) {
+                    if (!Parser.isCachedMode() && author.isObservable()) {
                         databaseService.updateAuthor(author.createEntry()).setParsed(true);
                         if (author.isHasUpdates()) {
                             postEvent(new AuthorUpdatedEvent(author));

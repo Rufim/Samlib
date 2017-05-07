@@ -5,7 +5,7 @@ import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DefaultJsoupSelector;
 import ru.samlib.client.lister.DefaultPageLister;
-import ru.samlib.client.net.Request;
+import ru.kazantsev.template.net.Request;
 import ru.samlib.client.util.ParserUtils;
 
 import java.net.MalformedURLException;

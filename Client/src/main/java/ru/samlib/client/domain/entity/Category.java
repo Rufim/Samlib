@@ -88,10 +88,10 @@ public class Category implements Linkable, Serializable, Parsable {
 
     public void addLink(Linkable linkable) {
         if (linkable instanceof Work) {
-            this.works.add((Work) linkable);
+            this.getWorks().add((Work) linkable);
         }
         if (linkable instanceof Link) {
-            this.links.add((Link) linkable);
+            this.getLinks().add((Link) linkable);
         }
     }
 

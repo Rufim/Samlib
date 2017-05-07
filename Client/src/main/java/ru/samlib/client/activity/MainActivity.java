@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.activity.BaseActivity;
 import ru.kazantsev.template.domain.event.FragmentAttachedEvent;
 import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.FragmentBuilder;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
@@ -22,6 +23,7 @@ import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.fragments.*;
  
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.parser.Parser;
 
 
 public class MainActivity extends BaseActivity {
@@ -38,14 +40,20 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         singleInstance = this;
-        getMenuInflater().inflate(R.menu.drawer, navigationView.getMenu());
-        if (savedInstanceState != null) {
-            Fragment fr = getLastFragment(savedInstanceState);
-            if (!navigationView.isShown()) {
-                setTitle(fr.getArguments().getString(Constants.ArgsName.TITLE));
-            }
+        boolean online = AndroidSystemUtils.isNetworkAvailable(this);
+        if(online) {
+            getMenuInflater().inflate(R.menu.drawer, navigationView.getMenu());
         } else {
-            replaceFragment(NewestFragment.class);
+            getMenuInflater().inflate(R.menu.drawer_offline, navigationView.getMenu());
+        }
+        if (savedInstanceState == null) {
+            if(online) {
+                Parser.setCachedMode(false);
+                replaceFragment(NewestFragment.class);
+            } else {
+                Parser.setCachedMode(true);
+                replaceFragment(HistoryFragment.class);
+            }
         }
 
     }

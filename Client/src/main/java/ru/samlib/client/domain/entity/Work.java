@@ -16,7 +16,7 @@ import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
-import ru.samlib.client.net.CachedResponse;
+import ru.kazantsev.template.net.CachedResponse;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -144,15 +144,16 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             if (author == null) {
                 author = new Author(link.substring(0, link.lastIndexOf("/")));
             }
-            this.link = link.substring(link.lastIndexOf("/"));
+            this.link = (author.getLink() + link.substring(link.lastIndexOf("/")));
         } else {
             this.link = "/" + link;
         }
+        this.link = this.link.replace("//", "/");
     }
 
     public String getLink() {
         if (link != null && !link.contains(getAuthor().getLink())) {
-            link = author.getLink() + link;
+            link = (author.getLink() + link).replace("//", "/");
         }
         return link;
     }

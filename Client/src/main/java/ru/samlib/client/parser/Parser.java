@@ -5,12 +5,14 @@ import android.support.v4.util.LruCache;
 import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import ru.kazantsev.template.net.Request;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.net.CachedResponse;
+import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.net.Request;
+
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -35,15 +37,21 @@ public abstract class Parser {
     protected Request request;
     protected CachedResponse htmlFile;
     protected Document document;
+    protected static boolean cached = false;
+
 
     public void setPath(String path) throws MalformedURLException {
         if (path == null) {
             throw new MalformedURLException("Link is NULL");
         }
-        this.request = new Request(Constants.Net.BASE_DOMAIN + path)
-                .setEncoding("CP1251")
-                .addHeader("Accept", ACCEPT_VALUE)
-                .addHeader("User-Agent", USER_AGENT);
+        try {
+            this.request = new Request(Constants.Net.BASE_DOMAIN + path)
+                    .setEncoding("CP1251")
+                    .addHeader("Accept", ACCEPT_VALUE)
+                    .addHeader("User-Agent", USER_AGENT);
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, "Unknown exception", e);
+        }
     }
 
     public Document getDocument(Request request) throws IOException {
@@ -51,17 +59,17 @@ public abstract class Parser {
     }
 
     public Document getDocument(Request request, long minBodySize) throws IOException {
-        htmlFile = HtmlClient.executeRequest(request, minBodySize);
+        htmlFile = HtmlClient.executeRequest(request, minBodySize, cached);
 
         document = null;
 
         if (htmlFile != null) {
 
-            if (htmlFile.isCached && (document = parserCache.get(request)) != null) {
+            if (htmlFile.isCached() && (document = parserCache.get(request)) != null) {
                 return document;
             }
 
-            boolean isOver = htmlFile.isDownloadOver;
+            boolean isOver = htmlFile.isDownloadOver();
             try {
                 document = Jsoup.parse(htmlFile, request.getEncoding(), request.getUrl().toString());
                 Log.i(TAG, "Document parsed: " + htmlFile.getAbsolutePath());
@@ -70,9 +78,9 @@ public abstract class Parser {
                 throw new IOException("Network is not available", ex);
             }
             if (isOver) {
-                if (!htmlFile.isCached) {
+                if (!htmlFile.isCached()) {
                     parserCache.put(request, document);
-                    htmlFile.isCached = true;
+                    htmlFile.setCached(true);
                 }
             } else {
                 executor.submit(new PendingParse(htmlFile));
@@ -97,15 +105,22 @@ public abstract class Parser {
 
         @Override
         public Boolean call() throws Exception {
-            while (!htmlFile.isDownloadOver) {
+            while (!htmlFile.isDownloadOver()) {
                 SystemClock.sleep(50);
             }
             String url = htmlFile.getRequest().getUrl().toString();
             parserCache.put(htmlFile.getRequest(), Jsoup.parse(htmlFile, htmlFile.getEncoding(), url));
             Log.i(TAG, "Document parsed: " + htmlFile.getAbsolutePath());
-            htmlFile.isCached = true;
+            htmlFile.setCached(true);
             return Boolean.TRUE;
         }
     }
 
+    public static boolean isCachedMode() {
+        return cached;
+    }
+
+    public static void setCachedMode(boolean cached) {
+        Parser.cached = cached;
+    }
 }
