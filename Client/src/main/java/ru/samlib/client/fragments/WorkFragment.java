@@ -533,11 +533,7 @@ public class WorkFragment extends ListFragment<String> {
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
-                    if(!indent.contains("<img")) {
-                        view.setText(spanner.fromHtml("&emsp;" + indent));
-                    } else {
-                        view.setText(spanner.fromHtml(indent));
-                    }
+                    view.setText(spanner.fromHtml(indent));
                     // fix wrong height when use image spans
                     view.setTextSize(20);
                     view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);

@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 import com.snappydb.SnappydbException;
+import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.Constants;
@@ -26,6 +27,8 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.util.TTSPlayer;
 import ru.kazantsev.template.util.TextUtils;
+
+import javax.inject.Inject;
 
 /**
  * Created by Dmitry on 01.09.2015.
@@ -58,6 +61,9 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     private static TTSPlayer.OnIndexSpeakFinished indexSpeakFinished;
     private static TTSPlayer.OnNextPhraseListener nextPhraseListener;
+
+    @Inject
+    DatabaseService databaseService;
 
     public static TTSService getInstance() {
         return instance;
@@ -103,6 +109,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     @Override
     public void onCreate() {
         instance = this;
+        App.getInstance().getComponent().inject(this);
         if(ttsp == null) {
             ttsp = new TTSPlayer(this);
         }
@@ -117,15 +124,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            SnappyHelper snappyHelper = new SnappyHelper(getApplicationContext(), TAG);
-            Work work = null;
-            try {
-                work = snappyHelper.getWork(link);
-            } catch (SnappydbException e) {
-                Log.e(TAG, "Unknown exception", e);
-            } finally {
-                SnappyHelper.close(snappyHelper);
-            }
+            Work work = databaseService.getWork(link);
             if(!work.isParsed()) {
                 if (!TextUtils.isEmpty(work.getRawContent())) {
                     WorkParser.processChapters(work);
@@ -189,7 +188,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             });
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Unexpeted error in TTS service");
         }
         return START_REDELIVER_INTENT;
     }
@@ -206,11 +205,10 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
         Notification notification = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_action_book)
+                .setCustomContentView(simpleContentView)
                 .setContentTitle(title).build();
 
         setListeners(simpleContentView);
-
-        notification.contentView = simpleContentView;
 
         if (ttsp.getState().equals(TTSPlayer.State.PAUSE)) {
             notification.contentView.setViewVisibility(R.id.btnPause, View.GONE);

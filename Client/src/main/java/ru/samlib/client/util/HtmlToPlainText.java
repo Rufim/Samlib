@@ -43,14 +43,12 @@ public class HtmlToPlainText {
                 } else {
                     append(((TextNode) node).text()); // TextNodes carry all user-readable text in the DOM.
                 }
-            } else if (name.equals("li")) {
-                append("\n * ");
             } else if (name.equals("dt")) {
                 append("  ");
             } else if (StringUtil.in(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")){
                 append("\n");
             } else if (name.equals("img")) {
-                append(node.outerHtml());
+                append("\n" + node.outerHtml());
             }
         }
 
@@ -67,8 +65,13 @@ public class HtmlToPlainText {
                 if (text.equals(" ") &&
                         (StringUtil.in(accum.substring(accum.length() - 1), " ", "\n")))
                     return; // don't accumulate long runs of empty spaces
-                if (text.equals("\n") && accum.substring(accum.length() - 2).contains("\n\n")) {
-                    return;  // don't accumulate new lines
+                while (text.length() > 0 && text.startsWith("\n") && accum.substring(accum.length() - 2).contains("\n\n")) {
+                    // don't accumulate new lines
+                    if(text.length() > 1) {
+                        text = text.substring(1);
+                    } else {
+                        return;
+                    }
                 }
             }
             accum.append(text);

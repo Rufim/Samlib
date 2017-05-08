@@ -18,6 +18,10 @@ public class ParserUtils {
     protected static final String TAG = ParserUtils.class.getSimpleName();
 
     public static String cleanupHtml(Element el) {
+        return cleanupHtml(el.children());
+    }
+
+    public static String cleanupHtml(Elements el) {
         //Cleanup
         for (Element elem : el.select("*")) {
             if (elem.select("img").size() < 1 && !elem.tagName().equals("input")) {

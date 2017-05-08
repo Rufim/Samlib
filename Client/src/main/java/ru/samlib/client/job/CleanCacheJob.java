@@ -14,6 +14,7 @@ import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.SavedHtml;
+import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
@@ -79,6 +80,7 @@ public class CleanCacheJob extends Job {
                     it.remove();
                 }
             }
+            HtmlClient.cleanCache(delete);
             databaseService.deleteCachedEntities(delete);
         }
     }

@@ -156,7 +156,7 @@ public class WorkParser extends Parser {
             work.setRawContent(parts[2]);
         } else if(parts.length == 4){
             if (parts[2].contains("Аннотация")) {
-                work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first())));
+                work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
             }
             if (parts[3].contains("<!--Section Begins-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
@@ -203,11 +203,15 @@ public class WorkParser extends Parser {
         for (Element element : elements) {
             String text = plainText.getPlainText(element);
             List<String> indentPart = Arrays.asList(TextUtils.splitByNewline(text));
-            indents.addAll(indentPart);
             //TODO: optimise perfomance and use
-            //for (String part : indentPart) {
-            //    addIndent(indents, part);
-            //}
+            for (String part : indentPart) {
+                //addIndent(indents, part);
+                if (!part.contains("<img")) {
+                    indents.add("&emsp;" + part);
+                } else {
+                    indents.add(part);
+                }
+            }
         }
         elements.clear();
         rootElements.clear();

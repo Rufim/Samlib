@@ -87,6 +87,12 @@ public class HtmlClient {
 
     }
 
+    public static synchronized void cleanCache(List<SavedHtml> savedHtmls) {
+        for (SavedHtml savedHtml : savedHtmls) {
+            htmlfiles.remove(savedHtml.getUrl());
+        }
+    }
+
     public CachedResponse takeHtmlAsync(Request request, long minBytes, boolean cached) throws Exception {
         if (cached) {
             String url = getUrl(request);
@@ -99,11 +105,11 @@ public class HtmlClient {
         return response;
     }
 
-    public static CachedResponse executeRequest(Request request, boolean cached) throws IOException {
+    public static synchronized CachedResponse executeRequest(Request request, boolean cached) throws IOException {
        return executeRequest(request, Long.MAX_VALUE, cached);
     }
 
-    public static CachedResponse executeRequest(Request request, long minBodySize, boolean cached) throws IOException {
+    public static synchronized CachedResponse executeRequest(Request request, long minBodySize, boolean cached) throws IOException {
         CachedResponse cachedResponse = null;
         HtmlClient client = HtmlClient.getInstance();
         try {

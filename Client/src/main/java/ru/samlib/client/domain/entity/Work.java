@@ -266,8 +266,8 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
                 result = true;
             }
             if (genres != null) {
-                if (filterQuery.excluding) result = Collections.disjoint(genres, this.genres);
-                else result = genres.containsAll(this.genres);
+                result = Collections.disjoint(genres, this.genres);
+                if (!filterQuery.excluding) result = !result;
             }
             if (!result) return result;
             if (filterQuery.genders != null && filterQuery.genders.size() != Gender.values().length) {

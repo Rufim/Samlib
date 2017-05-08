@@ -9,6 +9,7 @@ import ru.samlib.client.fragments.WorkFragment;
 import ru.samlib.client.job.CleanCacheJob;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.service.DatabaseService;
+import ru.samlib.client.service.TTSService;
 
 import javax.inject.Singleton;
 
@@ -26,4 +27,5 @@ public interface AppComponent {
     void inject(WorkFragment workFragment);
     void inject(HistoryFragment historyFragment);
     void inject(CleanCacheJob cleanCacheJob);
+    void inject(TTSService ttsService);
 }
