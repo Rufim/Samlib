@@ -13,6 +13,10 @@
     <string name="font_sans_serif_medium">sans-serif-medium</string>
     <!-- roboto medium (android 5.0) -->
 
+
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+
     <!-- Dreawer -->
     <string name="drawer_new">Новинки</string>
     <string name="drawer_top">Топ Авторов</string>

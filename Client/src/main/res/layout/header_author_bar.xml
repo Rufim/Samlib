@@ -35,6 +35,4 @@
             android:text="username@mymail.com"
             android:textSize="@dimen/text_medium"
             android:textAppearance="@style/item_text"/>
-    <View style="@style/horizontal_border"
-          android:layout_below="@+id/drawer_author_annotation"/>
 </RelativeLayout>

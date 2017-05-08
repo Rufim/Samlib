@@ -183,24 +183,9 @@ public class WorkParser extends Parser {
         List<Node> rootNodes = new ArrayList<>();
         //Element body = replaceTables(document.body());
         Elements rootElements = document.body().select("> *");
-        Elements elements = rootElements.select("xxx7");
-        if (elements.size() > 0) {
-            for (Element element : elements) {
-                rootNodes.addAll(element.childNodes());
-            }
-        } else {
-            elements = rootElements.select("div[align=justify]");
-            if (elements.size() > 0) {
-                for (Element element : elements) {
-                    rootNodes.addAll(element.childNodes());
-                }
-            } else {
-                elements = document.body().children();
-            }
-        }
         indents.clear();
         HtmlToPlainText plainText = new HtmlToPlainText();
-        for (Element element : elements) {
+        for (Element element : rootElements) {
             String text = plainText.getPlainText(element);
             List<String> indentPart = Arrays.asList(TextUtils.splitByNewline(text));
             //TODO: optimise perfomance and use
@@ -213,7 +198,7 @@ public class WorkParser extends Parser {
                 }
             }
         }
-        elements.clear();
+        rootElements.clear();
         rootElements.clear();
         Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);

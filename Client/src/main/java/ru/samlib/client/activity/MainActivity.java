@@ -6,28 +6,28 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
-import android.support.v4.app.Fragment;
 import android.view.MenuItem;
 import android.view.View;
-import org.greenrobot.eventbus.Subscribe;
+import android.widget.Button;
 import ru.kazantsev.template.activity.BaseActivity;
-import ru.kazantsev.template.domain.event.FragmentAttachedEvent;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.util.AndroidSystemUtils;
-import ru.kazantsev.template.util.FragmentBuilder;
+import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.fragments.*;
- 
+
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.parser.Parser;
 
 
 public class MainActivity extends BaseActivity {
-    
+
+    public static final String ONLINE = "online";
+
     private boolean doubleBackToExitPressedOnce = false;
 
     private boolean online = false;
@@ -42,21 +42,27 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         singleInstance = this;
-        online = AndroidSystemUtils.isNetworkAvailable(this);
-        if (online) {
-            navigationView.inflateMenu(R.menu.drawer);
+        if(!isConfigChange(savedInstanceState)) {
+            online = AndroidSystemUtils.isNetworkAvailable(this);
         } else {
-            navigationView.inflateMenu(R.menu.drawer_offline);
+            online = savedInstanceState.getBoolean(ONLINE);
         }
-        if (savedInstanceState == null) {
-            if(online) {
-                replaceFragment(NewestFragment.class);
-            } else {
-                replaceFragment(HistoryFragment.class);
+        View header = getLayoutInflater().inflate(R.layout.header_main, navigationView, false);
+        Button switchButton = GuiUtils.getView(header, R.id.header_main_status);
+        switchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchMode(!online);
             }
-            Parser.setCachedMode(!online);
-        }
+        });
+        navigationView.addHeaderView(header);
+        switchStatus(online);
+    }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(ONLINE, online);
     }
 
     protected void handleIntent(Intent intent) {
@@ -129,24 +135,44 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @Override
-    protected void onDrawerOpened(View drawerView) {
-        boolean online = AndroidSystemUtils.isNetworkAvailable(this);
-        if(online != this.online) {
-            this.online = online;
-            Parser.setCachedMode(!online);
-            int id = getCheckedNavigationItem();
-            navigationView.getMenu().clear();
-            if (online) {
-                navigationView.inflateMenu(R.menu.drawer);
+
+    public void switchMode(boolean online) {
+        if (online != this.online) {
+            boolean check = AndroidSystemUtils.isNetworkAvailable(this);
+            if (!check && online) {
+                GuiUtils.toast(this, R.string.network_not_available);
             } else {
-                navigationView.inflateMenu(R.menu.drawer_offline);
+               switchStatus(online);
             }
-            if(navigationView.getMenu().findItem(id) != null) {
-                navigationView.setCheckedItem(id);
-            } else {
-                navigationView.getMenu().findItem(getCheckedNavigationItem()).setChecked(false);
-            }
+        }
+    }
+
+    private void switchStatus(boolean online) {
+        this.online = online;
+        Parser.setCachedMode(!online);
+        int id = getCheckedNavigationItem();
+        navigationView.getMenu().clear();
+        if (online) {
+            navigationView.inflateMenu(R.menu.drawer);
+        } else {
+            navigationView.inflateMenu(R.menu.drawer_offline);
+        }
+        if(id == -1) {
+            id = getCheckedNavigationItem();
+        }
+        if (navigationView.getMenu().findItem(id) != null) {
+            navigationView.setCheckedItem(id);
+            onNavigationItemSelected(navigationView.getMenu().findItem(id));
+        } else {
+            onNavigationItemSelected(navigationView.getMenu().findItem(getCheckedNavigationItem()));
+        }
+        Button switchButton = GuiUtils.getView(navigationView.getHeaderView(0), R.id.header_main_status);
+        if(online) {
+            switchButton.setText(R.string.online);
+            switchButton.setTextColor(getResources().getColor(R.color.light_blue));
+        } else {
+            switchButton.setText(R.string.offline);
+            switchButton.setTextColor(getResources().getColor(R.color.light_grey));
         }
     }
 

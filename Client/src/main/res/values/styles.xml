@@ -3,6 +3,26 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="searchViewStyle">@style/AppSearchViewStyle</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- customize the color palette -->
+        <item name="colorPrimary">@color/light_black</item>
+        <item name="colorPrimaryDark">@color/deep_grey</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:textColorPrimary">@color/Snow</item>
+        <item name="android:textColor">@color/Snow</item>
+        <item name="android:navigationBarColor">@color/accent</item>
+        <item name="android:windowBackground">@color/dark_grey</item>
+        <item name="android:popupBackground">@color/dark_grey</item>
+        <item name="android:textColorLink">@color/light_blue</item>
+        <item name="colorControlNormal">@color/light_grey</item>
+        <item name="colorControlActivated">@color/accent</item>
+        <item name="colorControlHighlight">@color/accent</item>
+
+        <!-- Fix for pre Lolipop versions to use colors as drawables -->
+        <item name="colorPrimaryDrawable">@drawable/color_primary</item>
+        <item name="colorPrimaryDarkDrawable">@drawable/color_primary_dark</item>
+        <item name="colorAccentDrawable">@drawable/color_accent</item>
     </style>
 
     <style name="AppSearchViewStyle" parent="Widget.AppCompat.SearchView">
