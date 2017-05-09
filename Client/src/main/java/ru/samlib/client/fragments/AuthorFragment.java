@@ -25,6 +25,7 @@ import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.*;
@@ -197,6 +198,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (!restoreLister()) {
             return super.allowBackPress();
         } else {
+            ((SectionActivity)getActivity()).cleanSelection();
             return false;
         }
     }

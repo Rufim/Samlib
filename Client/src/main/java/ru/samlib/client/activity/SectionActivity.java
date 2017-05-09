@@ -72,6 +72,7 @@ public class SectionActivity extends NavigationActivity<String> {
             }
             builder.replaceFragment(R.id.container, sectionFragment);
         }
+        navigationListMenu.setPadding(0, (int) getResources().getDimension(R.dimen.spacing_medium), 0, (int) getResources().getDimension(R.dimen.spacing_medium));
     }
 
     @Override
