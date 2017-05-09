@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -19,8 +17,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import ru.kazantsev.template.activity.BaseActivity;
-import ru.kazantsev.template.domain.event.FragmentAttachedEvent;
+import ru.kazantsev.template.activity.NavigationActivity;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
@@ -43,7 +40,7 @@ import java.util.List;
 /**
  * Created by 0shad on 12.07.2015.
  */
-public class SectionActivity extends BaseActivity {
+public class SectionActivity extends NavigationActivity<String> {
 
     private static final String TAG = SectionActivity.class.getSimpleName();
 
@@ -75,6 +72,17 @@ public class SectionActivity extends BaseActivity {
             }
             builder.replaceFragment(R.id.container, sectionFragment);
         }
+    }
+
+    @Override
+    protected int getNavigationViewId() {
+        return R.layout.item_section_navigation;
+    }
+
+
+    @Override
+    protected void onBindNavigationView(int position, String title, View navigationView) {
+        GuiUtils.setText((ViewGroup)navigationView, R.id.item_section_navigation_text, title);
     }
 
     @Override
@@ -163,19 +171,16 @@ public class SectionActivity extends BaseActivity {
     }
 
     private View initNavigationView(@LayoutRes int header, Object... titles) {
-        navigationView.removeHeaderView(drawerHeader);
-        navigationView.getMenu().clear();
+        removeHeaderView();
+        clearNavigationMenu();
 
-        for (int i = 0; i < titles.length; i++) {
-            String title = titles[i].toString();
-            if (title.length() > 22) {
-                title = title.substring(0, 19) + "...";
-            }
-            navigationView.getMenu().add(Menu.NONE, Menu.NONE, i, title);
+        for (Object title : titles) {
+            addNavigationMenu(title.toString());
         }
+
         if (header > 0) {
             drawerHeader = (ViewGroup) getLayoutInflater().inflate(header, navigationView, false);
-            navigationView.addHeaderView(drawerHeader);
+            addHeader(drawerHeader);
             return null;
         }
         return drawerHeader;
@@ -210,24 +215,24 @@ public class SectionActivity extends BaseActivity {
 
 
     @Override
-    protected boolean onNavigationItemSelected(MenuItem item) {
+    protected boolean onNavigationItemSelected(int position, String title, View item) {
         switch (state) {
             case INIT:
                 break;
             case WORK:
-                postEvent(new ChapterSelectedEvent(work.getAutoBookmarks().get(item.getOrder())));
+                postEvent(new ChapterSelectedEvent(work.getAutoBookmarks().get(position)));
                 break;
             case AUTHOR:
-                postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(item.getOrder())));
+                postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(position)));
                 break;
             case COMMENTS:
-                postEvent(new ScrollToCommentEvent(-1, item.getOrder()));
+                postEvent(new ScrollToCommentEvent(-1, position));
                 break;
             case ILLUSTRATIONS:
-                postEvent(new IllustrationSelectedEvent(item.getOrder()));
+                postEvent(new IllustrationSelectedEvent(position));
                 break;
         }
-        return false;
+        return true;
     }
 
 

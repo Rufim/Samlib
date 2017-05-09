@@ -9,10 +9,13 @@
     <ImageView
             android:layout_width="150dp"
             android:layout_height="150dp"
+            android:layout_centerHorizontal="true"
             android:id="@+id/drawer_author_avatar"
             android:padding="2dp"
             android:src="@drawable/ic_author_holder"
-            android:layout_marginLeft="15dp" android:layout_marginTop="15dp" android:layout_marginRight="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginRight="15dp"
             android:layout_marginBottom="5dp"/>
     <TextView
             android:id="@+id/drawer_author_title"
