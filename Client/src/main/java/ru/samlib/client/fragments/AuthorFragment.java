@@ -97,7 +97,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
-                    getActivity().invalidateOptionsMenu();
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     ErrorFragment.show(AuthorFragment.this, R.string.error);
