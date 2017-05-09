@@ -3,20 +3,28 @@
     <group android:checkableBehavior="single">
         <item android:id="@+id/drawer_new"
               android:checked="true"
+              android:icon="@drawable/ic_new_box_white_24dp"
               android:title="@string/drawer_new"/>
         <item android:id="@+id/drawer_top"
+              android:icon="@drawable/ic_arrow_up_bold_white_24dp"
               android:title="@string/drawer_top"/>
         <item android:id="@+id/drawer_rate"
+              android:icon="@drawable/ic_star_white_24dp"
               android:title="@string/drawer_favorite"/>
         <item android:id="@+id/drawer_review"
+              android:icon="@drawable/ic_book_open_white_24dp"
               android:title="@string/drawer_review"/>
         <item android:id="@+id/drawer_discuss"
+              android:icon="@drawable/ic_message_white_24dp"
               android:title="@string/drawer_discuss"/>
         <item android:id="@+id/drawer_history"
+              android:icon="@drawable/ic_clock_white_24dp"
               android:title="@string/drawer_history"/>
         <item android:id="@+id/drawer_observable"
+              android:icon="@drawable/ic_feather_white_24dp"
               android:title="@string/drawer_observable"/>
         <item android:id="@+id/drawer_help"
+              android:icon="@drawable/ic_help_circle_white_24dp"
               android:title="@string/drawer_help"/>
     </group>
 </menu>

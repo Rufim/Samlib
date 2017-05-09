@@ -15,7 +15,9 @@
 -->
 <resources>
     
-    <color name="accent">#e68078</color>
+    <color name="accent">#f55346</color>
+    <color name="primaryDark">#595959</color>
+
 
     <color name="abc_search_url_text_normal">#7fa87f</color>
     <color name="abc_search_url_text_selected">@android:color/black</color>

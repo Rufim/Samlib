@@ -17,6 +17,8 @@
     <string name="online">Online</string>
     <string name="offline">Offline</string>
 
+
+
     <!-- Dreawer -->
     <string name="drawer_new">Новинки</string>
     <string name="drawer_top">Топ Авторов</string>
@@ -25,26 +27,17 @@
     <string name="drawer_discuss">Обсуждения</string>
     <string name="drawer_sign_up">Регистрация</string>
     <string name="drawer_history">История</string>
-    <string name="drawer_observable">Отслеживаемые</string>
+    <string name="drawer_observable">Подписки</string>
+    <string name="drawer_settings">Настройки</string>
     <string name="drawer_help">Помощь</string>
 
     <string name="refresh">Обновить</string>
     <string name="action_settings">Опции</string>
 
     <string name="app_name">Самлиб</string>
-    <string name="loading">Загрузка...</string>
+    <string name="loading">Загрузка…</string>
     <string name="error">Произошла ошибка!</string>
-    <string name="error_network">Проврьте соединение с\nинтернетом...</string>
-
-    <string-array name="main_menu">
-        <item>Новинки</item>
-        <item>Топ Авторов</item>
-        <item>Избранное</item>
-        <item>Обзоры</item>
-        <item>Обсуждения</item>
-        <item>Регистрация</item>
-        <item>Помощь</item>
-    </string-array>
+    <string name="error_network">Проврьте соединение с\nинтернетом…</string>
 
     <string-array name="author_grid">
         <item>WWW:</item>
@@ -67,8 +60,8 @@
     <string name="item_size_label">Размер:</string>
     <string name="item_genres_label">Жанры:</string>
     <string name="item_form_label">Форма:</string>
-    <string name="search_hint">Поиск...</string>
-    <string name="filter_hint">Фильтр...</string>
+    <string name="search_hint">Поиск…</string>
+    <string name="filter_hint">Фильтр…</string>
     <string name="search">Поиск</string>
     <string name="author_about">Об авторе:</string>
     <string name="author_suggestion">Начните знакомство с:</string>
@@ -111,6 +104,7 @@
     <string name="comments_comment_number">Номер комментария:</string>
     <string name="favorites_update">Update</string>
     <string name="favorites_new">New</string>
-    <string name="author_observable">Отслеживать обновления</string>
+    <string name="author_observable">Подписка</string>
     <string name="back_to_exit">Нажмите еще раз для выхода</string>
+    <string name="network_not_available">Нет интернет соединения…</string>
 </resources>

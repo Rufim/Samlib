@@ -3,10 +3,13 @@
     <group android:checkableBehavior="single">
         <item android:id="@+id/drawer_history"
               android:checked="true"
+              android:icon="@drawable/ic_clock_white_24dp"
               android:title="@string/drawer_history"/>
         <item android:id="@+id/drawer_observable"
+              android:icon="@drawable/ic_feather_white_24dp"
               android:title="@string/drawer_observable"/>
         <item android:id="@+id/drawer_help"
+              android:icon="@drawable/ic_help_circle_white_24dp"
               android:title="@string/drawer_help"/>
     </group>
 </menu>
