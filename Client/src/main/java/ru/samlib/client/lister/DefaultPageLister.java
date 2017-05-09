@@ -13,6 +13,8 @@ public class DefaultPageLister extends PageLister {
     public void setPage(Request request, int index) {
         if (index != 0) {
             request.setSuffix("index-" + (index + 1) + ".shtml");
+        } else {
+            request.setSuffix(""); 
         }
     }
 
