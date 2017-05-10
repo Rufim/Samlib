@@ -14,10 +14,13 @@ import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.PagerFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.CommentPageEvent;
 import ru.samlib.client.domain.events.CommentsParsedEvent;
+import ru.samlib.client.domain.events.IllustrationsParsedEvent;
+import ru.samlib.client.domain.events.SelectCommentPageEvent;
 import ru.samlib.client.parser.CommentsParser;
 import ru.kazantsev.template.util.FragmentBuilder;
 
@@ -92,11 +95,17 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                 ErrorFragment.show(CommentsPagerFragment.this, R.string.error);
             }
         } else {
-            postEvent(new CommentsParsedEvent(parser.getLastPage()));
+            postEvent(new CommentsParsedEvent(adapter.getItems()));
         }
+
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
+    @Override
+    public void stopLoading() {
+        super.stopLoading();
+        postEvent(new CommentsParsedEvent(adapter.getItems()));
+    }
 
     @Override
     public void onStart() {
@@ -111,10 +120,16 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     }
 
     @Subscribe
-    public void onEvent(CommentPageEvent event) {
-        if (event.pageIndex > 0) {
+    public void onEvent(SelectCommentPageEvent event) {
+        if (event.pageIndex >= 0) {
             pager.setCurrentItem(event.pageIndex);
         }
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        super.onPageSelected(position);
+        ((SectionActivity) getActivity()).setSelected(position);
     }
 
     @Override
@@ -130,7 +145,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
             @Override
             public CharSequence getPageTitle(int position) {
-                return "Страница: " + String.valueOf(position);
+                return getString(R.string.comments_page) + ": " + String.valueOf(position);
             }
         };
     }

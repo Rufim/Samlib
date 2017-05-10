@@ -14,6 +14,7 @@ import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.PagerFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.domain.entity.Work;
@@ -101,7 +102,9 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
 
     @Subscribe
     public void onEvent(IllustrationSelectedEvent event) {
-        pager.setCurrentItem(event.index);
+        if (event.index >= 0) {
+            pager.setCurrentItem(event.index);
+        }
     }
 
     @Override
@@ -109,6 +112,13 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
         super.stopLoading();
         postEvent(new IllustrationsParsedEvent(adapter.getItems()));
     }
+
+    @Override
+    public void onPageSelected(int position) {
+        super.onPageSelected(position);
+        ((SectionActivity) getActivity()).setSelected(position);
+    }
+
 
     @Override
     public FragmentPagerAdapter<Image, IllustrationFragment> newAdapter(List<Image> currentItems) {

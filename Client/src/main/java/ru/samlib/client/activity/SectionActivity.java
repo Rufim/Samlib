@@ -1,6 +1,5 @@
 package ru.samlib.client.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,9 +8,6 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
@@ -34,7 +30,6 @@ import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -174,9 +169,17 @@ public class SectionActivity extends NavigationActivity<String> {
     private View initNavigationView(@LayoutRes int header, Object... titles) {
         removeHeaderView();
         clearNavigationMenu();
-
-        for (Object title : titles) {
-            addNavigationMenu(title.toString());
+        for (int i = 0; i < titles.length; i++) {
+            Object title = titles[i];
+            if (!TextUtils.isEmpty(title.toString())) {
+                addNavigationMenu(title.toString());
+            } else {
+                if (state.equals(SectionActivityState.ILLUSTRATIONS)) {
+                    addNavigationMenu(String.valueOf(i));
+                } else {
+                    addNavigationMenu(title.toString());
+                }
+            }
         }
 
         if (header > 0) {
@@ -188,25 +191,9 @@ public class SectionActivity extends NavigationActivity<String> {
     }
 
 
-    private void initializeComments(int lastPage) {
+    private void initializeComments(List<Integer> pages) {
         setState(SectionActivityState.COMMENTS);
-        ArrayList<String> pages = new ArrayList<>();
-        for (int i = 1; i < lastPage && lastPage > 0; i++) {
-            pages.add(new String("Страница:" + i));
-        }
-        initNavigationView(R.layout.header_comments_bar, pages.toArray());
-        final EditText number = GuiUtils.getView(drawerHeader, R.id.comments_comment_number);
-        final Button scroll = GuiUtils.getView(drawerHeader, R.id.comments_scroll_to);
-        scroll.setOnClickListener(v -> {
-            postEvent(new ScrollToCommentEvent(TextUtils.extractInt(number.getText().toString()), -1));
-            drawerLayout.closeDrawers();
-            View view = this.getCurrentFocus();
-            if (view != null) {
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
-        });
-
+        initNavigationView(0, pages.toArray());
     }
 
     private void initializeIllustrations(List<Image> images) {
@@ -227,7 +214,7 @@ public class SectionActivity extends NavigationActivity<String> {
                 postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(position)));
                 break;
             case COMMENTS:
-                postEvent(new ScrollToCommentEvent(-1, position));
+                postEvent(new SelectCommentPageEvent(position));
                 break;
             case ILLUSTRATIONS:
                 postEvent(new IllustrationSelectedEvent(position));
@@ -262,7 +249,7 @@ public class SectionActivity extends NavigationActivity<String> {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(CommentsParsedEvent event) {
-        initializeComments(event.lastPage);
+        initializeComments(event.pages);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
