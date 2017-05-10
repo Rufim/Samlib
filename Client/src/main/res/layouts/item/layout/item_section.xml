@@ -14,7 +14,7 @@
                   android:textSize="@dimen/text_super_nano"
                   android:textStyle="bold"
                   android:text="Глава"
-                  android:padding="10dp"
+                  android:padding="7dp"
                   style="@style/item_text"/>
         <TextView
                 android:layout_width="fill_parent"
@@ -22,6 +22,7 @@
                 android:id="@+id/section_annotation"
                 android:textColor="@color/light_gold"
                 android:layout_marginLeft="@dimen/spacing_medium"
+                android:layout_marginBottom="@dimen/spacing_small"
                 android:textSize="@dimen/text_medium"/>
     </LinearLayout>
 </LinearLayout>

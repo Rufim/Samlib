@@ -37,7 +37,15 @@ public class  PicassoImageHandler extends TagNodeHandler {
         builder.append("￼");
         Drawable drawable = textView.getResources().getDrawable(R.drawable.ic_image_crop_original);
         int textSize = (int) (textView.getTextSize() * 1.25);
-        drawable.setBounds(0, 0, textSize, textSize);
+        int width = parseDimen(tagNode.getAttributeByName("width"));
+        int height = parseDimen(tagNode.getAttributeByName("height"));
+        if(width < 0) {
+            width = textSize;
+            height = textSize;
+        } else if(height < 0) {
+            height = width;
+        }
+        drawable.setBounds(0, 0, width, height);
         final DynamicImageSpan imageSpan = new DynamicImageSpan(drawable);
         stack.pushSpan(imageSpan, start, builder.length());
         new AsyncTask<TagNode, Void, Bitmap>() {
@@ -60,6 +68,10 @@ public class  PicassoImageHandler extends TagNodeHandler {
                             float density = textView.getResources().getDisplayMetrics().density;
                             int maxWidth = textView.getResources().getDisplayMetrics().widthPixels
                                     - loc[0];
+                            int textViewWidth = textView.getWidth();
+                            if(textViewWidth > 0) {
+                                maxWidth = Math.min(maxWidth, textViewWidth);
+                            }
                             int width = parseDimen(tagNode.getAttributeByName("width"));
                             int height = parseDimen(tagNode.getAttributeByName("height"));
                             return picasso.load(url.toString()).transform(new PicassoTransformImage(width, height, maxWidth, density)).get();
@@ -69,14 +81,6 @@ public class  PicassoImageHandler extends TagNodeHandler {
                     return null;
                 }
                 return null;
-            }
-
-            int parseDimen(String value) {
-                try {
-                    return Integer.parseInt(value);
-                } catch (NumberFormatException nfe) {
-                    return -1;
-                }
             }
 
             @Override
@@ -92,6 +96,14 @@ public class  PicassoImageHandler extends TagNodeHandler {
             }
 
         }.execute(tagNode);
+    }
+
+    int parseDimen(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException nfe) {
+            return -1;
+        }
     }
 
 }
