@@ -254,11 +254,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     break;
                 case R.id.illustration_button:
                     IllustrationPagerFragment.show(newFragmentBuilder()
+                            .addToBackStack()
                             .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                             .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
                     break;
                 case R.id.comments_button:
                     CommentsPagerFragment.show(newFragmentBuilder()
+                            .addToBackStack()
                             .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                             .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
                     break;
@@ -268,6 +270,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         public void openLinkable(Linkable linkable) {
             if (linkable.isWork()) {
                 WorkFragment.show(newFragmentBuilder()
+                        .addToBackStack()
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                         .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
                         , getId(), linkable.getLink());
