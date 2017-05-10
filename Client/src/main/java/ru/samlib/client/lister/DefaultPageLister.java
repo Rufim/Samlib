@@ -19,7 +19,7 @@ public class DefaultPageLister extends PageLister {
     }
 
     @Override
-    public int getLastPage(Document document) {
+    public int getPageCount(Document document) {
         int i =  TextUtils.extractInt(document.select("center > b:contains(Страниц)").text());
         if(i < 0) return 0;
         return i;

@@ -8,5 +8,5 @@ import ru.kazantsev.template.net.Request;
  */
 public abstract class PageLister {
     public abstract void setPage(Request request, int index);
-    public abstract int getLastPage(Document document);
+    public abstract int getPageCount(Document document);
 }

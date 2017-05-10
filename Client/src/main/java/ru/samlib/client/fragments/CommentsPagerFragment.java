@@ -17,9 +17,7 @@ import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.CommentPageEvent;
 import ru.samlib.client.domain.events.CommentsParsedEvent;
-import ru.samlib.client.domain.events.IllustrationsParsedEvent;
 import ru.samlib.client.domain.events.SelectCommentPageEvent;
 import ru.samlib.client.parser.CommentsParser;
 import ru.kazantsev.template.util.FragmentBuilder;
@@ -83,9 +81,9 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
             try {
                 parser = new CommentsParser(work, false);
                 setDataSource((skip, size) -> {
-                    int lastPage = parser.requestLastPage();
+                    int count = parser.requestPageCount();
                     ArrayList<Integer> indexes = new ArrayList();
-                    for (int i = skip; i <= lastPage && i < size; i++) {
+                    for (int i = skip; i < count && i < size; i++) {
                         indexes.add(i);
                     }
                     return indexes;

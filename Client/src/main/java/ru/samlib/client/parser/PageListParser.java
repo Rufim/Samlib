@@ -42,7 +42,7 @@ public abstract class PageListParser<E extends Validatable> extends RowParser<E>
             lister.setPage(request, index);
             Document doc = getDocument(request);
             if (lastPage < 0) {
-                lastPage = lister.getLastPage(doc);
+                lastPage = lister.getPageCount(doc);
             }
             if (doc != null) {
                 List elements = selectRows(doc);

@@ -54,7 +54,7 @@ public class SearchParser extends PageListParser {
             }
 
             @Override
-            public int getLastPage(Document document) {
+            public int getPageCount(Document document) {
                 return -1;
             }
         });
