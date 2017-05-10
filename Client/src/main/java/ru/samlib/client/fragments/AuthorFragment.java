@@ -253,17 +253,24 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     openLinkable(getItem(position));
                     break;
                 case R.id.illustration_button:
-                    IllustrationPagerFragment.show(AuthorFragment.this, (Work) getItem(position));
+                    IllustrationPagerFragment.show(newFragmentBuilder()
+                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
                     break;
                 case R.id.comments_button:
-                    CommentsPagerFragment.show(AuthorFragment.this, (Work) getItem(position));
+                    CommentsPagerFragment.show(newFragmentBuilder()
+                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
                     break;
             }
         }
 
         public void openLinkable(Linkable linkable) {
             if (linkable.isWork()) {
-                WorkFragment.show(AuthorFragment.this, linkable.getLink());
+                WorkFragment.show(newFragmentBuilder()
+                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
+                        , getId(), linkable.getLink());
             } else {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
                 intent.putExtra(Browser.EXTRA_APPLICATION_ID, getActivity().getPackageName());

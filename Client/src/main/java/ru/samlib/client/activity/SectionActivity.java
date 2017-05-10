@@ -131,39 +131,43 @@ public class SectionActivity extends NavigationActivity<String> {
     }
 
     private void initializeAuthor(Author author) {
-        this.author = author;
-        setState(SectionActivityState.AUTHOR);
-        actionBar.setTitle(author.getShortName());
-        initNavigationView(R.layout.header_author_bar, author.getLinkableCategory().toArray());
-        ImageView authorAvatar = GuiUtils.getView(drawerHeader, R.id.drawer_author_avatar);
-        TextView drawerAuthorTitle = GuiUtils.getView(drawerHeader, R.id.drawer_author_title);
-        TextView drawerAuthorAnnotation = GuiUtils.getView(drawerHeader, R.id.drawer_author_annotation);
-        drawerAuthorTitle.setText(author.getFullName());
-        drawerAuthorAnnotation.setText(author.getAnnotation());
-        if (author.isHasAvatar()) {
-            Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
+        if(author != null) {
+            this.author = author;
+            setState(SectionActivityState.AUTHOR);
+            actionBar.setTitle(author.getShortName());
+            initNavigationView(R.layout.header_author_bar, author.getLinkableCategory().toArray());
+            ImageView authorAvatar = GuiUtils.getView(drawerHeader, R.id.drawer_author_avatar);
+            TextView drawerAuthorTitle = GuiUtils.getView(drawerHeader, R.id.drawer_author_title);
+            TextView drawerAuthorAnnotation = GuiUtils.getView(drawerHeader, R.id.drawer_author_annotation);
+            drawerAuthorTitle.setText(author.getFullName());
+            drawerAuthorAnnotation.setText(author.getAnnotation());
+            if (author.isHasAvatar()) {
+                Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
+            }
         }
     }
 
     private void initializeWork(Work work) {
         this.work = work;
-        setState(SectionActivityState.WORK);
-        initNavigationView(R.layout.header_work_bar, work.getAutoBookmarks().toArray());
-        actionBar.setTitle(work.getAuthor().getShortName());
-        TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
-        TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
-        TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
-        TextView workGenres = GuiUtils.getView(drawerHeader, R.id.work_genres);
-        TextView workSeries = GuiUtils.getView(drawerHeader, R.id.work_series);
-        GuiUtils.setText(workTitle, work.getTitle());
-        if (work.getCreateDate() != null) {
-            GuiUtils.setText(workCreated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getCreateDate()));
+        if(work != null) {
+            setState(SectionActivityState.WORK);
+            initNavigationView(R.layout.header_work_bar, work.getAutoBookmarks().toArray());
+            actionBar.setTitle(work.getAuthor().getShortName());
+            TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
+            TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
+            TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
+            TextView workGenres = GuiUtils.getView(drawerHeader, R.id.work_genres);
+            TextView workSeries = GuiUtils.getView(drawerHeader, R.id.work_series);
+            GuiUtils.setText(workTitle, work.getTitle());
+            if (work.getCreateDate() != null) {
+                GuiUtils.setText(workCreated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getCreateDate()));
+            }
+            if (work.getUpdateDate() != null) {
+                GuiUtils.setText(workUpdated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getUpdateDate()));
+            }
+            GuiUtils.setText(workGenres, work.printGenres());
+            GuiUtils.setText(workSeries, work.getType().getTitle());
         }
-        if (work.getUpdateDate() != null) {
-            GuiUtils.setText(workUpdated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getUpdateDate()));
-        }
-        GuiUtils.setText(workGenres, work.printGenres());
-        GuiUtils.setText(workSeries, work.getType().getTitle());
     }
 
     private View initNavigationView(@LayoutRes int header, Object... titles) {
@@ -223,12 +227,11 @@ public class SectionActivity extends NavigationActivity<String> {
         return true;
     }
 
-
     @Override
     public void onBackPressed() {
         Fragment fr = getCurrentFragment();
-        if (!(fr instanceof BackCallback) || (fr instanceof BackCallback && ((BackCallback) fr).allowBackPress())) {
-            if (MainActivity.getInstance() == null) {
+        if (!(fr instanceof BackCallback) || ((BackCallback) fr).allowBackPress()) {
+            if (isTaskRoot()) {
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
             } else {

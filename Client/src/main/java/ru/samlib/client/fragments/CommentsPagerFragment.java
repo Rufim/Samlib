@@ -41,6 +41,11 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsPagerFragment.class);
     }
 
+    public static CommentsPagerFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
+        return show(builder.putArg(Constants.ArgsName.WORK, work), container, CommentsPagerFragment.class);
+    }
+
+
     public static CommentsPagerFragment show(BaseFragment fragment, String link) {
         return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
     }

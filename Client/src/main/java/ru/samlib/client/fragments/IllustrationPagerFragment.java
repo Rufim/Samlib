@@ -40,6 +40,10 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, IllustrationPagerFragment.class);
     }
 
+    public static IllustrationPagerFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
+        return show(builder.putArg(Constants.ArgsName.WORK, work), container, IllustrationPagerFragment.class);
+    }
+
     public static IllustrationPagerFragment show(BaseFragment fragment, String link) {
         return show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
     }
