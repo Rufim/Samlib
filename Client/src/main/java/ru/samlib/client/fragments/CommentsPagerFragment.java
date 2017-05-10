@@ -18,8 +18,11 @@ import ru.kazantsev.template.fragments.PagerFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
+import ru.samlib.client.dialog.DialogNewComment;
+import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.events.CommentSuccessEvent;
 import ru.samlib.client.domain.events.CommentsParsedEvent;
 import ru.samlib.client.domain.events.SelectCommentPageEvent;
 import ru.samlib.client.parser.CommentsParser;
@@ -58,30 +61,27 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.author, menu);
-        MenuItem item = menu.findItem(R.id.action_author_observable);
-        if (author.isObservable()) {
-            item.setChecked(true);
-        } else {
-            item.setChecked(false);
-        }
+        inflater.inflate(R.menu.comments, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_author_observable:
-                if (!item.isChecked()) {
-                    author = databaseService.insertObservableAuthor(author.createEntry());
-                    item.setChecked(true);
-                    return true;
-                } else {
-                    author.setObservable(false);
-                    databaseService.updateAuthor(author.createEntry());
-                    item.setChecked(false);
-                    return true;
+            case R.id.action_comments_add_new:
+                DialogNewComment dialog = (DialogNewComment) getFragmentManager().findFragmentByTag(DialogNewComment.class.getSimpleName());
+                if (dialog == null) {
+                    dialog = new DialogNewComment();
+                    dialog.setWork(work);
+                    dialog.show(getFragmentManager(), DialogNewComment.class.getSimpleName());
                 }
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -157,6 +157,12 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         if (event.pageIndex >= 0) {
             pager.setCurrentItem(event.pageIndex);
         }
+    }
+
+
+    @Subscribe
+    public void onEvent(CommentSuccessEvent event) {
+        refreshData(true);
     }
 
     @Override

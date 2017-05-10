@@ -105,7 +105,13 @@
     <string name="comments_page">Страница</string>
     <string name="comments_dialog_title">Напишите комментарий</string>
     <string name="comments_add_new">Оставить комментарий</string>
-    <string name="comments_send">Отправить</string>
+    <string name="comments_new_send">Отправить</string>
+    <string name="comments_new_name">Ваше имя</string>
+    <string name="comments_new_email">Ваш e-mail</string>
+    <string name="comments_new_link">Адрес странички</string>
+    <string name="comments_new_error_name">Введите имя</string>
+    <string name="comments_new_error_content">Комментарий пуст</string>
+    <string name="comments_new_content">Комментарий…</string>
     <string name="favorites_update">Update</string>
     <string name="favorites_new">New</string>
     <string name="author_observable">Подписка</string>

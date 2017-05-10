@@ -1,5 +1,6 @@
 package ru.samlib.client.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -259,5 +260,14 @@ public class SectionActivity extends NavigationActivity<String> {
     public void onEvent(IllustrationsParsedEvent event) {
         initializeIllustrations(event.images);
     }
+
+    public static void launchActivity(Context context, String link) {
+        if (link != null) {
+            Intent i = new Intent(context, SectionActivity.class);
+            i.setData(Uri.parse(link));
+            context.startActivity(i);
+        }
+    }
+
 
 }

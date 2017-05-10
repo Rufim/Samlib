@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.entity.Discussion;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
@@ -71,11 +72,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
                     link = getItems().get(position).getAuthor().getFullLink();
                     break;
             }
-            if (link != null) {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(link));
-                startActivity(i);
-            }
+            SectionActivity.launchActivity(getContext(), link);
         }
 
         @Override

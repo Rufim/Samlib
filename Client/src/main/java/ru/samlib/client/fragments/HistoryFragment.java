@@ -14,6 +14,7 @@ import com.snappydb.SnappydbException;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
@@ -95,11 +96,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
                     link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
                     break;
             }
-            if (link != null) {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(link));
-                startActivity(i);
-            }
+            SectionActivity.launchActivity(getContext(), link);
         }
 
         @Override

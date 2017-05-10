@@ -39,7 +39,7 @@ public class HtmlClient {
         for (SavedHtml savedHtml : savedHtmls) {
             String url = savedHtml.getUrl();
             try {
-                Request request = new Request(url);
+                Request request = new Request(url, true);
                 CachedResponse cachedResponse = new CachedResponse(savedHtml.getFilePath(), request);
                 cachedResponse.setEncoding("CP1251");
                 htmlfiles.put(url, cachedResponse);
@@ -100,7 +100,7 @@ public class HtmlClient {
                 return htmlfiles.get(url);
             }
         }
-        CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(request, minBytes);
+        CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
         cache(response);
         return response;
     }

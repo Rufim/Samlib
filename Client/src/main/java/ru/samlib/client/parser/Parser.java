@@ -27,9 +27,9 @@ public abstract class Parser {
 
     protected static final int MIN_BODY_SIZE = 1024 * 50;
 
-    private static final String ACCEPT_VALUE = "text/html";
-    private static final String ACCEPT_ENCODING_VALUE = "gzip, deflate";
-    private static final String USER_AGENT = "Mozilla";
+    protected static final String ACCEPT_VALUE = "text/html";
+    protected static final String ACCEPT_ENCODING_VALUE = "gzip, deflate";
+    protected static final String USER_AGENT = "Mozilla";
 
     private static LruCache<Request, Document> parserCache = new LruCache<>(20);
     protected ExecutorService executor = Executors.newSingleThreadExecutor();

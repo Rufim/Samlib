@@ -15,6 +15,7 @@ import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
@@ -87,9 +88,7 @@ public class SearchFragment extends ListFragment<Linkable> {
             } else {
                 link = linkable.getLink();
             }
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(link));
-            startActivity(i);
+            SectionActivity.launchActivity(getContext(), link);
         }
 
         @Override

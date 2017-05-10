@@ -7,8 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.NewestParser;
@@ -68,11 +70,7 @@ public class NewestFragment extends FilterDialogListFragment {
                     link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
                     break;
             }
-            if (link != null) {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(link));
-                startActivity(i);
-            }
+            SectionActivity.launchActivity(getContext(), link);
         }
 
         @Override

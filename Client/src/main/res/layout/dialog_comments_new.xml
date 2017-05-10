@@ -1,14 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
               android:layout_width="match_parent"
               android:padding="@dimen/spacing_small"
               android:layout_height="wrap_content">
+
+    <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/comments_new_name"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:nextFocusDown="@+id/comments_new_email"
+                android:hint="@string/comments_new_name"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:inputType="textUri"
+                android:nextFocusDown="@+id/comments_new_link"
+                android:id="@+id/comments_new_email"
+                android:hint="@string/comments_new_email"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:inputType="textEmailAddress"
+                android:imeOptions="actionNext"
+                android:nextFocusDown="@+id/comments_new_text"
+                android:id="@+id/comments_new_link"
+                android:hint="@string/comments_new_link"/>
+
+    </android.support.design.widget.TextInputLayout>
+
     <EditText android:id="@+id/comments_new_text"
-              android:layout_width="0dp"
-              android:layout_weight="1"
-              android:minHeight="80dp"
+              android:layout_width="match_parent"
               style="@style/default_multiline_edit_text"
+              android:imeOptions="actionDone"
+              android:hint="@string/comments_new_content"
+              android:layout_marginTop="@dimen/spacing_small"
               android:layout_marginRight="@dimen/spacing_medium"
               android:layout_height="wrap_content"/>
 </LinearLayout>

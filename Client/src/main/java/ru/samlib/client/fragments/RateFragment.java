@@ -11,6 +11,7 @@ import android.widget.TextView;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.RateParser;
@@ -60,9 +61,7 @@ public class RateFragment extends ListFragment<Work> {
         @Override
         public void onClick(View view, int position) {
             String link = getItems().get(position).getFullLink();
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(link));
-            startActivity(i);
+            SectionActivity.launchActivity(getContext(), link);
         }
 
         @Override

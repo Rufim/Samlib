@@ -10,6 +10,7 @@ import android.widget.TextView;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.entity.Author;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.TopAuthorsParser;
@@ -55,9 +56,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
         @Override
         public void onClick(View view, int position) {
             String link = getItems().get(position).getFullLink();
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(link));
-            startActivity(i);
+            SectionActivity.launchActivity(getContext(), link);
         }
 
         @Override

@@ -93,17 +93,17 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public WorkEntity createEntity() {
-            WorkEntity entity;
-        if (getClass() == WorkEntity.class)  {
+        WorkEntity entity;
+        if (getClass() == WorkEntity.class) {
             entity = (WorkEntity) this;
             entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
             entity.setAuthor(author == null ? null : author.createEntry());
             entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
             entity.setCategory(category == null ? null : category.createEntity());
-            if(entity.getCategory() != null) {
+            if (entity.getCategory() != null) {
                 entity.getCategory().setAuthor(entity.getAuthor());
             }
-        }  else {
+        } else {
             entity = new WorkEntity();
             entity.setTitle(title);
             entity.setLink(getLink());
@@ -158,12 +158,16 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return link;
     }
 
+    public String getLinkWithoutSuffix() {
+        return getLink().replace(HTML_SUFFIX, "");
+    }
+
     public Author getAuthor() {
-        if(author == null) {
-            if(getCategory() != null) {
+        if (author == null) {
+            if (getCategory() != null) {
                 return author = getCategory().getAuthor();
             }
-            if(getRootAuthor() != null) {
+            if (getRootAuthor() != null) {
                 return author = getRootAuthor();
             }
         }
@@ -175,7 +179,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public Link getCommentsLink() {
-        return new Link(COMMENT_PREFIX + getLink().replace(HTML_SUFFIX, ""));
+        return new Link(COMMENT_PREFIX + getLinkWithoutSuffix());
     }
 
     public String getTypeName() {
