@@ -240,13 +240,13 @@ public class SectionActivity extends NavigationActivity<String> {
     @Override
     public void onBackPressed() {
         Fragment fr = getCurrentFragment();
-        if (fr instanceof BackCallback) {
-            if (((BackCallback) fr).allowBackPress()) super.onBackPressed();
-        } else if (MainActivity.getInstance() == null) {
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-        } else {
-            super.onBackPressed();
+        if (!(fr instanceof BackCallback) || (fr instanceof BackCallback && ((BackCallback) fr).allowBackPress())) {
+            if (MainActivity.getInstance() == null) {
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+            } else {
+                onBackPressedOriginal();
+            }
         }
     }
 
