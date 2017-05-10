@@ -12,6 +12,7 @@ import android.widget.ScrollView;
 import android.widget.Switch;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import ru.kazantsev.template.dialog.BaseDialog;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;

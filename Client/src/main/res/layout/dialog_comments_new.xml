@@ -2,13 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:padding="@dimen/spacing_small"
+              android:layout_height="wrap_content">
     <EditText android:id="@+id/comments_new_text"
-              android:layout_width="match_parent"
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:minHeight="80dp"
               style="@style/default_multiline_edit_text"
+              android:layout_marginRight="@dimen/spacing_medium"
               android:layout_height="wrap_content"/>
-    <ImageButton android:id="@+id/comments_new_send"
-                 android:layout_width="wrap_content"
-                 android:src="@drawable/ic_send_white_24dp"
-                 android:layout_height="wrap_content"/>
 </LinearLayout>

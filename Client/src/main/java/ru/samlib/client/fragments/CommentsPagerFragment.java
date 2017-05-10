@@ -1,12 +1,15 @@
 package ru.samlib.client.fragments;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
+import android.widget.LinearLayout;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
@@ -54,7 +57,34 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.WORK, work);
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.author, menu);
+        MenuItem item = menu.findItem(R.id.action_author_observable);
+        if (author.isObservable()) {
+            item.setChecked(true);
+        } else {
+            item.setChecked(false);
+        }
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_author_observable:
+                if (!item.isChecked()) {
+                    author = databaseService.insertObservableAuthor(author.createEntry());
+                    item.setChecked(true);
+                    return true;
+                } else {
+                    author.setObservable(false);
+                    databaseService.updateAuthor(author.createEntry());
+                    item.setChecked(false);
+                    return true;
+                }
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public boolean allowBackPress() {

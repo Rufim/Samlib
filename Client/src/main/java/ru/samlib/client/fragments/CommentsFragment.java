@@ -49,7 +49,6 @@ public class CommentsFragment extends ListFragment<Comment> {
     }
 
     public CommentsFragment() {
-        enableSearch = true;
         retainInstance = false;
     }
 

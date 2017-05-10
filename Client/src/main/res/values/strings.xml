@@ -103,6 +103,9 @@
     <string name="comments_goto">Перейти</string>
     <string name="comments_comment_number">Номер комментария:</string>
     <string name="comments_page">Страница</string>
+    <string name="comments_dialog_title">Напишите комментарий</string>
+    <string name="comments_add_new">Оставить комментарий</string>
+    <string name="comments_send">Отправить</string>
     <string name="favorites_update">Update</string>
     <string name="favorites_new">New</string>
     <string name="author_observable">Подписка</string>
