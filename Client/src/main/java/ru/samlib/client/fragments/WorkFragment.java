@@ -3,17 +3,13 @@ package ru.samlib.client.fragments;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.PowerManager;
-import android.os.SystemClock;
+import android.os.*;
 import android.support.annotation.IdRes;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.SpannedString;
 import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
@@ -21,12 +17,10 @@ import android.util.Pair;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.TextView;
-import com.snappydb.SnappydbException;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
-import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.util.*;
 import ru.samlib.client.App;
@@ -34,7 +28,6 @@ import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
-import ru.samlib.client.database.SnappyHelper;
 import ru.samlib.client.dialog.DirectoryChooserDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Bookmark;
@@ -108,7 +101,11 @@ public class WorkFragment extends ListFragment<String> {
                     work = new WorkParser(work).parse(true, Parser.isCachedMode());
                     if (!Parser.isCachedMode()) {
                         work.setCachedDate(new Date());
+                        if (work.getBookmark() == null) {
+                            setBookmark(work, "", 0);
+                        }
                         WorkEntity entity = databaseService.insertOrUpdateWork(work);
+                        GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
                         WorkParser.processChapters(work);
                         if (entity != work) {
                             entity.setParsed(true);
@@ -130,6 +127,12 @@ public class WorkFragment extends ListFragment<String> {
         }));
     }
 
+
+    @Override
+    public void startLoading(boolean showProgress) {
+        progressBarText.setText(R.string.loading);
+        super.startLoading(showProgress);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -156,6 +159,21 @@ public class WorkFragment extends ListFragment<String> {
         }
     }
 
+    private void setBookmark(Work work, String indent, Integer index) {
+        if (work instanceof WorkEntity) {
+            Bookmark bookmark = work.getBookmark();
+            if (bookmark == null) {
+                bookmark = new Bookmark(indent);
+            } else {
+                bookmark.setIndent(indent);
+            }
+            bookmark.setIndentIndex(index);
+            bookmark.setWork(work);
+            work.setBookmark(bookmark.createEntry());
+        }
+    }
+
+
     @Override
     public void onStart() {
         super.onStart();
@@ -175,17 +193,8 @@ public class WorkFragment extends ListFragment<String> {
             int indexLast = findLastVisibleItemPosition(false);
             int index = findFirstVisibleItemPosition(false);
             int size = adapter.getItems().size();
-            if (size > index && work instanceof WorkEntity) {
-                String indent = adapter.getItems().get(index);
-                Bookmark bookmark = work.getBookmark();
-                if (bookmark == null) {
-                    bookmark = new Bookmark(indent);
-                } else {
-                    bookmark.setIndent(indent);
-                }
-                bookmark.setIndentIndex(indexLast - 1);
-                bookmark.setWork(work);
-                work.setBookmark(bookmark.createEntry());
+            if (size > index) {
+                setBookmark(work, adapter.getItems().get(index), indexLast - 1);
                 databaseService.insertOrUpdateWork(work);
             }
         } catch (Exception e) {
@@ -228,6 +237,9 @@ public class WorkFragment extends ListFragment<String> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.work, menu);
+        if(!work.isHasComments()) {
+            menu.removeItem(R.id.action_work_comments);
+        }
         searchView.setQueryHint(getString(R.string.search_hint));
     }
 
@@ -302,6 +314,12 @@ public class WorkFragment extends ListFragment<String> {
                 } catch (IOException e) {
                     Log.e(TAG, "Unknown exception", e);
                 }
+                return true;
+            case R.id.action_work_comments:
+                CommentsPagerFragment.show(newFragmentBuilder()
+                        .addToBackStack()
+                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -521,10 +539,10 @@ public class WorkFragment extends ListFragment<String> {
                             }
 
                             v.performClick();
-                            if(textView.getText() instanceof SpannedString && mode.equals(Mode.NORMAL)) {
+                            if (textView.getText() instanceof SpannedString && mode.equals(Mode.NORMAL)) {
                                 SpannedString spannableString = (SpannedString) textView.getText();
                                 URLSpanNoUnderline url[] = spannableString.getSpans(lastOffset, spannableString.length(), URLSpanNoUnderline.class);
-                                if(url.length > 0){
+                                if (url.length > 0) {
                                     url[0].onClick(textView);
                                 }
                             }

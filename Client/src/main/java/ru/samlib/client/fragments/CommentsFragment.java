@@ -33,7 +33,6 @@ public class CommentsFragment extends ListFragment<Comment> {
     private static final String TAG = CommentsFragment.class.getSimpleName();
 
     private Work work;
-    private CommentsParser parser;
     private int showPage = -1;
 
     public static CommentsFragment show(FragmentBuilder builder, @IdRes int container, String link) {
@@ -70,16 +69,10 @@ public class CommentsFragment extends ListFragment<Comment> {
         if (newWork && showPage != page) {
             showPage = page;
             clearData();
-            try {
-                parser = new CommentsParser(work, false);
-                setDataSource((skip, size) -> {
-                    isEnd = true;
-                    return parser.getPage(showPage);
-                });
-            } catch (MalformedURLException e) {
-                Log.e(TAG, "Unknown exception", e);
-                ErrorFragment.show(CommentsFragment.this, R.string.error);
-            }
+            setDataSource((skip, size) -> {
+                isEnd = true;
+                return ((CommentsPagerFragment) getParentFragment()).parser.getPage(showPage);
+            });
         }
         return super.onCreateView(inflater, container, savedInstanceState);
     }

@@ -22,4 +22,8 @@
           android:title="@string/work_save"
           android:orderInCategory="5"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_work_comments"
+          android:title="@string/work_comments"
+          android:orderInCategory="6"
+          app:showAsAction="never"/>
 </menu>

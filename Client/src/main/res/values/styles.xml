@@ -18,11 +18,7 @@
         <item name="colorControlNormal">@color/light_grey</item>
         <item name="colorControlActivated">@color/accent</item>
         <item name="colorControlHighlight">@color/accent</item>
-
-        <!-- Fix for pre Lolipop versions to use colors as drawables -->
-        <item name="colorPrimaryDrawable">@drawable/color_primary</item>
-        <item name="colorPrimaryDarkDrawable">@drawable/color_primary_dark</item>
-        <item name="colorAccentDrawable">@drawable/color_accent</item>
+        <item name="toolbarElevationSize">4dp</item>
     </style>
 
     <style name="AppSearchViewStyle" parent="Widget.AppCompat.SearchView">

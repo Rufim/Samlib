@@ -79,8 +79,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     public AuthorFragment() {
-        enableSearch = true;
-        enableScrollbar = true;
         setDataSource((skip, size) -> {
             if (skip != 0) return null;
             while (author == null) {

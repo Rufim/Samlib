@@ -1,13 +1,15 @@
 package ru.samlib.client.parser;
 
-import android.accounts.NetworkErrorException;
 import android.util.Log;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import org.jsoup.select.NodeTraversor;
+import org.jsoup.select.NodeVisitor;
 import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Bookmark;
@@ -16,10 +18,8 @@ import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.util.HtmlToPlainText;
 import ru.samlib.client.util.JsoupUtils;
 import ru.samlib.client.util.ParserUtils;
-import ru.kazantsev.template.util.SystemUtils;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
@@ -99,7 +99,8 @@ public class WorkParser extends Parser {
         int index = 2;
         if (lis.get(0).text().contains("Copyright")) {
             index--;
-            work.setHasComments(false);
+        } else {
+            work.setHasComments(true);
         }
         String info = lis.get(index++).text();
         String[] data = new String[0];
@@ -184,19 +185,12 @@ public class WorkParser extends Parser {
         //Element body = replaceTables(document.body());
         Elements rootElements = document.body().select("> *");
         indents.clear();
-        HtmlToPlainText plainText = new HtmlToPlainText();
+        HtmlToTextForSpanner plainText = new HtmlToTextForSpanner();
         for (Element element : rootElements) {
             String text = plainText.getPlainText(element);
             List<String> indentPart = Arrays.asList(TextUtils.splitByNewline(text));
             //TODO: optimise perfomance and use
-            for (String part : indentPart) {
-                //addIndent(indents, part);
-                if (!part.contains("<img")) {
-                    indents.add("&emsp;" + part);
-                } else {
-                    indents.add(part);
-                }
-            }
+            indents.addAll(indentPart);
         }
         rootElements.clear();
         rootElements.clear();
@@ -250,4 +244,91 @@ public class WorkParser extends Parser {
         else return TextUtils.isEmpty(TextUtils.trim(sequence));
     }
 
+    /**
+     * Created by Admin on 05.05.2017.
+     */
+    public static class HtmlToTextForSpanner {
+
+        /**
+         * Format an Element to plain-text
+         *
+         * @param element the root element to format
+         * @return formatted text
+         */
+        public String getPlainText(Element element) {
+            FormattingVisitor formatter = new FormattingVisitor();
+            NodeTraversor traversor = new NodeTraversor(formatter);
+            traversor.traverse(element); // walk the DOM, and call .head() and .tail() for each node
+
+            return formatter.toString();
+        }
+
+        // the formatting rules, implemented in a breadth-first DOM traverse
+        private class FormattingVisitor implements NodeVisitor {
+            private StringBuilder accum = new StringBuilder(); // holds the accumulated text
+
+            // hit when the node is first seen
+            public void head(Node node, int depth) {
+                String name = node.nodeName();
+                if (node instanceof TextNode) {
+                    Node parent;
+                    if ((parent = getParentOrNull(node, "pre")) != null) {
+                        append(((TextNode) node).getWholeText());
+                    } else if((parent = getParentOrNull(node, "a")) != null) {
+                        append(parent.outerHtml());
+                    } else {
+                        append(node.outerHtml()); // TextNodes carry all user-readable text in the DOM.
+                    }
+                } else if (name.equals("dt")) {
+                    append("  ");
+                } else if (StringUtil.in(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")){
+                    append("\n");
+                } else if (name.equals("img")) {
+                    append("\n" + node.outerHtml());
+                }
+            }
+
+            // hit when all of the node's children (if any) have been visited
+            public void tail(Node node, int depth) {
+                String name = node.nodeName();
+                if (StringUtil.in(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5"))
+                    append("\n");
+            }
+
+            // appends text to the string builder with a simple word wrap method
+            private void append(String text) {
+                if(accum.length() > 3) {
+                    if (text.equals(" ") &&
+                            (StringUtil.in(accum.substring(accum.length() - 1), " ", "\n")))
+                        return; // don't accumulate long runs of empty spaces
+                    while (text.length() > 0 && text.startsWith("\n") && accum.substring(accum.length() - 2).contains("\n\n")) {
+                        // don't accumulate new lines
+                        if(text.length() > 1) {
+                            text = text.substring(1);
+                        } else {
+                            return;
+                        }
+                    }
+                }
+                accum.append(text);
+            }
+
+            @Override
+            public String toString() {
+                return accum.toString();
+            }
+
+            private Node getParentOrNull(Node node, String tag) {
+                Node parentNode;
+                while ((parentNode = node.parent()) != null) {
+                    if(parentNode.nodeName().equals(tag)) {
+                        return parentNode;
+                    } else {
+                        node = parentNode;
+                    }
+                }
+                return null;
+            }
+        }
+    }
 }

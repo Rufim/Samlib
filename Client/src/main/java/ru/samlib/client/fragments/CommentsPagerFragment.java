@@ -1,20 +1,17 @@
 package ru.samlib.client.fragments;
 
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.*;
-import android.widget.LinearLayout;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.PagerFragment;
@@ -26,7 +23,6 @@ import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.dialog.DialogNewComment;
-import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.CommentSuccessEvent;
@@ -49,7 +45,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
     private Work work;
 
-    private CommentsParser parser;
+    CommentsParser parser;
 
     public static CommentsPagerFragment show(FragmentBuilder builder, @IdRes int container, String link) {
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsPagerFragment.class);
@@ -101,6 +97,15 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         } else {
             return super.allowBackPress();
         }
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        try {
+            parser = new CommentsParser(work, false);
+        } catch (MalformedURLException e) {
+        }
+        super.refreshData(showProgress);
     }
 
     @Override
@@ -169,30 +174,30 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
     @Subscribe
     public void onEvent(CommentSuccessEvent event) {
-        SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
         loadMoreBar.setVisibility(View.VISIBLE);
         new AsyncTask<String, Void, String[]>() {
 
             @Override
             protected String[] doInBackground(String... params) {
                 String[] answer = new String[2];
-                if (TextUtils.isEmpty(params[0])) {
-                    params[0] = CommentsParser.requestCookie(work);
-                }
                 if (!TextUtils.isEmpty(params[0])) {
-                    Response response = CommentsParser.sendComment(work, params[0], params[1], params[2], params[3], params[4]);
+                    Response response = CommentsParser.sendNewComment(work, params[0], params[1], params[2], params[3]);
                     try {
                         if (response == null || response.getCode() != 200) {
                             answer[0] = "ERROR";
                             answer[1] = getString(R.string.error);
                         } else {
-                            String serverAnswer = Jsoup.parseBodyFragment(response.getRawContent(response.getEncoding())).select("table[BORDERCOLOR=#222222] table table b").text();
-                            if (TextUtils.isEmpty(serverAnswer)) {
+                            Document resp =  Jsoup.parse(response.getRawContent(response.getEncoding()));
+                            Elements error = resp.select("table[BORDERCOLOR=#222222] table table b");
+                            if (error.size() == 0) {
+                                if(parser != null) {
+                                    parser.setDocument(resp);
+                                }
                                 answer[0] = "OK";
                                 answer[1] = params[0];
                             } else {
                                 answer[0] = "ERROR";
-                                answer[1] = serverAnswer;
+                                answer[1] = error.text();
                             }
                         }
                     } catch (IOException e) {
@@ -219,7 +224,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                 }
             }
 
-        }.execute(preferences.getString(getString(R.string.preferenceCommentCoockie), ""), event.name, event.email, event.link, event.comment);
+        }.execute(event.name, event.email, event.link, event.comment);
     }
 
     @Override

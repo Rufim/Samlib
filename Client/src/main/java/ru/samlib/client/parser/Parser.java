@@ -5,6 +5,7 @@ import android.support.v4.util.LruCache;
 import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.net.Request;
 import ru.samlib.client.domain.Constants;
 import ru.kazantsev.template.net.CachedResponse;
@@ -37,7 +38,9 @@ public abstract class Parser {
     protected Request request;
     protected CachedResponse htmlFile;
     protected Document document;
+    protected boolean docummentOutside = false;
     protected static boolean cached = false;
+    protected static String commentCookie = null;
 
 
     public void setPath(String path) throws MalformedURLException {
@@ -49,6 +52,9 @@ public abstract class Parser {
                     .setEncoding("CP1251")
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT);
+            if (commentCookie != null) {
+                request.addHeader("Cookie", "COMMENT=" + commentCookie);
+            }
         } catch (UnsupportedEncodingException e) {
             Log.e(TAG, "Unknown exception", e);
         }
@@ -58,8 +64,22 @@ public abstract class Parser {
         return getDocument(request, Long.MAX_VALUE);
     }
 
+    public void setDocument(Document document) {
+        this.document = document;
+        docummentOutside = true;
+    }
+
     public Document getDocument(Request request, long minBodySize) throws IOException {
+        if (docummentOutside) {
+            return document;
+        }
+
         htmlFile = HtmlClient.executeRequest(request, minBodySize, cached);
+
+        if (htmlFile.getHeaders() != null &&  htmlFile.getHeaders().get("Set-Cookie") != null) {
+            String coockie = htmlFile.getHeaders().get("Set-Cookie").get(0);
+            commentCookie = HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
+        }
 
         document = null;
 

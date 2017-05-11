@@ -180,6 +180,7 @@ public class DatabaseService {
             into.setBookmark(from.getBookmark().createEntry());
         }
         into.setChanged(from.isChanged());
+        into.setHasComments(from.isHasComments());
     }
 
 

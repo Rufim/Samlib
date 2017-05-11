@@ -27,8 +27,10 @@ public class CommentsParser extends PageParser<Comment> {
 
     public static final String COMMENT_NEW_PREFIX = "/cgi-bin/comment";
 
+    private Work work;
+
     public enum CommentParams implements Valuable {
-        FILE(""), MSGID(""), OPERATION("store_new"), NAME(""), EMAIL(""), URL(""), TEXT(""), add("Добавить!");
+        FILE(""), MSGID(""), OPERATION(""), NAME(""), EMAIL(""), URL(""), TEXT(""), add("Добавить!");
 
         private final String defaultValue;
 
@@ -40,6 +42,10 @@ public class CommentsParser extends PageParser<Comment> {
         public Object value() {
             return defaultValue;
         }
+    }
+
+    public enum Operation {
+        store_new, store_edit, store_reply, edit, delete, reply;
     }
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
@@ -66,6 +72,7 @@ public class CommentsParser extends PageParser<Comment> {
         if(reverse) {
             request.addParam("ORDER", "reverse");
         }
+        this.work = work;
     }
 
     @Override
@@ -87,11 +94,26 @@ public class CommentsParser extends PageParser<Comment> {
         if(a.size() != 0) comment.setAuthor(new Author(a.attr("href")));
         comment.setUserComment(b.select("font[color=red]").size() != 0);
         comment.setRawContent(TextUtils.Splitter.extractStrings(row.select("body").html(), true, "<br>", "<hr noshade>").get(0));
+        Elements answer = row.select("a:contains(ответить)");
+        if(answer.size() > 0) {
+            String link = answer.attr("href");
+            comment.setMsgid(link.substring(link.indexOf(CommentParams.MSGID.name()) + CommentParams.MSGID.name().length() + 1));
+        }
+        Elements change = row.select("a:contains(исправить)");
+        if(change.size() > 0) {
+            comment.setCanBeEdited(true);
+        }
+        Elements delete = row.select("a:contains(удалить)");
+        if(delete.size() > 0) {
+            comment.setCanBeDeleted(true);
+        }
+        comment.setWork(work);
         return comment;
     }
 
 
-    public static String requestCookie(Work work) {
+    private static String requestCookie(Work work) {
+        if(commentCookie != null) return commentCookie;
         try {
             Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())
                     .addHeader("Accept", ACCEPT_VALUE)
@@ -103,9 +125,46 @@ public class CommentsParser extends PageParser<Comment> {
         }
     }
 
-
-    public static Response sendComment(Work work, String commentCookie,  CharSequence name, CharSequence email, CharSequence yourLink, CharSequence text) {
+    private static String getAnswerForComment(Comment comment) {
+        if(commentCookie != null) return commentCookie;
         try {
+            Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + comment.getLink())
+                    .addHeader("Accept", ACCEPT_VALUE)
+                    .addHeader("User-Agent", USER_AGENT)
+                    .addHeader("Cookie", "COMMENT=" + commentCookie)
+                    .addParam(CommentParams.OPERATION, Operation.reply)
+                    .addParam(CommentParams.MSGID, comment.getMsgid())).execute();
+            return getTextareaText(response.getRawContent(response.getEncoding()));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String getChangeForComment(Comment comment) {
+        if(commentCookie != null) return commentCookie;
+        try {
+            Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + comment.getLink())
+                    .addHeader("Accept", ACCEPT_VALUE)
+                    .addHeader("User-Agent", USER_AGENT)
+                    .addHeader("Cookie", "COMMENT=" + commentCookie)
+                    .addParam(CommentParams.OPERATION, Operation.edit)
+                    .addParam(CommentParams.MSGID, comment.getMsgid())).execute();
+            return getTextareaText(response.getRawContent(response.getEncoding()));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String getTextareaText(String body) {
+        return Jsoup.parse(body).select("textarea[name=TEXT]").text();
+    }
+
+    public static Response sendNewComment(Work work, CharSequence name, CharSequence email, CharSequence yourLink, CharSequence text) {
+        try {
+            commentCookie = requestCookie(work);
+            if(commentCookie == null) {
+                return null;
+            }
             String link = Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX;
             Request request = new Request(link)
                     .setMethod(Request.Method.POST)
@@ -122,7 +181,8 @@ public class CommentsParser extends PageParser<Comment> {
                     .addParam(CommentParams.NAME, name)
                     .addParam(CommentParams.FILE, work.getLinkWithoutSuffix())
                     .addParam(CommentParams.EMAIL, email)
-                    .addParam(CommentParams.URL, yourLink);
+                    .addParam(CommentParams.URL, yourLink)
+                    .addParam(CommentParams.OPERATION, Operation.store_new);
             HTTPExecutor executor = new HTTPExecutor(request);
             return executor.execute();
         } catch (Exception e) {
