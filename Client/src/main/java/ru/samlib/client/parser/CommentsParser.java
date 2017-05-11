@@ -2,6 +2,7 @@ package ru.samlib.client.parser;
 
 import android.text.Editable;
 import android.util.Log;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.kazantsev.template.domain.Valuable;
@@ -89,26 +90,43 @@ public class CommentsParser extends PageParser<Comment> {
         return comment;
     }
 
-    public static String sendComment(Work work, CharSequence name, CharSequence email, CharSequence yourLink, CharSequence text) {
+
+    public static String requestCookie(Work work) {
         try {
-            Request request = new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX)
+            Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())
+                    .addHeader("Accept", ACCEPT_VALUE)
+                    .addHeader("User-Agent", USER_AGENT)).execute();
+            String coockie = response.getHeaders().get("Set-Cookie").get(0);
+            return HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    public static Response sendComment(Work work, String commentCookie,  CharSequence name, CharSequence email, CharSequence yourLink, CharSequence text) {
+        try {
+            String link = Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX;
+            Request request = new Request(link)
                     .setMethod(Request.Method.POST)
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT)
-                    .addHeader("Content-Type","application/x-www-form-urlencoded")
-                    .initParams(CommentParams.values())
+                    .addHeader("Cookie", "COMMENT=" + commentCookie)
+                    .addHeader("Accept-Encoding", ACCEPT_ENCODING_VALUE)
+                    .addHeader("Host", Constants.Net.BASE_HOST)
+                    .addHeader("Referer", link)
+                    .addHeader("Upgrade-Insecure-Requests", "1")
                     .setEncoding("CP1251")
+                    .initParams(CommentParams.values())
                     .addParam(CommentParams.TEXT, text)
                     .addParam(CommentParams.NAME, name)
                     .addParam(CommentParams.FILE, work.getLinkWithoutSuffix())
                     .addParam(CommentParams.EMAIL, email)
                     .addParam(CommentParams.URL, yourLink);
             HTTPExecutor executor = new HTTPExecutor(request);
-            Response response = executor.execute();
-            String resp = response.getRawContent("CP1251");
-            return resp;
+            return executor.execute();
         } catch (Exception e) {
-            return "";
+            return null;
         }
     }
 }

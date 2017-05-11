@@ -64,5 +64,7 @@
               android:hint="@string/comments_new_content"
               android:layout_marginTop="@dimen/spacing_small"
               android:layout_marginRight="@dimen/spacing_medium"
-              android:layout_height="wrap_content"/>
+              android:layout_height="wrap_content">
+        <requestFocus/>
+    </EditText>
 </LinearLayout>

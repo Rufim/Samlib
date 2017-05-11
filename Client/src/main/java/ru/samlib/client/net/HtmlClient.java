@@ -73,7 +73,6 @@ public class HtmlClient {
                 fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
             }
             CachedResponse cachedResponse = new CachedResponse(cacheDir, fileName, request);
-            cachedResponse.setEncoding("CP1251");
             if (cachedResponse.exists()) {
                 cachedResponse.delete();
             }

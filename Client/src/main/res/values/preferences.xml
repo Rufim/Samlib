@@ -2,4 +2,9 @@
 <resources>
     <string name="preferenceMaxCacheSize">maxCacheSize</string>
     <integer name="preferenceMaxCacheSizeDefault">100</integer>
+
+    <string name="preferenceCommentCoockie">CommentCoockie</string>
+    <string name="preferenceCommentName">CommentName</string>
+    <string name="preferenceCommentEmail">CommentEmail</string>
+    <string name="preferenceCommentLink">CommentLink</string>
 </resources>
