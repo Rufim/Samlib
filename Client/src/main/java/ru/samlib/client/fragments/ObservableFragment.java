@@ -63,7 +63,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     }
 
     @Override
-    protected DataSource<AuthorEntity> getDataSource() throws Exception {
+    protected DataSource<AuthorEntity> newDataSource() throws Exception {
         return new DataSource<AuthorEntity>() {
             @Override
             public List<AuthorEntity> getItems(int skip, int size) throws IOException {

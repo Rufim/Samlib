@@ -39,7 +39,7 @@ public abstract class PageParser<I extends Validatable> extends RowParser<I> imp
 
     @Override
     public List<I> getPage(int index) throws IOException {
-        List<I> elementList = new ArrayList<>();
+        List<I> elementList = new ArrayList<I>();
         try {
             if (pageCount > 0 && index > pageCount) return elementList;
             lister.setPage(request, index);
@@ -47,21 +47,25 @@ public abstract class PageParser<I extends Validatable> extends RowParser<I> imp
             if (pageCount < 0) {
                 pageCount = lister.getPageCount(doc);
             }
-            if (doc != null) {
-                List elements = selectRows(document);
-                if (elements.size() == 0) {
-                    return elementList;
-                }
-                parseElements(elements, 0, elements.size(), elementList);
-            } else {
-                return elementList;
-            }
+            elementList = parseDocument(doc);
             Log.e(TAG, "Elements parsed: " + elementList.size() + " page is " + index);
         } catch (Exception | ExceptionInInitializerError e) {
             Log.e(TAG, e.getMessage(), e);
             if (e instanceof IOException) {
                 throw e;
             }
+        }
+        return elementList;
+    }
+
+    public List<I> parseDocument(Document doc) throws IOException {
+        List<I> elementList = new ArrayList<>();
+        if (doc != null) {
+            List elements = selectRows(doc);
+            if (elements.size() == 0) {
+                return elementList;
+            }
+            parseElements(elements, 0, elements.size(), elementList);
         }
         return elementList;
     }

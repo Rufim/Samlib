@@ -15,12 +15,14 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Stream;
+import net.nightwhistler.htmlspanner.TextUtil;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -95,6 +97,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                     author.setParsed(true);
                     postEvent(new AuthorParsedEvent(author));
+                    safeInvalidateOptionsMenu();
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     ErrorFragment.show(AuthorFragment.this, R.string.error);
@@ -289,7 +292,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 case R.layout.item_section:
                     Category category = (Category) getItem(position);
                     GuiUtils.setTextOrHide(holder.getView(R.id.section_label), category.getTitle() + ":");
-                    if (category.getAnnotation() != null) {
+                    if (!TextUtils.isEmpty(category.getAnnotation())) {
                         HtmlSpanner spanner = new HtmlSpanner();
                         TextView annotationView = holder.getView(R.id.section_annotation);
                         spanner.registerHandler("img", new PicassoImageHandler(annotationView));

@@ -16,13 +16,14 @@ public class Comment implements Validatable {
 
     private Integer number;
     private String rawContent;
-    private Author author;
+    private Link link;
     private Work work;
     private String nickName;
     private String email;
     private Date data;
     private String msgid;
     private boolean canBeDeleted = false;
+    private boolean canBeRestored = false;
     private boolean canBeEdited = false;
     private boolean userComment = false;
     private boolean deleted = false;
@@ -37,8 +38,8 @@ public class Comment implements Validatable {
         return number != null && rawContent != null;
     }
 
-    public String getLink() {
-        return "/comment" + work.getAuthor().getLink() + "/speech";
+    public String getReference() {
+        return "/comment" + work.getLinkWithoutSuffix();
     }
 
 }

@@ -10,6 +10,7 @@ import ru.samlib.client.lister.RawRowSelector;
 import ru.samlib.client.lister.RowSelector;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public abstract class RowParser<I extends Validatable> extends Parser {
             elements = document.select(((JsoupRowSelector) selector).getRowSelector());
         } else if (selector instanceof RawRowSelector) {
             RawRowSelector rawRowSelector = ((RawRowSelector) selector);
-            elements = TextUtils.Splitter.extractLines(htmlFile, htmlFile.getEncoding() ,  false, rawRowSelector.getRowStartDelimiter(), rawRowSelector.getRowEndDelimiter());
+            elements = TextUtils.Splitter.extractLines(document.body().html(), document.charset().name(),  false, rawRowSelector.getRowStartDelimiter(), rawRowSelector.getRowEndDelimiter());
         }
         return elements;
     }

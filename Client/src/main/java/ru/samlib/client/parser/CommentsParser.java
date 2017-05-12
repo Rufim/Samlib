@@ -1,7 +1,5 @@
 package ru.samlib.client.parser;
 
-import android.text.Editable;
-import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,15 +7,14 @@ import ru.kazantsev.template.domain.Valuable;
 import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.net.Response;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.Comment;
+import ru.samlib.client.domain.entity.Link;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.lister.DefaultPageLister;
 import ru.samlib.client.lister.RawRowSelector;
 import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.TextUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 
 /**
@@ -69,7 +66,7 @@ public class CommentsParser extends PageParser<Comment> {
             }
 
         });
-        if(reverse) {
+        if (reverse) {
             request.addParam("ORDER", "reverse");
         }
         this.work = work;
@@ -78,91 +75,88 @@ public class CommentsParser extends PageParser<Comment> {
     @Override
     protected Comment parseRow(Element row, int position) {
         Comment comment = new Comment();
+        comment.setWork(work);
         Elements smalls = row.select("small");
         comment.setNumber(TextUtils.extractInt(smalls.first().text()));
         String info = smalls.get(1).select("i").text();
         comment.setData(TextUtils.extractData(info, "/", ":"));
-        if(info.contains("Удалено")) {
+        if (info.contains("Удалено")) {
             comment.setDeleted(true);
             comment.setRawContent(info.substring(0, info.indexOf(".") + 1));
+            Elements delete = row.select("a:contains(восстановить)");
+            if (delete.size() > 0) {
+                String link = delete.attr("href");
+                comment.setMsgid(link.substring(link.indexOf(CommentParams.MSGID.name()) + CommentParams.MSGID.name().length() + 1));
+                comment.setCanBeRestored(true);
+            }
             return comment;
         }
         comment.setEmail(row.select("u").text());
         Element b = smalls.first().nextElementSibling();
         comment.setNickName(b.text());
         Elements a = b.select("a");
-        if(a.size() != 0) comment.setAuthor(new Author(a.attr("href")));
+        if (a.size() != 0) comment.setLink(new Link(a.attr("href")));
         comment.setUserComment(b.select("font[color=red]").size() != 0);
         comment.setRawContent(TextUtils.Splitter.extractStrings(row.select("body").html(), true, "<br>", "<hr noshade>").get(0));
         Elements answer = row.select("a:contains(ответить)");
-        if(answer.size() > 0) {
+        if (answer.size() > 0) {
             String link = answer.attr("href");
             comment.setMsgid(link.substring(link.indexOf(CommentParams.MSGID.name()) + CommentParams.MSGID.name().length() + 1));
         }
         Elements change = row.select("a:contains(исправить)");
-        if(change.size() > 0) {
+        if (change.size() > 0) {
             comment.setCanBeEdited(true);
         }
         Elements delete = row.select("a:contains(удалить)");
-        if(delete.size() > 0) {
+        if (delete.size() > 0) {
             comment.setCanBeDeleted(true);
         }
-        comment.setWork(work);
         return comment;
     }
 
 
     private static String requestCookie(Work work) {
-        if(commentCookie != null) return commentCookie;
+        if (commentCookie != null) return commentCookie;
         try {
-            Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())
+            Response response = new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT)).execute();
             String coockie = response.getHeaders().get("Set-Cookie").get(0);
-            return HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
+            return commentCookie = HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
         } catch (Exception e) {
             return null;
         }
     }
 
-    private static String getAnswerForComment(Comment comment) {
-        if(commentCookie != null) return commentCookie;
+    public static Response getAnswerForComment(Comment comment, Operation operation) {
+        commentCookie = requestCookie(comment.getWork());
+        if (commentCookie == null) {
+            return null;
+        }
         try {
-            Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + comment.getLink())
+            String link = Constants.Net.BASE_DOMAIN + comment.getReference();
+            Request request = new Request(link)
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT)
                     .addHeader("Cookie", "COMMENT=" + commentCookie)
-                    .addParam(CommentParams.OPERATION, Operation.reply)
-                    .addParam(CommentParams.MSGID, comment.getMsgid())).execute();
-            return getTextareaText(response.getRawContent(response.getEncoding()));
+                    .addHeader("Host", Constants.Net.BASE_HOST)
+                    .addHeader("Referer", link)
+                    .addHeader("Upgrade-Insecure-Requests", "1")
+                    .addParam(CommentParams.OPERATION, operation)
+                    .addParam(CommentParams.MSGID, comment.getMsgid());
+            if(comment.isDeleted() && operation.equals(Operation.delete)) {
+                request.addParam("SUBOP", "rev");
+            }
+            return new HTTPExecutor(request).execute();
         } catch (Exception e) {
             return null;
         }
     }
 
-    private static String getChangeForComment(Comment comment) {
-        if(commentCookie != null) return commentCookie;
-        try {
-            Response response =  new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + comment.getLink())
-                    .addHeader("Accept", ACCEPT_VALUE)
-                    .addHeader("User-Agent", USER_AGENT)
-                    .addHeader("Cookie", "COMMENT=" + commentCookie)
-                    .addParam(CommentParams.OPERATION, Operation.edit)
-                    .addParam(CommentParams.MSGID, comment.getMsgid())).execute();
-            return getTextareaText(response.getRawContent(response.getEncoding()));
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private static String getTextareaText(String body) {
-        return Jsoup.parse(body).select("textarea[name=TEXT]").text();
-    }
-
-    public static Response sendNewComment(Work work, CharSequence name, CharSequence email, CharSequence yourLink, CharSequence text) {
+    public static Response sendComment(Work work, CharSequence name, CharSequence email, CharSequence yourLink, CharSequence text, Operation operation, String msgid) {
         try {
             commentCookie = requestCookie(work);
-            if(commentCookie == null) {
+            if (commentCookie == null) {
                 return null;
             }
             String link = Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX;
@@ -174,15 +168,17 @@ public class CommentsParser extends PageParser<Comment> {
                     .addHeader("Accept-Encoding", ACCEPT_ENCODING_VALUE)
                     .addHeader("Host", Constants.Net.BASE_HOST)
                     .addHeader("Referer", link)
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
                     .addHeader("Upgrade-Insecure-Requests", "1")
                     .setEncoding("CP1251")
-                    .initParams(CommentParams.values())
+                    .addParam(CommentParams.FILE, work.getLinkWithoutSuffix())
                     .addParam(CommentParams.TEXT, text)
                     .addParam(CommentParams.NAME, name)
-                    .addParam(CommentParams.FILE, work.getLinkWithoutSuffix())
                     .addParam(CommentParams.EMAIL, email)
                     .addParam(CommentParams.URL, yourLink)
-                    .addParam(CommentParams.OPERATION, Operation.store_new);
+                    .addParam(CommentParams.MSGID, msgid)
+                    .addParam(CommentParams.OPERATION, operation.name())
+                    .addParam(CommentParams.add, "Добавить!");
             HTTPExecutor executor = new HTTPExecutor(request);
             return executor.execute();
         } catch (Exception e) {

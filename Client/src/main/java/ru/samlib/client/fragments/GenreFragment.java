@@ -31,7 +31,7 @@ public class GenreFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected DataSource<Work> getDataSource() throws Exception {
+    protected DataSource<Work> newDataSource() throws Exception {
         GenreParser genreParser = new GenreParser((Genre) getArguments().getSerializable(Constants.ArgsName.Type));
         pageSize = genreParser.getPageSize();
         return genreParser;

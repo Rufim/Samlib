@@ -13,10 +13,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.kazantsev.template.dialog.*;
 import ru.kazantsev.template.util.AndroidSystemUtils;
+import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
-import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.CommentSuccessEvent;
+import ru.samlib.client.domain.entity.Comment;
+import ru.samlib.client.domain.events.CommentSendEvent;
+import ru.samlib.client.parser.CommentsParser;
 
 /**
  * Created by Admin on 10.05.2017.
@@ -33,9 +35,46 @@ public class DialogNewComment  extends BaseDialog {
     @BindView(R.id.comments_new_link)
     TextInputEditText link;
 
+    private CommentsParser.Operation operation = CommentsParser.Operation.store_new;
+    private Comment existing = null;
+    private String text = "";
+    private Integer indexPage = 0;
+
     private String preferenceName;
     private String preferenceEmail;
     private String preferenceLink;
+
+    public CommentsParser.Operation getOperation() {
+        return operation;
+    }
+
+    public void setOperation(CommentsParser.Operation operation) {
+        this.operation = operation;
+    }
+
+    public Comment getExisting() {
+        return existing;
+    }
+
+    public void setExisting(Comment existing) {
+        this.existing = existing;
+    }
+
+    public Integer getIndexPage() {
+        return indexPage;
+    }
+
+    public void setIndexPage(Integer indexPage) {
+        this.indexPage = indexPage;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 
     @NonNull
     @Override
@@ -46,6 +85,14 @@ public class DialogNewComment  extends BaseDialog {
         name.setText(preferenceName = preferences.getString(getString(R.string.preferenceCommentName), ""));
         email.setText(preferenceEmail = preferences.getString(getString(R.string.preferenceCommentEmail), ""));
         link.setText(preferenceLink = preferences.getString(getString(R.string.preferenceCommentLink), ""));
+        if(text != null) {
+            if(operation.equals(CommentsParser.Operation.store_reply)) {
+                comment.setText(text + "\n");
+                comment.setSelection(comment.getText().length());
+            } else {
+                comment.setText(text);
+            }
+        }
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.comments_dialog_title)
                 .setPositiveButton(R.string.comments_new_send, this)
@@ -58,22 +105,30 @@ public class DialogNewComment  extends BaseDialog {
     public void onButtonPositive(DialogInterface dialog) {
         if(TextUtils.isEmpty(name.getText())) {
             name.setError(getString(R.string.comments_new_error_name));
-        } else {
+        } else if(isValidOperation()) {
             SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
             SharedPreferences.Editor editor = preferences.edit();
             if(!name.getText().toString().equals(preferenceName)) {
                 editor.putString(getString(R.string.preferenceCommentName), preferenceName = name.getText().toString());
             }
-            if (!name.getText().toString().equals(preferenceEmail)) {
+            if (!email.getText().toString().equals(preferenceEmail)) {
                 editor.putString(getString(R.string.preferenceCommentEmail), preferenceEmail = email.getText().toString());
             }
-            if (!name.getText().toString().equals(preferenceLink)) {
+            if (!link.getText().toString().equals(preferenceLink)) {
                 editor.putString(getString(R.string.preferenceCommentLink), preferenceLink = link.getText().toString());
             }
             editor.apply();
 
-            postEvent(new CommentSuccessEvent(preferenceName, preferenceEmail, preferenceLink, comment.getText().toString()));
+            postEvent(new CommentSendEvent(preferenceName, preferenceEmail, preferenceLink, comment.getText().toString().replace("\n", "\r\n"), existing != null ? existing.getMsgid() : "", operation, indexPage));
+        } else {
+            GuiUtils.toast(getContext(), R.string.error);
         }
+    }
+
+    private boolean isValidOperation() {
+        return !TextUtils.isEmpty(name.getText())
+                && ((existing == null && operation.equals(CommentsParser.Operation.store_new))
+                || (existing != null && (operation.equals(CommentsParser.Operation.store_reply) || operation.equals(CommentsParser.Operation.store_edit))));
     }
 
 }

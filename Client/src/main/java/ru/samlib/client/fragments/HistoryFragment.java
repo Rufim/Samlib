@@ -64,7 +64,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
 
 
     @Override
-    protected DataSource<WorkEntity> getDataSource() throws Exception {
+    protected DataSource<WorkEntity> newDataSource() throws Exception {
         return (skip, size) -> {
             if (adapter.getItems().isEmpty()) {
                 return new ArrayList<>(databaseService.getHistory(skip, size));

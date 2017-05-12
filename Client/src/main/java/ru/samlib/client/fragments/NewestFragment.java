@@ -38,7 +38,7 @@ public class NewestFragment extends FilterDialogListFragment {
     }
 
     @Override
-    protected DataSource getDataSource() throws Exception {
+    protected DataSource newDataSource() throws Exception {
         return new NewestParser();
     }
 

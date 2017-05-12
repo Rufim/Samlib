@@ -49,13 +49,85 @@
   >Фу ***. ГГ какой-то очередной моральный уродец. С каких пор это стало круто хз. Ладно, урод, а еще паинькой притворяется. Таких тварей давить надо в зародыше.
   А точно не вас давить, тупых моралефагов? Люди они разные, а не как в сказках"
             android:id="@+id/comment_content"/>
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/text_small"
-            android:text="2015-10-31 13:19"
-            android:layout_gravity="right"
-            android:textColor="@color/red_light"
-            android:padding="@dimen/spacing_xsmall"
-            android:id="@+id/comment_data"/>
+
+    <LinearLayout android:layout_width="match_parent"
+                  android:orientation="horizontal"
+                  android:layout_marginTop="@dimen/spacing_nano"
+                  android:layout_height="wrap_content">
+
+        <Button android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_margin="@dimen/spacing_nano"
+                android:textStyle="normal"
+                style="@style/item_text"
+                android:textSize="@dimen/text_small"
+                android:padding="6dp"
+                android:text="@string/comment_reply"
+                android:textColor="@color/light_blue"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:clickable="true"
+                android:textAllCaps="false"
+                android:id="@+id/comment_reply"/>
+
+
+        <Button android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_margin="@dimen/spacing_nano"
+                android:textStyle="normal"
+                style="@style/item_text"
+                android:textSize="@dimen/text_small"
+                android:padding="6dp"
+                android:text="@string/comment_edit"
+                android:textColor="@color/light_blue"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:clickable="true"
+                android:textAllCaps="false"
+                android:id="@+id/comment_edit"/>
+
+
+        <Button android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_margin="@dimen/spacing_nano"
+                android:textStyle="normal"
+                style="@style/item_text"
+                android:textSize="@dimen/text_small"
+                android:padding="6dp"
+                android:text="@string/comment_delete"
+                android:textColor="@color/light_blue"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:clickable="true"
+                android:textAllCaps="false"
+                android:id="@+id/comment_delete"/>
+
+        <Button android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_margin="@dimen/spacing_nano"
+                android:textStyle="normal"
+                style="@style/item_text"
+                android:textSize="@dimen/text_small"
+                android:padding="6dp"
+                android:text="@string/comment_restore"
+                android:textColor="@color/light_blue"
+                android:layout_marginLeft="@dimen/spacing_small"
+                android:clickable="true"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:id="@+id/comment_restore"/>
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textSize="@dimen/text_small"
+                android:text="2015-10-31 13:19"
+                android:layout_weight="1"
+                android:gravity="right|center_vertical"
+                android:textColor="@color/red_light"
+                android:padding="@dimen/spacing_xsmall"
+                android:id="@+id/comment_data"/>
+    </LinearLayout>
+
 </LinearLayout>

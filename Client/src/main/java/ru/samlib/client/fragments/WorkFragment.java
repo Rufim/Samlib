@@ -63,6 +63,7 @@ public class WorkFragment extends ListFragment<String> {
     private PowerManager.WakeLock screenLock;
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
+    private boolean isDownloaded = false;
 
 
     @Inject
@@ -106,7 +107,10 @@ public class WorkFragment extends ListFragment<String> {
                         }
                         WorkEntity entity = databaseService.insertOrUpdateWork(work);
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
+                        isDownloaded = true;
+                        safeInvalidateOptionsMenu();
                         WorkParser.processChapters(work);
+                        GuiUtils.runInUI(getContext(), (v) -> searchView.setEnabled(true));
                         if (entity != work) {
                             entity.setParsed(true);
                             entity.setIndents(work.getIndents());
@@ -236,9 +240,17 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.work, menu);
-        if(!work.isHasComments()) {
-            menu.removeItem(R.id.action_work_comments);
+        if(isDownloaded) {
+            inflater.inflate(R.menu.work, menu);
+            if (!work.isHasComments()) {
+                menu.removeItem(R.id.action_work_comments);
+            }
+
+        } else {
+            menu.clear();
+        }
+        if(!work.isParsed()) {
+            searchView.setEnabled(false);
         }
         searchView.setQueryHint(getString(R.string.search_hint));
     }

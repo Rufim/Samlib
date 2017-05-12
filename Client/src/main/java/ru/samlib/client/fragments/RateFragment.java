@@ -39,7 +39,7 @@ public class RateFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected DataSource<Work> getDataSource() throws Exception {
+    protected DataSource<Work> newDataSource() throws Exception {
         RateParser rateParser = new RateParser();
         pageSize = rateParser.getPageSize();
         return rateParser;

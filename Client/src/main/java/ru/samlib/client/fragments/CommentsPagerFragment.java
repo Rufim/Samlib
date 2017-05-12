@@ -18,18 +18,18 @@ import ru.kazantsev.template.fragments.PagerFragment;
 import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
-import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.dialog.DialogNewComment;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.events.CommentSuccessEvent;
+import ru.samlib.client.domain.events.CommentSendEvent;
 import ru.samlib.client.domain.events.CommentsParsedEvent;
 import ru.samlib.client.domain.events.SelectCommentPageEvent;
 import ru.samlib.client.parser.CommentsParser;
 import ru.kazantsev.template.util.FragmentBuilder;
+import ru.samlib.client.parser.Parser;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -100,15 +100,6 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     }
 
     @Override
-    public void refreshData(boolean showProgress) {
-        try {
-            parser = new CommentsParser(work, false);
-        } catch (MalformedURLException e) {
-        }
-        super.refreshData(showProgress);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         boolean newWork = false;
         String link = getArguments().getString(Constants.ArgsName.LINK);
@@ -142,7 +133,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         } else {
             postEvent(new CommentsParsedEvent(adapter.getItems()));
         }
-
+      
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -173,58 +164,56 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
 
     @Subscribe
-    public void onEvent(CommentSuccessEvent event) {
+    public void onEvent(final CommentSendEvent event) {
         loadMoreBar.setVisibility(View.VISIBLE);
-        new AsyncTask<String, Void, String[]>() {
+        new AsyncTask<Void, Void, Object[]>() {
 
             @Override
-            protected String[] doInBackground(String... params) {
-                String[] answer = new String[2];
-                if (!TextUtils.isEmpty(params[0])) {
-                    Response response = CommentsParser.sendNewComment(work, params[0], params[1], params[2], params[3]);
-                    try {
-                        if (response == null || response.getCode() != 200) {
-                            answer[0] = "ERROR";
-                            answer[1] = getString(R.string.error);
-                        } else {
-                            Document resp =  Jsoup.parse(response.getRawContent(response.getEncoding()));
-                            Elements error = resp.select("table[BORDERCOLOR=#222222] table table b");
-                            if (error.size() == 0) {
-                                if(parser != null) {
-                                    parser.setDocument(resp);
-                                }
-                                answer[0] = "OK";
-                                answer[1] = params[0];
-                            } else {
-                                answer[0] = "ERROR";
-                                answer[1] = error.text();
-                            }
-                        }
-                    } catch (IOException e) {
+            protected Object[] doInBackground(Void... params) {
+                Object[] answer = new Object[3];
+                boolean saveNewCookie = !Parser.hasCoockieComment();
+                Response response = CommentsParser.sendComment(work, event.name, event.email, event.link, event.comment, event.operation, event.msgid);
+                try {
+                    if (response == null || response.getCode() != 200) {
                         answer[0] = "ERROR";
                         answer[1] = getString(R.string.error);
+                    } else {
+                        Document resp = Jsoup.parse(response.getRawContent(response.getEncoding()));
+                        Elements error = resp.select("table[BORDERCOLOR=#222222] table table b");
+                        if (error.size() == 0) {
+                            answer[0] = "OK";
+                            answer[1] = saveNewCookie ? Parser.getCommentCookie() : null;
+                            answer[2] = resp;
+                        } else {
+                            answer[0] = "ERROR";
+                            answer[1] = error.text();
+                        }
                     }
-                } else {
+                } catch (IOException e) {
                     answer[0] = "ERROR";
-                    answer[1] = getString(R.string.error_network);
+                    answer[1] = getString(R.string.error);
                 }
                 return answer;
             }
 
             @Override
-            protected void onPostExecute(String[] answer) {
+            protected void onPostExecute(Object[] answer) {
                 if ("OK".equals(answer[0])) {
-                    SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
-                    editor.putString(getString(R.string.preferenceCommentCoockie), answer[1]);
-                    editor.apply();
-                    refreshData(true);
-                } else {
-                    GuiUtils.toast(getContext(), answer[1]);
-                    loadMoreBar.setVisibility(View.GONE);
+                    if(answer[1] != null) {
+                        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                        editor.putString(getString(R.string.preferenceCommentCoockie), answer[1].toString());
+                        editor.apply();
+                    }
+                    if (adapter.getCount() > 0) {
+                        adapter.getRegisteredFragment(event.indexPage).refreshWithDocument((Document) answer[2]);
+                    }
+                } else if("ERROR".equals(answer[0])) {
+                    GuiUtils.toast(getContext(), answer[1].toString(), false);
                 }
+                loadMoreBar.setVisibility(View.GONE);
             }
 
-        }.execute(event.name, event.email, event.link, event.comment);
+        }.execute();
     }
 
     @Override

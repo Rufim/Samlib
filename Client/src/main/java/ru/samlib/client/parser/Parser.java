@@ -38,7 +38,6 @@ public abstract class Parser {
     protected Request request;
     protected CachedResponse htmlFile;
     protected Document document;
-    protected boolean docummentOutside = false;
     protected static boolean cached = false;
     protected static String commentCookie = null;
 
@@ -52,7 +51,7 @@ public abstract class Parser {
                     .setEncoding("CP1251")
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT);
-            if (commentCookie != null) {
+            if (hasCoockieComment()) {
                 request.addHeader("Cookie", "COMMENT=" + commentCookie);
             }
         } catch (UnsupportedEncodingException e) {
@@ -64,22 +63,9 @@ public abstract class Parser {
         return getDocument(request, Long.MAX_VALUE);
     }
 
-    public void setDocument(Document document) {
-        this.document = document;
-        docummentOutside = true;
-    }
-
     public Document getDocument(Request request, long minBodySize) throws IOException {
-        if (docummentOutside) {
-            return document;
-        }
 
         htmlFile = HtmlClient.executeRequest(request, minBodySize, cached);
-
-        if (htmlFile.getHeaders() != null &&  htmlFile.getHeaders().get("Set-Cookie") != null) {
-            String coockie = htmlFile.getHeaders().get("Set-Cookie").get(0);
-            commentCookie = HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
-        }
 
         document = null;
 
@@ -111,6 +97,14 @@ public abstract class Parser {
         return document;
     }
 
+    public static void setCommentCookie(String commentCookie) {
+        Parser.commentCookie = commentCookie;
+    }
+
+    public static String getCommentCookie() {
+        return commentCookie;
+    }
+
     public static void dropCache() {
         parserCache.evictAll();
     }
@@ -134,6 +128,10 @@ public abstract class Parser {
             htmlFile.setCached(true);
             return Boolean.TRUE;
         }
+    }
+
+    public static boolean hasCoockieComment() {
+        return commentCookie != null;
     }
 
     public static boolean isCachedMode() {

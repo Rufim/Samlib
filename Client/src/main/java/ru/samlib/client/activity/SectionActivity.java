@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -15,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import ru.kazantsev.template.activity.NavigationActivity;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
@@ -29,6 +31,7 @@ import ru.samlib.client.fragments.WorkFragment;
 import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.parser.Parser;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -69,6 +72,9 @@ public class SectionActivity extends NavigationActivity<String> {
             builder.replaceFragment(R.id.container, sectionFragment);
         }
         navigationListMenu.setPadding(0, (int) getResources().getDimension(R.dimen.spacing_medium), 0, (int) getResources().getDimension(R.dimen.spacing_medium));
+        if(!Parser.hasCoockieComment()) {
+            Parser.setCommentCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceCommentCoockie), null));
+        }
     }
 
     @Override
@@ -79,7 +85,13 @@ public class SectionActivity extends NavigationActivity<String> {
 
     @Override
     protected void onBindNavigationView(int position, String title, View navigationView) {
-        GuiUtils.setText((ViewGroup)navigationView, R.id.item_section_navigation_text, title);
+        TextView textView  = GuiUtils.getView(navigationView, R.id.item_section_navigation_text);
+        if(state.equals(SectionActivityState.ILLUSTRATIONS) || state.equals(SectionActivityState.COMMENTS)) {
+            textView.setGravity(Gravity.CENTER);    
+        } else {
+            textView.setGravity(Gravity.START);
+        }
+        GuiUtils.setText(textView, title);
     }
 
     @Override
@@ -145,6 +157,7 @@ public class SectionActivity extends NavigationActivity<String> {
             if (author.isHasAvatar()) {
                 Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
             }
+            setNavigationLayoutWidth(GuiUtils.dpToPx(navigationFixedDpWidth, this));
         }
     }
 
@@ -168,6 +181,7 @@ public class SectionActivity extends NavigationActivity<String> {
             }
             GuiUtils.setText(workGenres, work.printGenres());
             GuiUtils.setText(workSeries, work.getType().getTitle());
+            setNavigationLayoutWidth(GuiUtils.dpToPx(navigationFixedDpWidth, this));
         }
     }
 
@@ -199,11 +213,13 @@ public class SectionActivity extends NavigationActivity<String> {
     private void initializeComments(List<Integer> pages) {
         setState(SectionActivityState.COMMENTS);
         initNavigationView(0, pages.toArray());
+        setNavigationLayoutWidth(GuiUtils.dpToPx(50, this));
     }
 
     private void initializeIllustrations(List<Image> images) {
         setState(SectionActivityState.ILLUSTRATIONS);
         initNavigationView(0, images.toArray());
+        setNavigationLayoutWidth(GuiUtils.dpToPx(50, this));
     }
 
 

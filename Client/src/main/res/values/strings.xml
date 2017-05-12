@@ -114,6 +114,10 @@
     <string name="comments_new_error_name">Введите имя</string>
     <string name="comments_new_error_content">Комментарий пуст</string>
     <string name="comments_new_content">Комментарий…</string>
+    <string name="comment_reply">Ответить</string>
+    <string name="comment_edit">Изменить</string>
+    <string name="comment_delete">Удалить</string>
+    <string name="comment_restore">Восстонавить</string>
     <string name="favorites_update">Update</string>
     <string name="favorites_new">New</string>
     <string name="author_observable">Подписка</string>

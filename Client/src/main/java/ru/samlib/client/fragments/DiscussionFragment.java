@@ -45,7 +45,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
 
 
     @Override
-    protected DataSource<Discussion> getDataSource() throws Exception {
+    protected DataSource<Discussion> newDataSource() throws Exception {
         pageSize = 199;
         return new DiscussionParser();
     }

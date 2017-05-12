@@ -36,7 +36,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
     }
 
     @Override
-    protected DataSource<Author> getDataSource() throws Exception {
+    protected DataSource<Author> newDataSource() throws Exception {
         TopAuthorsParser parser = new TopAuthorsParser();
         pageSize = parser.getPageSize();
         return parser;

@@ -60,7 +60,7 @@ public class SearchFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected DataSource<Linkable> getDataSource() throws Exception {
+    protected DataSource<Linkable> newDataSource() throws Exception {
         query = getArguments().getString(Constants.ArgsName.SEARCH_QUERY);
         return new SearchParser(query);
     }
