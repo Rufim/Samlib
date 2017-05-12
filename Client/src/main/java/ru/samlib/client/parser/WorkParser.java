@@ -196,7 +196,7 @@ public class WorkParser extends Parser {
         }
         rootElements.clear();
         rootElements.clear();
-        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава( \\d)?)|(Часть( \\d)?)|(\\d(\\.?)))",
+        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)|(\\d+)).*",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         bookmarks.clear();
         for (int i = 0; i < indents.size(); i++) {
