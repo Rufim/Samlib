@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import android.text.Html;
 import android.util.Log;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
@@ -25,6 +26,7 @@ import ru.kazantsev.template.util.TextUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -60,7 +62,7 @@ public class WorkParser extends Parser {
             work = parseWork(rawContent, work);
             Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
             work.setChanged(false);
-            if(processChapters) {
+            if (processChapters) {
                 processChapters(work);
             }
         } catch (Exception ex) {
@@ -72,11 +74,11 @@ public class WorkParser extends Parser {
 
     public static Work parseWork(CachedResponse file, Work work) {
         if (work == null) {
-            work = new Work(file.getRequest().getBaseUrl().getPath().replace("//","/"));
+            work = new Work(file.getRequest().getBaseUrl().getPath().replace("//", "/"));
         }
         String[] parts;
-        if(!work.getLink().matches(work.getAuthor().getLink() +"/rating\\d.shtml")) {
-             parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+        if (!work.getLink().matches(work.getAuthor().getLink() + "/rating\\d.shtml")) {
+            parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
                     new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
@@ -118,7 +120,7 @@ public class WorkParser extends Parser {
         if (data.length > 0) {
             if (data.length == 2) {
                 work.setUpdateDate(ParserUtils.parseData(data[0]));
-                if(!data[1].contains("Статистика")) {
+                if (!data[1].contains("Статистика")) {
                     work.setSize(Integer.parseInt(data[1]));
                 }
             }
@@ -153,9 +155,9 @@ public class WorkParser extends Parser {
 
 
         }
-        if(parts.length == 3) {
+        if (parts.length == 3) {
             work.setRawContent(parts[2]);
-        } else if(parts.length == 4){
+        } else if (parts.length == 4) {
             if (parts[2].contains("Аннотация")) {
                 work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
             }
@@ -194,19 +196,16 @@ public class WorkParser extends Parser {
         }
         rootElements.clear();
         rootElements.clear();
-        Pattern pattern = Pattern.compile("^((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава)|(Часть)|(\\*{3,})|(\\d)).*$",
+        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава( \\d)?)|(Часть( \\d)?)|(\\d(\\.?)))",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         bookmarks.clear();
-        bookmarks.add(new Bookmark("Начало"));
         for (int i = 0; i < indents.size(); i++) {
-            if(indents.get(i).length() > 3 && indents.get(i).length() < 10) {
-                String text = JsoupUtils.cleanHtml(indents.get(i));
-                if (pattern.matcher(TextUtils.trim(text)).find()) {
-                    Bookmark newBookmark = new Bookmark(text);
-                    newBookmark.setPercent(((double) i) / indents.size());
-                    newBookmark.setIndentIndex(i);
-                    bookmarks.add(newBookmark);
-                }
+            String text = indents.get(i);
+            if (pattern.matcher(text).find() && pattern.matcher(text = TextUtils.trim(Html.fromHtml(text).toString())).matches()) {
+                Bookmark newBookmark = new Bookmark(text);
+                newBookmark.setPercent(((double) i) / indents.size());
+                newBookmark.setIndentIndex(i);
+                bookmarks.add(newBookmark);
             }
         }
         work.setParsed(true);
@@ -214,22 +213,22 @@ public class WorkParser extends Parser {
 
     private static void addIndent(List<String> indents, String indent) {
         int maxOverflow = (int) (MAX_INDENT_SIZE + (MAX_INDENT_SIZE * 0.25));
-        if(indent.length() > maxOverflow) {
-            for (int index = 0; indent.length() > index + MAX_INDENT_SIZE;) {
-                if(indent.length() > index + maxOverflow) {
+        if (indent.length() > maxOverflow) {
+            for (int index = 0; indent.length() > index + MAX_INDENT_SIZE; ) {
+                if (indent.length() > index + maxOverflow) {
                     StringBuilder accum = new StringBuilder(indent.substring(index, index + MAX_INDENT_SIZE));
                     index = index + MAX_INDENT_SIZE;
                     int size = index;
                     while (index < indent.length() && indent.charAt(size) != ' ') {
                         size++;
                     }
-                    if(size > 0) {
+                    if (size > 0) {
                         accum.append(indent.substring(index, size));
                         index += size;
                     }
                     indents.add(accum.toString());
                 }
-                if(indent.length() <= index + MAX_INDENT_SIZE) {
+                if (indent.length() <= index + MAX_INDENT_SIZE) {
                     indents.add(indent.substring(index));
                     break;
                 }
@@ -240,7 +239,7 @@ public class WorkParser extends Parser {
     }
 
     private static boolean isEmpty(String sequence) {
-        if(sequence.equals("\n")) return false;
+        if (sequence.equals("\n")) return false;
         else return TextUtils.isEmpty(TextUtils.trim(sequence));
     }
 
@@ -274,14 +273,14 @@ public class WorkParser extends Parser {
                     Node parent;
                     if ((parent = getParentOrNull(node, "pre")) != null) {
                         append(((TextNode) node).getWholeText());
-                    } else if((parent = getParentOrNull(node, "a")) != null) {
+                    } else if ((parent = getParentOrNull(node, "a")) != null) {
                         append(parent.outerHtml());
                     } else {
                         append(node.outerHtml()); // TextNodes carry all user-readable text in the DOM.
                     }
                 } else if (name.equals("dt")) {
                     append("  ");
-                } else if (StringUtil.in(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")){
+                } else if (StringUtil.in(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")) {
                     append("\n");
                 } else if (name.equals("img")) {
                     append("\n" + node.outerHtml());
@@ -297,13 +296,13 @@ public class WorkParser extends Parser {
 
             // appends text to the string builder with a simple word wrap method
             private void append(String text) {
-                if(accum.length() > 3) {
+                if (accum.length() > 3) {
                     if (text.equals(" ") &&
                             (StringUtil.in(accum.substring(accum.length() - 1), " ", "\n")))
                         return; // don't accumulate long runs of empty spaces
                     while (text.length() > 0 && text.startsWith("\n") && accum.substring(accum.length() - 2).contains("\n\n")) {
                         // don't accumulate new lines
-                        if(text.length() > 1) {
+                        if (text.length() > 1) {
                             text = text.substring(1);
                         } else {
                             return;
@@ -321,7 +320,7 @@ public class WorkParser extends Parser {
             private Node getParentOrNull(Node node, String tag) {
                 Node parentNode;
                 while ((parentNode = node.parent()) != null) {
-                    if(parentNode.nodeName().equals(tag)) {
+                    if (parentNode.nodeName().equals(tag)) {
                         return parentNode;
                     } else {
                         node = parentNode;
