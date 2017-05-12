@@ -19,14 +19,12 @@ import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.util.JsoupUtils;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -179,6 +177,7 @@ public class WorkParser extends Parser {
 
     public static void processChapters(Work work) {
         List<String> indents = work.getIndents();
+        indents.clear();
         List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
         document.setBaseUri(Constants.Net.BASE_DOMAIN);
@@ -186,30 +185,28 @@ public class WorkParser extends Parser {
         List<Node> rootNodes = new ArrayList<>();
         //Element body = replaceTables(document.body());
         Elements rootElements = document.body().select("> *");
-        indents.clear();
-        HtmlToTextForSpanner plainText = new HtmlToTextForSpanner();
-        for (Element element : rootElements) {
-            String text = plainText.getPlainText(element);
-            List<String> indentPart = Arrays.asList(TextUtils.splitByNewline(text));
-            //TODO: optimise perfomance and use
-            indents.addAll(indentPart);
-        }
+        HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
+        work.setIndents(forSpanner.getIndents(rootElements));
         rootElements.clear();
-        rootElements.clear();
-        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)|(\\d+)).*",
+        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         bookmarks.clear();
-        for (int i = 0; i < indents.size(); i++) {
-            String text = indents.get(i);
-            if (pattern.matcher(text).find() && pattern.matcher(text = TextUtils.trim(Html.fromHtml(text).toString())).matches()) {
-                Bookmark newBookmark = new Bookmark(text);
-                newBookmark.setPercent(((double) i) / indents.size());
-                newBookmark.setIndentIndex(i);
-                bookmarks.add(newBookmark);
+        bookmarks.addAll(forSpanner.getBookmarks());
+        /*if(bookmarks.size() == 0) {
+            for (int i = 0; i < indents.size(); i++) {
+                String text = indents.get(i);
+                if (pattern.matcher(text).find() && pattern.matcher(text = TextUtils.trim(Html.fromHtml(text).toString())).matches()) {
+                    Bookmark newBookmark = new Bookmark(text);
+                    newBookmark.setPercent(((double) i) / indents.size());
+                    newBookmark.setIndentIndex(i);
+                    bookmarks.add(newBookmark);
+                }
             }
-        }
+        }*/
         work.setParsed(true);
     }
+
+    private static String[] firstWord = new String[]{"Пролог", "Эпилог", "Интерлюдия", "Приложение", "Глава", "Часть"};
 
     private static void addIndent(List<String> indents, String indent) {
         int maxOverflow = (int) (MAX_INDENT_SIZE + (MAX_INDENT_SIZE * 0.25));
@@ -248,79 +245,182 @@ public class WorkParser extends Parser {
      */
     public static class HtmlToTextForSpanner {
 
+        private List<Bookmark> bookmarks = new ArrayList<>();
+        private List<String> indents = new ArrayList<>();
+
         /**
          * Format an Element to plain-text
          *
-         * @param element the root element to format
+         * @param elements the root element to format
          * @return formatted text
          */
-        public String getPlainText(Element element) {
-            FormattingVisitor formatter = new FormattingVisitor();
-            NodeTraversor traversor = new NodeTraversor(formatter);
-            traversor.traverse(element); // walk the DOM, and call .head() and .tail() for each node
+        public List<String> getIndents(Elements elements) {
+            for (Element element : elements) {
+                FormattingVisitor formatter = new FormattingVisitor(indents);
+                NodeTraversor traversor = new NodeTraversor(formatter);
+                traversor.traverse(element);
+            }
+            return indents;
+        }
 
-            return formatter.toString();
+        public List<Bookmark> getBookmarks() {
+            List<Bookmark> resultBookmarks = new ArrayList<>();
+            for (Bookmark bookmark : bookmarks) {
+                if (bookmark.getIndentIndex() != 0) {
+                    resultBookmarks.add(bookmark);
+                }
+            }
+            return resultBookmarks;
         }
 
         // the formatting rules, implemented in a breadth-first DOM traverse
         private class FormattingVisitor implements NodeVisitor {
-            private StringBuilder accum = new StringBuilder(); // holds the accumulated text
+
+            private List<String> indents;
+
+            public FormattingVisitor(List<String> indents) {
+                this.indents = indents;
+            }
 
             // hit when the node is first seen
             public void head(Node node, int depth) {
-                String name = node.nodeName();
+                String nodeName = node.nodeName();
                 if (node instanceof TextNode) {
                     Node parent;
                     if ((parent = getParentOrNull(node, "pre")) != null) {
                         append(((TextNode) node).getWholeText());
                     } else if ((parent = getParentOrNull(node, "a")) != null) {
-                        append(parent.outerHtml());
+                        if (parent.hasAttr("href")) {
+                            String href = parent.attr("href");
+                            if (href.startsWith("#")) {
+                                Bookmark bookmark = new Bookmark(((TextNode) node).text());
+                                bookmark.setIndent(href.substring(1));
+                                bookmarks.add(bookmark);
+                            } else {
+                                append("<a href=\"" + parent.attr("href") + "\">" + getNodeHtml(node) + "");
+                            }
+                        } else if (parent.hasAttr("name")) {
+                            initBookmark(parent.attr("name"));
+                        } else {
+                            append(getNodeHtml(node));
+                        }
+                    } else if ((parent = getParentOrNull(node, "i", "b")) != null) {
+                        append("<" + parent.nodeName() + ">" + getNodeHtml(node) + "</" + parent.nodeName() + ">");
                     } else {
-                        append(node.outerHtml()); // TextNodes carry all user-readable text in the DOM.
+                        append(getNodeHtml(node)); // TextNodes carry all user-readable text in the DOM.
                     }
-                } else if (name.equals("dt")) {
+                } else if (nodeName.equals("dt")) {
                     append("  ");
-                } else if (StringUtil.in(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")) {
+                } else if (StringUtil.in(nodeName, "p", "h1", "h2", "h3", "h4", "h5", "tr")) {
                     append("\n");
-                } else if (name.equals("img")) {
-                    append("\n" + node.outerHtml());
+                } else if (nodeName.equals("img")) {
+                    append("\n" + getNodeHtml(node));
+                } else if (nodeName.equals("a")) {
+                    Element a = (Element) node;
+                    if(a.hasAttr("name")) {
+                        initBookmark(a.attr("name"));
+                    }
+                }
+            }
+
+            private void initBookmark(String name) {
+                for (Bookmark bookmark : bookmarks) {
+                    if (bookmark.getIndent().equals(name)) {
+                        append("");
+                        bookmark.setIndentIndex(indents.size());
+                    }
                 }
             }
 
             // hit when all of the node's children (if any) have been visited
             public void tail(Node node, int depth) {
                 String name = node.nodeName();
-                if (StringUtil.in(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5"))
+                if (StringUtil.in(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5", "div"))
                     append("\n");
             }
 
+            private String getNodeHtml(Node node) {
+                return node.outerHtml().replace("\n", "");
+            }
+
+            boolean newLine = true;
+
             // appends text to the string builder with a simple word wrap method
             private void append(String text) {
-                if (accum.length() > 3) {
-                    if (text.equals(" ") &&
-                            (StringUtil.in(accum.substring(accum.length() - 1), " ", "\n")))
+                if (text.length() == 0) return;
+                if (indents.size() > 2) {
+                    if (text.equals(" ") && lastString().endsWith(" ")) {
                         return; // don't accumulate long runs of empty spaces
-                    while (text.length() > 0 && text.startsWith("\n") && accum.substring(accum.length() - 2).contains("\n\n")) {
+                    }
+                    if (text.startsWith("\n") && isLastTwoEmptyIndents()) {
+                        int i = 0;
                         // don't accumulate new lines
-                        if (text.length() > 1) {
-                            text = text.substring(1);
-                        } else {
-                            return;
+                        while (text.charAt(i) == '\n') {
+                            i++;
+                            if (text.length() == i) {
+                                return;
+                            }
                         }
+                        text = text.substring(i);
                     }
                 }
-                accum.append(text);
+                if (text.equals("\n")) {
+                    newLine = true;
+                } else if (!text.contains("\n")) {
+                    if (newLine) {
+                        indents.add(text);
+                        newLine = false;
+                    } else {
+                        appendText(text);
+                    }
+                } else {
+                    List<String> strings = Arrays.asList(text.split("\n"));
+                    if (strings.size() > 0) {
+                        if (text.startsWith("\n") || newLine) {
+                            indents.addAll(strings);
+                        } else {
+                            appendText(strings.get(0));
+                            if (strings.size() > 1) {
+                                indents.addAll(strings.subList(1, strings.size()));
+                            }
+                        }
+                    }
+                    if (text.endsWith("\n")) {
+                        newLine = true;
+                    }
+                }
             }
 
-            @Override
-            public String toString() {
-                return accum.toString();
+            private void appendText(String text) {
+                if (indents.size() > 0) {
+                    indents.set(indents.size() - 1, lastString() + text);
+                } else {
+                    indents.add(text);
+                }
             }
 
-            private Node getParentOrNull(Node node, String tag) {
+            private boolean isLastTwoEmptyIndents() {
+                if (indents.size() > 2) {
+                    if (lastString().trim().isEmpty()) {
+                        return indents.get(indents.size() - 2).trim().isEmpty();
+                    }
+                }
+                return false;
+            }
+
+            private String lastString() {
+                if (indents.size() == 0) return "";
+                return indents.get(indents.size() - 1);
+            }
+
+            public List<String> toList() {
+                return indents;
+            }
+
+            private Node getParentOrNull(Node node, String... tags) {
                 Node parentNode;
                 while ((parentNode = node.parent()) != null) {
-                    if (parentNode.nodeName().equals(tag)) {
+                    if (StringUtil.in(parentNode.nodeName(), tags)) {
                         return parentNode;
                     } else {
                         node = parentNode;

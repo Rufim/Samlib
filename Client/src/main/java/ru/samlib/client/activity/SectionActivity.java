@@ -219,7 +219,7 @@ public class SectionActivity extends NavigationActivity<String> {
     private void initializeIllustrations(List<Image> images) {
         setState(SectionActivityState.ILLUSTRATIONS);
         initNavigationView(0, images.toArray());
-        setNavigationLayoutWidth(GuiUtils.dpToPx(50, this));
+        setNavigationLayoutWidth(GuiUtils.dpToPx(navigationFixedDpWidth, this));
     }
 
 
