@@ -13,6 +13,7 @@ import ru.kazantsev.template.activity.BaseActivity;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.PermissionUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
@@ -57,6 +58,7 @@ public class MainActivity extends BaseActivity {
         });
         navigationView.addHeaderView(header);
         switchStatus(online);
+        PermissionUtils.getUnhandledPermissions(this);
     }
 
     @Override
