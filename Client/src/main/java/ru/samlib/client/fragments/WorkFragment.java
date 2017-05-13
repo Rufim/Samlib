@@ -134,6 +134,7 @@ public class WorkFragment extends ListFragment<String> {
                 }
             }
             if (work.isParsed()) {
+                isDownloaded = true;
                 safeInvalidateOptionsMenu();
                 postEvent(new WorkParsedEvent(work));
                 return work.getIndents();
@@ -497,6 +498,7 @@ public class WorkFragment extends ListFragment<String> {
             }
         }
         if (work.isParsed()) {
+            isDownloaded = true;
             safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new WorkParsedEvent(work));
         }
