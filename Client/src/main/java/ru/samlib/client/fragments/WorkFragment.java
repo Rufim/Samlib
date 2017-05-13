@@ -73,6 +73,7 @@ public class WorkFragment extends ListFragment<String> {
     private View speedLayout;
     private CountDownTimer autoScroller;
 
+    private int lastOffset = 0;
 
     @Inject
     DatabaseService databaseService;
@@ -284,7 +285,7 @@ public class WorkFragment extends ListFragment<String> {
         final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enouth to infinity. if not enought you can restart timer in onFinish()
         final int scrollPeriod = 20; // every 20 ms scoll will happened. smaller values for smoother
         final int heightToScroll = 20; // will be scrolled to 20 px every time. smaller values for smoother scrolling
-        if(autoScroller != null) autoScroller.cancel();
+        if (autoScroller != null) autoScroller.cancel();
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
                 itemList.scrollBy(0, (int) (heightToScroll * (getSpeedRate() * 0.07)));
@@ -298,7 +299,7 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public void stopAutoScroll() {
-        if(autoScroller != null) {
+        if (autoScroller != null) {
             autoScroller.cancel();
         }
         autoScroller = null;
@@ -316,7 +317,19 @@ public class WorkFragment extends ListFragment<String> {
         }
     }
 
-    public void clearSearch(){
+    public void startSpeak(int position) {
+        ownTTSService = true;
+        WorkFragment.this.selectText(lastIndent, null);
+        Intent i = new Intent(getActivity(), TTSService.class);
+        i.putExtra(Constants.ArgsName.LINK, work.getLink());
+        i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
+        i.putExtra(Constants.ArgsName.SPEECH_RATE, getSpeedRate());
+        if (isAdded()) {
+            getActivity().startService(i);
+        }
+    }
+
+    public void clearSearch() {
         selectText(lastIndent, null);
     }
 
@@ -328,8 +341,8 @@ public class WorkFragment extends ListFragment<String> {
                     mode = Mode.NORMAL;
                     stopAutoScroll();
                 } else {
-                    if(Mode.SPEAK.equals(mode)) {
-                       stopSpeak();
+                    if (Mode.SPEAK.equals(mode)) {
+                        stopSpeak();
                     }
                     clearSearch();
                     mode = Mode.AUTO_SCROLL;
@@ -403,7 +416,7 @@ public class WorkFragment extends ListFragment<String> {
                 return true;
             case R.id.action_work_open_with:
                 try {
-                    if(work.getCachedResponse() != null) {
+                    if (work.getCachedResponse() != null) {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
                     } else {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), HtmlClient.getCachedFile(getContext(), work.getLink()));
@@ -496,15 +509,41 @@ public class WorkFragment extends ListFragment<String> {
         ViewGroup root = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
         final View speedGesture = inflater.inflate(R.layout.footer_work_gesture, root, false);
         speedGesture.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
+
+            boolean isSeekBarVisible = false;
+
+            void showSeekBar() {
+                if(!isSeekBarVisible) {
+                    GuiUtils.slide(speedGesture, GuiUtils.dpToPx(-50, getContext()), true);
+                    GuiUtils.slide(speedLayout, GuiUtils.dpToPx(-100, getContext()), true);
+                    isSeekBarVisible = true;
+                }
+            }
+
+            void hideSeekBar() {
+                if(isSeekBarVisible) {
+                    GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
+                    GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
+                    isSeekBarVisible = false;
+                }
+            }
+
             @Override
             public void onSwipeTop() {
-                GuiUtils.slide(speedGesture, GuiUtils.dpToPx(-70, getContext()), true);
-                GuiUtils.slide(speedLayout, GuiUtils.dpToPx(-100, getContext()), true);
+                showSeekBar();
             }
 
             public void onSwipeBottom() {
-                GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
-                GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
+                hideSeekBar();
+            }
+
+            @Override
+            public void onClick() {
+                if(isSeekBarVisible) {
+                    hideSeekBar();
+                } else {
+                    showSeekBar();
+                }
             }
         });
         root.addView(speedGesture);
@@ -513,6 +552,34 @@ public class WorkFragment extends ListFragment<String> {
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
         speed = GuiUtils.getView(root, R.id.footer_work_speed);
         speed.setProgress(preferences.getInt(getString(R.string.preferenceWorkSpeechRate), 130));
+        speed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (mode.equals(Mode.SPEAK)) {
+                    if (TTSService.isReady(work)) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+                    }
+                    startSpeak(lastIndent);
+                }
+            }
+        });
+        speed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
+                GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
+            }
+        });
         return root;
     }
 
@@ -568,8 +635,6 @@ public class WorkFragment extends ListFragment<String> {
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<String> {
 
-        private int lastOffset = 0;
-
         public WorkFragmentAdaptor() {
             super(true, false, R.layout.header_work_list, R.layout.item_indent);
         }
@@ -587,15 +652,7 @@ public class WorkFragment extends ListFragment<String> {
                     case SPEAK:
                         position -= firstIsHeader;
                         if (!TTSService.isReady(work) || !ownTTSService) {
-                            ownTTSService = true;
-                            WorkFragment.this.selectText(lastIndent, null);
-                            Intent i = new Intent(getActivity(), TTSService.class);
-                            i.putExtra(Constants.ArgsName.LINK, work.getLink());
-                            i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
-                            i.putExtra(Constants.ArgsName.SPEECH_RATE, getSpeedRate());
-                            if (isAdded()) {
-                                getActivity().startService(i);
-                            }
+                            startSpeak(position);
                         } else {
                             if (TTSService.getInstance().getPlayer().isSpeaking()) {
                                 TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
