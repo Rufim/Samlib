@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -68,13 +69,14 @@ public class WorkFragment extends ListFragment<String> {
     private boolean isDownloaded = false;
     private SeekBar speed;
     private View speedLayout;
+    private CountDownTimer autoScroller;
 
 
     @Inject
     DatabaseService databaseService;
 
     private enum Mode {
-        SEARCH, SPEAK, NORMAL
+        SEARCH, SPEAK, NORMAL, AUTO_SCROLL
     }
 
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, String link) {
@@ -114,7 +116,9 @@ public class WorkFragment extends ListFragment<String> {
                         isDownloaded = true;
                         safeInvalidateOptionsMenu();
                         WorkParser.processChapters(work);
-                        GuiUtils.runInUI(getContext(), (v) -> searchView.setEnabled(true));
+                        GuiUtils.runInUI(getContext(), (v) -> {
+                            if (searchView != null) searchView.setEnabled(true);
+                        });
                         if (entity != work) {
                             entity.setParsed(true);
                             entity.setIndents(work.getIndents());
@@ -244,7 +248,7 @@ public class WorkFragment extends ListFragment<String> {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        if(isDownloaded) {
+        if (isDownloaded) {
             inflater.inflate(R.menu.work, menu);
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
@@ -253,7 +257,7 @@ public class WorkFragment extends ListFragment<String> {
         } else {
             menu.clear();
         }
-        if(!work.isParsed()) {
+        if (!work.isParsed()) {
             searchView.setEnabled(false);
         }
         searchView.setQueryHint(getString(R.string.search_hint));
@@ -265,20 +269,77 @@ public class WorkFragment extends ListFragment<String> {
         mode = Mode.NORMAL;
     }
 
+
+    public float getSpeedRate() {
+        return ((float) speed.getProgress() / 100f);
+    }
+
+    public void startAutoScroll() {
+        final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enouth to infinity. if not enought you can restart timer in onFinish()
+        final int scrollPeriod = 20; // every 20 ms scoll will happened. smaller values for smoother
+        final int heightToScroll = 20; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        if(autoScroller != null) autoScroller.cancel();
+        autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
+            public void onTick(long millisUntilFinished) {
+                itemList.scrollBy(0, (int) (heightToScroll * (getSpeedRate() * 0.07)));
+            }
+
+            public void onFinish() {
+                //you can add code for restarting timer here
+            }
+        };
+        itemList.post(() -> autoScroller.start());
+    }
+
+    public void stopAutoScroll() {
+        autoScroller.cancel();
+        autoScroller = null;
+        if (isAdded()) {
+            getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_auto_scroll).setChecked(false);
+        }
+    }
+
+    public void stopSpeak() {
+        if (TTSService.isReady(work)) {
+            TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+        }
+        if (isAdded()) {
+            getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
+        }
+    }
+
+    public void clearSearch(){
+        selectText(lastIndent, null);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_work_auto_scroll:
+                if (item.isChecked()) {
+                    mode = Mode.NORMAL;
+                    stopAutoScroll();
+                } else {
+                    if(Mode.SPEAK.equals(mode)) {
+                       stopSpeak();
+                    }
+                    clearSearch();
+                    mode = Mode.AUTO_SCROLL;
+                    item.setChecked(true);
+                    startAutoScroll();
+                }
+                return true;
             case R.id.action_work_speaking:
                 if (item.isChecked()) {
                     mode = Mode.NORMAL;
-                    item.setChecked(false);
-                    if (TTSService.isReady(work)) {
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
-                    }
-                    selectText(lastIndent, null);
+                    stopSpeak();
                 } else {
+                    if (Mode.AUTO_SCROLL.equals(mode)) {
+                        stopAutoScroll();
+                    }
                     mode = Mode.SPEAK;
                     item.setChecked(true);
+                    clearSearch();
                     if (!TTSService.isReady(work)) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
                     }
@@ -311,18 +372,26 @@ public class WorkFragment extends ListFragment<String> {
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");
                 return true;
             case R.id.action_work_save:
-                DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), Environment.getExternalStorageDirectory().getAbsolutePath(), false);
-                chooserDialog.setTitle("Сохранить в...");
-                chooserDialog.setIcon(android.R.drawable.ic_menu_save);
-                chooserDialog.setAllowRootDir(true);
-                chooserDialog.setOnChooseFileListener(chosenFile -> {
-                    try {
-                        SystemUtils.copy(work.getCachedResponse(), new File(chosenFile, work.getTitle() + ".html"));
-                    } catch (IOException e) {
-                        Log.e(TAG, "Unknown exception", e);
-                    }
-                });
-                chooserDialog.show();
+                if (isAdded()) {
+                    getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
+                        if (permissionGained) {
+                            DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), Environment.getExternalStorageDirectory().getAbsolutePath(), false);
+                            chooserDialog.setTitle("Сохранить в...");
+                            chooserDialog.setIcon(android.R.drawable.ic_menu_save);
+                            chooserDialog.setAllowRootDir(true);
+                            chooserDialog.setOnChooseFileListener(chosenFile -> {
+                                if (chosenFile != null) {
+                                    try {
+                                        SystemUtils.copy(work.getCachedResponse(), new File(chosenFile, work.getTitle() + ".html"));
+                                    } catch (IOException e) {
+                                        Log.e(TAG, "Unknown exception", e);
+                                    }
+                                }
+                            });
+                            chooserDialog.show();
+                        }
+                    });
+                }
                 return true;
             case R.id.action_work_open_with:
                 try {
@@ -403,6 +472,7 @@ public class WorkFragment extends ListFragment<String> {
             }
         }
         if (work.isParsed()) {
+            safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new WorkParsedEvent(work));
         }
         ownTTSService = false;
@@ -508,9 +578,8 @@ public class WorkFragment extends ListFragment<String> {
                             Intent i = new Intent(getActivity(), TTSService.class);
                             i.putExtra(Constants.ArgsName.LINK, work.getLink());
                             i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
-                            float speedSpeech = 1f + ((float) speed.getProgress() / speed.getMax());
-                            i.putExtra(Constants.ArgsName.SPEECH_RATE, speedSpeech);
-                            if(isAdded()) {
+                            i.putExtra(Constants.ArgsName.SPEECH_RATE, getSpeedRate());
+                            if (isAdded()) {
                                 getActivity().startService(i);
                             }
                         } else {

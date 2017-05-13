@@ -233,6 +233,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             clearData();
         }
         if (author.isParsed()) {
+            safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
         return super.onCreateView(inflater, container, savedInstanceState);

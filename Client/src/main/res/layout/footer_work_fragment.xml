@@ -11,7 +11,7 @@
     <SeekBar android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                 android:layout_margin="@dimen/spacing_large"
-                 android:progress="40"
-                 android:max="100"
+                 android:progress="130"
+                 android:max="300"
                  android:id="@+id/footer_work_speed"/>
 </LinearLayout>
