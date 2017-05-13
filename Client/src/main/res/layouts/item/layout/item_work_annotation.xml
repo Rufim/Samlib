@@ -11,6 +11,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/work_annotation"
+            android:layout_marginRight="@dimen/spacing_medium"
             android:textColor="@color/light_gold"
             android:textSize="@dimen/text_medium"/>
 </LinearLayout>

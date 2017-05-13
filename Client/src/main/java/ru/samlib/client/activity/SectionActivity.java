@@ -213,7 +213,7 @@ public class SectionActivity extends NavigationActivity<String> {
     private void initializeComments(List<Integer> pages) {
         setState(SectionActivityState.COMMENTS);
         initNavigationView(0, pages.toArray());
-        setNavigationLayoutWidth(GuiUtils.dpToPx(50, this));
+        setNavigationLayoutWidth(GuiUtils.dpToPx(60, this));
     }
 
     private void initializeIllustrations(List<Image> images) {
@@ -227,10 +227,10 @@ public class SectionActivity extends NavigationActivity<String> {
     protected boolean onNavigationItemSelected(int position, String title, View item) {
         switch (state) {
             case INIT:
-                break;
+                return false;
             case WORK:
                 postEvent(new ChapterSelectedEvent(work.getAutoBookmarks().get(position)));
-                break;
+                return false;
             case AUTHOR:
                 postEvent(new CategorySelectedEvent(author.getLinkableCategory().get(position)));
                 break;

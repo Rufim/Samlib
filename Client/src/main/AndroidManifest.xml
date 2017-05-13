@@ -39,6 +39,7 @@
                 android:name=".activity.SectionActivity"
                 android:launchMode="singleTop"
                 android:parentActivityName=".activity.MainActivity"
+                android:windowSoftInputMode="adjustPan"
                 android:configChanges="orientation">
             <meta-data android:name="android.app.searchable"
                        android:resource="@xml/searchable"/>

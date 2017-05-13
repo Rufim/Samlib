@@ -13,10 +13,10 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
+import ru.kazantsev.template.util.PicassoTransformImage;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Image;
-import ru.samlib.client.util.PicassoTransformImage;
 import ru.kazantsev.template.util.SystemUtils;
 
 import java.lang.reflect.Field;
@@ -46,11 +46,10 @@ public class IllustrationFragment extends BaseFragment {
         View rootView = inflater.inflate(R.layout.item_illustration, container, false);
         bind(rootView);
         image = (Image) getArguments().getSerializable(Constants.ArgsName.IMAGE);
-        float density = getResources().getDisplayMetrics().density;
         int maxWidth = getResources().getDisplayMetrics().widthPixels;
         Picasso.with(getActivity())
                 .load(image.getFullLink())
-                .transform(new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, density))
+                .transform(new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.getFullLink()))
                 .into(illustration, new ImageCallback(progressBar, loadingText, illustration) {
                     @Override
                     public void onSuccess() {

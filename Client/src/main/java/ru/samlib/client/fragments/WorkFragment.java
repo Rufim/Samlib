@@ -16,6 +16,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.*;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -23,6 +24,7 @@ import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.util.*;
+import ru.kazantsev.template.view.listener.OnSwipeTouchListener;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
@@ -64,6 +66,8 @@ public class WorkFragment extends ListFragment<String> {
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
     private boolean isDownloaded = false;
+    private SeekBar speed;
+    private View speedLayout;
 
 
     @Inject
@@ -407,7 +411,25 @@ public class WorkFragment extends ListFragment<String> {
         screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
-        return super.onCreateView(inflater, container, savedInstanceState);
+        ViewGroup root = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
+        final View speedGesture = inflater.inflate(R.layout.footer_work_gesture, root, false);
+        speedGesture.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
+            @Override
+            public void onSwipeTop() {
+                GuiUtils.slide(speedGesture, GuiUtils.dpToPx(-70, getContext()), true);
+                GuiUtils.slide(speedLayout, GuiUtils.dpToPx(-100, getContext()), true);
+            }
+
+            public void onSwipeBottom() {
+                GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
+                GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
+            }
+        });
+        root.addView(speedGesture);
+        speedLayout = inflater.inflate(R.layout.footer_work_fragment, root, false);
+        root.addView(speedLayout);
+        speed = GuiUtils.getView(root, R.id.footer_work_speed);
+        return root;
     }
 
     private int getVisibleLines(TextView textView) {
@@ -486,7 +508,11 @@ public class WorkFragment extends ListFragment<String> {
                             Intent i = new Intent(getActivity(), TTSService.class);
                             i.putExtra(Constants.ArgsName.LINK, work.getLink());
                             i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
-                            getActivity().startService(i);
+                            float speedSpeech = 1f + ((float) speed.getProgress() / speed.getMax());
+                            i.putExtra(Constants.ArgsName.SPEECH_RATE, speedSpeech);
+                            if(isAdded()) {
+                                getActivity().startService(i);
+                            }
                         } else {
                             if (TTSService.getInstance().getPlayer().isSpeaking()) {
                                 TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);

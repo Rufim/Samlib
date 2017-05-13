@@ -30,7 +30,7 @@ public class ParserUtils {
                 }
             }
         }
-        Elements table = el.select("table");
+        /*Elements table = el.select("table");
         if (table.select("input").size() > 0) {
             table.remove();
         } else {
@@ -38,7 +38,7 @@ public class ParserUtils {
                 table.wrap("<hr><hr>");
             }
             table.attr("border", "0");
-        }
+        } */
         el.select("input").remove(); // inputs not supported
 
         return el.html().replaceAll("\\s<br>\\s\\n", "").replace("\n", "");

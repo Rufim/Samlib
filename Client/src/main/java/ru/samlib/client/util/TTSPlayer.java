@@ -35,6 +35,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     private TextToSpeech tts;
     private boolean playOnStart = false;
     private State state = State.UNAVAILABLE;
+    private float speechRate = 1.3f;
 
     public static class Phrase {
         public String text;
@@ -210,6 +211,14 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         phraseIndex++;
     }
 
+    public float getSpeechRate() {
+        return speechRate;
+    }
+
+    public void setSpeechRate(float speechRate) {
+        this.speechRate = speechRate;
+    }
+
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
@@ -219,7 +228,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
                 }
             });
             tts.setLanguage(Locale.getDefault());
-            tts.setSpeechRate(1.3f);
+            tts.setSpeechRate(speechRate);
             state = State.IDLE;
             if (playOnStart) {
                 playOnStart = false;

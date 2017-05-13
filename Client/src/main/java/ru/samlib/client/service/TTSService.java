@@ -137,6 +137,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             }
             ttsp.setIndexSpeakFinished(indexSpeakFinished);
             ttsp.setNextPhraseListener(nextPhraseListener);
+            ttsp.setSpeechRate(intent.getFloatExtra(Constants.ArgsName.SPEECH_RATE, 1.3f));
             playWork(work, intent.getStringExtra(Constants.ArgsName.TTS_PLAY_POSITION));
             TTSPlayer.TTS_HANDLER = new Handler(new Handler.Callback() {
                 @Override

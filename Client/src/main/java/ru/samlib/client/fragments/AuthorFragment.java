@@ -297,6 +297,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         TextView annotationView = holder.getView(R.id.section_annotation);
                         spanner.registerHandler("img", new PicassoImageHandler(annotationView));
                         spanner.registerHandler("a", new LinkHandler(annotationView));
+                        spanner.setStripExtraWhiteSpace(true);
                         annotationView.setVisibility(View.VISIBLE);
                         annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                         annotationView.setText(spanner.fromHtml(category.processAnnotation(getResources().getColor(R.color.SeaGreen))));
@@ -358,6 +359,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         HtmlSpanner spanner = new HtmlSpanner();
                         spanner.registerHandler("img", new PicassoImageHandler(textView));
                         spanner.registerHandler("a", new LinkHandler(textView));
+                        spanner.setStripExtraWhiteSpace(true);
                         textView.setMovementMethod(LinkMovementMethod.getInstance());
                         textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
                     } else {
