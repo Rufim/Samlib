@@ -7,4 +7,6 @@
     <string name="preferenceCommentName">CommentName</string>
     <string name="preferenceCommentEmail">CommentEmail</string>
     <string name="preferenceCommentLink">CommentLink</string>
+
+    <string name="preferenceWorkSpeechRate">WorkSpeechRate</string>
 </resources>

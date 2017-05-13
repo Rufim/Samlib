@@ -3,6 +3,7 @@ package ru.samlib.client.fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
@@ -224,6 +225,9 @@ public class WorkFragment extends ListFragment<String> {
             // should never happen during normal workflow
             Log.e(TAG, "Wakelock reference is null");
         }
+        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+        editor.putInt(getString(R.string.preferenceWorkSpeechRate), speed.getProgress());
+        editor.apply();
     }
 
     @Override
@@ -292,7 +296,9 @@ public class WorkFragment extends ListFragment<String> {
     }
 
     public void stopAutoScroll() {
-        autoScroller.cancel();
+        if(autoScroller != null) {
+            autoScroller.cancel();
+        }
         autoScroller = null;
         if (isAdded()) {
             getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_auto_scroll).setChecked(false);
@@ -498,7 +504,9 @@ public class WorkFragment extends ListFragment<String> {
         root.addView(speedGesture);
         speedLayout = inflater.inflate(R.layout.footer_work_fragment, root, false);
         root.addView(speedLayout);
+        SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
         speed = GuiUtils.getView(root, R.id.footer_work_speed);
+        speed.setProgress(preferences.getInt(getString(R.string.preferenceWorkSpeechRate), 130));
         return root;
     }
 
