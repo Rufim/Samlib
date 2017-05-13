@@ -1,10 +1,12 @@
 package ru.samlib.client.net;
 
+import android.content.Context;
 import android.util.Log;
 import ru.kazantsev.template.net.*;
 import ru.samlib.client.App;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.entity.SavedHtml;
+import ru.samlib.client.domain.entity.Work;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,22 +59,8 @@ public class HtmlClient {
 
         @Override
         protected Response prepareResponse() throws IOException {
-            File cacheDir = app.getExternalCacheDir();
-            String fileName = request.getBaseUrl().getPath().replace("//", "/");
-            if (fileName.endsWith("/")) {
-                fileName = fileName.substring(0, fileName.lastIndexOf("/"));
-            }
-            String hash = "";
-            if (request.isWithParams()) {
-                hash = "." + Integer.toHexString(request.hashCode());
-            }
-            if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm")) {
-                fileName += hash + ".html";
-            }
-            if(fileName.endsWith(".shtml")) {
-                fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
-            }
-            CachedResponse cachedResponse = new CachedResponse(cacheDir, fileName, request);
+            String linkPath = request.getBaseUrl().getPath().replace("//", "/");
+            CachedResponse cachedResponse = new CachedResponse(getCachedFile(app, linkPath).getAbsolutePath(), request);
             if (cachedResponse.exists()) {
                 cachedResponse.delete();
             }
@@ -84,6 +72,21 @@ public class HtmlClient {
             }
         }
 
+    }
+
+    public static File getCachedFile(Context context, String link) {
+        File cacheDir = context.getExternalCacheDir();
+        String fileName = link.replace("//", "/");
+        if (fileName.endsWith("/")) {
+            fileName = fileName.substring(0, fileName.lastIndexOf("/"));
+        }
+        if (!ru.kazantsev.template.util.TextUtils.contains(fileName, false, ".shtml", ".html", ".htm")) {
+            fileName += ".html";
+        }
+        if (fileName.endsWith(".shtml")) {
+            fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
+        }
+        return new File(cacheDir, fileName);
     }
 
     public static synchronized void cleanCache(List<SavedHtml> savedHtmls) {

@@ -1,5 +1,6 @@
 package ru.samlib.client.domain.entity;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
 import io.requery.*;
@@ -18,6 +19,7 @@ import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 import ru.kazantsev.template.net.CachedResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;

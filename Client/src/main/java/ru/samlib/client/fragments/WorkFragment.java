@@ -39,6 +39,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
+import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
@@ -126,13 +127,14 @@ public class WorkFragment extends ListFragment<String> {
                             work = entity;
                         }
                     }
-                    postEvent(new WorkParsedEvent(work));
                 } catch (MalformedURLException e) {
                     Log.e(TAG, "Unknown exception", e);
                     return new ArrayList<>();
                 }
             }
             if (work.isParsed()) {
+                safeInvalidateOptionsMenu();
+                postEvent(new WorkParsedEvent(work));
                 return work.getIndents();
             } else {
                 return new ArrayList<>();
@@ -401,7 +403,11 @@ public class WorkFragment extends ListFragment<String> {
                 return true;
             case R.id.action_work_open_with:
                 try {
-                    AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
+                    if(work.getCachedResponse() != null) {
+                        AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
+                    } else {
+                        AndroidSystemUtils.openFileInExtApp(getActivity(), HtmlClient.getCachedFile(getContext(), work.getLink()));
+                    }
                 } catch (IOException e) {
                     Log.e(TAG, "Unknown exception", e);
                 }
