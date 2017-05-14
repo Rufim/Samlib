@@ -2,7 +2,7 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/footer_work_layout"
+        android:id="@+id/footer_work_auto_scroll"
         android:layout_width="match_parent"
         android:background="@color/Black"
         android:layout_alignParentBottom="true"
@@ -11,7 +11,7 @@
     <SeekBar android:layout_width="match_parent"
                  android:layout_height="wrap_content"
                 android:layout_margin="@dimen/spacing_large"
-                 android:progress="130"
-                 android:max="300"
+                 android:progress="30"
+                 android:max="100"
                  android:id="@+id/footer_work_speed"/>
 </LinearLayout>

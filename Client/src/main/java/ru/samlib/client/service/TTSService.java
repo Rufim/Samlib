@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -16,10 +17,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
-import com.snappydb.SnappydbException;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
-import ru.samlib.client.database.SnappyHelper;
+import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.parser.WorkParser;
@@ -61,6 +61,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     private static TTSPlayer.OnIndexSpeakFinished indexSpeakFinished;
     private static TTSPlayer.OnNextPhraseListener nextPhraseListener;
+    private static TTSPlayer.OnTTSPlayerStateChanged stateChanged;
 
     @Inject
     DatabaseService databaseService;
@@ -95,6 +96,10 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     public static void setIndexSpeakFinished(TTSPlayer.OnIndexSpeakFinished indexSpeakFinished) {
         TTSService.indexSpeakFinished = indexSpeakFinished;
+    }
+
+    public static void setOnPlayerStateChanged(TTSPlayer.OnTTSPlayerStateChanged stateChanged) {
+        TTSService.stateChanged = stateChanged;
     }
 
     public void setPlayer(TTSPlayer ttsp) {
@@ -135,9 +140,14 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             if (currentVersionSupportLockScreenControls) {
                 RegisterRemoteClient();
             }
-            ttsp.setIndexSpeakFinished(indexSpeakFinished);
-            ttsp.setNextPhraseListener(nextPhraseListener);
-            ttsp.setSpeechRate(intent.getFloatExtra(Constants.ArgsName.SPEECH_RATE, 1.3f));
+            ttsp.setOnIndexSpeakFinished(indexSpeakFinished);
+            ttsp.setOnNextPhraseListener(nextPhraseListener);
+            ttsp.setOnTTSPlayerStateChanged(stateChanged);
+            ttsp.setSpeechRate(intent.getFloatExtra(Constants.ArgsName.TTS_SPEECH_RATE, 1.3f));
+            ttsp.setPitch(intent.getFloatExtra(Constants.ArgsName.TTS_PITCH, 1f));
+            if(intent.hasExtra(Constants.ArgsName.TTS_LANGUAGE)) {
+                ttsp.setLanguage(intent.getStringExtra(Constants.ArgsName.TTS_LANGUAGE));
+            }
             playWork(work, intent.getStringExtra(Constants.ArgsName.TTS_PLAY_POSITION));
             TTSPlayer.TTS_HANDLER = new Handler(new Handler.Callback() {
                 @Override
@@ -236,12 +246,17 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         Intent pause = new Intent(NOTIFY_PAUSE);
         Intent next = new Intent(NOTIFY_NEXT);
         Intent play = new Intent(NOTIFY_PLAY);
+        Intent launch = new Intent(getApplicationContext(), SectionActivity.class);
+        launch.setData(Uri.parse(getPlayer().getWork().getFullLink()));
+
+        PendingIntent pLaunchWork = PendingIntent.getBroadcast(getApplicationContext(), 0, launch, PendingIntent.FLAG_UPDATE_CURRENT);
+        view.setOnClickPendingIntent(R.id.tts_notification, pLaunchWork);
 
         PendingIntent pPrevious = PendingIntent.getBroadcast(getApplicationContext(), 0, previous, PendingIntent.FLAG_UPDATE_CURRENT);
         view.setOnClickPendingIntent(R.id.btnPrevious, pPrevious);
 
         PendingIntent pDelete = PendingIntent.getBroadcast(getApplicationContext(), 0, delete, PendingIntent.FLAG_UPDATE_CURRENT);
-        view.setOnClickPendingIntent(R.id.btnDelete, pDelete);
+        view.setOnClickPendingIntent(R.id.btnStop, pDelete);
 
         PendingIntent pPause = PendingIntent.getBroadcast(getApplicationContext(), 0, pause, PendingIntent.FLAG_UPDATE_CURRENT);
         view.setOnClickPendingIntent(R.id.btnPause, pPause);

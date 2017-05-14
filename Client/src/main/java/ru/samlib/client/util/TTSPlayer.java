@@ -3,6 +3,7 @@ package ru.samlib.client.util;
 import android.content.Context;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.widget.Toast;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.kazantsev.template.util.GuiUtils;
@@ -36,6 +37,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     private boolean playOnStart = false;
     private State state = State.UNAVAILABLE;
     private float speechRate = 1.3f;
+    private float pitch = 1f;
+    private String language = null;
 
     public static class Phrase {
         public String text;
@@ -45,6 +48,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
 
     private OnIndexSpeakFinished indexSpeakFinished;
     private OnNextPhraseListener nextPhraseListener;
+    private OnTTSPlayerStateChanged stateChanged;
 
     public interface OnNextPhraseListener {
         void onNextPhrase(int indentIndex, int phraseIndex, List<Phrase> phrases);
@@ -52,6 +56,10 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
 
     public interface OnIndexSpeakFinished {
         void onNextPhrase(int indentIndex);
+    }
+
+    public interface OnTTSPlayerStateChanged {
+        void onStateChanged(State state);
     }
 
     public TTSPlayer(Work work, Context context) {
@@ -75,12 +83,16 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         return state.equals(State.END);
     }
 
-    public void setNextPhraseListener(OnNextPhraseListener nextPhraseListener) {
+    public void setOnNextPhraseListener(OnNextPhraseListener nextPhraseListener) {
         this.nextPhraseListener = nextPhraseListener;
     }
 
-    public void setIndexSpeakFinished(OnIndexSpeakFinished indexSpeakFinished) {
+    public void setOnIndexSpeakFinished(OnIndexSpeakFinished indexSpeakFinished) {
         this.indexSpeakFinished = indexSpeakFinished;
+    }
+
+    public void setOnTTSPlayerStateChanged(OnTTSPlayerStateChanged stateChanged) {
+        this.stateChanged = stateChanged;
     }
 
     private List<Phrase> splitByPhrases(String indent, int offset) {
@@ -126,7 +138,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         if(work.getIndents().isEmpty()) return;
         if (index >= work.getIndents().size()) {
             tts.stop();
-            state = State.END;
+            changeState(State.END);
             return;
         }
         if (index < 0) {
@@ -136,7 +148,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         phraseIndex = phrase;
         this.indentIndex = index;
         nextPhrase();
-        state = State.SPEAKING;
+        changeState(State.SPEAKING);
     }
 
     public boolean isSpeaking() {
@@ -149,7 +161,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         } else {
             startSpeak(indentIndex);
         }
-        state = State.SPEAKING;
+        changeState(State.SPEAKING);
     }
 
     public void start() {
@@ -158,7 +170,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
 
     public void pause() {
         tts.stop();
-        state = State.PAUSE;
+        changeState(State.PAUSE);
     }
 
     public void stop() {
@@ -166,16 +178,16 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         phraseIndex = 0;
         phrases = null;
         tts.stop();
-        state = State.STOPPED;
+        changeState(State.STOPPED);
     }
 
     public void next() {
-        tts.stop();
+        stop();
         startSpeak(indentIndex + 1);
     }
 
     public void pre() {
-        tts.stop();
+        stop();
         startSpeak(indentIndex - 1);
     }
 
@@ -219,6 +231,22 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         this.speechRate = speechRate;
     }
 
+    public float getPitch() {
+        return pitch;
+    }
+
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
@@ -227,9 +255,14 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
                     nextPhrase();
                 }
             });
-            tts.setLanguage(Locale.getDefault());
             tts.setSpeechRate(speechRate);
-            state = State.IDLE;
+            tts.setPitch(pitch);
+            if(language == null) {
+                tts.setLanguage(Locale.getDefault());
+            } else {
+                tts.setLanguage(new Locale(language));
+            }
+            changeState(State.IDLE);
             if (playOnStart) {
                 playOnStart = false;
                 startSpeak(indentIndex, offset);
@@ -261,7 +294,13 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             tts.stop();
             tts.shutdown();
         }
-        state = State.UNAVAILABLE;
+        changeState(State.UNAVAILABLE);
     }
 
+    private synchronized void changeState(State state) {
+        this.state = state;
+        if(stateChanged != null) {
+            stateChanged.onStateChanged(state);
+        }
+    }
 }

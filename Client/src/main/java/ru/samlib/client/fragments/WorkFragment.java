@@ -53,10 +53,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 /**
  * Created by Dmitry on 23.06.2015.
  */
-public class WorkFragment extends ListFragment<String> {
+public class WorkFragment extends ListFragment<String> implements View.OnClickListener {
 
     private static final String TAG = WorkFragment.class.getSimpleName();
 
@@ -69,8 +72,14 @@ public class WorkFragment extends ListFragment<String> {
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
     private boolean isDownloaded = false;
-    private SeekBar speed;
+    private boolean isSeekBarVisible = false;
+    private boolean isWaitingPlayerCallback = false;
+    private SeekBar autoScrollSpeed;
+    private SeekBar pitch;
+    private SeekBar speechRate;
     private View speedLayout;
+    private ViewGroup speakLayout;
+    private View speedGesture;
     private CountDownTimer autoScroller;
 
     private int lastOffset = 0;
@@ -230,8 +239,11 @@ public class WorkFragment extends ListFragment<String> {
             Log.e(TAG, "Wakelock reference is null");
         }
         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
-        editor.putInt(getString(R.string.preferenceWorkSpeechRate), speed.getProgress());
+        editor.putInt(getString(R.string.preferenceWorkSpeechRate), speechRate.getProgress());
+        editor.putInt(getString(R.string.preferenceWorkAutoScrollSpeed), autoScrollSpeed.getProgress());
+        editor.putInt(getString(R.string.preferenceWorkPitch), pitch.getProgress());
         editor.apply();
+        stopAutoScroll();
     }
 
     @Override
@@ -261,7 +273,11 @@ public class WorkFragment extends ListFragment<String> {
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
-
+            if (TTSService.isReady(work)) {
+                menu.findItem(R.id.action_work_speaking).setChecked(true);
+                mode = Mode.SPEAK;
+                initFragmentForSpeak();
+            }
         } else {
             menu.clear();
         }
@@ -278,8 +294,8 @@ public class WorkFragment extends ListFragment<String> {
     }
 
 
-    public float getSpeedRate() {
-        return ((float) speed.getProgress() / 100f);
+    private float getRate(SeekBar seekBar) {
+        return ((float) seekBar.getProgress() / 100f);
     }
 
     public void startAutoScroll() {
@@ -289,14 +305,18 @@ public class WorkFragment extends ListFragment<String> {
         if (autoScroller != null) autoScroller.cancel();
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
-                itemList.scrollBy(0, (int) (heightToScroll * (getSpeedRate() * 0.07)));
+                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.07)));
             }
 
             public void onFinish() {
                 //you can add code for restarting timer here
             }
         };
-        itemList.post(() -> autoScroller.start());
+        itemList.post(() -> {
+            showSpeedBar();
+            autoScroller.start();
+        });
+        speedGesture.setVisibility(VISIBLE);
     }
 
     public void stopAutoScroll() {
@@ -307,24 +327,29 @@ public class WorkFragment extends ListFragment<String> {
         if (isAdded()) {
             getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_auto_scroll).setChecked(false);
         }
+        hideSpeedBar();
+        speedGesture.setVisibility(GONE);
     }
 
     public void stopSpeak() {
         if (TTSService.isReady(work)) {
             TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
         }
+        clearSearch();
         if (isAdded()) {
             getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
         }
+        speakLayout.setVisibility(View.GONE);
     }
 
-    public void startSpeak(int position) {
+    public void startSpeak(int position, int offset) {
         ownTTSService = true;
         WorkFragment.this.selectText(lastIndent, null);
         Intent i = new Intent(getActivity(), TTSService.class);
         i.putExtra(Constants.ArgsName.LINK, work.getLink());
-        i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + lastOffset);
-        i.putExtra(Constants.ArgsName.SPEECH_RATE, getSpeedRate());
+        i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + offset);
+        i.putExtra(Constants.ArgsName.TTS_SPEECH_RATE, getRate(speechRate));
+        i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
         if (isAdded()) {
             getActivity().startService(i);
         }
@@ -332,6 +357,72 @@ public class WorkFragment extends ListFragment<String> {
 
     public void clearSearch() {
         selectText(lastIndent, null);
+    }
+
+    void showSpeedBar() {
+        if (!isSeekBarVisible && mode.equals(Mode.AUTO_SCROLL)) {
+            GuiUtils.slide(speedGesture, GuiUtils.dpToPx(-50, getContext()), true);
+            GuiUtils.slide(speedLayout, GuiUtils.dpToPx(-100, getContext()), true);
+            isSeekBarVisible = true;
+        }
+    }
+
+    void hideSpeedBar() {
+        if (isSeekBarVisible) {
+            GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
+            GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
+            isSeekBarVisible = false;
+        }
+    }
+
+
+    private void initFragmentForSpeak() {
+        if (!TTSService.isReady(work)) {
+            TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+        }
+        TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
+            if (getActivity() != null && TTSService.isReady(work)) {
+                TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
+                lastIndent = speakIndex;
+                TextView textView = getTextViewIndent(speakIndex);
+                if (textView != null) {
+                    int visibleLines = getVisibleLines(textView);
+                    Layout layout = textView.getLayout();
+                    if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
+                        scrollToIndex(speakIndex, phrase.start);
+                    }
+                    selectText(speakIndex, phrase.start, phrase.end);
+                } else {
+                    scrollToIndex(lastIndent, 0);
+                }
+            }
+        });
+        TTSService.setIndexSpeakFinished(speakIndex -> {
+            if (getActivity() != null && TTSService.isReady(work)) {
+                selectText(speakIndex, null);
+            }
+        });
+        TTSService.setOnPlayerStateChanged(state -> {
+            isWaitingPlayerCallback = false;
+            switch (state) {
+                 case SPEAKING:
+                      GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
+                      GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
+                     break;
+                 case STOPPED:
+                 case PAUSE:
+                     GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
+                     GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
+                     break;
+                 case END:
+                     if (isAdded()) {
+                         getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
+                     }
+                     speakLayout.setVisibility(View.GONE);
+                     break;
+             }
+        });
+        speakLayout.setVisibility(VISIBLE);
     }
 
     @Override
@@ -362,32 +453,7 @@ public class WorkFragment extends ListFragment<String> {
                     mode = Mode.SPEAK;
                     item.setChecked(true);
                     clearSearch();
-                    if (!TTSService.isReady(work)) {
-                        TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
-                    }
-                    TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
-                        if (getActivity() != null && TTSService.isReady(work)) {
-                            TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
-                            lastIndent = speakIndex;
-                            TextView textView = getTextViewIndent(speakIndex);
-                            if (textView != null) {
-                                int visibleLines = getVisibleLines(textView);
-                                Layout layout = textView.getLayout();
-                                if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
-                                    scrollToIndex(speakIndex, phrase.start);
-                                }
-                                selectText(speakIndex, phrase.start, phrase.end);
-                            } else {
-                                scrollToIndex(lastIndent, 0);
-                            }
-
-                        }
-                    });
-                    TTSService.setIndexSpeakFinished(speakIndex -> {
-                        if (getActivity() != null && TTSService.isReady(work)) {
-                            selectText(speakIndex, null);
-                        }
-                    });
+                    initFragmentForSpeak();
                 }
                 return true;
             case R.id.action_work_to_author:
@@ -512,60 +578,50 @@ public class WorkFragment extends ListFragment<String> {
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         ViewGroup root = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
-        final View speedGesture = inflater.inflate(R.layout.footer_work_gesture, root, false);
+        speedGesture = inflater.inflate(R.layout.footer_work_gesture, root, false);
+        speakLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_tts_controls, root, false);
+        speedLayout = inflater.inflate(R.layout.footer_work_auto_scroll, root, false);
+        root.addView(speedGesture);
+        root.addView(speedLayout);
+        root.addView(speakLayout);
+        speakLayout.bringToFront();
+        GuiUtils.getView(speakLayout, R.id.btnPlay).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnPause).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnNext).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnPrevious).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnStop).setOnClickListener(this);
         speedGesture.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
-
-            boolean isSeekBarVisible = false;
-
-            void showSeekBar() {
-                if(!isSeekBarVisible) {
-                    GuiUtils.slide(speedGesture, GuiUtils.dpToPx(-50, getContext()), true);
-                    GuiUtils.slide(speedLayout, GuiUtils.dpToPx(-100, getContext()), true);
-                    isSeekBarVisible = true;
-                }
-            }
-
-            void hideSeekBar() {
-                if(isSeekBarVisible) {
-                    GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
-                    GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
-                    isSeekBarVisible = false;
-                }
-            }
 
             @Override
             public void onSwipeTop() {
-                showSeekBar();
+                showSpeedBar();
             }
 
             public void onSwipeBottom() {
-                hideSeekBar();
+                hideSpeedBar();
             }
 
             @Override
             public void onClick() {
-                if(isSeekBarVisible) {
-                    hideSeekBar();
-                } else {
-                    showSeekBar();
+                if (!isSeekBarVisible) {
+                    showSpeedBar();
                 }
             }
         });
-        root.addView(speedGesture);
-        speedLayout = inflater.inflate(R.layout.footer_work_fragment, root, false);
-        root.addView(speedLayout);
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
-        speed = GuiUtils.getView(root, R.id.footer_work_speed);
-        speed.setProgress(preferences.getInt(getString(R.string.preferenceWorkSpeechRate), 130));
-        speed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        autoScrollSpeed = GuiUtils.getView(root, R.id.footer_work_speed);
+        speechRate = GuiUtils.getView(root, R.id.footer_work_speech_rate);
+        pitch = GuiUtils.getView(root, R.id.footer_work_pitch);
+        autoScrollSpeed.setProgress(preferences.getInt(getString(R.string.preferenceWorkAutoScrollSpeed), 30));
+        speechRate.setProgress(preferences.getInt(getString(R.string.preferenceWorkSpeechRate), 130));
+        pitch.setProgress(preferences.getInt(getString(R.string.preferenceWorkPitch), 100));
+        SeekBar.OnSeekBarChangeListener listener =new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
@@ -573,12 +629,52 @@ public class WorkFragment extends ListFragment<String> {
                 if (mode.equals(Mode.SPEAK)) {
                     if (TTSService.isReady(work)) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
+                        startSpeak(lastIndent, lastOffset);
                     }
-                    startSpeak(lastIndent);
                 }
             }
-        });
+        };
+        speechRate.setOnSeekBarChangeListener(listener);
+        pitch.setOnSeekBarChangeListener(listener);
         return root;
+    }
+
+
+    @Override
+    public void onClick(View v) {
+         if(!isWaitingPlayerCallback) {
+             switch (v.getId()) {
+                 case R.id.btnPlay:
+                     startSpeak(findFirstVisibleItemPosition(false), 0);
+                     isWaitingPlayerCallback = true;
+                     break;
+                 case R.id.btnPause:
+                     if (TTSService.isReady(work)) {
+                         TTSNotificationBroadcast.sendMessage(TTSService.Action.PAUSE);
+                         isWaitingPlayerCallback = true;
+                     }
+                     break;
+                 case R.id.btnNext:
+                     if (TTSService.isReady(work)) {
+                         TTSNotificationBroadcast.sendMessage(TTSService.Action.NEXT);
+                         isWaitingPlayerCallback = true;
+                     }
+                     break;
+                 case R.id.btnPrevious:
+                     if (TTSService.isReady(work)) {
+                         TTSNotificationBroadcast.sendMessage(TTSService.Action.PRE);
+                         isWaitingPlayerCallback = true;
+                     }
+                     break;
+                 case R.id.btnStop:
+                     if (TTSService.isReady(work)) {
+                         mode = Mode.NORMAL;
+                         stopSpeak();
+                         isWaitingPlayerCallback = true;
+                     }
+                     break;
+             }
+         }
     }
 
     private int getVisibleLines(TextView textView) {
@@ -650,7 +746,7 @@ public class WorkFragment extends ListFragment<String> {
                     case SPEAK:
                         position -= firstIsHeader;
                         if (!TTSService.isReady(work) || !ownTTSService) {
-                            startSpeak(position);
+                            startSpeak(position, lastOffset);
                         } else {
                             if (TTSService.getInstance().getPlayer().isSpeaking()) {
                                 TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);

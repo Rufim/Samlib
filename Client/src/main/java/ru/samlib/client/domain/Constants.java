@@ -31,7 +31,9 @@ public class Constants {
         public static final String MESSAGE = "message";
         public static final String RESOURCE_ID = "resource_id";
         public static final String TTS_PLAY_POSITION = "position";
-        public static final String SPEECH_RATE = "speechRate";
+        public static final String TTS_SPEECH_RATE = "speechRate";
+        public static final String TTS_PITCH = "pitch";
+        public static final String TTS_LANGUAGE = "language";
         public static final String COMMENTS_PAGE = "comments_page";
     }
 

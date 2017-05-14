@@ -81,6 +81,8 @@
     <string name="work_comments">Комментарии</string>
     <string name="work_open_with">Открыть в…</string>
     <string name="work_auto_scroll">Автопрокрутка</string>
+    <string name="footer_work_pitch">Тембр:</string>
+    <string name="footer_work_speech_rate">Скорость:</string>
     <string name="newest_filter">Фильтр по категориям</string>
     <string name="dialog_filter_text">Текст:</string>
     <string name="dialog_filter_switch_mode">Исключающий фильтр</string>
