@@ -215,16 +215,18 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void onPause() {
         super.onPause();
-        try {
-            int indexLast = findLastVisibleItemPosition(false);
-            int index = findFirstVisibleItemPosition(false);
-            int size = adapter.getItems().size();
-            if (size > index) {
-                setBookmark(work, adapter.getItems().get(index), indexLast - 1);
-                databaseService.insertOrUpdateWork(work);
+        if (work != null && work.isParsed()) {
+            try {
+                int indexLast = findLastVisibleItemPosition(false);
+                int index = findFirstVisibleItemPosition(false);
+                int size = adapter.getItems().size();
+                if (size > index) {
+                    setBookmark(work, adapter.getItems().get(index), indexLast - 1);
+                    databaseService.insertOrUpdateWork(work);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Unknown exception", e);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Unknown exception", e);
         }
         // sanity check for null as this is a public method
         if (screenLock != null) {
@@ -324,9 +326,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             autoScroller.cancel();
         }
         autoScroller = null;
-        if (isAdded()) {
-            getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_auto_scroll).setChecked(false);
-        }
+        safeCheckMenuItem(R.id.action_work_auto_scroll, false);
         hideSpeedBar();
         speedGesture.setVisibility(GONE);
     }
@@ -337,11 +337,20 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
         clearSelection();
         if (isAdded()) {
-            getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
+            safeCheckMenuItem(R.id.action_work_speaking, false);
             Intent i = new Intent(getContext(), TTSService.class);
             getContext().stopService(i);
         }
         speakLayout.setVisibility(View.GONE);
+    }
+
+    private void safeCheckMenuItem(@IdRes int id, boolean state) {
+        if (getBaseActivity() != null && getBaseActivity().getToolbar() != null) {
+            MenuItem item = getBaseActivity().getToolbar().getMenu().findItem(id);
+            if (item != null) {
+                item.setChecked(state);
+            }
+        }
     }
 
     public void startSpeak(int position, int offset) {
@@ -407,22 +416,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         TTSService.setOnPlayerStateChanged(state -> {
             isWaitingPlayerCallback = false;
             switch (state) {
-                 case SPEAKING:
-                      GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
-                      GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
-                     break;
-                 case STOPPED:
-                 case PAUSE:
-                     GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
-                     GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
-                     break;
-                 case END:
-                     if (isAdded()) {
-                         getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
-                     }
-                     speakLayout.setVisibility(View.GONE);
-                     break;
-             }
+                case SPEAKING:
+                    GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
+                    GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
+                    break;
+                case STOPPED:
+                case PAUSE:
+                    GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
+                    GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
+                    break;
+                case END:
+                    if (isAdded()) {
+                        getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
+                    }
+                    speakLayout.setVisibility(View.GONE);
+                    break;
+            }
         });
         speakLayout.setVisibility(VISIBLE);
     }
@@ -617,7 +626,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         autoScrollSpeed.setProgress(preferences.getInt(getString(R.string.preferenceWorkAutoScrollSpeed), 30));
         speechRate.setProgress(preferences.getInt(getString(R.string.preferenceWorkSpeechRate), 130));
         pitch.setProgress(preferences.getInt(getString(R.string.preferenceWorkPitch), 100));
-        SeekBar.OnSeekBarChangeListener listener =new SeekBar.OnSeekBarChangeListener() {
+        SeekBar.OnSeekBarChangeListener listener = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             }
@@ -644,39 +653,39 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-         if(!isWaitingPlayerCallback) {
-             switch (v.getId()) {
-                 case R.id.btnPlay:
-                     startSpeak(findFirstVisibleItemPosition(false), 0);
-                     isWaitingPlayerCallback = true;
-                     break;
-                 case R.id.btnPause:
-                     if (TTSService.isReady(work)) {
-                         TTSNotificationBroadcast.sendMessage(TTSService.Action.PAUSE);
-                         isWaitingPlayerCallback = true;
-                     }
-                     break;
-                 case R.id.btnNext:
-                     if (TTSService.isReady(work)) {
-                         TTSNotificationBroadcast.sendMessage(TTSService.Action.NEXT);
-                         clearSelection();
-                     }
-                     break;
-                 case R.id.btnPrevious:
-                     if (TTSService.isReady(work)) {
-                         TTSNotificationBroadcast.sendMessage(TTSService.Action.PRE);
-                         clearSelection();
-                     }
-                     break;
-                 case R.id.btnStop:
-                     if (TTSService.isReady(work)) {
-                         mode = Mode.NORMAL;
-                         stopSpeak();
-                         isWaitingPlayerCallback = true;
-                     }
-                     break;
-             }
-         }
+        if (!isWaitingPlayerCallback) {
+            switch (v.getId()) {
+                case R.id.btnPlay:
+                    startSpeak(findFirstVisibleItemPosition(false), 0);
+                    isWaitingPlayerCallback = true;
+                    break;
+                case R.id.btnPause:
+                    if (TTSService.isReady(work)) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.PAUSE);
+                        isWaitingPlayerCallback = true;
+                    }
+                    break;
+                case R.id.btnNext:
+                    if (TTSService.isReady(work)) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.NEXT);
+                        clearSelection();
+                    }
+                    break;
+                case R.id.btnPrevious:
+                    if (TTSService.isReady(work)) {
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.PRE);
+                        clearSelection();
+                    }
+                    break;
+                case R.id.btnStop:
+                    if (TTSService.isReady(work)) {
+                        mode = Mode.NORMAL;
+                        stopSpeak();
+                        isWaitingPlayerCallback = true;
+                    }
+                    break;
+            }
+        }
     }
 
     private int getVisibleLines(TextView textView) {
