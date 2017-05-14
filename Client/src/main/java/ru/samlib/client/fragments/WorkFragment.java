@@ -335,7 +335,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (TTSService.isReady(work)) {
             TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
         }
-        clearSearch();
+        clearSelection();
         if (isAdded()) {
             getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
         }
@@ -355,7 +355,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
     }
 
-    public void clearSearch() {
+    public void clearSelection() {
         selectText(lastIndent, null);
     }
 
@@ -436,7 +436,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     if (Mode.SPEAK.equals(mode)) {
                         stopSpeak();
                     }
-                    clearSearch();
+                    clearSelection();
                     mode = Mode.AUTO_SCROLL;
                     item.setChecked(true);
                     startAutoScroll();
@@ -452,7 +452,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     }
                     mode = Mode.SPEAK;
                     item.setChecked(true);
-                    clearSearch();
+                    clearSelection();
                     initFragmentForSpeak();
                 }
                 return true;
@@ -657,13 +657,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                  case R.id.btnNext:
                      if (TTSService.isReady(work)) {
                          TTSNotificationBroadcast.sendMessage(TTSService.Action.NEXT);
-                         isWaitingPlayerCallback = true;
+                         clearSelection();
                      }
                      break;
                  case R.id.btnPrevious:
                      if (TTSService.isReady(work)) {
                          TTSNotificationBroadcast.sendMessage(TTSService.Action.PRE);
-                         isWaitingPlayerCallback = true;
+                         clearSelection();
                      }
                      break;
                  case R.id.btnStop:

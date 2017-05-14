@@ -182,13 +182,15 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public void next() {
+        int current = indentIndex;
         stop();
-        startSpeak(indentIndex + 1);
+        startSpeak(current + 1);
     }
 
     public void pre() {
+        int current = indentIndex;
         stop();
-        startSpeak(indentIndex - 1);
+        startSpeak(current - 1);
     }
 
     public State getState() {
