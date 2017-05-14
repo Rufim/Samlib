@@ -377,7 +377,10 @@ public class WorkFragment extends ListFragment<String> {
                                     scrollToIndex(speakIndex, phrase.start);
                                 }
                                 selectText(speakIndex, phrase.start, phrase.end);
+                            } else {
+                                scrollToIndex(lastIndent, 0);
                             }
+
                         }
                     });
                     TTSService.setIndexSpeakFinished(speakIndex -> {
@@ -475,7 +478,7 @@ public class WorkFragment extends ListFragment<String> {
 
     @Subscribe
     public void onEvent(ChapterSelectedEvent event) {
-        scrollToIndex(event.bookmark.getIndentIndex());
+        scrollToIndex(event.bookmark.getIndentIndex(), 0);
     }
 
     @Override
@@ -573,13 +576,6 @@ public class WorkFragment extends ListFragment<String> {
                     }
                     startSpeak(lastIndent);
                 }
-            }
-        });
-        speed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
-                GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
             }
         });
         return root;
