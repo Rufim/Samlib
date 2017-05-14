@@ -305,7 +305,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (autoScroller != null) autoScroller.cancel();
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
-                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.07)));
+                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.25)));
             }
 
             public void onFinish() {
