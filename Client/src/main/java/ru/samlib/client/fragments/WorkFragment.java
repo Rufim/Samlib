@@ -338,6 +338,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         clearSelection();
         if (isAdded()) {
             getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
+            Intent i = new Intent(getContext(), TTSService.class);
+            getContext().stopService(i);
         }
         speakLayout.setVisibility(View.GONE);
     }

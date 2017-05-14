@@ -133,7 +133,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         startSpeak(index, 0, offset);
     }
 
-    public void startSpeak(int index, int phrase, int offset) {
+    public synchronized void startSpeak(int index, int phrase, int offset) {
         if (tts == null) return;
         if(work.getIndents().isEmpty()) return;
         if (index >= work.getIndents().size()) {
@@ -173,7 +173,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         changeState(State.PAUSE);
     }
 
-    public void stop() {
+    public synchronized void stop() {
         indentIndex = 0;
         phraseIndex = 0;
         phrases = null;
@@ -197,7 +197,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         return state;
     }
 
-    private void nextPhrase() {
+    private synchronized void nextPhrase() {
         if (phraseIndex >= phrases.size()) {
             if (indexSpeakFinished != null) {
                 GuiUtils.runInUI(context, new GuiUtils.RunUIThread() {
