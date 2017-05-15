@@ -23,6 +23,8 @@
     <color name="abc_search_url_text_selected">@android:color/black</color>
     <color name="abc_search_url_text_pressed">@android:color/black</color>
 
+    <color name="player_btns">#99343434</color>
+
     <!-- My colors -->
     <color name="noble_gold">#fff4d82d</color>
     <color name="light_gold">#fffffacd</color>

@@ -77,9 +77,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private SeekBar autoScrollSpeed;
     private SeekBar pitch;
     private SeekBar speechRate;
-    private View speedLayout;
+    private ViewGroup speedLayout;
     private ViewGroup speakLayout;
-    private View speedGesture;
     private CountDownTimer autoScroller;
 
     private int lastOffset = 0;
@@ -300,14 +299,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return ((float) seekBar.getProgress() / 100f);
     }
 
-    public void startAutoScroll() {
+    private void startAutoScroll() {
         final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enouth to infinity. if not enought you can restart timer in onFinish()
         final int scrollPeriod = 20; // every 20 ms scoll will happened. smaller values for smoother
         final int heightToScroll = 20; // will be scrolled to 20 px every time. smaller values for smoother scrolling
         if (autoScroller != null) autoScroller.cancel();
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
-                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.25)));
+                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.35)));
             }
 
             public void onFinish() {
@@ -315,21 +314,34 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         };
         itemList.post(() -> {
-            showSpeedBar();
             autoScroller.start();
         });
-        speedGesture.setVisibility(VISIBLE);
     }
 
-    public void stopAutoScroll() {
+    private void stopAutoScroll() {
         if (autoScroller != null) {
             autoScroller.cancel();
         }
         autoScroller = null;
-        safeCheckMenuItem(R.id.action_work_auto_scroll, false);
-        hideSpeedBar();
-        speedGesture.setVisibility(GONE);
     }
+
+    public void playAutoScroll() {
+        startAutoScroll();
+        GuiUtils.setVisibility(VISIBLE, speedLayout, R.id.btnPause);
+        GuiUtils.setVisibility(GONE, speedLayout, R.id.btnPlay);
+    }
+
+    public void pauseAutoScroll() {
+        stopAutoScroll();
+        GuiUtils.setVisibility(GONE, speedLayout, R.id.btnPause);
+        GuiUtils.setVisibility(VISIBLE, speedLayout, R.id.btnPlay);
+    }
+
+    public void cancelAutoScroll() {
+        pauseAutoScroll();
+        speedLayout.setVisibility(GONE);
+    }
+
 
     public void stopSpeak() {
         if (TTSService.isReady(work)) {
@@ -372,16 +384,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     void showSpeedBar() {
         if (!isSeekBarVisible && mode.equals(Mode.AUTO_SCROLL)) {
-            GuiUtils.slide(speedGesture, GuiUtils.dpToPx(-50, getContext()), true);
-            GuiUtils.slide(speedLayout, GuiUtils.dpToPx(-100, getContext()), true);
+            speakLayout.setVisibility(VISIBLE);
             isSeekBarVisible = true;
         }
     }
 
     void hideSpeedBar() {
         if (isSeekBarVisible) {
-            GuiUtils.slide(speedGesture, GuiUtils.dpToPx(0, getContext()), true);
-            GuiUtils.slide(speedLayout, GuiUtils.dpToPx(0, getContext()), true);
+            speakLayout.setVisibility(GONE);
             isSeekBarVisible = false;
         }
     }
@@ -443,6 +453,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 if (item.isChecked()) {
                     mode = Mode.NORMAL;
                     stopAutoScroll();
+                    item.setChecked(false);
                 } else {
                     if (Mode.SPEAK.equals(mode)) {
                         stopSpeak();
@@ -450,7 +461,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     clearSelection();
                     mode = Mode.AUTO_SCROLL;
                     item.setChecked(true);
-                    startAutoScroll();
+                    speedLayout.setVisibility(VISIBLE);
                 }
                 return true;
             case R.id.action_work_speaking:
@@ -459,7 +470,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     stopSpeak();
                 } else {
                     if (Mode.AUTO_SCROLL.equals(mode)) {
-                        stopAutoScroll();
+                        cancelAutoScroll();
                     }
                     mode = Mode.SPEAK;
                     item.setChecked(true);
@@ -589,36 +600,19 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         ViewGroup root = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
-        speedGesture = inflater.inflate(R.layout.footer_work_gesture, root, false);
         speakLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_tts_controls, root, false);
-        speedLayout = inflater.inflate(R.layout.footer_work_auto_scroll, root, false);
-        root.addView(speedGesture);
+        speedLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_auto_scroll, root, false);
         root.addView(speedLayout);
         root.addView(speakLayout);
         speakLayout.bringToFront();
         GuiUtils.getView(speakLayout, R.id.btnPlay).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnPause).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnStop).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnNext).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnPrevious).setOnClickListener(this);
-        GuiUtils.getView(speakLayout, R.id.btnStop).setOnClickListener(this);
-        speedGesture.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
-
-            @Override
-            public void onSwipeTop() {
-                showSpeedBar();
-            }
-
-            public void onSwipeBottom() {
-                hideSpeedBar();
-            }
-
-            @Override
-            public void onClick() {
-                if (!isSeekBarVisible) {
-                    showSpeedBar();
-                }
-            }
-        });
+        GuiUtils.getView(speedLayout, R.id.btnPlay).setOnClickListener(this);
+        GuiUtils.getView(speedLayout, R.id.btnPause).setOnClickListener(this);
+        GuiUtils.getView(speedLayout, R.id.btnStop).setOnClickListener(this);
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
         autoScrollSpeed = GuiUtils.getView(root, R.id.footer_work_speed);
         speechRate = GuiUtils.getView(root, R.id.footer_work_speech_rate);
@@ -653,7 +647,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        if (!isWaitingPlayerCallback) {
+        if (!isWaitingPlayerCallback & mode.equals(Mode.SPEAK)) {
             switch (v.getId()) {
                 case R.id.btnPlay:
                     startSpeak(findFirstVisibleItemPosition(false), 0);
@@ -683,6 +677,21 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         stopSpeak();
                         isWaitingPlayerCallback = true;
                     }
+                    break;
+            }
+        }
+        if (mode.equals(Mode.AUTO_SCROLL)) {
+            switch (v.getId()) {
+                case R.id.btnPlay:
+                    playAutoScroll();
+                    break;
+                case R.id.btnPause:
+                    pauseAutoScroll();
+                    break;
+                case R.id.btnStop:
+                    cancelAutoScroll();
+                    safeCheckMenuItem(R.id.action_work_auto_scroll, false);
+                    mode = Mode.NORMAL;
                     break;
             }
         }
@@ -805,28 +814,37 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     view.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
-                            int x = (int) event.getX();
-                            int y = (int) event.getY();
-
-                            x -= textView.getTotalPaddingLeft();
-                            y -= textView.getTotalPaddingTop();
-
-                            x += textView.getScrollX();
-                            y += textView.getScrollY();
-
-                            Layout layout = textView.getLayout();
-
-                            if (layout != null) {
-                                int line = layout.getLineForVertical(y);
-                                lastOffset = layout.getOffsetForHorizontal(line, x);
-                            }
-
                             v.performClick();
-                            if (textView.getText() instanceof SpannedString && mode.equals(Mode.NORMAL)) {
+                            if(mode.equals(Mode.SPEAK)) {
+                                int x = (int) event.getX();
+                                int y = (int) event.getY();
+
+                                x -= textView.getTotalPaddingLeft();
+                                y -= textView.getTotalPaddingTop();
+
+                                x += textView.getScrollX();
+                                y += textView.getScrollY();
+
+                                Layout layout = textView.getLayout();
+
+                                if (layout != null) {
+                                    int line = layout.getLineForVertical(y);
+                                    lastOffset = layout.getOffsetForHorizontal(line, x);
+                                }
+                            }
+                            if (textView.getText() instanceof SpannedString && !mode.equals(Mode.SPEAK)) {
                                 SpannedString spannableString = (SpannedString) textView.getText();
                                 URLSpanNoUnderline url[] = spannableString.getSpans(lastOffset, spannableString.length(), URLSpanNoUnderline.class);
                                 if (url.length > 0) {
                                     url[0].onClick(textView);
+                                    return true;
+                                } 
+                            }
+                            if (mode.equals(Mode.AUTO_SCROLL)) {
+                                if (speedLayout.getVisibility() == GONE) {
+                                    speedLayout.setVisibility(VISIBLE);
+                                } else {
+                                    speedLayout.setVisibility(GONE);
                                 }
                             }
                         }
