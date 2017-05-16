@@ -94,7 +94,6 @@ public class MainActivity extends BaseActivity {
         Integer itemId = item.getItemId();
         switch (itemId) {
             case R.id.drawer_rate:
-                int crash = 1 / 0;
                 replaceFragment(RateFragment.class);
                 break;
             case R.id.drawer_top:
