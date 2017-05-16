@@ -58,7 +58,6 @@ public class MainActivity extends BaseActivity {
         });
         navigationView.addHeaderView(header);
         switchStatus(online);
-        PermissionUtils.getUnhandledPermissions(this);
     }
 
     @Override
@@ -95,6 +94,7 @@ public class MainActivity extends BaseActivity {
         Integer itemId = item.getItemId();
         switch (itemId) {
             case R.id.drawer_rate:
+                int crash = 1 / 0;
                 replaceFragment(RateFragment.class);
                 break;
             case R.id.drawer_top:

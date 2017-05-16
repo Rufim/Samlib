@@ -52,6 +52,9 @@
         <item>Friends:</item>
     </string-array>
 
+    <string name="crash_title_text">Ошибка</string>
+    <string name="crash_text">\u000AПослать отчет разработчику, чтобы помочь ее исправить?</string>
+
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="item_rate">Оцeнки:</string>

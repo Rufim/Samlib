@@ -3,6 +3,7 @@ package ru.samlib.client.net;
 import android.content.Context;
 import android.util.Log;
 import ru.kazantsev.template.net.*;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.App;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.entity.SavedHtml;
@@ -76,6 +77,9 @@ public class HtmlClient {
 
     public static File getCachedFile(Context context, String link) {
         File cacheDir = context.getExternalCacheDir();
+        if(cacheDir == null)  {
+            cacheDir = context.getCacheDir();
+        }
         String fileName = link.replace("//", "/");
         if (fileName.endsWith("/")) {
             fileName = fileName.substring(0, fileName.lastIndexOf("/"));
