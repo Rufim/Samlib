@@ -13,10 +13,7 @@ import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
 import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Bookmark;
-import ru.samlib.client.domain.entity.Category;
-import ru.samlib.client.domain.entity.Type;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
@@ -141,7 +138,12 @@ public class WorkParser extends Parser {
                 } else if (text.contains("Скачать")) {
                     break;
                 } else {
-                    Category category = new Category();
+                    Category category;
+                    if(work instanceof WorkEntity) {
+                        category = new CategoryEntity();
+                    } else {
+                        category = new Category();
+                    }
                     category.setTitle(text);
                     category.setLink(lis.attr("href"));
                     category.setAuthor(work.getAuthor());
@@ -266,7 +268,7 @@ public class WorkParser extends Parser {
         public List<Bookmark> getBookmarks() {
             List<Bookmark> resultBookmarks = new ArrayList<>();
             for (Bookmark bookmark : bookmarks) {
-                if (bookmark.getIndentIndex() != 0) {
+                if (bookmark.getIndentIndex() != 0 && !TextUtils.isEmpty(bookmark.getTitle())) {
                     resultBookmarks.add(bookmark);
                 }
             }

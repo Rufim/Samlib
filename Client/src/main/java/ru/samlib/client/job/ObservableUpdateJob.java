@@ -70,9 +70,9 @@ public class ObservableUpdateJob extends Job {
             try {
                 boolean wasUpdates = author.isHasUpdates();
                 AuthorParser parser = new AuthorParser(author);
-                author = service.updateAuthor((AuthorEntity) parser.parse());
+                author = service.createOrUpdateAuthor((AuthorEntity) parser.parse());
                 author.setParsed(true);
-                if(context != null && author.isHasUpdates() && author.isNotNotified()) {
+                if(context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
                     notifyAuthors.add(author.getShortName());
                     author.setNotNotified(false);
                 }

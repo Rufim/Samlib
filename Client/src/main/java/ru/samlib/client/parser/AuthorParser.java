@@ -327,13 +327,10 @@ public class AuthorParser extends Parser {
     private int hasCategory(List<Category> categories, Category category) {
         for (int i = 0; i < categories.size(); i++) {
             Category newCategory = categories.get(i);
-            if (newCategory.getLink() != null && newCategory.getLink().equals(category.getLink())) {
+            if (!TextUtils.isEmpty(newCategory.getLink()) && Category.isLinkEquals(newCategory, category)) {
                 return i;
             }
-            if (!Type.OTHER.equals(newCategory.getType())) {
-                return i;
-            }
-            if (simpleCategory(newCategory) && simpleCategory(category) && newCategory.getTitle().equals(category.getTitle())) {
+            if (simpleCategory(newCategory) && simpleCategory(category) && Category.isTitleEquals(newCategory, category)) {
                 return i;
             }
         }

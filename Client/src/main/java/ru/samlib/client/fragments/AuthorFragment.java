@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Stream;
-import net.nightwhistler.htmlspanner.TextUtil;
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -91,7 +90,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 author = new AuthorParser(author).parse();
                 if (!Parser.isCachedMode() && author.isObservable()) {
-                    databaseService.updateAuthor(author.createEntry()).setParsed(true);
+                    databaseService.createOrUpdateAuthor(author.createEntry()).setParsed(true);
                     if (author.isHasUpdates()) {
                         postEvent(new AuthorUpdatedEvent(author));
                     }
@@ -141,7 +140,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     return true;
                 } else {
                     author.setObservable(false);
-                    databaseService.updateAuthor(author.createEntry());
+                    databaseService.createOrUpdateAuthor(author.createEntry());
                     item.setChecked(false);
                     return true;
                 }

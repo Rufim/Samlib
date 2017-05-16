@@ -156,13 +156,11 @@ public class Category implements Linkable, Serializable, Parsable {
 
         Category category = (Category) o;
 
-        if (title != null ? !title.equals(category.title) : category.title != null) {
+        if (!isTitleEquals(this, category)) {
             return false;
         }
         if (category.getAuthor() != null && getAuthor() != null) {
-            String linkCategory = category.getAuthor().getLink();
-            String link = getAuthor().getLink();
-            return link != null ? link.equals(linkCategory) : linkCategory == null;
+            return isLinkEquals(this, category);
         } else {
             return false;
         }
@@ -179,4 +177,17 @@ public class Category implements Linkable, Serializable, Parsable {
         return getClass() == CategoryEntity.class;
     }
 
+    public static boolean isTitleEquals(Category one, Category two){
+        if(one.getTitle() == null || two.getTitle() == null) {
+            return false;
+        }
+        return TextUtils.trim(one.getTitle()).equalsIgnoreCase(TextUtils.trim(two.getTitle()));
+    }
+
+    public static boolean isLinkEquals(Category one, Category two){
+        if(one.getLink() == null || two.getLink() == null) {
+            return false;
+        }
+        return TextUtils.trim(one.getLink()).equalsIgnoreCase(TextUtils.trim(two.getLink()));
+    }
 }
