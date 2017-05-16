@@ -29,7 +29,7 @@ public class Category implements Linkable, Serializable, Parsable {
 
     String title;
     String annotation;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeAction.SAVE)
     Author author;
     Type type = Type.OTHER;
     @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})

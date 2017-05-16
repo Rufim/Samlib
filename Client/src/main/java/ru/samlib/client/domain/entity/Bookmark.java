@@ -44,7 +44,7 @@ public class Bookmark implements Serializable {
 
     public String toString() {
         if(title != null) {
-            return title;
+            return getTitle();
         }
         if(indent != null) {
             return Jsoup.parse(indent).text();

@@ -113,20 +113,14 @@ public class DatabaseService {
         if (!(work instanceof WorkEntity)) {
            workEntity = getWork(work.getLink());
             if (workEntity == null) {
-                Author author = work.getAuthor();
-                AuthorEntity authorEntity = getAuthor(author.getLink());
-                if(authorEntity != null) {
-                    work.setAuthor(authorEntity);
-                }
-                if (work.getCategory() != null) {
-                    resolveCategory(work, work.getCategory());
-                }
+                prepareWorkEntity(work);
                 return (WorkEntity) doAction(Action.INSERT, work.createEntity());
             } else {
                 updateWork(workEntity, work);
                 return (WorkEntity) doAction(Action.UPDATE, workEntity);
             }
         } else {
+            prepareWorkEntity(work);
             return (WorkEntity) doAction(Action.UPDATE, work);
         }
     }
@@ -140,7 +134,20 @@ public class DatabaseService {
           return author.createEntry();
     }
 
+
+    private void prepareWorkEntity(Work work) {
+        Author author = work.getAuthor();
+        AuthorEntity authorEntity = getAuthor(author.getLink());
+        if (authorEntity != null) {
+            work.setAuthor(authorEntity);
+        }
+        if (work.getCategory() != null) {
+            resolveCategory(work, work.getCategory());
+        }
+    }
+
     public CategoryEntity resolveCategory(Work into, Category category) {
+        addWorkToCategory(into, category);
         if(into.getAuthor().isEntity()) {
             Category result = Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
             if (result == null) {
@@ -153,12 +160,21 @@ public class DatabaseService {
                     result = result.createEntity();
                     into.getAuthor().getCategories().set(index, result);
                 }
-                result.addLink(into);
             }
             return (CategoryEntity) result;
         } else {
             into.setCategory(into.getCategory().createEntity());
             return (CategoryEntity) into.getCategory();
+        }
+    }
+
+    private void addWorkToCategory(Work into, Category category) {
+        for (int i = 0; i < category.getWorks().size(); i++) {
+            if (category.getWorks().get(i).getLink().equals(into.getLink())) {
+                category.getWorks().set(i, into);
+            } else {
+                category.addLink(into);
+            }
         }
     }
 

@@ -63,7 +63,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer expertKudoed;
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeAction.SAVE)
     Category category;
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;
@@ -185,19 +185,19 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public String getTypeName() {
-        if (category != null) {
-            return category.getTitle();
+        if (getCategory() != null) {
+            return getCategory().getTitle();
         } else {
-            return type.getTitle();
+            return getType().getTitle();
         }
     }
 
     public String printGenres() {
-        if (genres.isEmpty()) {
+        if (getGenres().isEmpty()) {
             return "";
         }
         StringBuilder builder = new StringBuilder();
-        for (Genre genre : genres) {
+        for (Genre genre : getGenres()) {
             if (builder.length() != 0) {
                 builder.append(",");
             }
@@ -207,10 +207,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public void setGenresAsString(String genres) {
-        if (this.genres == null) {
-            this.genres = new ArrayList<>();
+        if (getGenres() == null) {
+            setGenres(new ArrayList<>());
         } else {
-            this.genres.clear();
+            getGenres().clear();
         }
         for (String genre : genres.split(",")) {
             addGenre(genre);
@@ -219,18 +219,25 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
     public void addGenre(String genre) {
         Genre tryGenre = Genre.parseGenre(genre);
+        if( Collections.emptyList().equals(getGenres())) {
+            setGenres(new ArrayList<>());
+        }
         if (tryGenre != null) {
-            genres.add(tryGenre);
+
+            getGenres().add(tryGenre);
         } else {
-            genres.add(Genre.EMPTY);
+            getGenres().add(Genre.EMPTY);
         }
     }
 
     public void addGenre(Genre genre) {
-        if (genres == null) {
-            genres = new ArrayList<>();
+        if (Collections.emptyList().equals(getGenres())) {
+            setGenres(new ArrayList<>());
         }
-        genres.add(genre);
+        if (getGenres() == null) {
+            setGenres(new ArrayList<>());
+        }
+        getGenres().add(genre);
     }
 
     public String getAnnotation() {
@@ -272,7 +279,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
                 result = true;
             }
             if (genres != null) {
-                result = Collections.disjoint(genres, this.genres);
+                result = Collections.disjoint(genres, getGenres());
                 if (!filterQuery.excluding) result = !result;
             }
             if (!result) return result;

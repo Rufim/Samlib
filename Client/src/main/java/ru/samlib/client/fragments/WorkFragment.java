@@ -25,6 +25,7 @@ import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.util.*;
 import ru.kazantsev.template.view.listener.OnSwipeTouchListener;
@@ -136,8 +137,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             work = entity;
                         }
                     }
-                } catch (MalformedURLException e) {
-                    Log.e(TAG, "Unknown exception", e);
+                } catch (Exception e) {
+                    ErrorFragment.show(this, R.string.error, e);
                     return new ArrayList<>();
                 }
             }
