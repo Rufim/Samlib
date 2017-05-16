@@ -4,8 +4,10 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -15,6 +17,7 @@ import ru.samlib.client.domain.entity.Genre;
 import ru.kazantsev.template.domain.event.Event;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
@@ -81,6 +84,16 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
                 event.query = query;
             }
             filter(event);
+        }
+    }
+
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        if(ex instanceof IOException) {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        } else {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ACRA.getErrorReporter().handleException(ex);
         }
     }
 

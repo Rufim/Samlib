@@ -1,8 +1,8 @@
 package ru.samlib.client.domain.entity;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.text.TextUtils;
+import com.annimon.stream.Stream;
 import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,16 +18,16 @@ import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 import ru.kazantsev.template.net.CachedResponse;
+import ru.samlib.client.parser.Parser;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
 
 
 /**
@@ -63,7 +63,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Integer expertKudoed;
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ManyToOne(cascade = CascadeAction.SAVE)
+    @ManyToOne
     Category category;
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;
@@ -96,15 +96,12 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
     public WorkEntity createEntity() {
         WorkEntity entity;
-        if (getClass() == WorkEntity.class) {
+        if (isEntity()) {
             entity = (WorkEntity) this;
             entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
             entity.setAuthor(author == null ? null : author.createEntry());
             entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
             entity.setCategory(category == null ? null : category.createEntity());
-            if (entity.getCategory() != null) {
-                entity.getCategory().setAuthor(entity.getAuthor());
-            }
         } else {
             entity = new WorkEntity();
             entity.setTitle(title);
@@ -129,9 +126,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setSizeDiff(sizeDiff);
             entity.setSize(size);
             entity.setCategory(category == null ? null : category.createEntity());
-            if (entity.getCategory() != null) {
-                entity.getCategory().setAuthor(entity.getAuthor());
-            }
             entity.setKudoed(kudoed);
             entity.setRate(rate);
             entity.setState(state);
@@ -296,6 +290,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return false;
     }
 
+    public boolean isEntity() {
+        return getClass() == WorkEntity.class;
+    }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

@@ -7,6 +7,7 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.*;
+import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.Jsoup;
@@ -159,6 +160,16 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     public void onEvent(SelectCommentPageEvent event) {
         if (event.pageIndex >= 0) {
             pager.setCurrentItem(event.pageIndex);
+        }
+    }
+
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        if(ex instanceof IOException) {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        } else {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ACRA.getErrorReporter().handleException(ex);
         }
     }
 

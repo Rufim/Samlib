@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.annimon.stream.Stream;
 import net.nightwhistler.htmlspanner.TextUtil;
+import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
@@ -45,6 +46,7 @@ import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.SamlibGuiUtils;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,25 +89,29 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 SystemClock.sleep(10);
             }
             if (!author.isParsed()) {
-                try {
-                    author = new AuthorParser(author).parse();
-                    if (!Parser.isCachedMode() && author.isObservable()) {
-                        databaseService.updateAuthor(author.createEntry()).setParsed(true);
-                        if (author.isHasUpdates()) {
-                            postEvent(new AuthorUpdatedEvent(author));
-                        }
+                author = new AuthorParser(author).parse();
+                if (!Parser.isCachedMode() && author.isObservable()) {
+                    databaseService.updateAuthor(author.createEntry()).setParsed(true);
+                    if (author.isHasUpdates()) {
+                        postEvent(new AuthorUpdatedEvent(author));
                     }
-                    author.setParsed(true);
-                    postEvent(new AuthorParsedEvent(author));
-                    safeInvalidateOptionsMenu();
-                } catch (MalformedURLException e) {
-                    Log.e(TAG, "Unknown exception", e);
-                    ErrorFragment.show(AuthorFragment.this, R.string.error);
-                    return new ArrayList<>();
                 }
+                author.setParsed(true);
+                postEvent(new AuthorParsedEvent(author));
+                safeInvalidateOptionsMenu();
             }
             return new ArrayList<>(author.getStaticCategory());
         });
+    }
+
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        if(ex instanceof IOException) {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        } else {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ACRA.getErrorReporter().handleException(ex);
+        }
     }
 
     @Override
@@ -198,7 +204,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (!restoreLister()) {
             return super.allowBackPress();
         } else {
-            ((SectionActivity)getActivity()).cleanSelection();
+            ((SectionActivity) getActivity()).cleanSelection();
             return false;
         }
     }
@@ -272,9 +278,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
         public void openLinkable(Linkable linkable) {
             if (linkable.isWork()) {
                 WorkFragment.show(newFragmentBuilder()
-                        .addToBackStack()
-                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
+                                .addToBackStack()
+                                .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                                .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
                         , getId(), linkable.getLink());
             } else {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
@@ -366,7 +372,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     } else {
                         holder.getView(R.id.work_annotation).setVisibility(View.GONE);
                     }
-                    if (work.isChanged() &&  author.isObservable()) {
+                    if (work.isChanged() && author.isObservable()) {
                         holder.getView(R.id.work_item_update).setVisibility(View.VISIBLE);
                         if (work.getSizeDiff() != null) {
                             GuiUtils.setText(holder.getView(R.id.work_item_update), R.string.favorites_update);

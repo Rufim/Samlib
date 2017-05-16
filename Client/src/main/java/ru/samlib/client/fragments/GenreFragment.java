@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import org.acra.ACRA;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -18,6 +20,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.GenreParser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +49,16 @@ public class GenreFragment extends ListFragment<Work> {
             getActivity().setTitle(genre.getTitle());
         }
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        if(ex instanceof IOException) {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        } else {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ACRA.getErrorReporter().handleException(ex);
+        }
     }
 
     @Override

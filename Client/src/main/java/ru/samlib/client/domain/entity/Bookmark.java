@@ -1,6 +1,7 @@
 package ru.samlib.client.domain.entity;
 
 import io.requery.*;
+import io.requery.sql.MissingKeyException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,7 @@ public class Bookmark implements Serializable {
     Double percent = 0d;
     Integer indentIndex = 0;
     String indent;
-    @OneToOne
+    @OneToOne(cascade = CascadeAction.SAVE)
     Work work;
 
     public Bookmark(String title){
@@ -40,6 +41,16 @@ public class Bookmark implements Serializable {
         entity.setId(id);
         entity.setWork(work);
         return entity;
+    }
+
+    public Integer getIdNoDB() {
+        if(id != null) return id;
+        try {
+            id = getId();
+        } catch (Exception ex){
+            id = null;
+        }
+        return id;
     }
 
     public String toString() {

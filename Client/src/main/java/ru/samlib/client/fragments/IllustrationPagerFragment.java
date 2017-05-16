@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
@@ -24,6 +25,7 @@ import ru.samlib.client.parser.IllustrationsParser;
 import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 
@@ -59,6 +61,16 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
             return false;
         } else {
             return super.allowBackPress();
+        }
+    }
+
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        if(ex instanceof IOException) {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        } else {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ACRA.getErrorReporter().handleException(ex);
         }
     }
 

@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.snappydb.SnappydbException;
+import org.acra.ACRA;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -23,6 +25,7 @@ import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -72,6 +75,12 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
                 return new ArrayList<>();
             }
         };
+    }
+
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+        ACRA.getErrorReporter().handleException(ex);
     }
 
     protected class HistoryAdapter extends ItemListAdapter<WorkEntity> {

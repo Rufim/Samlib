@@ -92,7 +92,7 @@ public class WorkParser extends Parser {
         }
         Document head = Jsoup.parseBodyFragment(parts[0]);
         if (work.getAuthor().getFullName() == null) {
-            work.getAuthor().setFullName(head.select("div > h3").first().ownText());
+            work.getAuthor().setFullName(head.select("div > h3").first().ownText().split(":")[0]);
         }
         work.setTitle(head.select("center > h2").text());
         Elements lis = Jsoup.parseBodyFragment(parts[1]).select("li");

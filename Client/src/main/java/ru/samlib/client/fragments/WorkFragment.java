@@ -20,6 +20,7 @@ import android.util.TypedValue;
 import android.view.*;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
@@ -116,30 +117,25 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
-                try {
-                    work = new WorkParser(work).parse(true, Parser.isCachedMode());
-                    if (!Parser.isCachedMode()) {
-                        work.setCachedDate(new Date());
-                        if (work.getBookmark() == null) {
-                            setBookmark(work, "", 0);
-                        }
-                        WorkEntity entity = databaseService.insertOrUpdateWork(work);
-                        GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
-                        isDownloaded = true;
-                        safeInvalidateOptionsMenu();
-                        WorkParser.processChapters(work);
-                        GuiUtils.runInUI(getContext(), (v) -> {
-                            if (searchView != null) searchView.setEnabled(true);
-                        });
-                        if (entity != work) {
-                            entity.setParsed(true);
-                            entity.setIndents(work.getIndents());
-                            work = entity;
-                        }
+                work = new WorkParser(work).parse(true, Parser.isCachedMode());
+                if (!Parser.isCachedMode()) {
+                    work.setCachedDate(new Date());
+                    if (work.getBookmark() == null) {
+                        setBookmark(work, "", 0);
                     }
-                } catch (Exception e) {
-                    ErrorFragment.show(this, R.string.error, e);
-                    return new ArrayList<>();
+                    WorkEntity entity = databaseService.insertOrUpdateWork(work);
+                    GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
+                    isDownloaded = true;
+                    safeInvalidateOptionsMenu();
+                    WorkParser.processChapters(work);
+                    GuiUtils.runInUI(getContext(), (v) -> {
+                        if (searchView != null) searchView.setEnabled(true);
+                    });
+                    if (entity != work) {
+                        entity.setParsed(true);
+                        entity.setIndents(work.getIndents());
+                        work = entity;
+                    }
                 }
             }
             if (work.isParsed()) {
@@ -153,6 +149,15 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }));
     }
 
+    @Override
+    protected void onDataTaskException(Exception ex) {
+        if(ex instanceof IOException) {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        } else {
+            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ACRA.getErrorReporter().handleException(ex);
+        }
+    }
 
     @Override
     public void startLoading(boolean showProgress) {
@@ -816,7 +821,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
                             v.performClick();
-                            if(mode.equals(Mode.SPEAK)) {
+                            if (mode.equals(Mode.SPEAK)) {
                                 int x = (int) event.getX();
                                 int y = (int) event.getY();
 
@@ -839,7 +844,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 if (url.length > 0) {
                                     url[0].onClick(textView);
                                     return true;
-                                } 
+                                }
                             }
                             if (mode.equals(Mode.AUTO_SCROLL)) {
                                 if (speedLayout.getVisibility() == GONE) {

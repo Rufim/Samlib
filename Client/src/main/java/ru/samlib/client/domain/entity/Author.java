@@ -174,6 +174,9 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         return getClass() == AuthorEntity.class;
     }
 
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
 
     public Author(String link) {
         this();

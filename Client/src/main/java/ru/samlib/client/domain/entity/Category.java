@@ -2,6 +2,7 @@ package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
 import io.requery.*;
+import io.requery.sql.MissingKeyException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jsoup.Jsoup;
@@ -29,7 +30,7 @@ public class Category implements Linkable, Serializable, Parsable {
 
     String title;
     String annotation;
-    @ManyToOne(cascade = CascadeAction.SAVE)
+    @ManyToOne
     Author author;
     Type type = Type.OTHER;
     @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
@@ -48,8 +49,18 @@ public class Category implements Linkable, Serializable, Parsable {
         }
     }
 
+    public Integer getIdNoDB() {
+        if(id != null) return id;
+        try {
+            id = getId();
+        } catch (MissingKeyException ex){
+            id = null;
+        }
+        return id;
+    }
+
     public CategoryEntity createEntity() {
-        if (getClass() == CategoryEntity.class) return (CategoryEntity) this;
+        if (isEntity()) return (CategoryEntity) this;
         CategoryEntity entity = new CategoryEntity();
         entity.setAnnotation(annotation);
         entity.setAuthor(author);
@@ -163,4 +174,9 @@ public class Category implements Linkable, Serializable, Parsable {
         result = 31 * result + (link != null ? link.hashCode() : 0);
         return result;
     }
+
+    public boolean isEntity() {
+        return getClass() == CategoryEntity.class;
+    }
+
 }

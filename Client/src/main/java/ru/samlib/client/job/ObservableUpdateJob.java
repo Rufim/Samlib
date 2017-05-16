@@ -68,6 +68,7 @@ public class ObservableUpdateJob extends Job {
         List<CharSequence> notifyAuthors = new ArrayList<>();
         Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {
+                boolean wasUpdates = author.isHasUpdates();
                 AuthorParser parser = new AuthorParser(author);
                 author = service.updateAuthor((AuthorEntity) parser.parse());
                 author.setParsed(true);
