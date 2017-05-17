@@ -24,6 +24,7 @@ public class Bookmark implements Serializable {
     Double percent = 0d;
     Integer indentIndex = 0;
     String indent;
+    @ForeignKey(update = ReferentialAction.CASCADE)
     @OneToOne(cascade = CascadeAction.SAVE)
     Work work;
 

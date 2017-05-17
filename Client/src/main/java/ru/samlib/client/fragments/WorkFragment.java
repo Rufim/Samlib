@@ -151,7 +151,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     protected void onDataTaskException(Exception ex) {
-        if(ex instanceof IOException) {
+        if (ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
@@ -191,17 +191,15 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     private void setBookmark(Work work, String indent, Integer index) {
-        if (work instanceof WorkEntity) {
-            Bookmark bookmark = work.getBookmark();
-            if (bookmark == null) {
-                bookmark = new Bookmark(indent);
-            } else {
-                bookmark.setIndent(indent);
-            }
-            bookmark.setIndentIndex(index);
-            bookmark.setWork(work);
-            work.setBookmark(bookmark.createEntry());
+        Bookmark bookmark = work.getBookmark();
+        if (bookmark == null) {
+            bookmark = new Bookmark(indent);
+        } else {
+            bookmark.setIndent(indent);
         }
+        bookmark.setIndentIndex(index);
+        bookmark.setWork(work);
+        work.setBookmark(bookmark.createEntry());
     }
 
 

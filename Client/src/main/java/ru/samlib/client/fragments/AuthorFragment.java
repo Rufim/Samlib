@@ -122,11 +122,15 @@ public class AuthorFragment extends ListFragment<Linkable> {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.author, menu);
-        MenuItem item = menu.findItem(R.id.action_author_observable);
-        if (author.isObservable()) {
-            item.setChecked(true);
+        if(author.isParsed()) {
+            MenuItem item = menu.findItem(R.id.action_author_observable);
+            if (author.isObservable()) {
+                item.setChecked(true);
+            } else {
+                item.setChecked(false);
+            }
         } else {
-            item.setChecked(false);
+            menu.removeItem(R.id.action_author_observable);
         }
     }
 
@@ -135,12 +139,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if (!item.isChecked()) {
-                    author = databaseService.insertObservableAuthor(author.createEntry());
+                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntry())).start();
                     item.setChecked(true);
                     return true;
                 } else {
                     author.setObservable(false);
-                    databaseService.createOrUpdateAuthor(author.createEntry());
+                    new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntry())).start();
                     item.setChecked(false);
                     return true;
                 }

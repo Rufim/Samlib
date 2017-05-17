@@ -327,9 +327,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
     @Override
     public boolean find(ItemListAdapter.FilterEvent query) {
-        String shortName = getShortName();
+        String shortName = getShortName().toLowerCase();
         if(shortName == null) return false;
-        return shortName.contains(query.query);
+        if(query.query == null) return true;
+        return shortName.toLowerCase().contains(query.query.toLowerCase());
     }
 
     public void hasNewUpdates(){

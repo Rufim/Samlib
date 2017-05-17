@@ -81,6 +81,10 @@ public class Category implements Linkable, Serializable, Parsable {
         return entity;
     }
 
+    public List<Work> getOriginalWorks() {
+        return works;
+    }
+
     public void setTitle(String title) {
         if (title == null) return;
         title = TextUtils.trim(title);
@@ -156,11 +160,8 @@ public class Category implements Linkable, Serializable, Parsable {
 
         Category category = (Category) o;
 
-        if (!isTitleEquals(this, category)) {
-            return false;
-        }
         if (category.getAuthor() != null && getAuthor() != null) {
-            return isLinkEquals(this, category);
+            return isTitleEquals(this, category);
         } else {
             return false;
         }
@@ -178,15 +179,21 @@ public class Category implements Linkable, Serializable, Parsable {
     }
 
     public static boolean isTitleEquals(Category one, Category two){
-        if(one.getTitle() == null || two.getTitle() == null) {
-            return false;
+        if(one.getTitle() == null && two.getTitle() == null) {
+            return true;
+        }
+        if (one.getTitle() == null || two.getTitle() == null) {
+            return true;
         }
         return TextUtils.trim(one.getTitle()).equalsIgnoreCase(TextUtils.trim(two.getTitle()));
     }
 
     public static boolean isLinkEquals(Category one, Category two){
-        if(one.getLink() == null || two.getLink() == null) {
-            return false;
+        if(one.getLink() == null && two.getLink() == null) {
+            return true;
+        }
+        if (one.getLink() == null || two.getLink() == null) {
+            return true;
         }
         return TextUtils.trim(one.getLink()).equalsIgnoreCase(TextUtils.trim(two.getLink()));
     }

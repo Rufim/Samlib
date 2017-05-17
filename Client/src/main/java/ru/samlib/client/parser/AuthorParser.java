@@ -239,6 +239,10 @@ public class AuthorParser extends Parser {
         }
         if(!newCategories.isEmpty()) {
             for (Category newCategory : newCategories) {
+                Category category = newCategory.createEntity();
+                for (Work work : category.getWorks()) {
+                    work.setChanged(true);
+                }
                 oldCategories.add(newCategory.createEntity());
                 newCategory.getAuthor().hasNewUpdates();
             }
@@ -277,11 +281,14 @@ public class AuthorParser extends Parser {
                     oldWork.setSize(0);
                 }
                 if (!oldWork.getSize().equals(newWork.getSize())) {
-                    if (oldWork.getSize() == null || !oldWork.getSize().equals(newWork.getSize())) {
+                    if (!oldWork.getSize().equals(newWork.getSize())) {
                         oldWork.setChanged(true);
+                        Integer oldDiff = oldWork.getSizeDiff();
                         oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
                         oldWork.setSize(newWork.getSize());
-                        oldWork.getCategory().getAuthor().hasNewUpdates();
+                        if(!oldWork.getSizeDiff().equals(oldDiff)) {
+                            oldWork.getCategory().getAuthor().hasNewUpdates();
+                        }
                     }
                 }
                 newWorks.remove(newWorkIndex);
@@ -327,10 +334,7 @@ public class AuthorParser extends Parser {
     private int hasCategory(List<Category> categories, Category category) {
         for (int i = 0; i < categories.size(); i++) {
             Category newCategory = categories.get(i);
-            if (!TextUtils.isEmpty(newCategory.getLink()) && Category.isLinkEquals(newCategory, category)) {
-                return i;
-            }
-            if (simpleCategory(newCategory) && simpleCategory(category) && Category.isTitleEquals(newCategory, category)) {
+            if (category.equals(newCategory)) {
                 return i;
             }
         }

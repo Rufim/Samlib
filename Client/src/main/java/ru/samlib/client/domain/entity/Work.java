@@ -1,8 +1,7 @@
 package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
-import android.text.TextUtils;
-import com.annimon.stream.Stream;
+import ru.kazantsev.template.util.TextUtils;
 import io.requery.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,13 +17,10 @@ import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 import ru.kazantsev.template.net.CachedResponse;
-import ru.samlib.client.parser.Parser;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -74,7 +70,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean changed = false;
-    @ForeignKey(update = ReferentialAction.CASCADE)
     @OneToOne(cascade = CascadeAction.SAVE)
     Bookmark bookmark;
     String md5;
@@ -235,7 +230,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public String getAnnotation() {
-        return TextUtils.join("", annotationBlocks);
+        return android.text.TextUtils.join("", annotationBlocks);
     }
 
     public String processAnnotationBloks(int color) {
@@ -257,6 +252,17 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return author != null && author.validate() && title != null && link != null;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Work)) return false;
+
+        Work work = (Work) o;
+
+        if(work.getLink() == null && getLink() == null) return true;
+        if(work.getLink() == null || getLink() == null) return false;
+        return TextUtils.trim(getLink()).equalsIgnoreCase(TextUtils.trim(work.getLink()));
+    }
 
     public void setChanged(boolean changed) {
         this.changed = changed;
