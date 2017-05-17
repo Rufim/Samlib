@@ -6,6 +6,7 @@ import io.requery.query.Condition;
 import io.requery.query.JoinAndOr;
 import io.requery.query.Result;
 import io.requery.sql.EntityDataStore;
+import io.requery.sql.MissingKeyException;
 import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.*;
 
@@ -53,6 +54,8 @@ public class DatabaseService {
             return (AuthorEntity) doAction(Action.INSERT, entity);
         } else {
             if(entity != authorEntity) {
+                updateAuthor(authorEntity, entity);
+                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
                 List<Category> deleteCategories = new ArrayList<>(authorEntity.getCategories());
                 for (Category category : new ArrayList<>(entity.getCategories())) {
                     CategoryEntity categoryEntity = addCategoryToAuthor(authorEntity, category);
@@ -62,7 +65,10 @@ public class DatabaseService {
                             doAction(Action.UPDATE, categoryEntity);
                         }
                         for (Work work : categoryEntity.getWorks()) {
-                            doAction(Action.UPDATE, work);
+                            try {
+                                doAction(Action.UPDATE, work);
+                            } catch (MissingKeyException ex) {
+                            }
                         }
                     }
                 }
@@ -70,16 +76,32 @@ public class DatabaseService {
                     authorEntity.getCategories().removeAll(deleteCategories);
                 }
             } else {
+                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
                 for (Category category : entity.getCategories()) {
                     if(category.getIdNoDB() != null) {
                         doAction(Action.UPDATE, category);
                     }
                     for (Work work : category.getWorks()) {
-                        doAction(Action.UPDATE, work);
+                        try {
+                            doAction(Action.UPDATE, work);
+                        } catch (MissingKeyException ex) {
+                        }
                     }
                 }
             }
-            return (AuthorEntity) doAction(Action.UPDATE, authorEntity);
+            for (Work work : entity.getWorks()) {
+                try {
+                    doAction(Action.UPDATE, work);
+                } catch (MissingKeyException ex) {
+                }
+            }
+            for (Work work : entity.getRootWorks()) {
+                try {
+                    doAction(Action.UPDATE, work);
+                } catch (MissingKeyException ex) {
+                }
+            }
+            return authorEntity;
         }
     }
 

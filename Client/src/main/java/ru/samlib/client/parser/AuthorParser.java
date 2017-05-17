@@ -1,6 +1,7 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
+import io.requery.sql.MissingKeyException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -219,6 +220,11 @@ public class AuthorParser extends Parser {
         while (ocit.hasNext()) {
             Category oldCategory = ocit.next();
             int newCategoryIndex = hasCategory(newCategories, oldCategory);
+            try {
+                oldCategory.getId();
+            } catch (MissingKeyException ex) {
+                newCategoryIndex = -1;
+            }
             if (newCategoryIndex >= 0) {
                 Category newCategory = newCategories.get(newCategoryIndex);
                 oldCategory.setTitle(newCategory.getTitle());
