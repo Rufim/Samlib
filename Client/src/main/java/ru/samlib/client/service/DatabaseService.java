@@ -188,18 +188,23 @@ public class DatabaseService {
         }
         updateAuthor(authorEntity, author);
         addWorkToAuthor(workEntity, workEntity.getAuthor());
+        if (insert) {
+            doAction(Action.INSERT, authorEntity);
+        } else {
+            doAction(Action.UPDATE, authorEntity);
+        }
         if (category != null) {
             CategoryEntity categoryEntity = resolveCategory(workEntity, category);
             if (categoryEntity != null && !insert) {
                 if (categoryEntity.getIdNoDB() != null) {
                     doAction(Action.UPDATE, categoryEntity);
+                    for (Work workEn : categoryEntity.getWorks()) {
+                        try {
+                            doAction(Action.UPDATE, workEn);
+                        } catch (Exception ex){}
+                    }
                 }
             }
-        }
-        if (insert) {
-            doAction(Action.INSERT, authorEntity);
-        } else {
-            doAction(Action.UPDATE, authorEntity);
         }
         if (work.getBookmark() != null) {
             Bookmark bookmark = work.getBookmark();

@@ -127,6 +127,7 @@
     <string name="favorites_update">Update</string>
     <string name="favorites_new">New</string>
     <string name="author_observable">Подписка</string>
+    <string name="history_clean">Очистить историю</string>
     <string name="back_to_exit">Нажмите еще раз для выхода</string>
     <string name="network_not_available">Нет интернет соединения…</string>
 </resources>

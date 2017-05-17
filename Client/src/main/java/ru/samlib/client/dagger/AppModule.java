@@ -36,12 +36,6 @@ public class AppModule {
 
     @Provides
     @Singleton
-    SingleEntityStore<Persistable> provideRxDataStore() {
-        return app.getRxDataStore();
-    }
-
-    @Provides
-    @Singleton
     DatabaseService provideObservableService() {
         return new DatabaseService();
     }

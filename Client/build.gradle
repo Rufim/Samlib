@@ -57,6 +57,15 @@ android {
         variant.buildConfigField "String", "BASE_HOST", "\"$baseHost\""
     }
 
+    signingConfigs {
+        allprojects {
+            storeFile file("samlib.key")
+            storePassword "1qa2ws3ed"
+            keyAlias "key"
+            keyPassword "1qa2ws3ed"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -124,9 +133,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-v4'
     }
     compile "com.snappydb:snappydb-lib:0.5.2"
-    compile "io.reactivex:rxjava:1.1.5"
-    compile "io.reactivex:rxandroid:1.1.0"
-    compile "com.evernote:android-job:1.0.7"
+    compile "com.evernote:android-job:1.1.10"
     compile "net.vrallev.android:cat:1.0.4"
 
     compile "io.requery:requery:$requeryVersion"

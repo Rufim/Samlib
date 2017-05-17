@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDexApplication;
 import com.evernote.android.job.JobManager;
+import com.evernote.android.job.util.JobApi;
 import dagger.Module;
 import io.requery.Persistable;
 import io.requery.android.DefaultMapping;
@@ -48,8 +49,8 @@ public class App extends MultiDexApplication {
 
     private static App singleton;
 
-    private SingleEntityStore<Persistable> rxDataStore;
     private EntityDataStore<Persistable> dataStore;
+    private JobManager jobManager;
 
     public static App getInstance() {
         return singleton;
@@ -61,7 +62,8 @@ public class App extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         singleton = this;
-        JobManager.create(this).addJobCreator(new AppJobCreator());
+        jobManager = JobManager.create(this);
+        jobManager.addJobCreator(new AppJobCreator());
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
                 .setFontAttrId(R.attr.fontPath)
@@ -99,16 +101,8 @@ public class App extends MultiDexApplication {
             ((DefaultMapping)configuration.getMapping()).addConverter(new BigDecimalConverter(), BigDecimal.class);
             ((DefaultMapping) configuration.getMapping()).addConverter(new ListConverter(), List.class);
             dataStore = new EntityDataStore<Persistable>(configuration);
-
-            rxDataStore = RxSupport.toReactiveStore(
-                    new EntityDataStore<Persistable>(configuration));
         }
         return dataStore;
-    }
-
-    public SingleEntityStore<Persistable> getRxDataStore() {
-        getDataStore();
-        return rxDataStore;
     }
 
     public AppComponent getComponent() {
