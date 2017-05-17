@@ -18,33 +18,42 @@ public class Link implements Validatable, Linkable, Serializable {
 
     @Key @Generated
     Integer id;
-
-    @ForeignKey
-    @OneToOne(mappedBy = "site")
-    Author authorSite;
-
-    @Transient
+    @ManyToOne
     Author author;
     @ManyToOne
-    Author rootAuthor;
-    @ManyToOne
     Category category;
+
+    boolean rootLink = false;
 
     String title;
     String link;
     String annotation;
 
-    public LinkEntity createEntity() {
-        if(getClass() == LinkEntity.class) return (LinkEntity) this;
+    public LinkEntity createEntity(AuthorEntity authorEntity, CategoryEntity categoryEntity) {
+        if(getClass() == LinkEntity.class) {
+            setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
+            setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
+            return (LinkEntity) this;
+        }
         LinkEntity entity = new LinkEntity();
         entity.setAnnotation(annotation);
-        entity.setAuthor(author);
-        entity.setAuthorSite(authorSite);
+        entity.setAuthor(author = authorEntity == null ? author : authorEntity);
         entity.setId(id);
         entity.setLink(link);
         entity.setTitle(title);
-        entity.setCategory(category);
+        entity.setCategory(category = categoryEntity == null ? category : categoryEntity);
         return entity;
+    }
+
+    public LinkEntity createEntity() {
+        AuthorEntity  authorEntity = author == null ? null : author.createEntity();
+        CategoryEntity categoryEntity = null;
+        if(authorEntity == null) {
+            categoryEntity = category == null ? null : category.createEntity();
+        } else {
+            categoryEntity = category == null ? null : category.createEntity(authorEntity);
+        }
+        return createEntity(authorEntity, categoryEntity);
     }
 
     public Link(String title, String link, String annotation) {
@@ -57,9 +66,6 @@ public class Link implements Validatable, Linkable, Serializable {
         if(author == null) {
             if(getCategory() != null) {
                 return author = getCategory().getAuthor();
-            }
-            if(getRootAuthor() != null) {
-                return author = getRootAuthor();
             }
         }
         return author;

@@ -84,6 +84,7 @@
     <string name="work_comments">Комментарии</string>
     <string name="work_open_with">Открыть в…</string>
     <string name="work_auto_scroll">Автопрокрутка</string>
+    <string name="work_fullscreen">Полный экран</string>
     <string name="footer_work_pitch">Тембр:</string>
     <string name="footer_work_speech_rate">Скорость:</string>
     <string name="newest_filter">Фильтр по категориям</string>

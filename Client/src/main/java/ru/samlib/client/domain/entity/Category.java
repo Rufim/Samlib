@@ -59,26 +59,31 @@ public class Category implements Linkable, Serializable, Parsable {
         return id;
     }
 
-    public CategoryEntity createEntity() {
-        if (isEntity()) return (CategoryEntity) this;
+    public CategoryEntity createEntity(AuthorEntity authorEntity) {
+        if (isEntity()) {
+            setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
+            return (CategoryEntity) this;
+        }
         CategoryEntity entity = new CategoryEntity();
         entity.setAnnotation(annotation);
-        entity.setAuthor(author);
+        entity.setAuthor(author = authorEntity == null ? author : authorEntity);
         entity.setId(id);
         entity.setLink(link);
         entity.setParsed(parsed);
         entity.setTitle(title);
         entity.setType(type);
         for (Work work : works) {
-            work.setCategory(entity);
-            work.setAuthor(entity.getAuthor());
-            entity.getWorks().add(work.createEntity());
+            entity.getWorks().add(work.createEntity(getAuthor().createEntity(), entity));
         }
         for (Link link1 : links) {
             link1.setCategory(entity);
-            entity.getLinks().add(link1.createEntity());
+            entity.getLinks().add(link1.createEntity(getAuthor().createEntity(), entity));
         }
         return entity;
+    }
+
+    public CategoryEntity createEntity() {
+        return createEntity(author != null ? author.createEntity() : null);
     }
 
     public List<Work> getOriginalWorks() {

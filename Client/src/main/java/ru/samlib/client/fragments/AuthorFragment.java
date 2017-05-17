@@ -90,7 +90,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 author = new AuthorParser(author).parse();
                 if (!Parser.isCachedMode() && author.isObservable()) {
-                    databaseService.createOrUpdateAuthor(author.createEntry()).setParsed(true);
+                    databaseService.createOrUpdateAuthor(author.createEntity()).setParsed(true);
                     if (author.isHasUpdates()) {
                         postEvent(new AuthorUpdatedEvent(author));
                     }
@@ -139,12 +139,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
                 if (!item.isChecked()) {
-                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntry())).start();
+                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntity())).start();
                     item.setChecked(true);
                     return true;
                 } else {
                     author.setObservable(false);
-                    new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntry())).start();
+                    new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntity())).start();
                     item.setChecked(false);
                     return true;
                 }
@@ -428,7 +428,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             for (String title : getResources().getStringArray(R.array.author_grid)) {
                 switch (title) {
                     case "WWW:":
-                        addToGrid(authorGridInfo, title, author.getSite());
+                        addToGrid(authorGridInfo, title, author.getAuthorSiteUrl());
                         break;
                     case "Адрес:":
                         addToGrid(authorGridInfo, title, author.getAddress());

@@ -16,6 +16,7 @@ import ru.kazantsev.template.util.TextUtils;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -40,8 +41,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     Gender gender;
     Date dateBirth;
     String address;
-    @OneToOne(mappedBy = "authorSite")
-    Link site;
+    String authorSiteUrl;
     boolean hasAvatar = false;
     boolean hasAbout = false;
     boolean hasUpdates = false;
@@ -56,17 +56,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     Integer views;
     String about;
     String sectionAnnotation;
-    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    @Transient
-    List<Work> recommendations = new ArrayList<>();
     @OneToMany(mappedBy = "author",cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Category> categories;
-    @OneToMany(mappedBy = "rootAuthor", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Link> rootLinks;
+    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    List<Link> links;
     @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> works;
-    @OneToMany(mappedBy = "rootAuthor", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Work> rootWorks;
     @Transient
     List<Author> friendList  = new ArrayList<>();
     @Transient
@@ -78,10 +73,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     boolean parsed = false;
 
     public Author() {
-        if(!(getClass().equals(AuthorEntity.class))) {
+        if(!isEntity()) {
             categories = new ArrayList<>();
-            rootLinks = new ArrayList<>();
-            rootWorks = new ArrayList<>();
+            works = new ArrayList<>();
+            links = new ArrayList<>();
         }
     }
 
@@ -94,7 +89,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.gender = other.getGender();
         this.dateBirth = other.getDateBirth();
         this.address = other.getAddress();
-        this.site = other.getSite();
+        this.authorSiteUrl = other.getAuthorSiteUrl();
         this.hasAvatar = other.isHasAbout();
         this.hasAbout = other.isHasAbout();
         this.hasUpdates = other.isHasUpdates();
@@ -108,10 +103,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.views = other.getViews();
         this.about = other.getAbout();
         this.sectionAnnotation = other.sectionAnnotation;
-        this.recommendations = other.getRecommendations();
         this.categories = other.getCategories();
-        this.rootLinks = other.getRootLinks();
-        this.rootWorks = other.getRootWorks();
         this.friendList = other.getFriendList();
         this.friendOfList = other.getFriendOfList();
         this.friends = other.getFriends();
@@ -119,7 +111,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.parsed = other.isParsed();
     }
 
-    public AuthorEntity createEntry() {
+    public AuthorEntity createEntity() {
         if(isEntity()) return (AuthorEntity) this;
         AuthorEntity entity = new AuthorEntity();
         entity.setHasUpdates(hasUpdates);
@@ -143,29 +135,22 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         entity.setViews(views);
         entity.setAddress(address);
         entity.setParsed(parsed);
-        entity.setSite(site);
+        entity.setAuthorSiteUrl(authorSiteUrl);
         entity.setLastUpdateDate(lastUpdateDate);
         for (Category category : categories) {
-            category.setAuthor(entity);
-            entity.addCategory(category.createEntity());
+            entity.addCategory(category.createEntity(entity));
         }
-        for (Work recommendation : recommendations) {
-            recommendation.setAuthor(entity);
-            entity.addRecommendation(recommendation.createEntity());
+        for (Work rootWork : works) {
+            entity.addRootLink(rootWork.createEntity(entity, null));
         }
-        for (Work rootWork : rootWorks) {
-            rootWork.setRootAuthor(entity);
-            entity.addRootLink(rootWork.createEntity());
-        }
-        for (Link rootLink : rootLinks) {
-            rootLink.setRootAuthor(entity);
-            entity.addRootLink(rootLink.createEntity());
+        for (Link rootLink : links) {
+            entity.addRootLink(rootLink.createEntity(entity, null));
         }
         for (Author author : friendList) {
-            entity.addFriend(author.createEntry());
+            entity.addFriend(author.createEntity());
         }
         for (Author author : friendOfList) {
-            entity.addFriendOf(author.createEntry());
+            entity.addFriendOf(author.createEntity());
         }
         return entity;
     }
@@ -266,16 +251,19 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public void addRecommendation(Work work) {
-        this.getRecommendations().add(work);
+        work.setRecommendation(true);
+        this.works.add(work);
     }
 
 
     public void addRootLink(Linkable linkable) {
         if(linkable instanceof Work) {
-            this.getRootWorks().add((Work) linkable);
+            ((Work)linkable).setRootWork(true);
+            this.getWorks().add((Work) linkable);
         }
         if(linkable instanceof Link) {
-            this.getRootLinks().add((Link) linkable);
+            ((Link)linkable).setRootLink(true);
+            this.getLinks().add((Link) linkable);
         }
     }
 
@@ -290,6 +278,13 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         return linkables;
     }
 
+    public List<Link> getRootLinks() {
+        return Stream.of(links).filter(Link::isRootLink).collect(Collectors.toList());
+    }
+
+    public List<Work> getRootWorks() {
+        return Stream.of(works).filter(Work::isRootWork).collect(Collectors.toList());
+    }
 
     @Override
     public boolean validate() {
@@ -336,5 +331,25 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     public void hasNewUpdates(){
         setHasUpdates(true);
         setNotNotified(true);
+    }
+
+    public void setRootLinks(List<Link> rootLinks) {
+        for (Link rootLink : rootLinks) {
+            rootLink.setRootLink(true);
+        }
+        if(getLinks() == null) setLinks(new ArrayList<>());
+        getLinks().addAll(rootLinks);
+    }
+
+    public void setRootWorks(List<Work> rootWorks) {
+        for (Work rootLink : rootWorks) {
+            rootLink.setRootWork(true);
+        }
+        if(getWorks() == null) setWorks(new ArrayList<>());
+        getWorks().addAll(rootWorks);
+    }
+
+    public List<Work> getRecommendations() {
+        return Stream.of(getWorks()).filter(Work::isRecommendation).collect(Collectors.toList());
     }
 }

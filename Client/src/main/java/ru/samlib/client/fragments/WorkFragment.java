@@ -29,7 +29,6 @@ import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.util.*;
-import ru.kazantsev.template.view.listener.OnSwipeTouchListener;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
@@ -52,7 +51,6 @@ import ru.samlib.client.util.*;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.*;
 
 import static android.view.View.GONE;
@@ -199,7 +197,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
         bookmark.setIndentIndex(index);
         bookmark.setWork(work);
-        work.setBookmark(bookmark.createEntry());
+        work.setBookmark(bookmark.createEntity());
     }
 
 
@@ -526,6 +524,35 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         .addToBackStack()
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                         .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work);
+                return true;
+            case R.id.action_work_fullscreen:
+                if(isAdded()) {
+                    final View decorView = getActivity().getWindow().getDecorView();
+                    // Hide both the navigation bar and the status bar.
+                    // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+                    // a general rule, you should design your app to hide the status bar whenever you
+                    // hide the navigation bar.
+                    final int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    decorView.setSystemUiVisibility(uiOptions);
+                    decorView.setOnSystemUiVisibilityChangeListener
+                            (visibility -> {
+                                // Note that system bars will only be "visible" if none of the
+                                // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
+                                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                                    // TODO: The system bars are visible. Make any desired
+                                    if(isAdded()) {
+                                        getBaseActivity().getSupportActionBar().show();
+                                    }
+                                } else {
+                                    // TODO: The system bars are NOT visible. Make any desired
+                                       if(isAdded()) {
+                                           getBaseActivity().getSupportActionBar().hide();
+                                       }
+                                }
+                            });
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);

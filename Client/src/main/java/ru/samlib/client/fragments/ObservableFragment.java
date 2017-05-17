@@ -8,11 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
 import org.greenrobot.eventbus.EventBus;
-import io.requery.Persistable;
-import io.requery.sql.EntityDataStore;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import ru.kazantsev.template.fragments.ListFragment;
@@ -119,7 +115,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
             for (int i = 0; i < adapter.getItems().size(); i++) {
                 if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
                     index = i;
-                    adapter.getItems().set(i, author.createEntry());
+                    adapter.getItems().set(i, author.createEntity());
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(() -> adapter.notifyItemChanged(index));
                     break;

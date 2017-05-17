@@ -32,8 +32,8 @@ public class DatabaseService {
     private JoinAndOr<Result<AuthorEntity>> getAuthorQuery() {
         return dataStore.select(AuthorEntity.class).distinct()
                 .leftJoin(CategoryEntity.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.LINK))
-                .leftJoin(WorkEntity.class).on(WorkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.LINK).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
-                .leftJoin(LinkEntity.class).on(LinkEntity.ROOT_AUTHOR_ID.equal(AuthorEntity.LINK).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
+                .leftJoin(WorkEntity.class).on(WorkEntity.AUTHOR_ID.equal(AuthorEntity.LINK).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
+                .leftJoin(LinkEntity.class).on(LinkEntity.AUTHOR_ID.equal(AuthorEntity.LINK).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
     }
 
     public synchronized AuthorEntity insertObservableAuthor(AuthorEntity entity) {
@@ -48,7 +48,7 @@ public class DatabaseService {
                 category.setAuthor(entity);
                 for (Work work : new ArrayList<>(addCategoryToAuthor(entity, category).getWorks())) {
                     work.setAuthor(entity);
-                    resolveCategory(work, category);
+                    resolveCategory(entity, work, category);
                 }
             }
             return (AuthorEntity) doAction(Action.INSERT, entity);
@@ -165,7 +165,7 @@ public class DatabaseService {
         if (authorEntity != null) {
             return authorEntity;
         }
-        return author.createEntry();
+        return author.createEntity();
     }
 
 
@@ -187,14 +187,14 @@ public class DatabaseService {
             workEntity.setAuthor(authorEntity);
         }
         updateAuthor(authorEntity, author);
-        addWorkToAuthor(workEntity, workEntity.getAuthor());
+        addWorkToAuthor(workEntity, authorEntity);
         if (insert) {
             doAction(Action.INSERT, authorEntity);
         } else {
             doAction(Action.UPDATE, authorEntity);
         }
         if (category != null) {
-            CategoryEntity categoryEntity = resolveCategory(workEntity, category);
+            CategoryEntity categoryEntity = resolveCategory(authorEntity, workEntity, category);
             if (categoryEntity != null && !insert) {
                 if (categoryEntity.getIdNoDB() != null) {
                     doAction(Action.UPDATE, categoryEntity);
@@ -209,7 +209,7 @@ public class DatabaseService {
         if (work.getBookmark() != null) {
             Bookmark bookmark = work.getBookmark();
             bookmark.setWork(workEntity);
-            workEntity.setBookmark(bookmark.createEntry());
+            workEntity.setBookmark(bookmark.createEntity());
             if (bookmark.getIdNoDB() == null) {
                 doAction(Action.INSERT, bookmark);
             } else {
@@ -219,7 +219,7 @@ public class DatabaseService {
         return workEntity;
     }
 
-    public CategoryEntity addCategoryToAuthor(Author author, Category category) {
+    public CategoryEntity addCategoryToAuthor(AuthorEntity author, Category category) {
         Category result = Stream.of(author.getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
         CategoryEntity categoryEntity = null;
         if (result == null) {
@@ -229,8 +229,7 @@ public class DatabaseService {
         } else {
             if (!result.isEntity()) {
                 int index = author.getCategories().indexOf(result);
-                result.setAuthor(author);
-                result = result.createEntity();
+                result = result.createEntity(author);
                 author.getCategories().set(index, result);
             }
             if(result != author.getCategories().get(author.getCategories().size() - 1))  {
@@ -247,27 +246,26 @@ public class DatabaseService {
         }
         for (Work work : new ArrayList<>(category.getWorks())) {
             work.setAuthor(author);
-            addWorkToCategory(work, categoryEntity);
+            addWorkToCategory(author, work, categoryEntity);
         }
         return categoryEntity;
     }
 
 
-    public CategoryEntity resolveCategory(Work into, Category category) {
+    public CategoryEntity resolveCategory(AuthorEntity authorEntity, Work into, Category category) {
         Category result = Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
         if (result == null) {
-            addWorkToCategory(into, category);
-            category.setAuthor(into.getAuthor());
-            into.setCategory(category.createEntity());
+            addWorkToCategory(authorEntity, into, category);
+            category.setAuthor(authorEntity);
+            into.setCategory(category.createEntity(authorEntity));
             into.getAuthor().getCategories().add(into.getCategory());
         } else {
             if (!result.isEntity()) {
                 int index = into.getAuthor().getCategories().indexOf(result);
-                result.setAuthor(into.getAuthor());
-                result = result.createEntity();
+                result = result.createEntity(authorEntity);
                 into.getAuthor().getCategories().set(index, result);
             }
-            addWorkToCategory(into, result);
+            addWorkToCategory(authorEntity, into, result);
             updateField(result::setAnnotation, category.getAnnotation());
             updateField(result::setType, category.getType());
             updateField(result::setLink, category.getLink());
@@ -275,7 +273,7 @@ public class DatabaseService {
         return (CategoryEntity) into.getCategory();
     }
 
-    private void addWorkToCategory(Work into, Category category) {
+    private void addWorkToCategory(AuthorEntity authorEntity, Work into, Category category) {
         List<Work> works;
         if (category instanceof CategoryEntity && category.getIdNoDB() == null) {
             if (category.getOriginalWorks() == null) {
@@ -286,6 +284,8 @@ public class DatabaseService {
         } else {
             works = category.getWorks();
         }
+        into.setAuthor(authorEntity);
+        into.setCategory(category);
         if(!into.isEntity()) {
             into = into.createEntity();
         }
@@ -295,7 +295,6 @@ public class DatabaseService {
             }
         }
         works.add(into);
-        into.setCategory(category);
     }
 
 
@@ -323,7 +322,7 @@ public class DatabaseService {
         updateField(into::setState, from.getState());
         updateField(into::setHasIllustration, from.isHasIllustration());
         updateField(into::setHasComments, from.isHasComments());
-        updateField(into::setBookmark, from.getBookmark().createEntry());
+        updateField(into::setBookmark, from.getBookmark().createEntity());
         updateField(into::setChanged, from.isChanged());
         updateField(into::setCachedDate, from.getCachedDate());
     }
@@ -337,7 +336,7 @@ public class DatabaseService {
         updateField(into::setAbout, from.getAbout());
         updateField(into::setDateBirth, from.getDateBirth());
         updateField(into::setAnnotation, from.getAnnotation());
-        updateField(into::setSite, from.getSite());
+        updateField(into::setAuthorSiteUrl, from.getAuthorSiteUrl());
         updateField(into::setViews, from.getViews());
         updateField(into::setWorkCount, from.getWorkCount());
         updateField(into::setHasUpdates, from.isHasUpdates());

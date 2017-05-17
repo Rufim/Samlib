@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.util.*;
 
 
-
 /**
  * Created by Rufim on 22.05.2014.
  */
@@ -48,8 +47,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     String title;
     @ManyToOne
     Author author;
-    @ManyToOne
-    Author rootAuthor;
     String imageLink;
     Integer size;
     Integer sizeDiff;
@@ -70,6 +67,8 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean changed = false;
+    boolean recommendation = false;
+    boolean rootWork = false;
     @OneToOne(cascade = CascadeAction.SAVE)
     Bookmark bookmark;
     String md5;
@@ -89,16 +88,17 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         setLink(link);
     }
 
-    public WorkEntity createEntity() {
+    public WorkEntity createEntity(AuthorEntity authorEntity, CategoryEntity categoryEntity) {
         WorkEntity entity;
         if (isEntity()) {
             entity = (WorkEntity) this;
-            entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
-            entity.setAuthor(author == null ? null : author.createEntry());
-            entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
-            entity.setCategory(category == null ? null : category.createEntity());
         } else {
             entity = new WorkEntity();
+        }
+        entity.setBookmark(bookmark == null ? null : bookmark.createEntity(entity));
+        entity.setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
+        entity.setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
+        if (isEntity()) {
             entity.setTitle(title);
             entity.setLink(getLink());
             entity.setChanged(changed);
@@ -107,11 +107,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setExpertKudoed(expertKudoed);
             entity.setExpertRate(expertRate);
             entity.setImageLink(imageLink);
-            entity.setBookmark(bookmark == null ? null : bookmark.createEntry());
+            entity.setBookmark(bookmark == null ? null : bookmark.createEntity(entity));
             entity.setMd5(md5);
             entity.setCachedDate(cachedDate);
-            entity.setAuthor(author == null ? null : author.createEntry());
-            entity.setRootAuthor(rootAuthor == null ? null : rootAuthor.createEntry());
+            entity.setAuthor(author = authorEntity == null ? author : authorEntity);
             entity.setUpdateDate(updateDate);
             entity.setGenres(genres);
             entity.setType(type);
@@ -120,12 +119,23 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setAnnotationBlocks(annotationBlocks);
             entity.setSizeDiff(sizeDiff);
             entity.setSize(size);
-            entity.setCategory(category == null ? null : category.createEntity());
+            entity.setCategory(category = categoryEntity == null ? category : categoryEntity);
             entity.setKudoed(kudoed);
             entity.setRate(rate);
             entity.setState(state);
         }
         return entity;
+    }
+
+    public WorkEntity createEntity() {
+        AuthorEntity authorEntity = author == null ? null : author.createEntity();
+        CategoryEntity categoryEntity = null;
+        if (authorEntity == null) {
+            categoryEntity = category == null ? null : category.createEntity();
+        } else {
+            categoryEntity = category == null ? null : category.createEntity(authorEntity);
+        }
+        return createEntity(authorEntity, categoryEntity);
     }
 
     public void setLink(String link) {
@@ -157,9 +167,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         if (author == null) {
             if (getCategory() != null) {
                 return author = getCategory().getAuthor();
-            }
-            if (getRootAuthor() != null) {
-                return author = getRootAuthor();
             }
         }
         return author;
@@ -208,7 +215,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
     public void addGenre(String genre) {
         Genre tryGenre = Genre.parseGenre(genre);
-        if( Collections.emptyList().equals(getGenres())) {
+        if (Collections.emptyList().equals(getGenres())) {
             setGenres(new ArrayList<>());
         }
         if (tryGenre != null) {
@@ -259,8 +266,8 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
         Work work = (Work) o;
 
-        if(work.getLink() == null && getLink() == null) return true;
-        if(work.getLink() == null || getLink() == null) return false;
+        if (work.getLink() == null && getLink() == null) return true;
+        if (work.getLink() == null || getLink() == null) return false;
         return TextUtils.trim(getLink()).equalsIgnoreCase(TextUtils.trim(work.getLink()));
     }
 

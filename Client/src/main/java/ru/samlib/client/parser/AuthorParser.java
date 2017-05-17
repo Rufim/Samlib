@@ -47,7 +47,7 @@ public class AuthorParser extends Parser {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached);
             } else {
                 rawFile = HtmlClient.executeRequest(request, cached);
-                author.setRecommendations(new ArrayList<>());
+                author.setWorks(new ArrayList<>());
                 if (!author.isEntity()) {
                     author.getCategories().clear();
                 }
@@ -102,7 +102,7 @@ public class AuthorParser extends Parser {
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);
                         work.setAuthor(author);
-                        if (!author.getRecommendations().contains(author)) {
+                        if (!author.getRecommendations().contains(work)) {
                             author.addRecommendation(work);
                         }
                     }
@@ -158,7 +158,7 @@ public class AuthorParser extends Parser {
                                     a = dl.select("a");
                                     Link link = new Link(a.text(), a.attr("href"), dl.select("i").text());
                                     if (newCategory == null) {
-                                        link.setRootAuthor(author);
+                                        link.setAuthor(author);
                                         rootLinks.add(link);
                                     } else {
                                         newCategory.addLink(link);
@@ -170,7 +170,7 @@ public class AuthorParser extends Parser {
                                 work.setCategory(newCategory);
                                 if (work.validate()) {
                                     if (newCategory == null) {
-                                        work.setRootAuthor(author);
+                                        work.setRootWork(true);
                                         rootWorks.add(work);
                                     } else {
                                         newCategory.addLink(work);
@@ -194,7 +194,7 @@ public class AuthorParser extends Parser {
                 }
             }
             if (author.isEntity() && author.isObservable()) {
-                merge(author, categories, rootWorks, rootLinks);
+                merge((AuthorEntity) author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {
                 author.setCategories(categories);
@@ -211,7 +211,7 @@ public class AuthorParser extends Parser {
     }
 
 
-    private void merge(Author author, List<Category> newCategories, List<Work> newRootWorks, List<Link> newRootLinks) {
+    private void merge(AuthorEntity author, List<Category> newCategories, List<Work> newRootWorks, List<Link> newRootLinks) {
         List<Category> oldCategories = author.getCategories();
         List<Work> oldRootWorks = author.getRootWorks();
         List<Link> oldRootLinks = author.getRootLinks();
@@ -236,7 +236,7 @@ public class AuthorParser extends Parser {
                 for (Link link : newCategory.getLinks()) {
                     link.setCategory(oldCategory);
                 }
-                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks(), oldCategory, null);
+                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks(), oldCategory.createEntity(author), author);
                 Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
                 newCategories.remove(newCategoryIndex);
             } else {
@@ -245,17 +245,21 @@ public class AuthorParser extends Parser {
         }
         if(!newCategories.isEmpty()) {
             for (Category newCategory : newCategories) {
-                Category category = newCategory.createEntity();
+                Category category = newCategory.createEntity(author);
+                boolean atLeastOne = false;
                 for (Work work : category.getWorks()) {
                     work.setChanged(true);
+                    atLeastOne = true;
                 }
-                oldCategories.add(newCategory.createEntity());
-                newCategory.getAuthor().hasNewUpdates();
+                oldCategories.add(category);
+                if(atLeastOne) {
+                    author.hasNewUpdates();
+                }
             }
         }
     }
 
-    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks, Category category, Author author) {
+    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks, CategoryEntity category, AuthorEntity author) {
         Iterator<Work> owit = oldWorks.iterator();
         Iterator<Link> olit = oldLinks.iterator();
         while (olit.hasNext()) {
@@ -305,18 +309,19 @@ public class AuthorParser extends Parser {
         if (!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
+                newWork.setAuthor(author);
                 if(category != null) {
+                    oldWorks.add(newWork.createEntity(author, category));
                     category.getAuthor().hasNewUpdates();
-                    newWork.setRootAuthor(null);
+                    newWork.setAuthor(category.getAuthor());
                     newWork.setCategory(category);
-                }
-                if(author != null) {
                     author.hasNewUpdates();
-                    newWork.setAuthor(author);
-                    newWork.setRootAuthor(author);
+                } else if(author != null) {
+                    oldWorks.add(newWork.createEntity(author, null));
+                    author.hasNewUpdates();
+                    newWork.setRootWork(true);
                     newWork.setCategory(null);
                 }
-                oldWorks.add(newWork.createEntity());
             }
         }
     }

@@ -149,7 +149,7 @@ public class ParserUtils {
         switch (element.select("b").text()) {
             case "WWW:":
                 Element a = element.select("a").first();
-                author.setSite(new Link(a.ownText(), a.attr("href"), ""));
+                author.setAuthorSiteUrl(a.attr("href"));
                 break;
             case "Aдpeс:":
                 author.setEmail(element.select("u").text());

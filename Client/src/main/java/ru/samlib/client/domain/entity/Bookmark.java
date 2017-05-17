@@ -1,14 +1,12 @@
 package ru.samlib.client.domain.entity;
 
 import io.requery.*;
-import io.requery.sql.MissingKeyException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Created by 0shad on 23.07.2015.
@@ -32,16 +30,22 @@ public class Bookmark implements Serializable {
         this.title = title;
     }
 
-    public BookmarkEntity createEntry() {
-        if(getClass() == BookmarkEntity.class) return (BookmarkEntity) this;
+    public BookmarkEntity createEntity(WorkEntity workEntity) {
+        if(getClass() == BookmarkEntity.class) {
+            setWork(work = workEntity == null ? getWork(): workEntity);
+            return (BookmarkEntity) this;
+        }
         BookmarkEntity entity = new BookmarkEntity();
         entity.setIndent(indent);
         entity.setIndentIndex(indentIndex);
         entity.setPercent(percent);
         entity.setTitle(title);
         entity.setId(id);
-        entity.setWork(work);
+        entity.setWork(work = workEntity == null ? work: workEntity);
         return entity;
+    }
+    public BookmarkEntity createEntity() {
+        return createEntity(null);
     }
 
     public Integer getIdNoDB() {

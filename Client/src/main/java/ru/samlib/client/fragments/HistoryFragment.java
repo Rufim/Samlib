@@ -1,23 +1,17 @@
 package ru.samlib.client.fragments;
 
-import android.content.Intent;
-import android.net.Uri;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.v7.app.AlertDialog;
+import android.view.*;
 import android.widget.TextView;
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
-import com.snappydb.SnappydbException;
 import org.acra.ACRA;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.activity.SectionActivity;
-import ru.samlib.client.database.SnappyHelper;
+import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.util.TextUtils;
@@ -25,7 +19,6 @@ import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -63,6 +56,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
     public void onCreate(Bundle savedInstanceState) {
         App.getInstance().getComponent().inject(this);
         super.onCreate(savedInstanceState);
+        safeInvalidateOptionsMenu();
     }
 
 
@@ -75,6 +69,29 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
                 return new ArrayList<>();
             }
         };
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.history, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_history_clean:
+                AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
+                        .setTitle(getString(R.string.history_clean) + "?")
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                            App.getInstance().getDataStore().delete(databaseService.getHistory(0, Integer.MAX_VALUE));
+                        })
+                        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                        });
+                adb.show();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
