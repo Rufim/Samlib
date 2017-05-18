@@ -14,7 +14,6 @@
             android:textOn="@string/online"
             android:textOff="@string/offline"
             app:showText="true"
-            android:backgroundTint="@color/accent"
             android:thumb="@drawable/switch_text_thumb_main"
             android:id="@+id/header_main_status"
             android:textStyle="normal|bold"

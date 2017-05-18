@@ -47,7 +47,7 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         singleInstance = this;
-        if(!isConfigChange(savedInstanceState)) {
+        if (!isConfigChange(savedInstanceState)) {
             online = AndroidSystemUtils.isNetworkAvailable(this);
         } else {
             online = savedInstanceState.getBoolean(ONLINE);
@@ -56,7 +56,9 @@ public class MainActivity extends BaseActivity {
         SwitchCompat switchButton = GuiUtils.getView(header, R.id.header_main_status);
         switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                switchMode(isChecked);
+                if (!switchMode(isChecked)) {
+                    switchButton.setChecked(false);
+                }
             }
         });
         switchButton.setSwitchTextAppearance(this, R.style.SwitchTextAppearance);
@@ -76,11 +78,11 @@ public class MainActivity extends BaseActivity {
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
-            if(Linkable.isSamlibLink(TextUtils.eraseHost(query))) {
+            if (Linkable.isSamlibLink(TextUtils.eraseHost(query))) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(Constants.Net.BASE_DOMAIN + TextUtils.eraseHost(query)));
                 startActivity(i);
-            }  else {
+            } else {
                 Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
                 searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
                 startActivity(searchIntent);
@@ -144,15 +146,18 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    public void switchMode(boolean online) {
+    public boolean switchMode(boolean online) {
         if (online != this.online) {
             boolean check = AndroidSystemUtils.isNetworkAvailable(this);
             if (!check && online) {
                 GuiUtils.toast(this, R.string.network_not_available);
+                return false;
             } else {
-               switchStatus(online);
+                switchStatus(online);
+                return true;
             }
         }
+        return true;
     }
 
     private void switchStatus(boolean online) {
@@ -165,7 +170,7 @@ public class MainActivity extends BaseActivity {
         } else {
             navigationView.inflateMenu(R.menu.drawer_offline);
         }
-        if(id == -1) {
+        if (id == -1) {
             id = getCheckedNavigationItem();
         }
         if (navigationView.getMenu().findItem(id) != null) {

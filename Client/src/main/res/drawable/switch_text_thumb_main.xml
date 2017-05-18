@@ -7,8 +7,8 @@
                 android:dither="true"
                 android:useLevel="false">
             <gradient
-                    android:startColor="@color/deep_grey"
-                    android:endColor="@color/deep_grey"
+                    android:startColor="@color/dark_grey"
+                    android:endColor="@color/primaryDark"
                     android:angle="270"/>
             <corners
                     android:radius="4dp"/>
@@ -27,8 +27,8 @@
                 android:dither="true"
                 android:useLevel="false">
             <gradient
-                    android:startColor="@color/deep_grey"
-                    android:endColor="@color/deep_grey"
+                    android:startColor="@color/dark_grey"
+                    android:endColor="@color/primaryDark"
                     android:angle="270"/>
             <corners
                     android:radius="4dp"/>

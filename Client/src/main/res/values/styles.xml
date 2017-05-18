@@ -16,8 +16,8 @@
         <item name="android:popupBackground">@color/dark_grey</item>
         <item name="android:textColorLink">@color/light_blue</item>
         <item name="colorControlNormal">@color/light_grey</item>
-        <item name="colorControlActivated">@color/accent</item>
-        <item name="colorControlHighlight">@color/accent</item>
+        <item name="colorControlActivated">@color/light_blue</item>
+        <item name="colorControlHighlight">@color/light_blue</item>
         <item name="toolbarElevationSize">4dp</item>
     </style>
 
@@ -50,7 +50,7 @@
         <item name="android:textColorHint">@drawable/switch_text_color_main</item>
         <item name="android:textColorLink">@drawable/switch_text_color_main</item>
         <item name="android:textSize">10sp</item>
-        <item name="android:textStyle">italic</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="subtitle" parent="item_text">

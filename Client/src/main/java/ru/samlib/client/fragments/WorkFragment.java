@@ -186,7 +186,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll) {
-                    scrollToIndex(bookmark.getIndentIndex(), 1);
+                    scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
                 } else {
                     loadItems(false);
                 }
@@ -242,11 +242,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         super.onPause();
         if (work != null && work.isParsed()) {
             try {
-                int indexLast = findLastVisibleItemPosition(false);
                 int index = findFirstVisibleItemPosition(false);
                 int size = adapter.getItems().size();
                 if (size > index) {
-                    setBookmark(work, adapter.getItems().get(index), indexLast - 1);
+                    setBookmark(work, adapter.getItems().get(index), index);
                     databaseService.insertOrUpdateBookmark(work.getBookmark());
                 }
             } catch (Exception e) {
@@ -634,22 +633,26 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void toIndex(int index, int textOffset) {
-        TextView textView = getTextViewIndent(index);
-        index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
-        if (textView != null) {
-            Layout layout = textView.getLayout();
-            layoutManager.scrollToPositionWithOffset(index, -(layout.getLineForOffset(textOffset)) * textView.getLineHeight());
+        if(Integer.MIN_VALUE == textOffset) {
+            super.toIndex(index, 0);
         } else {
-            layoutManager.scrollToPosition(index);
-        }
-        if (Mode.SEARCH == mode) {
-            adapter.selectText(adapter.getLastQuery().toString(), false, colorFoundedText);
+            TextView textView = getTextViewIndent(index);
+            index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
+            if (textView != null) {
+                Layout layout = textView.getLayout();
+                layoutManager.scrollToPositionWithOffset(index, -(layout.getLineForOffset(textOffset)) * textView.getLineHeight());
+            } else {
+                layoutManager.scrollToPosition(index);
+            }
+            if (Mode.SEARCH == mode) {
+                adapter.selectText(adapter.getLastQuery().toString(), false, colorFoundedText);
+            }
         }
     }
 
     @Subscribe
     public void onEvent(ChapterSelectedEvent event) {
-        scrollToIndex(event.bookmark.getIndentIndex(), 0);
+        scrollToIndex(event.bookmark.getIndentIndex(), Integer.MIN_VALUE);
     }
 
     @Override
@@ -930,11 +933,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             }
                             if (mode.equals(Mode.AUTO_SCROLL)) {
                                 if (speedLayout.getVisibility() == GONE) {
-                                    if(isFullscreen) {
-                                        stopFullscreen();
-                                    } else {
-                                        speedLayout.setVisibility(VISIBLE);
-                                    }
+                                    speedLayout.setVisibility(VISIBLE);
                                 } else {
                                     speedLayout.setVisibility(GONE);
                                 }
