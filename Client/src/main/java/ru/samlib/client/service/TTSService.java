@@ -17,11 +17,14 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
+import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.net.HtmlClient;
+import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.kazantsev.template.util.AndroidSystemUtils;
@@ -129,8 +132,11 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            Work work = databaseService.getWork(link);
+            Work work = WorkParser.getCachedWork(link);
             if(!work.isParsed()) {
+                if (work.getRawContent() == null) {
+                    work.setRawContent(SystemUtils.readFile(HtmlClient.getCachedFile(getBaseContext(), link), "CP1251"));
+                }
                 if (!TextUtils.isEmpty(work.getRawContent())) {
                     WorkParser.processChapters(work);
                 } else {
@@ -199,7 +205,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             });
 
         } catch (Exception e) {
-            Log.e(TAG, "Unexpeted error in TTS service");
+            Log.e(TAG, "Unexpeted error in TTS service", e);
         }
         return START_REDELIVER_INTENT;
     }
@@ -213,9 +219,11 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         String title = ttsp.getWork().getTitle();
         String shortName = ttsp.getWork().getAuthor().getShortName();
         RemoteViews simpleContentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.tts_notification);
-
+        Intent launch = new Intent(getApplicationContext(), SectionActivity.class);
+        launch.setData(Uri.parse(getPlayer().getWork().getFullLink()));
         Notification notification = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_action_book)
+                .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, 0))
                 .setCustomContentView(simpleContentView)
                 .setContentTitle(title).build();
 
@@ -246,11 +254,6 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         Intent pause = new Intent(NOTIFY_PAUSE);
         Intent next = new Intent(NOTIFY_NEXT);
         Intent play = new Intent(NOTIFY_PLAY);
-        Intent launch = new Intent(getApplicationContext(), SectionActivity.class);
-        launch.setData(Uri.parse(getPlayer().getWork().getFullLink()));
-
-        PendingIntent pLaunchWork = PendingIntent.getBroadcast(getApplicationContext(), 0, launch, PendingIntent.FLAG_UPDATE_CURRENT);
-        view.setOnClickPendingIntent(R.id.tts_notification, pLaunchWork);
 
         PendingIntent pPrevious = PendingIntent.getBroadcast(getApplicationContext(), 0, previous, PendingIntent.FLAG_UPDATE_CURRENT);
         view.setOnClickPendingIntent(R.id.btnPrevious, pPrevious);

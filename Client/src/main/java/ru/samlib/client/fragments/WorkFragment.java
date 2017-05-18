@@ -672,9 +672,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         } else if (link != null) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
-                WorkEntity entity;
-                if ((entity = databaseService.getWork(work.getLink())) != null) {
-                    work = entity;
+                Work cached;
+                if ((cached = WorkParser.getCachedWork(work.getLink())) != null) {
+                    work = cached;
                 }
                 clearData();
             }

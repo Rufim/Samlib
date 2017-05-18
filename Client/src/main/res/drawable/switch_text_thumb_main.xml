@@ -16,8 +16,8 @@
                     android:width="60dp"
                     android:height="20dp"/>
             <stroke
-                    android:width="4dp"
-                    android:color="@color/deep_grey"/>
+                    android:width="1dp"
+                    android:color="?attr/colorControlActivated"/>
         </shape>
     </item>
     <item android:state_checked="false">
@@ -36,8 +36,8 @@
                     android:width="60dp"
                     android:height="20dp"/>
             <stroke
-                    android:width="4dp"
-                    android:color="@color/deep_grey"/>
+                    android:width="1dp"
+                    android:color="?attr/colorControlNormal"/>
         </shape>
     </item>
 </selector>

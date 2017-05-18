@@ -76,7 +76,7 @@
     </style>
     <style name="text.rate_column" parent="rate_column">
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
-        <item name="android:textColor">#ffff0003</item>
+        <item name="android:textColor">?attr/colorAccent</item>
         <item name="android:textStyle">bold|italic</item>
         <item name="android:maxLines">1</item>
     </style>
@@ -110,7 +110,7 @@
     <style name="author_info">
         <item name="android:textSize">@dimen/text_large</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/red_light</item>
+        <item name="android:textColor">?attr/colorAccent</item>
     </style>
     <style name="author_info_content">
         <item name="android:textSize">@dimen/text_medium</item>
@@ -122,7 +122,7 @@
     <style name="author_info_column_0">
         <item name="android:layout_column">0</item>
         <item name="android:layout_gravity">right</item>
-        <item name="android:textColor">@color/red_light</item>
+        <item name="android:textColor">?attr/colorAccent</item>
         <item name="android:textStyle">bold</item>
     </style>
     <style name="author_info_column_1">

@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
 import org.jsoup.Jsoup;
@@ -12,6 +13,8 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
 import ru.kazantsev.template.net.CachedResponse;
+import ru.kazantsev.template.net.Request;
+import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 
@@ -30,6 +33,8 @@ import java.util.regex.Pattern;
  */
 public class WorkParser extends Parser {
 
+    private static LruCache<String, Work> workCache = new LruCache<>(3);
+
 
     private static final int MAX_INDENT_SIZE = 700;
     private Work work;
@@ -37,6 +42,10 @@ public class WorkParser extends Parser {
     public WorkParser(Work work) throws MalformedURLException {
         setPath(work.getLink());
         this.work = work;
+    }
+
+    public static Work getCachedWork(String link) {
+        return workCache.get(link);
     }
 
     public WorkParser(String workLink) throws MalformedURLException {
@@ -63,7 +72,7 @@ public class WorkParser extends Parser {
         return parsedWork;
     }
 
-    public static Work  parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
+    public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
             work = parseWork(rawContent, encoding, work);
             Log.i(TAG, "Work parsed using url " + work.getFullLink());
@@ -71,6 +80,7 @@ public class WorkParser extends Parser {
             if (processChapters) {
                 processChapters(work);
             }
+            workCache.put(work.getLink(), work);
         } catch (Exception ex) {
             work.setParsed(false);
             if(rawContent instanceof  CachedResponse) {

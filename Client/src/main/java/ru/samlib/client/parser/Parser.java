@@ -32,7 +32,7 @@ public abstract class Parser {
     protected static final String ACCEPT_ENCODING_VALUE = "gzip, deflate";
     protected static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0";
 
-    private static LruCache<Request, Document> parserCache = new LruCache<>(20);
+    private static LruCache<Request, Document> parserCache = new LruCache<>(1);
     protected ExecutorService executor = Executors.newSingleThreadExecutor();
 
     protected Request request;
@@ -108,6 +108,8 @@ public abstract class Parser {
     public static void dropCache() {
         parserCache.evictAll();
     }
+
+
 
     private class PendingParse implements Callable<Boolean> {
 
