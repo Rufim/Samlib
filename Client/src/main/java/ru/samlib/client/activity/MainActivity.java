@@ -6,9 +6,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
+import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import ru.kazantsev.template.activity.BaseActivity;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.util.AndroidSystemUtils;
@@ -50,13 +53,13 @@ public class MainActivity extends BaseActivity {
             online = savedInstanceState.getBoolean(ONLINE);
         }
         View header = getLayoutInflater().inflate(R.layout.header_main, navigationView, false);
-        Button switchButton = GuiUtils.getView(header, R.id.header_main_status);
-        switchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switchMode(!online);
+        SwitchCompat switchButton = GuiUtils.getView(header, R.id.header_main_status);
+        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                switchMode(isChecked);
             }
         });
+        switchButton.setSwitchTextAppearance(this, R.style.SwitchTextAppearance);
         navigationView.addHeaderView(header);
         switchStatus(online);
     }
@@ -171,14 +174,8 @@ public class MainActivity extends BaseActivity {
         } else {
             onNavigationItemSelected(navigationView.getMenu().findItem(getCheckedNavigationItem()));
         }
-        Button switchButton = GuiUtils.getView(navigationView.getHeaderView(0), R.id.header_main_status);
-        if(online) {
-            switchButton.setText(R.string.online);
-            switchButton.setTextColor(getResources().getColor(R.color.light_blue));
-        } else {
-            switchButton.setText(R.string.offline);
-            switchButton.setTextColor(getResources().getColor(R.color.light_grey));
-        }
+        SwitchCompat switchButton = GuiUtils.getView(navigationView.getHeaderView(0), R.id.header_main_status);
+        switchButton.setChecked(online);
     }
 
 }

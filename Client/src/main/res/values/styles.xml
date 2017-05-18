@@ -44,6 +44,15 @@
         <item name="android:maxLines">2</item>
     </style>
 
+    <style name="SwitchTextAppearance">
+        <item name="android:textColor">@drawable/switch_text_color_main</item>
+        <item name="android:textColorHighlight">@drawable/switch_text_color_main</item>
+        <item name="android:textColorHint">@drawable/switch_text_color_main</item>
+        <item name="android:textColorLink">@drawable/switch_text_color_main</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+
     <style name="subtitle" parent="item_text">
         <item name="android:textColor">@color/deep_grey</item>
         <item name="android:textSize">@dimen/text_small</item>

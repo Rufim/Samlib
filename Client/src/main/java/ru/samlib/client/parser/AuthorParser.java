@@ -270,11 +270,14 @@ public class AuthorParser extends Parser {
                 newLinks.remove(newLinkIndex);
             } else {
                 olit.remove();
+                if(author.getLinks() != oldLinks) {
+                    author.getWorks().remove(oldLink);
+                }
             }
         }
         if (!newLinks.isEmpty()) {
             for (Link newLink : newLinks) {
-                oldLinks.add(newLink.createEntity());
+                newLink.createEntity(author, category);
             }
         }
         while (owit.hasNext()) {
@@ -302,6 +305,9 @@ public class AuthorParser extends Parser {
                 newWorks.remove(newWorkIndex);
             } else {
                 owit.remove();
+                if(author.getWorks() != oldWorks) {
+                    author.getWorks().remove(oldWork);
+                }
             }
         }
         if (!newWorks.isEmpty()) {
@@ -313,7 +319,6 @@ public class AuthorParser extends Parser {
                     author.hasNewUpdates();
                 } else if (author != null) {
                     newWork = newWork.createEntity(author, null);
-                    oldWorks.add(newWork);
                     newWork.setRootWork(true);
                     newWork.setCategory(null);
                     author.hasNewUpdates();
@@ -332,7 +337,7 @@ public class AuthorParser extends Parser {
 
     private int hasWork(List<Work> linkables, Work linkable) {
         for (int i = 0; i < linkables.size(); i++) {
-            if (linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
+            if (linkables.get(i).equals(linkable))
                 return i;
         }
         return -1;

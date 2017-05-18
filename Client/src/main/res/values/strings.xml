@@ -14,9 +14,8 @@
     <!-- roboto medium (android 5.0) -->
 
 
-    <string name="online">Online</string>
-    <string name="offline">Offline</string>
-
+    <string name="online">Онлайн</string>
+    <string name="offline">Оффлайн</string>
 
 
     <!-- Dreawer -->

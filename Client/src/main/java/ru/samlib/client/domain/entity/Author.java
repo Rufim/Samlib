@@ -141,10 +141,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         for (Category category : categories) {
             category.createEntity(entity);
         }
-        for (Work rootWork : works) {
+        for (Work rootWork : getRootWorks()) {
             entity.addRootLink(rootWork.createEntity(entity, null));
         }
-        for (Link rootLink : links) {
+        for (Link rootLink : getRootLinks()) {
             entity.addRootLink(rootLink.createEntity(entity, null));
         }
         for (Author author : friendList) {
