@@ -60,7 +60,12 @@ public class Category implements Linkable, Serializable, Parsable {
     }
 
     public CategoryEntity createEntity(AuthorEntity authorEntity) {
-        CategoryEntity entity = new CategoryEntity();
+        CategoryEntity entity;
+        if (isEntity()) {
+            entity = (CategoryEntity) this;
+        } else {
+            entity = new CategoryEntity();
+        }
         setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
         if (authorEntity != null) {
             if (authorEntity.getCategories() == null) {
@@ -83,7 +88,7 @@ public class Category implements Linkable, Serializable, Parsable {
             }
         }
         if (isEntity()) {
-            return (CategoryEntity) this;
+            return entity;
         }
         entity.setAnnotation(annotation);
         entity.setId(id);
@@ -92,11 +97,10 @@ public class Category implements Linkable, Serializable, Parsable {
         entity.setTitle(getTitle());
         entity.setType(type);
         for (Work work : works) {
-            entity.getWorks().add(work.createEntity(getAuthor().createEntity(), entity));
+            work.createEntity(getAuthor().createEntity(), entity);
         }
         for (Link link1 : links) {
-            link1.setCategory(entity);
-            entity.getLinks().add(link1.createEntity(getAuthor().createEntity(), entity));
+            link1.createEntity(getAuthor().createEntity(), entity);
         }
         return entity;
     }

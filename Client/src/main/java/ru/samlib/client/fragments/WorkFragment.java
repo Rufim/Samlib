@@ -42,6 +42,7 @@ import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.net.HtmlClient;
+import ru.samlib.client.parser.CommentsParser;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
@@ -530,7 +531,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 if (chosenFile != null) {
                                     try {
                                         File file = new File(chosenFile, work.getTitle() + ".html");
-                                        SystemUtils.copy(work.getCachedResponse(), file);
+                                        File original;
+                                        if (work.getCachedResponse() != null) {
+                                            original = work.getCachedResponse();
+                                        } else {
+                                            original = HtmlClient.getCachedFile(getContext(), work.getLink());
+                                        }
+                                        SystemUtils.copy(original, file);
                                         ExternalWork externalWork = new ExternalWork();
                                         externalWork.setFilePath(file.getAbsolutePath());
                                         externalWork.setSavedDate(new Date());

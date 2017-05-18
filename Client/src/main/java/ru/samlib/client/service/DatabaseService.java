@@ -238,6 +238,7 @@ public class DatabaseService {
             } else {
                 doAction(Action.UPDATE, workEntity.getBookmark());
             }
+            doAction(Action.UPDATE, workEntity);
         }
         return workEntity;
     }
@@ -247,7 +248,6 @@ public class DatabaseService {
         CategoryEntity categoryEntity = null;
         if (result == null) {
             categoryEntity = category.createEntity(author);
-            author.getCategories().add(categoryEntity);
         } else {
             if (!result.isEntity()) {
                 int index = author.getCategories().indexOf(result);
@@ -271,14 +271,14 @@ public class DatabaseService {
                     itLink.remove();
                 }
             }
-        }
-        for (Work work : new ArrayList<>(category.getWorks())) {
-            work.setAuthor(author);
-            addWorkToCategory(author, work, categoryEntity);
-        }
-        for (Link link : new ArrayList<>(category.getLinks())) {
-            link.setAuthor(author);
-            addLinkToCategory(author, link, categoryEntity);
+            for (Work work : new ArrayList<>(category.getWorks())) {
+                work.setAuthor(author);
+                addWorkToCategory(author, work, categoryEntity);
+            }
+            for (Link link : new ArrayList<>(category.getLinks())) {
+                link.setAuthor(author);
+                addLinkToCategory(author, link, categoryEntity);
+            }
         }
         return categoryEntity;
     }
@@ -318,14 +318,15 @@ public class DatabaseService {
         into.setAuthor(authorEntity);
         into.setCategory(category);
         if (!into.isEntity()) {
-            into = into.createEntity(authorEntity, category);
-        }
-        for (int i = 0; i < works.size(); i++) {
-            if (works.get(i).equals(into)) {
-                works.remove(i);
+            into.createEntity(authorEntity, category);
+        } else {
+            for (int i = 0; i < works.size(); i++) {
+                if (works.get(i).equals(into)) {
+                    works.remove(i);
+                }
             }
+            works.add(into);
         }
-        works.add(into);
     }
 
 
@@ -441,7 +442,7 @@ public class DatabaseService {
     }
 
     public ExternalWork getExternalWork(String filePath) {
-        return dataStore.select(ExternalWork.class).leftJoin(WorkFragment.class).on(ExternalWork.WORK_ID.equal(WorkEntity.LINK)).where(ExternalWork.FILE_PATH.eq(filePath)).get().firstOrNull();
+        return dataStore.select(ExternalWork.class).where(ExternalWork.FILE_PATH.eq(filePath)).get().firstOrNull();
     }
 
 

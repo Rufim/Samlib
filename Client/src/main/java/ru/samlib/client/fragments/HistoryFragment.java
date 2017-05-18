@@ -83,7 +83,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
                 AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                         .setTitle(getString(R.string.history_clean) + "?")
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            App.getInstance().getDataStore().delete(BookmarkEntity.class).where(BookmarkEntity.WORK_ID.notNull()).get();
+                            App.getInstance().getDataStore().delete(BookmarkEntity.class).where(BookmarkEntity.WORK_ID.notNull()).get().value();
                             refreshData(true);
                         })
                         .setNegativeButton(android.R.string.cancel, (dialog, which) -> {

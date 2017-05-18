@@ -312,11 +312,7 @@ public class AuthorParser extends Parser {
                 newWork.setChanged(true);
                 newWork.setAuthor(author);
                 if (category != null) {
-                    newWork = newWork.createEntity(author, category);
-                    oldWorks.add(newWork);
-                    category.getAuthor().hasNewUpdates();
-                    newWork.setAuthor(category.getAuthor());
-                    newWork.setCategory(category);
+                    newWork.createEntity(author, category);
                     author.hasNewUpdates();
                 } else if (author != null) {
                     newWork = newWork.createEntity(author, null);

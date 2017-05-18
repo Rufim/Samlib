@@ -125,7 +125,7 @@ public class SectionActivity extends NavigationActivity<String> {
             if (Linkable.isWorkLink(link)) {
                 WorkFragment.show(builder, id, link);
             }
-            if(data.getScheme().contains("file")) {
+            if(data.getScheme() != null && data.getScheme().startsWith("file")) {
                 WorkFragment.showFile(builder, id, link);
             }
             if (Linkable.isIllustrationsLink(link)) {

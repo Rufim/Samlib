@@ -12,6 +12,23 @@
                   android:gravity="center_vertical"
                   android:background="@android:drawable/list_selector_background"
                   android:weightSum="1">
+
+        <LinearLayout android:orientation="horizontal"
+                      android:background="@android:drawable/list_selector_background"
+                      android:layout_width="wrap_content"
+                      android:gravity="center"
+                      android:layout_height="fill_parent"
+                      android:id="@+id/external_item_author_layout">
+            <TextView
+                    android:layout_width="@dimen/table_author_width"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/external_item_author"
+                    android:text="Сорокин В.А."
+                    android:textSize="@dimen/text_medium"
+                    android:gravity="center"
+                    style="@style/item_text"/>
+        </LinearLayout>
+        <View style="@style/vertical_border" android:layout_marginRight="4dp"/>
         <LinearLayout android:orientation="vertical"
                       android:background="@drawable/clickable"
                       android:layout_width="match_parent"
@@ -41,30 +58,14 @@
                     android:paddingBottom="3dp"
                     android:gravity="left|top"
                     android:lines="1"
+                    android:textColor="@color/green_middle"
                     android:text="/storage/emulated/0/Android/data/ru.samlib.client/cache/long.html"
                     android:layout_weight="0.2"
                     android:ellipsize="start"
-                    style="@style/subtitle"
+                    android:textSize="@dimen/text_small"
+                    android:textStyle="normal|bold"
             />
 
-
-        </LinearLayout>
-        <View style="@style/vertical_border" android:layout_marginLeft="4dp"/>
-        <LinearLayout android:orientation="horizontal"
-                      android:background="@android:drawable/list_selector_background"
-                      android:layout_width="wrap_content"
-                      android:layout_weight="1"
-                      android:gravity="center"
-                      android:layout_height="fill_parent"
-                      android:id="@+id/external_item_author_layout">
-            <TextView
-                    android:layout_width="@dimen/table_author_width"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/external_item_author"
-                    android:text="Сорокин В.А."
-                    android:textSize="@dimen/text_medium"
-                    android:gravity="center"
-                    style="@style/item_text"/>
         </LinearLayout>
     </LinearLayout>
 

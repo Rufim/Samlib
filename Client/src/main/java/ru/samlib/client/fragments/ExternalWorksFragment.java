@@ -74,12 +74,12 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
             if(item != null && item.isExist()) {
                 int id = view.getId();
                 switch (id) {
-                    case R.id.history_item_work:
-                    case R.id.history_item_work_layout:
-                        SectionActivity.launchActivity(getContext(), item.getFilePath());
+                    case R.id.external_item_work:
+                    case R.id.external_item_work_layout:
+                        SectionActivity.launchActivity(getContext(), "file://" + item.getFilePath());
                         return true;
-                    case R.id.history_item_author:
-                    case R.id.history_item_author_layout:
+                    case R.id.external_item_author:
+                    case R.id.external_item_author_layout:
                         SectionActivity.launchActivity(getContext(), item.getWork().getAuthor().getFullLink());
                         return true;
                 }

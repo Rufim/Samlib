@@ -7,6 +7,7 @@ import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Validatable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by Rufim on 01.07.2015.
@@ -30,12 +31,37 @@ public class Link implements Validatable, Linkable, Serializable {
     String annotation;
 
     public LinkEntity createEntity(AuthorEntity authorEntity, CategoryEntity categoryEntity) {
+        LinkEntity entity = new LinkEntity();
+        if (getClass() == LinkEntity.class) {
+            entity = (LinkEntity) this;
+        } else {
+            entity = new LinkEntity();
+        }
+        if (categoryEntity != null) {
+            if (categoryEntity.getLinks() == null) {
+                categoryEntity.setLinks(new ArrayList<>());
+            }
+            boolean found = false;
+            for (int i = 0; i < categoryEntity.getLinks().size(); i++) {
+                Link link = categoryEntity.getLinks().get(i);
+                if (link.getLink().equals(getLink())) {
+                    found = true;
+                    if (link.getClass() == LinkEntity.class) {
+                        entity = (LinkEntity) link;
+                    } else {
+                        categoryEntity.getLinks().set(i, entity);
+                    }
+                }
+            }
+            if (!found) {
+                categoryEntity.getLinks().add(entity);
+            }
+        }
         if(getClass() == LinkEntity.class) {
             setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
             setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
             return (LinkEntity) this;
         }
-        LinkEntity entity = new LinkEntity();
         entity.setAnnotation(annotation);
         entity.setAuthor(author = authorEntity == null ? author : authorEntity);
         entity.setId(id);
