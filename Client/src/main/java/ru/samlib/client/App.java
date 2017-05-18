@@ -27,6 +27,7 @@ import ru.samlib.client.domain.entity.Models;
 import ru.samlib.client.job.AppJobCreator;
 import ru.samlib.client.job.CleanCacheJob;
 import ru.samlib.client.job.ObservableUpdateJob;
+import ru.samlib.client.service.DatabaseService;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.math.BigDecimal;
@@ -51,7 +52,7 @@ public class App extends MultiDexApplication {
 
     private EntityDataStore<Persistable> dataStore;
     private JobManager jobManager;
-
+    private DatabaseService databaseService;
     public static App getInstance() {
         return singleton;
     }
@@ -69,7 +70,7 @@ public class App extends MultiDexApplication {
                 .setFontAttrId(R.attr.fontPath)
                 .build());
         component = DaggerAppComponent.builder()
-                .appModule(new AppModule(singleton)).build();
+                .appModule(new AppModule(this)).build();
         ObservableUpdateJob.startSchedule();
         CleanCacheJob.startSchedule();
     }
@@ -86,6 +87,13 @@ public class App extends MultiDexApplication {
         ACRA.init(this);
     }
 
+    public DatabaseService getDatabaseService() {
+        return new DatabaseService(getDataStore());
+    }
+
+    public void setDatabaseService(DatabaseService databaseService) {
+        this.databaseService = databaseService;
+    }
 
     public EntityDataStore<Persistable> getDataStore() {
         if (dataStore == null) {

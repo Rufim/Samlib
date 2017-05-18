@@ -50,27 +50,46 @@ public class Category implements Linkable, Serializable, Parsable {
     }
 
     public Integer getIdNoDB() {
-        if(id != null) return id;
+        if (id != null) return id;
         try {
             id = getId();
-        } catch (MissingKeyException ex){
+        } catch (MissingKeyException ex) {
             id = null;
         }
         return id;
     }
 
     public CategoryEntity createEntity(AuthorEntity authorEntity) {
+        CategoryEntity entity = new CategoryEntity();
+        setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
+        if (authorEntity != null) {
+            if (authorEntity.getCategories() == null) {
+                authorEntity.setCategories(new ArrayList<>());
+            }
+            boolean found = false;
+            for (int i = 0; i < authorEntity.getCategories().size(); i++) {
+                Category category = authorEntity.getCategories().get(i);
+                if (category.equals(this)) {
+                    found = true;
+                    if (category.isEntity()) {
+                        entity = (CategoryEntity) category;
+                    } else {
+                        authorEntity.getCategories().set(i, entity);
+                    }
+                }
+            }
+            if (!found) {
+                authorEntity.getCategories().add(entity);
+            }
+        }
         if (isEntity()) {
-            setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
             return (CategoryEntity) this;
         }
-        CategoryEntity entity = new CategoryEntity();
         entity.setAnnotation(annotation);
-        entity.setAuthor(author = authorEntity == null ? author : authorEntity);
         entity.setId(id);
         entity.setLink(link);
         entity.setParsed(parsed);
-        entity.setTitle(title);
+        entity.setTitle(getTitle());
         entity.setType(type);
         for (Work work : works) {
             entity.getWorks().add(work.createEntity(getAuthor().createEntity(), entity));
@@ -90,10 +109,14 @@ public class Category implements Linkable, Serializable, Parsable {
         return works;
     }
 
+    public List<Link> getOriginalLinks() {
+        return links;
+    }
+
     public void setTitle(String title) {
         if (title == null) return;
         title = TextUtils.trim(title);
-        if(title.endsWith(":")) {
+        if (title.endsWith(":")) {
             title = title.substring(0, title.length() - 1);
         }
         this.title = title;
@@ -155,21 +178,15 @@ public class Category implements Linkable, Serializable, Parsable {
 
     @Override
     public String toString() {
-        return title;
+        return getTitle();
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Category)) return false;
-
         Category category = (Category) o;
-
-        if (category.getAuthor() != null && getAuthor() != null) {
-            return isTitleEquals(this, category);
-        } else {
-            return false;
-        }
+        return isTitleEquals(this, category);
     }
 
     @Override
@@ -183,8 +200,8 @@ public class Category implements Linkable, Serializable, Parsable {
         return getClass() == CategoryEntity.class;
     }
 
-    public static boolean isTitleEquals(Category one, Category two){
-        if(one.getTitle() == null && two.getTitle() == null) {
+    public static boolean isTitleEquals(Category one, Category two) {
+        if (one.getTitle() == null && two.getTitle() == null) {
             return true;
         }
         if (one.getTitle() == null || two.getTitle() == null) {
@@ -193,8 +210,8 @@ public class Category implements Linkable, Serializable, Parsable {
         return TextUtils.trim(one.getTitle()).equalsIgnoreCase(TextUtils.trim(two.getTitle()));
     }
 
-    public static boolean isLinkEquals(Category one, Category two){
-        if(one.getLink() == null && two.getLink() == null) {
+    public static boolean isLinkEquals(Category one, Category two) {
+        if (one.getLink() == null && two.getLink() == null) {
             return true;
         }
         if (one.getLink() == null || two.getLink() == null) {

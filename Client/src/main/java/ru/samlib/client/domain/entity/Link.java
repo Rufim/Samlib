@@ -71,6 +71,13 @@ public class Link implements Validatable, Linkable, Serializable {
         return author;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof Link)) return false;
+        Link link = (Link) o;
+        return this.link == null ? link.link == null : this.link.equalsIgnoreCase(link.link);
+    }
+
 
     public Link(String link) {
         this.link = link;

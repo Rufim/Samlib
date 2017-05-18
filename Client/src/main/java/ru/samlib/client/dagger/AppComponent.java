@@ -2,10 +2,7 @@ package ru.samlib.client.dagger;
 
 import dagger.Component;
 import ru.samlib.client.activity.MainActivity;
-import ru.samlib.client.fragments.AuthorFragment;
-import ru.samlib.client.fragments.HistoryFragment;
-import ru.samlib.client.fragments.ObservableFragment;
-import ru.samlib.client.fragments.WorkFragment;
+import ru.samlib.client.fragments.*;
 import ru.samlib.client.job.CleanCacheJob;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.service.DatabaseService;
@@ -28,4 +25,5 @@ public interface AppComponent {
     void inject(HistoryFragment historyFragment);
     void inject(CleanCacheJob cleanCacheJob);
     void inject(TTSService ttsService);
+    void inject(ExternalWorksFragment externalWorksFragment);
 }

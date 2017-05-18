@@ -8,6 +8,7 @@ import ru.samlib.client.App;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.entity.SavedHtml;
 import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.service.DatabaseService;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class HtmlClient {
     private static HtmlClient instance;
     private static Hashtable<String, CachedResponse> htmlfiles = new Hashtable<>(1);
     private App app;
+    private DatabaseService databaseService;
 
     public static synchronized HtmlClient getInstance() {
         if (instance == null) {
@@ -38,7 +40,8 @@ public class HtmlClient {
 
     private HtmlClient(App app) {
         this.app = app;
-        List<SavedHtml> savedHtmls = app.getDataStore().select(SavedHtml.class).distinct().get().toList();
+        this.databaseService = app.getDatabaseService();
+        List<SavedHtml> savedHtmls = databaseService.selectCachedEntities();
         for (SavedHtml savedHtml : savedHtmls) {
             String url = savedHtml.getUrl();
             try {

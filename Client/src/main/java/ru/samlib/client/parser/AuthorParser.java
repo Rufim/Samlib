@@ -35,7 +35,7 @@ public class AuthorParser extends Parser {
     }
 
     public AuthorParser(String authorLink) throws MalformedURLException {
-         this(new Author(authorLink));
+        this(new Author(authorLink));
     }
 
     public Author parse() throws IOException {
@@ -243,16 +243,18 @@ public class AuthorParser extends Parser {
                 ocit.remove();
             }
         }
-        if(!newCategories.isEmpty()) {
+        if (!newCategories.isEmpty()) {
             for (Category newCategory : newCategories) {
                 Category category = newCategory.createEntity(author);
                 boolean atLeastOne = false;
                 for (Work work : category.getWorks()) {
                     work.setChanged(true);
+                    author.getWorks().add(work);
+                    work.setAuthor(author);
                     atLeastOne = true;
                 }
                 oldCategories.add(category);
-                if(atLeastOne) {
+                if (atLeastOne) {
                     author.hasNewUpdates();
                 }
             }
@@ -291,14 +293,13 @@ public class AuthorParser extends Parser {
                     oldWork.setSize(0);
                 }
                 if (!oldWork.getSize().equals(newWork.getSize())) {
-                    if (!oldWork.getSize().equals(newWork.getSize())) {
-                        oldWork.setChanged(true);
-                        Integer oldDiff = oldWork.getSizeDiff();
-                        oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
-                        oldWork.setSize(newWork.getSize());
-                        if(!oldWork.getSizeDiff().equals(oldDiff)) {
-                            oldWork.getCategory().getAuthor().hasNewUpdates();
-                        }
+                    oldWork.setChanged(true);
+                    Integer oldSize = oldWork.getSize() == null ? 0 : oldWork.getSize();
+                    Integer oldDiff = oldWork.getSizeDiff() == null ? 0 : oldWork.getSizeDiff();
+                    oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
+                    oldWork.setSize(newWork.getSize());
+                    if (oldWork.getSizeDiff() + oldWork.getSize() != oldSize + oldDiff) {
+                        author.hasNewUpdates();
                     }
                 }
                 newWorks.remove(newWorkIndex);
@@ -310,33 +311,35 @@ public class AuthorParser extends Parser {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
                 newWork.setAuthor(author);
-                if(category != null) {
-                    oldWorks.add(newWork.createEntity(author, category));
+                if (category != null) {
+                    newWork = newWork.createEntity(author, category);
+                    oldWorks.add(newWork);
                     category.getAuthor().hasNewUpdates();
                     newWork.setAuthor(category.getAuthor());
                     newWork.setCategory(category);
                     author.hasNewUpdates();
-                } else if(author != null) {
-                    oldWorks.add(newWork.createEntity(author, null));
-                    author.hasNewUpdates();
+                } else if (author != null) {
+                    newWork = newWork.createEntity(author, null);
+                    oldWorks.add(newWork);
                     newWork.setRootWork(true);
                     newWork.setCategory(null);
+                    author.hasNewUpdates();
                 }
             }
         }
     }
-    
+
     private int hasLink(List<Link> linkables, Link linkable) {
         for (int i = 0; i < linkables.size(); i++) {
-            if(linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
-                return i;        
-        }   
+            if (linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
+                return i;
+        }
         return -1;
     }
 
     private int hasWork(List<Work> linkables, Work linkable) {
         for (int i = 0; i < linkables.size(); i++) {
-            if(linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
+            if (linkables.get(i).getLink() != null && linkables.get(i).getLink().equals(linkable.getLink()))
                 return i;
         }
         return -1;

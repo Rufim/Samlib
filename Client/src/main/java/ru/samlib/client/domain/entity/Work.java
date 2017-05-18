@@ -73,6 +73,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Bookmark bookmark;
     String md5;
 
+    @OneToMany
+    List<AbstractExternalWork> externalWorks;
+
     @Transient
     CachedResponse cachedResponse;
     @Transient
@@ -95,10 +98,30 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         } else {
             entity = new WorkEntity();
         }
+        if(categoryEntity != null) {
+            if(categoryEntity.getWorks() == null) {
+                categoryEntity.setWorks(new ArrayList<>());
+            }
+            boolean found = false;
+            for (int i = 0; i < categoryEntity.getWorks().size(); i++) {
+                Work work = categoryEntity.getWorks().get(i);
+                if (work.getLink().equals(getLink())) {
+                    found = true;
+                    if (work.isEntity()) {
+                        entity = (WorkEntity) work;
+                    } else {
+                        categoryEntity.getWorks().set(i, entity);
+                    }
+                }
+            }
+            if(!found) {
+                categoryEntity.getWorks().add(entity);
+            }
+        }
         entity.setBookmark(bookmark == null ? null : bookmark.createEntity(entity));
         entity.setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
         entity.setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
-        if (isEntity()) {
+        if (!isEntity()) {
             entity.setTitle(title);
             entity.setLink(getLink());
             entity.setChanged(changed);

@@ -18,6 +18,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
+import ru.samlib.client.domain.entity.ExternalWork;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.fragments.*;
 
@@ -107,6 +108,9 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.drawer_review:
                 replaceFragment(GenreFragment.class, newFragmentBuilder().putArg(Constants.ArgsName.Type, Genre.LITREVIEW));
+                break;
+            case R.id.drawer_external_works:
+                replaceFragment(ExternalWorksFragment.class);
                 break;
             case R.id.drawer_history:
                 replaceFragment(HistoryFragment.class);

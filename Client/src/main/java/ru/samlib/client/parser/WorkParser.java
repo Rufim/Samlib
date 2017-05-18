@@ -19,6 +19,7 @@ import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -53,33 +54,44 @@ public class WorkParser extends Parser {
         if (rawContent == null) {
             return work;
         }
+        if (work == null) {
+            work = new Work(rawContent.getRequest().getBaseUrl().getPath().replace("//", "/"));
+        }
+        work.setCachedResponse(rawContent);
+        Work parsedWork =  parse(rawContent, rawContent.getEncoding(), work, processChapters);
+        parsedWork.setCachedResponse(rawContent);
+        return parsedWork;
+    }
+
+    public static Work  parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
-            work = parseWork(rawContent, work);
-            Log.e(TAG, "Work parsed using url " + request.getBaseUrl());
+            work = parseWork(rawContent, encoding, work);
+            Log.i(TAG, "Work parsed using url " + work.getFullLink());
             work.setChanged(false);
             if (processChapters) {
                 processChapters(work);
             }
         } catch (Exception ex) {
             work.setParsed(false);
-            Log.e(TAG, "Work NOT parsed using url " + request.getBaseUrl(), ex);
+            if(rawContent instanceof  CachedResponse) {
+                Log.e(TAG, "Error in work parsing using url " + work.getFullLink(), ex);
+            } else {
+                Log.e(TAG, "Error in work parsing using file " + rawContent.getAbsolutePath(), ex);
+            }
         }
         return work;
     }
 
-    public static Work parseWork(CachedResponse file, Work work) {
-        if (work == null) {
-            work = new Work(file.getRequest().getBaseUrl().getPath().replace("//", "/"));
-        }
+    public static Work parseWork(File file, String encoding, Work work) {
         String[] parts;
         if (!work.getLink().matches(work.getAuthor().getLink() + "/rating\\d.shtml")) {
-            parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+            parts = TextUtils.Splitter.extractLines(file, encoding, true,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
                     new TextUtils.Splitter().addStart("Блочек голосования").addStart("<!-------.*").addEnd("Собственно произведение"),
                     new TextUtils.Splitter().addEnd("<!-------.*"));
         } else {
-            parts = TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+            parts = TextUtils.Splitter.extractLines(file, encoding, true,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("<table width=90% border=0 cellpadding=0 cellspacing=0><tr>", "</tr></table>"),
                     new TextUtils.Splitter("<hr align=\"CENTER\" size=\"2\" noshade>", "<hr align=\"CENTER\" size=\"2\" noshade>"));
@@ -131,13 +143,14 @@ public class WorkParser extends Parser {
             if (typeGenre.length > 1) {
                 work.setGenresAsString(typeGenre[1]);
             }
+            boolean hasNotDefaultCategory = false;
             for (int i = index; i < lis.size(); i++) {
                 String text = lis.get(i).text();
                 if (text.contains("Иллюстрации")) {
                     work.setHasIllustration(true);
                 } else if (text.contains("Скачать")) {
                     break;
-                } else {
+                } else if(lis.hasAttr("href")) {
                     Category category;
                     if(work instanceof WorkEntity) {
                         category = new CategoryEntity();
@@ -150,10 +163,16 @@ public class WorkParser extends Parser {
                     if (work.getCategory() == null || !work.getCategory().equals(category)) {
                         work.setCategory(category);
                     }
+                    hasNotDefaultCategory = true;
                 }
             }
-
-
+            if(!hasNotDefaultCategory) {
+                Category category = new Category();
+                category.setType(work.getType());
+                if (work.getCategory() == null || !work.getCategory().equals(category)) {
+                    work.setCategory(category);
+                }
+            }
         }
         if (parts.length == 3) {
             work.setRawContent(parts[2]);
@@ -162,7 +181,7 @@ public class WorkParser extends Parser {
                 work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
             }
             if (parts[3].contains("<!--Section Begins-->")) {
-                work.setRawContent(TextUtils.Splitter.extractLines(file, file.getEncoding(), true,
+                work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
                         new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
             } else {
                 work.setRawContent(parts[3]);
@@ -173,7 +192,6 @@ public class WorkParser extends Parser {
             work.setMd5(TextUtils.calculateMD5(work.getRawContent(), file.getRequest().getEncoding()));
             if(!work.getMd5().equals(oldMd5)) work.setChanged(true);
         } */
-        work.setCachedResponse(file);
         return work;
     }
 

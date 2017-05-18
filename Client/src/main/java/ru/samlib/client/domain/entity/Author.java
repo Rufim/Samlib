@@ -279,11 +279,11 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public List<Link> getRootLinks() {
-        return Stream.of(links).filter(Link::isRootLink).collect(Collectors.toList());
+        return Stream.of(getLinks()).filter(Link::isRootLink).collect(Collectors.toList());
     }
 
     public List<Work> getRootWorks() {
-        return Stream.of(works).filter(Work::isRootWork).collect(Collectors.toList());
+        return Stream.of(getWorks()).filter(Work::isRootWork).collect(Collectors.toList());
     }
 
     @Override

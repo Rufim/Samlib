@@ -36,6 +36,7 @@ import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Bookmark;
+import ru.samlib.client.domain.entity.ExternalWork;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -64,6 +65,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private static final String TAG = WorkFragment.class.getSimpleName();
 
     private Work work;
+    private String filePath;
     private Queue<Pair<Integer, Integer>> searched = new ArrayDeque<>();
     private Integer lastIndent = 0;
     private int colorSpeakingText;
@@ -74,12 +76,15 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private boolean isDownloaded = false;
     private boolean isSeekBarVisible = false;
     private boolean isWaitingPlayerCallback = false;
+    private boolean isFullscreen = false;
     private SeekBar autoScrollSpeed;
     private SeekBar pitch;
     private SeekBar speechRate;
     private ViewGroup speedLayout;
     private ViewGroup speakLayout;
     private CountDownTimer autoScroller;
+
+    private View decorView;
 
     private int lastOffset = 0;
 
@@ -92,6 +97,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, String link) {
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, WorkFragment.class);
+    }
+
+    public static WorkFragment showFile(FragmentBuilder builder, @IdRes int container, String link) {
+        return show(builder.putArg(Constants.ArgsName.FILE_PATH, link), container, WorkFragment.class);
     }
 
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
@@ -115,24 +124,30 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
-                work = new WorkParser(work).parse(true, Parser.isCachedMode());
-                if (!Parser.isCachedMode()) {
-                    work.setCachedDate(new Date());
-                    if (work.getBookmark() == null) {
-                        setBookmark(work, "", 0);
-                    }
-                    WorkEntity entity = databaseService.insertOrUpdateWork(work);
-                    GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
+                if(filePath != null) {
+                    work = WorkParser.parse(new File(filePath), "CP1251", work, true);
                     isDownloaded = true;
                     safeInvalidateOptionsMenu();
-                    WorkParser.processChapters(work);
-                    GuiUtils.runInUI(getContext(), (v) -> {
-                        if (searchView != null) searchView.setEnabled(true);
-                    });
-                    if (entity != work) {
-                        entity.setParsed(true);
-                        entity.setIndents(work.getIndents());
-                        work = entity;
+                } else {
+                    work = new WorkParser(work).parse(true, Parser.isCachedMode());
+                    if (!Parser.isCachedMode()) {
+                        work.setCachedDate(new Date());
+                        if (work.getBookmark() == null) {
+                            setBookmark(work, "", 0);
+                        }
+                        WorkEntity entity = databaseService.insertOrUpdateWork(work);
+                        GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
+                        isDownloaded = true;
+                        safeInvalidateOptionsMenu();
+                        WorkParser.processChapters(work);
+                        GuiUtils.runInUI(getContext(), (v) -> {
+                            if (searchView != null) searchView.setEnabled(true);
+                        });
+                        if (entity != work) {
+                            entity.setParsed(true);
+                            entity.setIndents(work.getIndents());
+                            work = entity;
+                        }
                     }
                 }
             }
@@ -213,6 +228,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         super.onStop();
     }
 
+
+    @Override
+    public boolean allowBackPress() {
+        if(isFullscreen) {
+           stopFullscreen();
+           return false;
+        }
+        return super.allowBackPress();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -247,6 +272,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         editor.putInt(getString(R.string.preferenceWorkPitch), pitch.getProgress());
         editor.apply();
         stopAutoScroll();
+        stopFullscreen();
     }
 
     @Override
@@ -276,6 +302,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
+            if(filePath != null) {
+                menu.removeItem(R.id.action_work_save);
+            }
             if (TTSService.isReady(work)) {
                 menu.findItem(R.id.action_work_speaking).setChecked(true);
                 mode = Mode.SPEAK;
@@ -286,6 +315,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
         if (!work.isParsed()) {
             searchView.setEnabled(false);
+        }
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            menu.removeItem(R.id.action_work_fullscreen);
         }
         searchView.setQueryHint(getString(R.string.search_hint));
     }
@@ -497,8 +529,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             chooserDialog.setOnChooseFileListener(chosenFile -> {
                                 if (chosenFile != null) {
                                     try {
-                                        SystemUtils.copy(work.getCachedResponse(), new File(chosenFile, work.getTitle() + ".html"));
-                                    } catch (IOException e) {
+                                        File file = new File(chosenFile, work.getTitle() + ".html");
+                                        SystemUtils.copy(work.getCachedResponse(), file);
+                                        ExternalWork externalWork = new ExternalWork();
+                                        externalWork.setFilePath(file.getAbsolutePath());
+                                        externalWork.setSavedDate(new Date());
+                                        externalWork.setWork(databaseService.getWork(work.getLink()));
+                                        databaseService.saveExternalWork(externalWork);
+                                    } catch (Exception e) {
                                         Log.e(TAG, "Unknown exception", e);
                                     }
                                 }
@@ -510,7 +548,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_open_with:
                 try {
-                    if (work.getCachedResponse() != null) {
+                    if(filePath != null) {
+                        AndroidSystemUtils.openFileInExtApp(getActivity(), new File(filePath));
+                    } else if (work.getCachedResponse() != null) {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
                     } else {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), HtmlClient.getCachedFile(getContext(), work.getLink()));
@@ -527,35 +567,46 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_fullscreen:
                 if(isAdded()) {
-                    final View decorView = getActivity().getWindow().getDecorView();
-                    // Hide both the navigation bar and the status bar.
-                    // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
-                    // a general rule, you should design your app to hide the status bar whenever you
-                    // hide the navigation bar.
-                    final int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN;
-                    decorView.setSystemUiVisibility(uiOptions);
-                    decorView.setOnSystemUiVisibilityChangeListener
-                            (visibility -> {
-                                // Note that system bars will only be "visible" if none of the
-                                // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
-                                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                                    // TODO: The system bars are visible. Make any desired
-                                    if(isAdded()) {
-                                        getBaseActivity().getSupportActionBar().show();
-                                    }
-                                } else {
-                                    // TODO: The system bars are NOT visible. Make any desired
-                                       if(isAdded()) {
-                                           getBaseActivity().getSupportActionBar().hide();
-                                       }
-                                }
-                            });
+                    enableFullscreen();
                 }
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void enableFullscreen() {
+        // Hide both the navigation bar and the status bar.
+        // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+        // a general rule, you should design your app to hide the status bar whenever you
+        // hide the navigation bar.
+        final int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+        decorView.setOnSystemUiVisibilityChangeListener
+                (visibility -> {
+                    // Note that system bars will only be "visible" if none of the
+                    // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
+                    if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        // TODO: The system bars are visible. Make any desired
+                        isFullscreen = false;
+                        if (isAdded()) {
+                            getBaseActivity().getSupportActionBar().show();
+                        }
+                    } else {
+                        isFullscreen = true;
+                        // TODO: The system bars are NOT visible. Make any desired
+                        if (isAdded()) {
+                            getBaseActivity().getSupportActionBar().hide();
+                        }
+                    }
+                });
+    }
+
+    public void stopFullscreen() {
+        if(isFullscreen) {
+            decorView.setSystemUiVisibility(0);
+        }
     }
 
     @Override
@@ -603,8 +654,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
+        String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        if (incomingWork != null) {
+        this.filePath = null;
+        if(filePath != null) {
+            this.filePath = filePath;
+            work = databaseService.getExternalWork(filePath).getWork();
+        } else if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
                 work = incomingWork;
                 clearData();
@@ -672,6 +728,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         };
         speechRate.setOnSeekBarChangeListener(listener);
         pitch.setOnSeekBarChangeListener(listener);
+        decorView = getActivity().getWindow().getDecorView();
         return root;
     }
 
@@ -845,7 +902,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     view.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
-                            v.performClick();
                             if (mode.equals(Mode.SPEAK)) {
                                 int x = (int) event.getX();
                                 int y = (int) event.getY();
@@ -873,11 +929,19 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             }
                             if (mode.equals(Mode.AUTO_SCROLL)) {
                                 if (speedLayout.getVisibility() == GONE) {
-                                    speedLayout.setVisibility(VISIBLE);
+                                    if(isFullscreen) {
+                                        stopFullscreen();
+                                    } else {
+                                        speedLayout.setVisibility(VISIBLE);
+                                    }
                                 } else {
                                     speedLayout.setVisibility(GONE);
                                 }
                             }
+                            if((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && isFullscreen) {
+                                stopFullscreen();
+                            }
+                            v.performClick();
                         }
                         return true;
                     });

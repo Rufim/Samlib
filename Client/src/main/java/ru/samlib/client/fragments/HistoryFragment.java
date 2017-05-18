@@ -12,10 +12,9 @@ import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.dialog.FilterDialog;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.util.TextUtils;
-import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
@@ -84,7 +83,8 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
                 AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                         .setTitle(getString(R.string.history_clean) + "?")
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            App.getInstance().getDataStore().delete(databaseService.getHistory(0, Integer.MAX_VALUE));
+                            App.getInstance().getDataStore().delete(BookmarkEntity.class).where(BookmarkEntity.WORK_ID.notNull()).get();
+                            refreshData(true);
                         })
                         .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
                         });
@@ -96,7 +96,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
 
     @Override
     protected void onDataTaskException(Exception ex) {
-        ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+        ErrorFragment.show(this, R.string.error, ex);
         ACRA.getErrorReporter().handleException(ex);
     }
 
