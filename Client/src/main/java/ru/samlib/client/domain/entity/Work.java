@@ -69,13 +69,13 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     boolean changed = false;
     boolean recommendation = false;
     boolean rootWork = false;
-    @OneToOne(cascade = CascadeAction.SAVE)
-    Bookmark bookmark;
+
     String md5;
 
-    @OneToMany
-    List<AbstractExternalWork> externalWorks;
-
+    @Transient
+    ExternalWork externalWork;
+    @Transient
+    Bookmark bookmark;
     @Transient
     CachedResponse cachedResponse;
     @Transient
@@ -118,7 +118,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
                 categoryEntity.getWorks().add(entity);
             }
         }
-        entity.setBookmark(bookmark == null ? null : bookmark.createEntity(entity));
         entity.setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
         entity.setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
         if (!isEntity()) {
@@ -130,10 +129,8 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setExpertKudoed(expertKudoed);
             entity.setExpertRate(expertRate);
             entity.setImageLink(imageLink);
-            entity.setBookmark(bookmark == null ? null : bookmark.createEntity(entity));
             entity.setMd5(md5);
             entity.setCachedDate(cachedDate);
-            entity.setAuthor(author = authorEntity == null ? author : authorEntity);
             entity.setUpdateDate(updateDate);
             entity.setGenres(genres);
             entity.setType(type);
@@ -142,7 +139,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             entity.setAnnotationBlocks(annotationBlocks);
             entity.setSizeDiff(sizeDiff);
             entity.setSize(size);
-            entity.setCategory(category = categoryEntity == null ? category : categoryEntity);
             entity.setKudoed(kudoed);
             entity.setRate(rate);
             entity.setState(state);
@@ -303,9 +299,12 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         FilterDialogListFragment.FilterEvent filterQuery = (FilterDialogListFragment.FilterEvent) query;
         ArrayList<Genre> genres = filterQuery.genres;
         String stringQuery = filterQuery.query;
+        if(stringQuery != null) {
+            stringQuery = stringQuery.toLowerCase();
+        }
         boolean result = false;
-        if (stringQuery == null || toString().toLowerCase().contains(stringQuery)) {
-            if (stringQuery != null) {
+        if (stringQuery == null || (getAuthor().getShortName() + " " + getTitle()).toLowerCase().contains(stringQuery)) {
+            if (genres == null && filterQuery.genders == null) {
                 result = true;
             }
             if (genres != null) {

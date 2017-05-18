@@ -249,11 +249,8 @@ public class AuthorParser extends Parser {
                 boolean atLeastOne = false;
                 for (Work work : category.getWorks()) {
                     work.setChanged(true);
-                    author.getWorks().add(work);
-                    work.setAuthor(author);
                     atLeastOne = true;
                 }
-                oldCategories.add(category);
                 if (atLeastOne) {
                     author.hasNewUpdates();
                 }

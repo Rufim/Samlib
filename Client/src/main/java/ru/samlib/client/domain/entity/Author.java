@@ -12,6 +12,7 @@ import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.domain.google.Page;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -251,8 +252,17 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public void addRecommendation(Work work) {
-        work.setRecommendation(true);
-        this.works.add(work);
+        int workRecomanndationIndex = getWorks().indexOf(work);
+        if(workRecomanndationIndex < 0) {
+            work.setRecommendation(true);
+            if(!isEntity()) {
+                this.getWorks().add(work);
+            } else {
+                getWorks().add(work.createEntity((AuthorEntity) this, null));
+            }
+        } else {
+            getWorks().get(workRecomanndationIndex).setRecommendation(true);
+        }
     }
 
 

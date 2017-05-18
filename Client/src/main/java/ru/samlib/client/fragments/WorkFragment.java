@@ -42,7 +42,6 @@ import ru.samlib.client.domain.entity.WorkEntity;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.parser.CommentsParser;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
@@ -66,7 +65,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private static final String TAG = WorkFragment.class.getSimpleName();
 
     private Work work;
-    private String filePath;
+    private ExternalWork externalWork;
     private Queue<Pair<Integer, Integer>> searched = new ArrayDeque<>();
     private Integer lastIndent = 0;
     private int colorSpeakingText;
@@ -125,8 +124,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
-                if(filePath != null) {
-                    work = WorkParser.parse(new File(filePath), "CP1251", work, true);
+                if(externalWork != null) {
+                    work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
                     isDownloaded = true;
                     safeInvalidateOptionsMenu();
                 } else {
@@ -136,7 +135,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         if (work.getBookmark() == null) {
                             setBookmark(work, "", 0);
                         }
-                        WorkEntity entity = databaseService.insertOrUpdateWork(work);
+                        databaseService.insertOrUpdateBookmark(work.getBookmark());
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
                         isDownloaded = true;
                         safeInvalidateOptionsMenu();
@@ -144,11 +143,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         GuiUtils.runInUI(getContext(), (v) -> {
                             if (searchView != null) searchView.setEnabled(true);
                         });
-                        if (entity != work) {
-                            entity.setParsed(true);
-                            entity.setIndents(work.getIndents());
-                            work = entity;
-                        }
                     }
                 }
             }
@@ -188,11 +182,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void firstLoad(boolean scroll) {
         try {
-            Bookmark bookmark = work.getBookmark();
+            Bookmark bookmark = databaseService.getBookmark(work.getFullLink());
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll) {
-                    scrollToIndex(bookmark.getIndentIndex());
+                    scrollToIndex(bookmark.getIndentIndex(), 1);
                 } else {
                     loadItems(false);
                 }
@@ -212,7 +206,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             bookmark.setIndent(indent);
         }
         bookmark.setIndentIndex(index);
-        bookmark.setWork(work);
+        bookmark.setWorkUrl(work.getFullLink());
+        bookmark.setAuthorUrl(work.getAuthor().getFullLink());
+        bookmark.setAuthorShortName(work.getAuthor().getShortName());
+        bookmark.setGenres(work.printGenres());
+        bookmark.setWorkTitle(work.getTitle());
         work.setBookmark(bookmark.createEntity());
     }
 
@@ -249,7 +247,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 int size = adapter.getItems().size();
                 if (size > index) {
                     setBookmark(work, adapter.getItems().get(index), indexLast - 1);
-                    databaseService.insertOrUpdateWork(work);
+                    databaseService.insertOrUpdateBookmark(work.getBookmark());
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Unknown exception", e);
@@ -303,7 +301,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
-            if(filePath != null) {
+            if(externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
             }
             if (TTSService.isReady(work)) {
@@ -538,11 +536,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                             original = HtmlClient.getCachedFile(getContext(), work.getLink());
                                         }
                                         SystemUtils.copy(original, file);
-                                        ExternalWork externalWork = new ExternalWork();
-                                        externalWork.setFilePath(file.getAbsolutePath());
-                                        externalWork.setSavedDate(new Date());
-                                        externalWork.setWork(databaseService.getWork(work.getLink()));
-                                        databaseService.saveExternalWork(externalWork);
+                                        databaseService.saveExternalWork(work, file.getAbsolutePath());
                                     } catch (Exception e) {
                                         Log.e(TAG, "Unknown exception", e);
                                     }
@@ -555,8 +549,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_open_with:
                 try {
-                    if(filePath != null) {
-                        AndroidSystemUtils.openFileInExtApp(getActivity(), new File(filePath));
+                    if(externalWork != null) {
+                        AndroidSystemUtils.openFileInExtApp(getActivity(), new File(externalWork.getFilePath()));
                     } else if (work.getCachedResponse() != null) {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
                     } else {
@@ -663,10 +657,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         String link = getArguments().getString(Constants.ArgsName.LINK);
         String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        this.filePath = null;
+        this.externalWork = null;
         if(filePath != null) {
-            this.filePath = filePath;
-            work = databaseService.getExternalWork(filePath).getWork();
+            this.externalWork = databaseService.getExternalWork(filePath);
+            work = new Work(externalWork.getWorkUrl());
         } else if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
                 work = incomingWork;

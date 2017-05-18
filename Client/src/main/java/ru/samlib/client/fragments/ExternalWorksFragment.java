@@ -80,7 +80,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
                         return true;
                     case R.id.external_item_author:
                     case R.id.external_item_author_layout:
-                        SectionActivity.launchActivity(getContext(), item.getWork().getAuthor().getFullLink());
+                        SectionActivity.launchActivity(getContext(), item.getAuthorUrl());
                         return true;
                 }
 
@@ -97,9 +97,9 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
             TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
             TextView filepathView = GuiUtils.getView(root, R.id.external_item_filepath);
             TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
-            GuiUtils.setText(titleView, item.getWork().getTitle());
+            GuiUtils.setText(titleView, item.getWorkTitle());
             GuiUtils.setText(filepathView, item.getFilePath());
-            GuiUtils.setText(authorView, item.getWork().getAuthor().getShortName());
+            GuiUtils.setText(authorView, item.getAuthorShortName());
         }
     }
 }

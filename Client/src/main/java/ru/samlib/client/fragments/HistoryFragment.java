@@ -24,7 +24,7 @@ import java.util.Locale;
 /**
  * Created by Dmitry on 29.12.2015.
  */
-public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
+public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
 
     private static final String TAG = HistoryFragment.class.getSimpleName();
 
@@ -46,7 +46,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
     }
 
     @Override
-    protected ItemListAdapter<WorkEntity> newAdapter() {
+    protected ItemListAdapter<Bookmark> newAdapter() {
         return new HistoryAdapter();
     }
 
@@ -60,7 +60,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
 
 
     @Override
-    protected DataSource<WorkEntity> newDataSource() throws Exception {
+    protected DataSource<Bookmark> newDataSource() throws Exception {
         return (skip, size) -> {
             if (adapter.getItems().isEmpty()) {
                 return new ArrayList<>(databaseService.getHistory(skip, size));
@@ -83,7 +83,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
                 AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                         .setTitle(getString(R.string.history_clean) + "?")
                         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            App.getInstance().getDataStore().delete(BookmarkEntity.class).where(BookmarkEntity.WORK_ID.notNull()).get().value();
+                            databaseService.deleteHistory();
                             refreshData(true);
                         })
                         .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
@@ -100,7 +100,7 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
         ACRA.getErrorReporter().handleException(ex);
     }
 
-    protected class HistoryAdapter extends ItemListAdapter<WorkEntity> {
+    protected class HistoryAdapter extends ItemListAdapter<Bookmark> {
 
         private final Locale currentLocale = getResources().getConfiguration().locale;
 
@@ -115,11 +115,11 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
             switch (id) {
                 case R.id.history_item_work:
                 case R.id.history_item_work_layout:
-                    link = getItems().get(position).getFullLink();
+                    link = getItems().get(position).getWorkUrl();
                     break;
                 case R.id.history_item_author:
                 case R.id.history_item_author_layout:
-                    link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
+                    link = getItems().get(position).getAuthorUrl();
                     break;
             }
             SectionActivity.launchActivity(getContext(), link);
@@ -131,11 +131,11 @@ public class HistoryFragment extends FilterDialogListFragment<WorkEntity> {
             TextView authorTextView = holder.getView(R.id.history_item_author);
             TextView timeTextView = holder.getView(R.id.history_item_time);
             TextView genresView = holder.getView(R.id.history_item_genres);
-            Work work = getItems().get(position);
-            workTextView.setText(work.getTitle());
-            genresView.setText(work.printGenres());
-            authorTextView.setText(work.getAuthor().getShortName());
-            timeTextView.setText(TextUtils.getShortFormattedDate(work.getCachedDate(), currentLocale));
+            Bookmark bookmark = getItems().get(position);
+            workTextView.setText(bookmark.getWorkTitle());
+            genresView.setText(bookmark.getGenres());
+            authorTextView.setText(bookmark.getAuthorShortName());
+            timeTextView.setText(TextUtils.getShortFormattedDate(bookmark.getSavedDate(), currentLocale));
         }
     }
 }

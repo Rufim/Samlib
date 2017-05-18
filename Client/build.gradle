@@ -58,7 +58,14 @@ android {
     }
 
     signingConfigs {
-        allprojects {
+        release {
+            storeFile file("samlib.key")
+            storePassword "1qa2ws3ed"
+            keyAlias "key"
+            keyPassword "1qa2ws3ed"
+        }
+
+        debug {
             storeFile file("samlib.key")
             storePassword "1qa2ws3ed"
             keyAlias "key"

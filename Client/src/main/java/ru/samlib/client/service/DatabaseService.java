@@ -172,75 +172,41 @@ public class DatabaseService {
         return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).limit(size).offset(skip).get().toList();
     }
 
-    public List<WorkEntity> getHistory(int skip, int size) {
-        return dataStore.select(WorkEntity.class).distinct().leftJoin(BookmarkEntity.class).on(BookmarkEntity.WORK_ID.equal(WorkEntity.LINK)).where(BookmarkEntity.WORK_ID.notNull()).orderBy(WorkEntity.CACHED_DATE.desc()).limit(size).offset(skip).get().toList();
+    public List<BookmarkEntity> getHistory(int skip, int size) {
+        return dataStore.select(BookmarkEntity.class).orderBy(BookmarkEntity.SAVED_DATE.desc()).limit(size).offset(skip).get().toList();
+    }
+
+    public void deleteHistory() {
+        dataStore.delete(BookmarkEntity.class).get().value();
+        ;
     }
 
     public WorkEntity getWork(String link) {
-        return dataStore.select(WorkEntity.class).distinct().leftJoin(BookmarkEntity.class).on(BookmarkEntity.WORK_ID.equal(WorkEntity.LINK)).where(WorkEntity.LINK.eq(link)).get().firstOrNull();
+        return dataStore.select(WorkEntity.class).where(WorkEntity.LINK.eq(link)).get().firstOrNull();
     }
 
-    public synchronized WorkEntity insertOrUpdateWork(Work work) {
-        return mergeWorkEntity(work);
+    public synchronized BookmarkEntity insertOrUpdateBookmark(Bookmark bookmark) {
+        BookmarkEntity bookmarkEntity = getBookmark(bookmark.getWorkUrl());
+        if (bookmarkEntity == null) {
+            bookmark.setSavedDate(new Date());
+            bookmarkEntity = (BookmarkEntity) doAction(Action.INSERT, bookmark.createEntity());
+        } else {
+            bookmarkEntity.setSavedDate(new Date());
+            updateField(bookmarkEntity::setIndent, bookmark.getIndent());
+            updateField(bookmarkEntity::setAuthorShortName, bookmark.getAuthorShortName());
+            updateField(bookmarkEntity::setPercent, bookmark.getPercent());
+            updateField(bookmarkEntity::setTitle, bookmark.getTitle());
+            updateField(bookmarkEntity::setWorkTitle, bookmark.getWorkTitle());
+            updateField(bookmarkEntity::setIndentIndex, bookmark.getIndentIndex());
+            updateField(bookmarkEntity::setAuthorUrl, bookmark.getAuthorUrl());
+            updateField(bookmarkEntity::setGenres, bookmark.getGenres());
+            bookmarkEntity = (BookmarkEntity) doAction(Action.UPDATE, bookmarkEntity);
+        }
+        return bookmarkEntity;
     }
 
-
-    public AuthorEntity resolveAuthor(Author author) {
-        AuthorEntity authorEntity = getAuthor(author.getLink());
-        if (authorEntity != null) {
-            return authorEntity;
-        }
-        return author.createEntity();
-    }
-
-
-    private synchronized WorkEntity mergeWorkEntity(Work work) {
-        Author author = work.getAuthor();
-        Category category = work.getCategory();
-        AuthorEntity authorEntity = getAuthor(author.getLink());
-        WorkEntity workEntity = getWork(work.getLink());
-        boolean insert = false;
-        if (workEntity != null) {
-            updateWork(workEntity, work);
-        } else {
-            workEntity = work.createEntity();
-        }
-        if (authorEntity == null) {
-            insert = true;
-            authorEntity = (AuthorEntity) workEntity.getAuthor();
-        } else {
-            workEntity.setAuthor(authorEntity);
-        }
-        updateAuthor(authorEntity, author);
-        addWorkToAuthor(workEntity, authorEntity);
-        if (category != null) {
-            CategoryEntity categoryEntity = resolveCategory(authorEntity, workEntity, category);
-            if (categoryEntity != null && !insert) {
-                if (categoryEntity.getIdNoDB() != null) {
-                    doAction(Action.UPDATE, categoryEntity);
-                    for (Work workEn : categoryEntity.getWorks()) {
-                        try {
-                            doAction(Action.UPDATE, workEn);
-                        } catch (Exception ex) {
-                        }
-                    }
-                }
-            }
-        }
-        if (insert) {
-            doAction(Action.INSERT, authorEntity);
-        } else {
-            doAction(Action.UPDATE, authorEntity);
-        }
-        if (workEntity.getBookmark() != null) {
-            if (workEntity.getBookmark().getIdNoDB() == null) {
-                doAction(Action.INSERT, workEntity.getBookmark());
-            } else {
-                doAction(Action.UPDATE, workEntity.getBookmark());
-            }
-            doAction(Action.UPDATE, workEntity);
-        }
-        return workEntity;
+    public synchronized BookmarkEntity getBookmark(String workUrl) {
+        return dataStore.findByKey(BookmarkEntity.class, workUrl);
     }
 
     public CategoryEntity addCategoryToAuthor(AuthorEntity author, Category category) {
@@ -363,7 +329,7 @@ public class DatabaseService {
                     author.getWorks().add(into);
                 }
             }
-            if(into.getCategory() != null) {
+            if (into.getCategory() != null) {
                 into.getCategory().setAuthor(author);
             }
             into.setAuthor(author);
@@ -384,22 +350,6 @@ public class DatabaseService {
             }
             into.setAuthor(author);
         }
-    }
-
-    public void updateWork(Work into, Work from) {
-        updateField(into::setTitle, from.getTitle());
-        updateField(into::setLink, from.getLink());
-        updateField(into::setRate, from.getRate());
-        updateField(into::setKudoed, from.getKudoed());
-        updateField(into::setGenres, from.getGenres());
-        updateField(into::setType, from.getType());
-        updateField(into::setAnnotationBlocks, from.getAnnotationBlocks());
-        updateField(into::setState, from.getState());
-        updateField(into::setHasIllustration, from.isHasIllustration());
-        updateField(into::setHasComments, from.isHasComments());
-        updateField(into::setBookmark, from.getBookmark().createEntity());
-        updateField(into::setChanged, from.isChanged());
-        updateField(into::setCachedDate, from.getCachedDate());
     }
 
     public void updateAuthor(Author into, Author from) {
@@ -450,14 +400,32 @@ public class DatabaseService {
         return dataStore.select(ExternalWork.class).orderBy(ExternalWork.SAVED_DATE.asc()).limit(size).offset(skip).get().toList();
     }
 
+    public ExternalWork saveExternalWork(Work work, String filePath) {
+        ExternalWork externalWork = new ExternalWork();
+        updateField(externalWork::setFilePath, filePath);
+        updateField(externalWork::setWorkUrl, work.getFullLink());
+        updateField(externalWork::setGenres, work.printGenres());
+        updateField(externalWork::setWorkTitle, work.getTitle());
+        updateField(externalWork::setAuthorShortName, work.getAuthor().getShortName());
+        updateField(externalWork::setAuthorUrl, work.getAuthor().getFullLink());
+        return insertOrUpdateExternalWork(externalWork);
+    }
 
-    public void saveExternalWork(ExternalWork externalWork) {
+    public ExternalWork insertOrUpdateExternalWork(ExternalWork externalWork) {
         ExternalWork work = dataStore.findByKey(ExternalWork.class, externalWork.getFilePath());
         if (work == null) {
-            dataStore.insert(externalWork);
+            externalWork.setSavedDate(new Date());
+            work = (ExternalWork) doAction(Action.INSERT, externalWork);
         } else {
-            dataStore.update(externalWork);
+            work.setSavedDate(new Date());
+            updateField(work::setAuthorShortName, externalWork.getAuthorShortName());
+            updateField(work::setWorkUrl, externalWork.getWorkUrl());
+            updateField(work::setWorkTitle, externalWork.getWorkTitle());
+            updateField(work::setAuthorUrl, externalWork.getAuthorUrl());
+            updateField(work::setGenres, externalWork.getGenres());
+            work = (ExternalWork) doAction(Action.UPDATE, work);
         }
+        return work;
     }
 
     public void deleteExternalWorks(List<ExternalWork> delete) {

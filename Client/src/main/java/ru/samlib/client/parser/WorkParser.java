@@ -146,11 +146,12 @@ public class WorkParser extends Parser {
             boolean hasNotDefaultCategory = false;
             for (int i = index; i < lis.size(); i++) {
                 String text = lis.get(i).text();
+                Element a = lis.get(i).select("a").first();
                 if (text.contains("Иллюстрации")) {
                     work.setHasIllustration(true);
                 } else if (text.contains("Скачать")) {
                     break;
-                } else if(lis.hasAttr("href")) {
+                } else if(a != null) {
                     Category category;
                     if(work instanceof WorkEntity) {
                         category = new CategoryEntity();
@@ -158,7 +159,7 @@ public class WorkParser extends Parser {
                         category = new Category();
                     }
                     category.setTitle(text);
-                    category.setLink(lis.attr("href"));
+                    category.setLink(a.attr("href"));
                     category.setAuthor(work.getAuthor());
                     if (work.getCategory() == null || !work.getCategory().equals(category)) {
                         work.setCategory(category);
