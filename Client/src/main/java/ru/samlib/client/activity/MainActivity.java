@@ -1,6 +1,7 @@
 package ru.samlib.client.activity;
 
 import android.app.SearchManager;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -83,9 +84,11 @@ public class MainActivity extends BaseActivity {
                 i.setData(Uri.parse(Constants.Net.BASE_DOMAIN + TextUtils.eraseHost(query)));
                 startActivity(i);
             } else {
-                Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
-                searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
-                startActivity(searchIntent);
+                try {
+                    Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+                    searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
+                    startActivity(searchIntent);
+                } catch (ActivityNotFoundException ex) {}
             }
             //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }

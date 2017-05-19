@@ -91,22 +91,22 @@ public class DatabaseService {
                 }
                 authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
             } else {
-                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
+                for (Work work : authorEntity.getWorks()) {
+                    try {
+                        doAction(Action.UPDATE, work);
+                    } catch (MissingKeyException ex) {
+                    }
+                }
+                for (Link link : authorEntity.getLinks()) {
+                    try {
+                        doAction(Action.UPDATE, link);
+                    } catch (MissingKeyException ex) {
+                    }
+                }
                 for (Category category : authorEntity.getCategories()) {
                     updateCategory(category);
                 }
-            }
-            for (Work work : authorEntity.getWorks()) {
-                try {
-                    doAction(Action.UPDATE, work);
-                } catch (MissingKeyException ex) {
-                }
-            }
-            for (Work work : authorEntity.getRootWorks()) {
-                try {
-                    doAction(Action.UPDATE, work);
-                } catch (MissingKeyException ex) {
-                }
+                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
             }
             return authorEntity;
         }
