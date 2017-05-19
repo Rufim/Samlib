@@ -268,12 +268,22 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
     public void addRootLink(Linkable linkable) {
         if(linkable instanceof Work) {
-            ((Work)linkable).setRootWork(true);
-            this.getWorks().add((Work) linkable);
+             Work exist = Stream.of(getWorks()).filter(work -> work.equals(linkable)).findFirst().orElse(null);
+             if(exist != null) {
+                 exist.setRootWork(true);
+             } else {
+                 ((Work) linkable).setRootWork(true);
+                 this.getWorks().add((Work) linkable);
+             }
         }
         if(linkable instanceof Link) {
-            ((Link)linkable).setRootLink(true);
-            this.getLinks().add((Link) linkable);
+            Link exist = Stream.of(getLinks()).filter(link -> link.equals(linkable)).findFirst().orElse(null);
+            if (exist != null) {
+                exist.setRootLink(true);
+            } else {
+                ((Link) linkable).setRootLink(true);
+                this.getLinks().add((Link) linkable);
+            }
         }
     }
 
