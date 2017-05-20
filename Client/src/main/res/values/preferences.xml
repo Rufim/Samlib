@@ -11,4 +11,7 @@
     <string name="preferenceWorkAutoScrollSpeed">WorkAutoScrollSpeed</string>
     <string name="preferenceWorkSpeechRate">WorkSpeechRate</string>
     <string name="preferenceWorkPitch">WorkPitch</string>
+    <string name="preferenceLastWork">LastWork</string>
+
+    <string name="preferenceAuthorSimpleView">SimpleView</string>
 </resources>

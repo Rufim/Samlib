@@ -90,10 +90,17 @@ public class MainActivity extends BaseActivity {
                     startActivity(searchIntent);
                 } catch (ActivityNotFoundException ex) {}
             }
+            return;
             //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
         if (intent.getAction() == null && ObservableFragment.class.getSimpleName().equals(intent.getStringExtra(Constants.ArgsName.FRAGMENT_CLASS))) {
             replaceFragment(ObservableFragment.class);
+            return;
+        }
+        String link = AndroidSystemUtils.getStringResPreference(this, R.string.preferenceLastWork);
+        if(!TextUtils.isEmpty(link))  {
+            SectionActivity.launchActivity(this, link);
+            return;
         }
     }
 

@@ -77,6 +77,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private boolean isSeekBarVisible = false;
     private boolean isWaitingPlayerCallback = false;
     private boolean isFullscreen = false;
+    private boolean isBack = false;
     private SeekBar autoScrollSpeed;
     private SeekBar pitch;
     private SeekBar speechRate;
@@ -240,6 +241,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
            stopFullscreen();
            return false;
         }
+        isBack = true;
         return super.allowBackPress();
     }
 
@@ -274,9 +276,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         editor.putInt(getString(R.string.preferenceWorkSpeechRate), speechRate.getProgress());
         editor.putInt(getString(R.string.preferenceWorkAutoScrollSpeed), autoScrollSpeed.getProgress());
         editor.putInt(getString(R.string.preferenceWorkPitch), pitch.getProgress());
+        editor.putString(getString(R.string.preferenceLastWork), isBack ? "" : work.getLink());
         editor.apply();
         stopAutoScroll();
         stopFullscreen();
+        isBack = false;
     }
 
     @Override

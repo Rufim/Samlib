@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.text.method.LinkMovementMethod;
@@ -22,6 +23,7 @@ import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
@@ -62,6 +64,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private Author author;
     private Category category;
+    private boolean simpleView = false;
     @Inject
     DatabaseService databaseService;
 
@@ -245,11 +248,52 @@ public class AuthorFragment extends ListFragment<Linkable> {
             safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
+        simpleView = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceAuthorSimpleView, false);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
-    private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
+    private void openLinkable(Linkable linkable) {
+        if (linkable.isWork()) {
+            WorkFragment.show(newFragmentBuilder()
+                            .addToBackStack()
+                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
+                    , getId(), linkable.getLink());
+        } else {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, getActivity().getPackageName());
+            getActivity().startActivity(intent);
+        }
+    }
 
+    private class ExpandableAuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
+
+        public ExpandableAuthorFragmentAdaptor() {
+            super(false, R.layout.item_section_expandable);
+        }
+
+        @Override
+        public int getLayoutId(Linkable item) {
+            return R.layout.item_section_expandable;
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            Category category = (Category) getItem(position);
+            if(holder.getTag() == category) {
+                return;
+            }
+            ViewGroup root = (ViewGroup) holder.getItemView();
+
+
+            holder.setTag(category);
+        }
+
+
+
+    }
+
+    private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public AuthorFragmentAdaptor() {
             super(true, R.layout.header_author_list, R.layout.item_section, R.layout.item_work);
@@ -276,21 +320,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
                     break;
             }
-        }
-
-        public void openLinkable(Linkable linkable) {
-            if (linkable.isWork()) {
-                WorkFragment.show(newFragmentBuilder()
-                                .addToBackStack()
-                                .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                                .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
-                        , getId(), linkable.getLink());
-            } else {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
-                intent.putExtra(Browser.EXTRA_APPLICATION_ID, getActivity().getPackageName());
-                getActivity().startActivity(intent);
-            }
-
         }
 
         @Override
