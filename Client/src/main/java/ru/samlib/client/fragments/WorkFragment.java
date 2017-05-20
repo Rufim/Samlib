@@ -136,6 +136,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             setBookmark(work, "", 0);
                         }
                         databaseService.insertOrUpdateBookmark(work.getBookmark());
+                        Work workEntity = databaseService.getWork(work.getLink());
+                        if(workEntity != null) { 
+                            workEntity.setSizeDiff(0);
+                            workEntity.setChanged(false);
+                            databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
+                        }
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
                         isDownloaded = true;
                         safeInvalidateOptionsMenu();

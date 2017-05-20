@@ -112,7 +112,7 @@ public class DatabaseService {
         }
     }
 
-    public void updateCategory(Category category) {
+    private void updateCategory(Category category) {
         if (category.getIdNoDB() != null) {
             doAction(Action.UPDATE, category);
             for (Work work : category.getWorks()) {
