@@ -140,7 +140,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-v4'
     }
     compile "com.snappydb:snappydb-lib:0.5.2"
-    compile "com.evernote:android-job:1.1.10"
+    compile "com.evernote:android-job:1.1.11-SNAPSHOT"
     compile "net.vrallev.android:cat:1.0.4"
 
     compile "io.requery:requery:$requeryVersion"
