@@ -51,10 +51,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Dmitry on 10.07.2015.
@@ -136,6 +133,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
         } else {
             menu.removeItem(R.id.action_author_observable);
         }
+        if(!author.isObservable() || !author.isParsed()) {
+            menu.removeItem(R.id.action_author_make_all_visited);
+        }
         menu.findItem(R.id.action_author_mode).setChecked(simpleView);
     }
 
@@ -169,6 +169,16 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 itemList.setAdapter(adapter);
                 super.refreshData(false);
                 return true;
+            case R.id.action_author_make_all_visited:
+                if(author.isEntity()) {
+                    Stream.of(author.getAllWorks().entrySet()).map(Map.Entry::getValue).forEach(work -> {
+                        work.setChanged(false);
+                        work.setSizeDiff(null);
+                    });
+                    databaseService.createOrUpdateAuthor(author.createEntity());
+                }
+                return true;
+
         }
         return super.onOptionsItemSelected(item);
     }

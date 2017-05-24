@@ -128,8 +128,11 @@
     <string name="favorites_update">Update</string>
     <string name="favorites_new">New</string>
     <string name="author_observable">Подписка</string>
+    <string name="author_make_all_visited">Отметить все, как прочитанное</string>
     <string name="author_mode">Компактный вид</string>
     <string name="history_clean">Очистить историю</string>
     <string name="back_to_exit">Нажмите еще раз для выхода</string>
     <string name="network_not_available">Нет интернет соединения…</string>
+    <string name="external_work_delete">Удалить</string>
+    <string name="external_work_cancel">Отмена</string>
 </resources>

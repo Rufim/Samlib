@@ -6,9 +6,13 @@
           android:checkable="true"
           android:orderInCategory="1"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_author_make_all_visited"
+          android:title="@string/author_make_all_visited"
+          android:orderInCategory="2"
+          app:showAsAction="never"/>
     <item android:id="@+id/action_author_mode"
           android:title="@string/author_mode"
           android:checkable="true"
-          android:orderInCategory="2"
+          android:orderInCategory="3"
           app:showAsAction="never"/>
 </menu>

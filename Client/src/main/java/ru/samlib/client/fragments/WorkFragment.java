@@ -530,10 +530,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), Environment.getExternalStorageDirectory().getAbsolutePath(), false);
+                            String path = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath());
+                            DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), path, false);
                             chooserDialog.setTitle("Сохранить в...");
                             chooserDialog.setIcon(android.R.drawable.ic_menu_save);
                             chooserDialog.setAllowRootDir(true);
+                            chooserDialog.setFileTypes("html");
                             chooserDialog.setOnChooseFileListener(chosenFile -> {
                                 if (chosenFile != null) {
                                     try {
@@ -545,6 +547,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                             original = HtmlClient.getCachedFile(getContext(), work.getLink());
                                         }
                                         SystemUtils.copy(original, file);
+                                        SharedPreferences.Editor preferences = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                                        preferences.putString(getString(R.string.preferenceLastSavedWorkPath), file.getParent());
+                                        preferences.apply();
                                         databaseService.saveExternalWork(work, file.getAbsolutePath());
                                     } catch (Exception e) {
                                         Log.e(TAG, "Unknown exception", e);
