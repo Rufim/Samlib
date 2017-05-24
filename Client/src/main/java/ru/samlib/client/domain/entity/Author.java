@@ -16,10 +16,7 @@ import ru.samlib.client.domain.google.Page;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Rufim on 22.05.2014.
@@ -252,19 +249,31 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public void addRecommendation(Work work) {
-        int workRecomanndationIndex = getWorks().indexOf(work);
-        if(workRecomanndationIndex < 0) {
+        Map<String, Work> all = getAllWorks();
+        if(all.containsKey(work.getLink())) {
+            all.get(work.getLink()).setRecommendation(true);
+        } else {
             work.setRecommendation(true);
             if(!isEntity()) {
                 this.getWorks().add(work);
             } else {
                 getWorks().add(work.createEntity((AuthorEntity) this, null));
             }
-        } else {
-            getWorks().get(workRecomanndationIndex).setRecommendation(true);
         }
     }
 
+    public Map<String, Work> getAllWorks() {
+        LinkedHashMap<String, Work> map = new LinkedHashMap<>();
+        for (Work work : getWorks()) {
+            map.put(work.getLink(), work);
+        }
+        for (Category category : getCategories()) {
+            for (Work work : category.getWorks()) {
+                map.put(work.getLink(), work);
+            }
+        }
+        return map;
+    }
 
     public void addRootLink(Linkable linkable) {
         if(linkable instanceof Work) {
@@ -370,6 +379,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public List<Work> getRecommendations() {
-        return Stream.of(getWorks()).filter(Work::isRecommendation).collect(Collectors.toList());
+        return Stream.of(getAllWorks().entrySet()).map(Map.Entry::getValue).filter(Work::isRecommendation).collect(Collectors.toList());
     }
 }

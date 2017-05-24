@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/arrow_down_drop_circle_outline"
+          android:state_checked="true" />
+
+    <item android:drawable="@drawable/arrow_left_drop_circle_outline"
+          android:state_checked="false"/>
+</selector>

@@ -6,20 +6,20 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.*;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.*;
+import butterknife.OnClick;
 import com.annimon.stream.Stream;
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.adapter.LazyItemListAdapter;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
@@ -64,7 +64,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private Author author;
     private Category category;
-    private boolean simpleView = false;
+    private boolean simpleView = true;
     @Inject
     DatabaseService databaseService;
 
@@ -88,7 +88,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         setDataSource((skip, size) -> {
             if (skip != 0) return null;
             while (author == null) {
-                SystemClock.sleep(10);
+                SystemClock.sleep(100);
             }
             if (!author.isParsed()) {
                 author = new AuthorParser(author).parse();
@@ -108,7 +108,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     protected void onDataTaskException(Exception ex) {
-        if(ex instanceof IOException) {
+        if (ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
@@ -125,7 +125,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.author, menu);
-        if(author.isParsed()) {
+        if (author.isParsed()) {
             MenuItem item = menu.findItem(R.id.action_author_observable);
             if (author.isObservable()) {
                 item.setChecked(true);
@@ -217,7 +217,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     protected ItemListAdapter<Linkable> newAdapter() {
-        return new AuthorFragmentAdaptor();
+        if(simpleView) {
+            return new AuthorFragmentAdaptor();
+        } else {
+            return new ExpandableAuthorFragmentAdaptor();
+        }
     }
 
     @Override
@@ -226,14 +230,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
         Author incomingAuthor = (Author) getArguments().getSerializable(Constants.ArgsName.AUTHOR);
         Author intentAuthor = null;
         setHasOptionsMenu(true);
-        if (incomingAuthor != null) {
-            if (!incomingAuthor.equals(author)) {
-                intentAuthor = incomingAuthor;
-            }
-        } else if (link != null) {
-            if (author == null || !author.getLink().equals(link)) {
-                intentAuthor = new Author(link);
-            }
+        if (incomingAuthor != null && !incomingAuthor.equals(author)) {
+            intentAuthor = incomingAuthor;
+        } else if (link != null && (author == null || !author.getLink().equals(link))) {
+            intentAuthor = new Author(link);
         }
         if (intentAuthor != null) {
             AuthorEntity entity;
@@ -266,31 +266,164 @@ public class AuthorFragment extends ListFragment<Linkable> {
         }
     }
 
-    private class ExpandableAuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
+    private class ExpandableAuthorFragmentAdaptor extends LazyItemListAdapter<Linkable> {
 
         public ExpandableAuthorFragmentAdaptor() {
-            super(false, R.layout.item_section_expandable);
+            super(R.layout.item_section_expandable_header);
         }
 
         @Override
-        public int getLayoutId(Linkable item) {
-            return R.layout.item_section_expandable;
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            Category category = (Category) getItem(position);
-            if(holder.getTag() == category) {
+        public void onBindHolder(ViewHolder holder, @Nullable Linkable item) {
+            Category category = (Category) item;
+            if (holder.getTag() == category) {
                 return;
             }
             ViewGroup root = (ViewGroup) holder.getItemView();
-
-
+            GuiUtils.setText(root, R.id.section_label, category.getTitle());
+            ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
+            expand.setTag(category);
+            ViewGroup itemsView = ((ViewGroup) root.findViewById(R.id.section_layout_subitems));
+            if(category.isInUIExpanded()) {
+                expand.setChecked(true);
+                for (Work work : category.getWorks()) {
+                    addWorkToRootItem(itemsView, work);
+                }
+                for (Link link : category.getLinks()) {
+                    addLinkToRootItem(itemsView, link);
+                }
+            } else {
+                expand.setChecked(false);
+                itemsView.removeAllViews();
+            }
+            expand.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                ViewGroup itemRoot = (ViewGroup) ((ViewGroup) buttonView.getParent().getParent()).findViewById(R.id.section_layout_subitems);
+                Category categoryTag = (Category) buttonView.getTag();
+                categoryTag.setInUIExpanded(isChecked);
+                if(isChecked) {
+                    for (Work work : categoryTag.getWorks()) {
+                        addWorkToRootItem(itemRoot, work);
+                    }
+                    for (Link link : categoryTag.getLinks()) {
+                        addLinkToRootItem(itemRoot, link);
+                    }
+                } else {
+                    itemRoot.removeAllViews();
+                }
+            });
             holder.setTag(category);
         }
 
+        @Override
+        public void onClick(View view) {
+            if(view.getTag() instanceof  Linkable) {
+                onClickLinkable(view, (Linkable) view.getTag());
+            }
+        }
 
+        private void addWorkToRootItem(ViewGroup rootView, Work work) {
+            ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_subitem);
+            initWorkView(subitem, work);
+            Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {v.setOnClickListener(this); v.setTag(work);});
+            subitem.setOnClickListener(this);
+            rootView.addView(subitem);
+        }
 
+        private void addLinkToRootItem(ViewGroup rootView, Link link) {
+            ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_subitem);
+            String title;
+            if (link.getAnnotation() != null) {
+                title = link.getTitle() + ": " + link.getAnnotation();
+            } else {
+                title = link.getTitle();
+            }
+            Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {v.setOnClickListener(this); v.setTag(link);});
+            GuiUtils.setText(subitem.findViewById(R.id.work_item_title), GuiUtils.coloredText(getActivity(), title, R.color.material_deep_teal_200));
+            rootView.addView(subitem);
+        }
+    }
+
+    private void initWorkView(View workView, Work work) {
+        String rate_and_size = "";
+        if (work.getSize() != null) {
+            rate_and_size += work.getSize() + "k";
+            if (work.getSizeDiff() != null && work.getSizeDiff() != 0 && author.isObservable()) {
+                if (work.getSizeDiff() > 0) {
+                    rate_and_size += " (+" + work.getSizeDiff() + ")";
+                } else {
+                    rate_and_size += " (" + work.getSizeDiff() + ")";
+                }
+            }
+        }
+        if (work.getRate() != null) {
+            rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
+        }
+        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibGuiUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
+        Button illustrationButton = (Button) workView.findViewById(R.id.illustration_button);
+        if (work.isHasIllustration()) {
+            illustrationButton.setVisibility(View.VISIBLE);
+        } else {
+            illustrationButton.setVisibility(View.GONE);
+        }
+        Button commentsButton = (Button) workView.findViewById(R.id.comments_button);
+        if (work.isHasComments()) {
+            commentsButton.setVisibility(View.VISIBLE);
+        } else {
+            commentsButton.setVisibility(View.GONE);
+        }
+        if (!work.getGenres().isEmpty()) {
+            GuiUtils.setTextOrHide(workView.findViewById(R.id.work_item_subtitle),
+                    getString(R.string.item_genres_label) + " " + work.printGenres());
+        } else {
+            workView.findViewById(R.id.work_item_subtitle).setVisibility(View.GONE);
+        }
+        if(workView.findViewById(R.id.work_annotation) != null) {
+            if (!work.getAnnotationBlocks().isEmpty()) {
+                workView.findViewById(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
+                View annotation_view = workView.findViewById(R.id.work_annotation);
+                TextView textView = (TextView) annotation_view;
+                HtmlSpanner spanner = new HtmlSpanner();
+                spanner.registerHandler("img", new PicassoImageHandler(textView));
+                spanner.registerHandler("a", new LinkHandler(textView));
+                spanner.setStripExtraWhiteSpace(true);
+                textView.setMovementMethod(LinkMovementMethod.getInstance());
+                textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+            } else {
+                workView.findViewById(R.id.work_annotation).setVisibility(View.GONE);
+            }
+        }
+        if (work.isChanged() && author.isObservable()) {
+            workView.findViewById(R.id.work_item_update).setVisibility(View.VISIBLE);
+            if (work.getSizeDiff() != null) {
+                GuiUtils.setText((TextView) workView.findViewById(R.id.work_item_update), R.string.favorites_update);
+            } else {
+                GuiUtils.setText((TextView) workView.findViewById(R.id.work_item_update), R.string.favorites_new);
+            }
+        } else {
+            workView.findViewById(R.id.work_item_update).setVisibility(View.GONE);
+        }
+    }
+
+    public boolean onClickLinkable(View view, Linkable linkable) {
+        switch (view.getId()) {
+            case R.id.work_item_layout:
+            case R.id.work_item_title:
+            case R.id.work_item_rate_and_size:
+                openLinkable(linkable);
+                return true;
+            case R.id.illustration_button:
+                IllustrationPagerFragment.show(newFragmentBuilder()
+                        .addToBackStack()
+                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) linkable);
+                return true;
+            case R.id.comments_button:
+                CommentsPagerFragment.show(newFragmentBuilder()
+                        .addToBackStack()
+                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) linkable);
+                return true;
+        }
+        return false;
     }
 
     private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
@@ -301,25 +434,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         @Override
         public void onClick(View view, int position) {
-            switch (view.getId()) {
-                case R.id.work_item_layout:
-                case R.id.work_item_title:
-                case R.id.work_item_rate_and_size:
-                    openLinkable(getItem(position));
-                    break;
-                case R.id.illustration_button:
-                    IllustrationPagerFragment.show(newFragmentBuilder()
-                            .addToBackStack()
-                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
-                    break;
-                case R.id.comments_button:
-                    CommentsPagerFragment.show(newFragmentBuilder()
-                            .addToBackStack()
-                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) getItem(position));
-                    break;
-            }
+             onClickLinkable(view, getItem(position));
         }
 
         @Override
@@ -354,67 +469,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             link = linkable.getTitle();
                         }
                         GuiUtils.setText(holder.getView(R.id.work_item_title), GuiUtils.coloredText(getActivity(), link, R.color.material_deep_teal_200));
-                        holder.getView(R.id.work_item_rate_and_size).setVisibility(View.GONE);
                         break;
-                    }
-                    Work work = (Work) getItem(position);
-                    String rate_and_size = "";
-                    if (work.getSize() != null) {
-                        rate_and_size += work.getSize() + "k";
-                        if (work.getSizeDiff() != null && author.isObservable()) {
-                            if (work.getSizeDiff() > 0) {
-                                rate_and_size += " (+" + work.getSizeDiff() + ")";
-                            } else {
-                                rate_and_size += " (" + work.getSizeDiff() + ")";
-                            }
-                        }
-                    }
-                    if (work.getRate() != null) {
-                        rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
-                    }
-                    GuiUtils.setText(holder.getView(R.id.work_item_title), SamlibGuiUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
-                    Button illustrationButton = holder.getView(R.id.illustration_button);
-                    if (work.isHasIllustration()) {
-                        illustrationButton.setVisibility(View.VISIBLE);
                     } else {
-                        illustrationButton.setVisibility(View.GONE);
+                        Work work = (Work) getItem(position);
+                        initWorkView(holder.getItemView(), work);
                     }
-                    Button commentsButton = holder.getView(R.id.comments_button);
-                    if (work.isHasComments()) {
-                        commentsButton.setVisibility(View.VISIBLE);
-                    } else {
-                        commentsButton.setVisibility(View.GONE);
-                    }
-                    if (!work.getGenres().isEmpty()) {
-                        GuiUtils.setTextOrHide(holder.getView(R.id.work_item_subtitle),
-                                getString(R.string.item_genres_label) + " " + work.printGenres());
-                    } else {
-                        holder.getView(R.id.work_item_subtitle).setVisibility(View.GONE);
-                    }
-                    if (!work.getAnnotationBlocks().isEmpty()) {
-                        holder.getView(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
-                        View annotation_view = holder.getView(R.id.work_annotation);
-                        TextView textView = (TextView) annotation_view;
-                        HtmlSpanner spanner = new HtmlSpanner();
-                        spanner.registerHandler("img", new PicassoImageHandler(textView));
-                        spanner.registerHandler("a", new LinkHandler(textView));
-                        spanner.setStripExtraWhiteSpace(true);
-                        textView.setMovementMethod(LinkMovementMethod.getInstance());
-                        textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
-                    } else {
-                        holder.getView(R.id.work_annotation).setVisibility(View.GONE);
-                    }
-                    if (work.isChanged() && author.isObservable()) {
-                        holder.getView(R.id.work_item_update).setVisibility(View.VISIBLE);
-                        if (work.getSizeDiff() != null) {
-                            GuiUtils.setText(holder.getView(R.id.work_item_update), R.string.favorites_update);
-                        } else {
-                            GuiUtils.setText(holder.getView(R.id.work_item_update), R.string.favorites_new);
-                        }
-                    } else {
-                        holder.getView(R.id.work_item_update).setVisibility(View.GONE);
-                    }
-                    break;
             }
         }
 

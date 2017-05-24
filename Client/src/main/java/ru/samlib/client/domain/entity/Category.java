@@ -41,6 +41,8 @@ public class Category implements Linkable, Serializable, Parsable {
 
     @Transient
     boolean parsed = false;
+    @Transient
+    boolean inUIExpanded = false;
 
     public Category() {
         if (!(getClass().equals(CategoryEntity.class))) {

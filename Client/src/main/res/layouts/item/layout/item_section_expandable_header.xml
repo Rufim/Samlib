@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="match_parent"
+                  android:orientation="horizontal"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_vertical"
+                  android:id="@+id/section_layout">
+        <TextView android:layout_width="1dp"
+                  android:layout_weight="1"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/section_label"
+                  android:textColor="?attr/colorAccent"
+                  android:textSize="@dimen/text_super_nano"
+                  android:textStyle="bold"
+                  android:text="Глава"
+                  android:padding="7dp"
+                  style="@style/item_text"/>
+        <ToggleButton android:layout_width="24dp"
+                      android:layout_height="24dp"
+                      android:id="@+id/section_expand_switch"
+                      android:textOn=""
+                      android:textOff=""
+                      android:text=""
+                      android:layout_gravity="center_vertical"
+                      android:layout_marginRight="@dimen/spacing_medium"
+                      android:background="@drawable/expand_toggle"  />
+    </LinearLayout>
+    <LinearLayout android:id="@+id/section_layout_subitems"
+                  android:layout_width="match_parent"
+                  android:orientation="vertical"
+                  android:layout_height="wrap_content"/>
+    <View android:layout_width="match_parent"
+          android:layout_height="1px"
+          style="@style/horizontal_border"/>
+</LinearLayout>

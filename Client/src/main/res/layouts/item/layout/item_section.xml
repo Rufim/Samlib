@@ -10,7 +10,7 @@
         <TextView android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
                   android:id="@+id/section_label"
-                  android:textColor="@color/red_light"
+                  android:textColor="?attr/colorAccent"
                   android:textSize="@dimen/text_super_nano"
                   android:textStyle="bold"
                   android:text="Глава"

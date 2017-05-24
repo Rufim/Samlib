@@ -92,7 +92,7 @@ public class DatabaseService {
                 authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
             } else {
                 for (Work work : authorEntity.getWorks()) {
-                    try {
+                        try {
                         doAction(Action.UPDATE, work);
                     } catch (MissingKeyException ex) {
                     }

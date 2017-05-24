@@ -35,6 +35,7 @@
     <color name="light_grey">#ffafafaf</color>
     <color name="deep_grey">#ff767676</color>
     <color name="deep_grey_transparent">#8c767676</color>
+    <color name="color_of_element">#ff7C7C7C</color>
     <color name="transparent">#00000000</color>
 
     <!-- Base colors -->
