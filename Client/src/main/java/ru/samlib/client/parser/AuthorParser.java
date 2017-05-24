@@ -48,13 +48,14 @@ public class AuthorParser extends Parser {
             } else {
                 rawFile = HtmlClient.executeRequest(request, cached);
                 author.setWorks(new ArrayList<>());
-                if (!author.isEntity()) {
-                    author.getCategories().clear();
-                }
             }
             if (rawFile.isDownloadOver()) {
                 author.setParsed(true);
             }
+            List<Category> categories = new ArrayList<>();
+            List<Work> rootWorks = new ArrayList<>();
+            List<Link> rootLinks = new ArrayList<>();
+            List<Work> recommendations = new ArrayList<>();
             String[] parts = TextUtils.Splitter.extractLines(rawFile, rawFile.getEncoding(), false,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
@@ -102,15 +103,10 @@ public class AuthorParser extends Parser {
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);
                         work.setAuthor(author);
-                        if (!author.getRecommendations().contains(work)) {
-                            author.addRecommendation(work);
-                        }
+                        recommendations.add(work);
                     }
                 }
             }
-            List<Category> categories = new ArrayList<>();
-            List<Work> rootWorks = new ArrayList<>();
-            List<Link> rootLinks = new ArrayList<>();
             // body - Partitions with Works
             if (parts.length > 2 && !parts[2].isEmpty()) {
                 Scanner scanner = new Scanner(parts[2]);
@@ -197,9 +193,18 @@ public class AuthorParser extends Parser {
                 merge((AuthorEntity) author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {
+                for (Category category : categories) {
+                    int index = author.getCategories().indexOf(category);
+                    if(index > 0 && author.getCategories().get(index).isInUIExpanded()) {
+                        category.setInUIExpanded(true);
+                    }
+                }
                 author.setCategories(categories);
                 author.setRootLinks(rootLinks);
                 author.setRootWorks(rootWorks);
+            }
+            for (Work recommendation : recommendations) {
+                author.addRecommendation(recommendation);
             }
         } catch (Exception | Error e) {
             Log.e(TAG, e.getMessage(), e);

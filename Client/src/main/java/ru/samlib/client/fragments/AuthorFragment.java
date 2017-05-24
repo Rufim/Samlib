@@ -1,6 +1,7 @@
 package ru.samlib.client.fragments;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -91,7 +92,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 SystemClock.sleep(100);
             }
             if (!author.isParsed()) {
-                author = new AuthorParser(author).parse();
+                new AuthorParser(author).parse();
                 if (!Parser.isCachedMode() && author.isObservable()) {
                     databaseService.createOrUpdateAuthor(author.createEntity()).setParsed(true);
                     if (author.isHasUpdates()) {
@@ -135,22 +136,39 @@ public class AuthorFragment extends ListFragment<Linkable> {
         } else {
             menu.removeItem(R.id.action_author_observable);
         }
+        menu.findItem(R.id.action_author_mode).setChecked(simpleView);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
-                if (!item.isChecked()) {
-                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntity())).start();
-                    item.setChecked(true);
-                    return true;
-                } else {
+                if (item.isChecked()) {
                     author.setObservable(false);
                     new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntity())).start();
                     item.setChecked(false);
                     return true;
+                } else {
+                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntity())).start();
+                    item.setChecked(true);
+                    return true;
                 }
+            case R.id.action_author_mode:
+                if (item.isChecked()) {
+                    item.setChecked(simpleView = false);
+                } else {
+                    item.setChecked(simpleView = true);
+                }
+                SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                editor.putBoolean(getString(R.string.preferenceAuthorSimpleView), simpleView);
+                editor.apply();
+                if(adapter != null) {
+                    adapter.getItems().clear();
+                }
+                adapter = newAdapter();
+                itemList.setAdapter(adapter);
+                super.refreshData(false);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -218,9 +236,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
     @Override
     protected ItemListAdapter<Linkable> newAdapter() {
         if(simpleView) {
-            return new AuthorFragmentAdaptor();
-        } else {
             return new ExpandableAuthorFragmentAdaptor();
+        } else {
+            return new AuthorFragmentAdaptor();
         }
     }
 
@@ -283,6 +301,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
             expand.setTag(category);
             ViewGroup itemsView = ((ViewGroup) root.findViewById(R.id.section_layout_subitems));
+            itemsView.removeAllViews();
             if(category.isInUIExpanded()) {
                 expand.setChecked(true);
                 for (Work work : category.getWorks()) {
@@ -293,7 +312,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 }
             } else {
                 expand.setChecked(false);
-                itemsView.removeAllViews();
             }
             expand.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 ViewGroup itemRoot = (ViewGroup) ((ViewGroup) buttonView.getParent().getParent()).findViewById(R.id.section_layout_subitems);
