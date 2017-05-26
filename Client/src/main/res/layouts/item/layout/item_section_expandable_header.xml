@@ -27,6 +27,7 @@
                 android:layout_marginRight="@dimen/spacing_nano"
                 android:visibility="gone"
                 android:id="@+id/section_update"
+                android:background="@android:drawable/list_selector_background"
                 android:textSize="@dimen/spacing_small"
                 style="@style/text.rate_column"/>
         <ToggleButton android:layout_width="24dp"

@@ -21,6 +21,7 @@
                 android:visibility="gone"
                 android:id="@+id/work_item_update"
                 android:textSize="@dimen/spacing_small"
+                android:background="@android:drawable/list_selector_background"
                 style="@style/text.rate_column"/>
         <TextView
                 android:layout_width="0dp"

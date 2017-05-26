@@ -363,6 +363,17 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if(view.getTag() instanceof  Linkable) {
                 onClickLinkable(view, (Linkable) view.getTag());
             }
+            if(view.getId() == R.id.section_update) {
+                ViewHolder holder = (ViewHolder) view.getTag();
+                Category category = (Category) holder.getTag();
+                for (Work work : category.getWorks()) {
+                    work.setChanged(false);
+                    work.setSizeDiff(0);
+                    if(work.isEntity())
+                    databaseService.doAction(DatabaseService.Action.UPDATE, work);
+                }
+                view.setVisibility(View.GONE);
+            }
         }
 
         private void addWorkToRootItem(ViewGroup rootView, Work work) {
@@ -450,6 +461,16 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     public boolean onClickLinkable(View view, Linkable linkable) {
         switch (view.getId()) {
+            case R.id.work_item_update:
+                Work work = (Work) linkable;
+                work.setSizeDiff(0);
+                work.setChanged(false);
+                databaseService.doAction(DatabaseService.Action.UPDATE, linkable);
+                view.setVisibility(View.GONE);
+                if(!work.getCategory().isHasUpdates() && simpleView) {
+                    ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(View.GONE);
+                }
+                return true;
             case R.id.work_item_layout:
             case R.id.work_item_title:
             case R.id.work_item_rate_and_size:
