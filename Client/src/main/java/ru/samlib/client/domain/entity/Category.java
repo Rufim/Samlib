@@ -225,4 +225,13 @@ public class Category implements Linkable, Serializable, Parsable {
         }
         return TextUtils.trim(one.getLink()).equalsIgnoreCase(TextUtils.trim(two.getLink()));
     }
+
+    public boolean isHasUpdates() {
+        for (Work work : getWorks()) {
+            if(work.isChanged() || (work.getSizeDiff() != null && work.getSizeDiff() > 0)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

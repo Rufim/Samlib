@@ -66,6 +66,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
     @Inject
     DatabaseService databaseService;
 
+
+
     public static AuthorFragment show(FragmentBuilder builder, @IdRes int container, String link) {
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, AuthorFragment.class);
     }
@@ -306,19 +308,31 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (holder.getTag() == category) {
                 return;
             }
+            boolean navBarCategory = savedDataSource != null;
             ViewGroup root = (ViewGroup) holder.getItemView();
             GuiUtils.setText(root, R.id.section_label, category.getTitle());
             ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
             expand.setTag(category);
             ViewGroup itemsView = ((ViewGroup) root.findViewById(R.id.section_layout_subitems));
             itemsView.removeAllViews();
-            if(category.isInUIExpanded()) {
+            if(category.isHasUpdates()) {
+                GuiUtils.setVisibility(View.VISIBLE, root,  R.id.section_update);
+            } else {
+                GuiUtils.setVisibility(View.GONE, root,  R.id.section_update);
+            }
+            if(navBarCategory) {
+                GuiUtils.setVisibility(View.GONE, root, R.id.section_down_shadow, R.id.section_layout);
+            }
+            if(category.isInUIExpanded() || navBarCategory) {
                 expand.setChecked(true);
                 for (Work work : category.getWorks()) {
                     addWorkToRootItem(itemsView, work);
                 }
                 for (Link link : category.getLinks()) {
                     addLinkToRootItem(itemsView, link);
+                }
+                if(category.getWorks().size() > 0 || category.getLinks().size() > 0) {
+                    itemsView.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
                 }
             } else {
                 expand.setChecked(false);
@@ -333,6 +347,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                     for (Link link : categoryTag.getLinks()) {
                         addLinkToRootItem(itemRoot, link);
+                    }
+                    if(categoryTag.getWorks().size() > 0 || categoryTag.getLinks().size() > 0) {
+                        itemRoot.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
                     }
                 } else {
                     itemRoot.removeAllViews();
