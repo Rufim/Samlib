@@ -94,21 +94,46 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 chooserDialogImport.setFileTypes("txt");
                 chooserDialogImport.setOnChooseFileListener(chosenFile -> {
                     if (chosenFile != null) {
-                        try {
-                            String fileContent = SystemUtils.readFile(chosenFile, "UTF-8");
-                            for (String line : fileContent.split("\n")) {
-                                String link = TextUtils.eraseHost(line);
-                                Author author;
-                                if(Linkable.isAuthorLink(link)) {
-                                    author = new AuthorParser(link).parse();
-                                    if(!TextUtils.isEmpty(author.getShortName())) {
-                                        databaseService.insertObservableAuthor(author.createEntity());
+                        loadMoreBar.setVisibility(View.VISIBLE);
+                        new AsyncTask<File, Void, Boolean>(){
+
+                            @Override
+                            protected Boolean doInBackground(File... params) {
+                                try {
+                                    String fileContent = SystemUtils.readFile(params[0], "UTF-8");
+                                    for (String line : fileContent.split("\n")) {
+                                        String link = TextUtils.eraseHost(line);
+                                        Author author;
+                                        if (Linkable.isAuthorLink(link)) {
+                                            AuthorEntity entity = databaseService.getAuthor(link);
+                                            if(entity == null) {
+                                                author = new AuthorParser(link).parse();
+                                                if (!TextUtils.isEmpty(author.getShortName())) {
+                                                    databaseService.insertObservableAuthor(author.createEntity());
+                                                }
+                                            }
+                                        }
                                     }
+                                    return true;
+                                } catch (Exception e) {
+                                    Cat.e("Unknown exception", e);
+                                    return false;
                                 }
                             }
-                        } catch (Exception e) {
-                            Cat.e( "Unknown exception", e);
-                        }
+
+                            @Override
+                            protected void onPostExecute(Boolean success) {
+                                if(isAdded()) {
+                                    if (success) {
+                                        refreshData(false);
+                                    } else {
+                                        GuiUtils.toast(getContext(), R.string.error);
+                                    }
+                                }
+                                loadMoreBar.setVisibility(View.GONE);
+                            }
+                        }.execute(chosenFile);
+                        chooserDialogImport.dismiss();
                     }
                 });
                 chooserDialogImport.show();
@@ -229,13 +254,13 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     }
 
     @Override
-    public void refreshData(boolean showProgress) {
-        swipeRefresh.setRefreshing(showProgress);
-        loading = true;
+    public void refreshData(boolean update) {
+        swipeRefresh.setRefreshing(update);
+        loading = update;
         adapter.clear();
         adapter.getItems().addAll(databaseService.getObservableAuthors());
         adapter.notifyDataSetChanged();
-        if(showProgress) {
+        if(update) {
             new Thread(() -> {
                 ObservableUpdateJob.updateObservable(databaseService, getContext());
             }).start();
