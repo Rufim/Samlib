@@ -43,8 +43,8 @@ public class SamlibUtils {
          latinFromKirilMap.put('ж',"zh");
          latinFromKirilMap.put('З',"Z");
          latinFromKirilMap.put('з',"z");
-         latinFromKirilMap.put('И',"Y");
-         latinFromKirilMap.put('и',"y");
+         latinFromKirilMap.put('И',"I");
+         latinFromKirilMap.put('и',"i");
          latinFromKirilMap.put('І',"I");
          latinFromKirilMap.put('і',"i");
          latinFromKirilMap.put('Ї',"Y");
@@ -114,8 +114,8 @@ public class SamlibUtils {
         String [] linkParts =  builder.toString().split("_");
         String link = linkParts[0];
         if(linkParts.length > 1) {
-            for (String linkPart : linkParts) {
-                link += "_" + linkPart.charAt(0);
+            for (int i = 1; i < linkParts.length; i++) {
+                link += "_" + linkParts[i].charAt(0);
             }
         }
         return "/" + link.charAt(0) + "/" + link + "/";

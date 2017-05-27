@@ -63,7 +63,7 @@ public class HtmlClient {
 
         @Override
         protected Response prepareResponse() throws IOException {
-            String linkPath = request.getBaseUrl().getPath().replace("//", "/");
+            String linkPath = request.getBaseUrl().getPath().replaceAll("/+", "/");
             CachedResponse cachedResponse = new CachedResponse(getCachedFile(app, linkPath).getAbsolutePath(), request);
             if (cachedResponse.exists()) {
                 cachedResponse.delete();
@@ -83,7 +83,7 @@ public class HtmlClient {
         if(cacheDir == null)  {
             cacheDir = context.getCacheDir();
         }
-        String fileName = link.replace("//", "/");
+        String fileName = link.replaceAll("/+", "/");
         if (fileName.endsWith("/")) {
             fileName = fileName.substring(0, fileName.lastIndexOf("/"));
         }

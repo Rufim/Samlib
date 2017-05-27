@@ -50,7 +50,7 @@ public class AddObservableDialog extends BaseDialog {
             if (!Linkable.isAuthorLink(link)) {
                 link = SamlibUtils.getLinkFromAuthorName(input);
             }
-            postEvent(new AuthorAddEvent(link));
+            postEvent(new AuthorAddEvent(link.replaceAll("/+","/")));
         } else {
             this.input.setError(getString(R.string.observable_add_link_or_author_error));
         }

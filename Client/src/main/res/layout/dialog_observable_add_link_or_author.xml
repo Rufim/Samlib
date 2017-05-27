@@ -3,7 +3,11 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
+
     <android.support.design.widget.TextInputLayout
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:layout_marginLeft="@dimen/spacing_medium"
+            android:layout_marginRight="@dimen/spacing_medium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

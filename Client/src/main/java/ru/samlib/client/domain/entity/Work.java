@@ -168,12 +168,12 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         } else {
             this.link = "/" + link;
         }
-        this.link = this.link.replace("//", "/");
+        this.link = this.link.replaceAll("/+", "/");
     }
 
     public String getLink() {
         if (link != null && !link.contains(getAuthor().getLink())) {
-            link = (author.getLink() + link).replace("//", "/");
+            link = (author.getLink() + link).replaceAll("/+", "/");
         }
         return link;
     }

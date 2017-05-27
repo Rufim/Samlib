@@ -64,7 +64,7 @@ public class WorkParser extends Parser {
             return work;
         }
         if (work == null) {
-            work = new Work(rawContent.getRequest().getBaseUrl().getPath().replace("//", "/"));
+            work = new Work(rawContent.getRequest().getBaseUrl().getPath().replaceAll("/+", "/"));
         }
         work.setCachedResponse(rawContent);
         Work parsedWork =  parse(rawContent, rawContent.getEncoding(), work, processChapters);

@@ -1,24 +1,29 @@
 package ru.samlib.client.fragments;
 
+import android.Manifest;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.content.SharedPreferences;
+import android.os.*;
+import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
 import net.vrallev.android.cat.Cat;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.SystemUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.AddObservableDialog;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorAddEvent;
@@ -26,11 +31,12 @@ import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.kazantsev.template.lister.DataSource;
+import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,10 +87,60 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 }
                 return true;
             case R.id.action_observable_import:
-
+                DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), true, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
+                chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
+                chooserDialogImport.setAllowRootDir(true);
+                chooserDialogImport.setFileTypes("txt");
+                chooserDialogImport.setOnChooseFileListener(chosenFile -> {
+                    if (chosenFile != null) {
+                        try {
+                            String fileContent = SystemUtils.readFile(chosenFile, "UTF-8");
+                            for (String line : fileContent.split("\n")) {
+                                String link = TextUtils.eraseHost(line);
+                                Author author;
+                                if(Linkable.isAuthorLink(link)) {
+                                    author = new AuthorParser(link).parse();
+                                    if(!TextUtils.isEmpty(author.getShortName())) {
+                                        databaseService.insertObservableAuthor(author.createEntity());
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            Cat.e( "Unknown exception", e);
+                        }
+                    }
+                });
+                chooserDialogImport.show();
                 return true;
             case R.id.action_observable_export:
-
+                if (isAdded()) {
+                    getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
+                        if (permissionGained) {
+                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            chooserDialogExport.setTitle(getString(R.string.observable_export) + "...");
+                            chooserDialogExport.setIcon(android.R.drawable.ic_menu_save);
+                            chooserDialogExport.setAllowRootDir(true);
+                            chooserDialogExport.setFileTypes("txt");
+                            chooserDialogExport.setOnChooseFileListener(chosenFile -> {
+                                if (chosenFile != null) {
+                                    try {
+                                        File file = new File(chosenFile, "authors.txt");
+                                        StringBuilder builder = new StringBuilder();
+                                        for (AuthorEntity authorEntity : databaseService.getObservableAuthors()) {
+                                            builder.append(authorEntity.getFullLink());
+                                            builder.append("\n");
+                                        }
+                                        SystemUtils.copy(new ByteArrayInputStream(builder.toString().getBytes()), new FileOutputStream(file));
+                                    } catch (Exception e) {
+                                        Cat.e( "Unknown exception", e);
+                                    }
+                                }
+                            });
+                            chooserDialogExport.show();
+                        }
+                    });
+                }
                 return true;
         }
         return false;
@@ -103,7 +159,12 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                     author = databaseService.getAuthor(link);
                     if(author == null) {
                         author = new AuthorParser(params[0]).parse();
-                        author.setParsed(true);
+                        if(!TextUtils.isEmpty(author.getShortName())) {
+                            author.setParsed(true);
+                            databaseService.insertObservableAuthor(author.createEntity());
+                        } else {
+                            author.setParsed(false);
+                        }
                     }
                 } catch (Exception ex) {
                     Cat.e(ex);
@@ -119,7 +180,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 } else if(!author.isParsed()) {
                     GuiUtils.toast(getContext(), getString(R.string.observable_add_link_or_author_error_link) + " " + author.getFullLink());
                 } else {
-                    databaseService.insertObservableAuthor(author.createEntity());
+                    refreshData(false);
                     GuiUtils.toast(getContext(), R.string.observable_add_link_or_author_added);
                 }
                 loadMoreBar.setVisibility(View.GONE);
@@ -169,14 +230,16 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
 
     @Override
     public void refreshData(boolean showProgress) {
-        swipeRefresh.setRefreshing(true);
+        swipeRefresh.setRefreshing(showProgress);
         loading = true;
         adapter.clear();
-        adapter.getItems().addAll(databaseService.getObservableAuthors(0, currentCount));
+        adapter.getItems().addAll(databaseService.getObservableAuthors());
         adapter.notifyDataSetChanged();
-        new Thread(() -> {
-            ObservableUpdateJob.updateObservable(databaseService, getContext());
-        }).start();
+        if(showProgress) {
+            new Thread(() -> {
+                ObservableUpdateJob.updateObservable(databaseService, getContext());
+            }).start();
+        }
     }
 
     private void initializeAuthor(Author author) {
