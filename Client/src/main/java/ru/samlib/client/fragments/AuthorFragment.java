@@ -99,9 +99,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                 }
                 author.setParsed(true);
-                postEvent(new AuthorParsedEvent(author));
-                safeInvalidateOptionsMenu();
             }
+            postEvent(new AuthorParsedEvent(author));
+            safeInvalidateOptionsMenu();
             return new ArrayList<>(author.getStaticCategory());
         });
     }
@@ -173,10 +173,17 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 return true;
             case R.id.action_author_make_all_visited:
                 if(author.isEntity()) {
-                    Stream.of(author.getAllWorks().entrySet()).map(Map.Entry::getValue).forEach(work -> {
-                        work.setChanged(false);
-                        work.setSizeDiff(null);
-                    });
+                    if(category == null) {
+                        Stream.of(author.getAllWorks().entrySet()).map(Map.Entry::getValue).forEach(work -> {
+                            work.setChanged(false);
+                            work.setSizeDiff(null);
+                        });
+                    } else {
+                        Stream.of(category.getWorks()).forEach(work -> {
+                            work.setChanged(false);
+                            work.setSizeDiff(null);
+                        });
+                    }
                     databaseService.createOrUpdateAuthor(author.createEntity());
                 }
                 super.refreshData(false);
