@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.annimon.stream.Stream;
 import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -21,6 +22,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Category;
 import ru.samlib.client.domain.entity.Image;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.*;
@@ -32,6 +34,7 @@ import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.parser.Parser;
+import ru.samlib.client.util.SamlibGuiUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -90,6 +93,13 @@ public class SectionActivity extends NavigationActivity<String> {
             textView.setGravity(Gravity.CENTER);    
         } else {
             textView.setGravity(Gravity.START);
+        }
+        if(state.equals(SectionActivityState.AUTHOR) && ((AuthorFragment)getCurrentFragment()).isSimpleView()) {
+            Category category = Stream.of(author.getLinkableCategory()).filter(c -> title.equals(c.toString())).findFirst().orElse(null);
+            if(category.isHasUpdates()) {
+                GuiUtils.setText(textView, SamlibGuiUtils.generateText(this, title, getResString(R.string.favorites_update), GuiUtils.getThemeColor(this, R.attr.colorAccent), 0.8f));
+                return;
+            }
         }
         GuiUtils.setText(textView, title);
     }

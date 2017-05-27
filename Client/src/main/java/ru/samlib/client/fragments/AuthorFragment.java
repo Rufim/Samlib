@@ -179,6 +179,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     });
                     databaseService.createOrUpdateAuthor(author.createEntity());
                 }
+                super.refreshData(false);
                 return true;
 
         }
@@ -199,6 +200,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     public Author getAuthor() {
         return author;
+    }
+
+    public boolean isSimpleView() {
+        return simpleView;
     }
 
     @Subscribe
@@ -229,15 +234,16 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public void refreshData(boolean showProgress) {
-        author.setParsed(false);
+        author.setParsed(savedDataSource != null);
         super.refreshData(showProgress);
     }
 
 
     @Override
     public boolean allowBackPress() {
-        category = null;
         if (!restoreLister()) {
+            category = null;
+            savedDataSource = null;
             return super.allowBackPress();
         } else {
             ((SectionActivity) getActivity()).cleanSelection();
