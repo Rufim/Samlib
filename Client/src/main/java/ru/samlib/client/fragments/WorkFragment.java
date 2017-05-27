@@ -125,7 +125,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
-                if(externalWork != null) {
+                if (externalWork != null) {
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
                     isDownloaded = true;
                     safeInvalidateOptionsMenu();
@@ -138,7 +138,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                         databaseService.insertOrUpdateBookmark(work.getBookmark());
                         Work workEntity = databaseService.getWork(work.getLink());
-                        if(workEntity != null) { 
+                        if (workEntity != null) {
                             workEntity.setSizeDiff(0);
                             workEntity.setChanged(false);
                             databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
@@ -237,9 +237,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean allowBackPress() {
-        if(isFullscreen) {
-           stopFullscreen();
-           return false;
+        if (isFullscreen) {
+            stopFullscreen();
+            return false;
         }
         isBack = true;
         return super.allowBackPress();
@@ -310,7 +310,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
-            if(externalWork != null) {
+            if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
             }
             if (TTSService.isReady(work)) {
@@ -324,7 +324,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (!work.isParsed()) {
             searchView.setEnabled(false);
         }
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             menu.removeItem(R.id.action_work_fullscreen);
         }
         searchView.setQueryHint(getString(R.string.search_hint));
@@ -563,7 +563,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_open_with:
                 try {
-                    if(externalWork != null) {
+                    if (externalWork != null) {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), new File(externalWork.getFilePath()));
                     } else if (work.getCachedResponse() != null) {
                         AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
@@ -581,7 +581,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work);
                 return true;
             case R.id.action_work_fullscreen:
-                if(isAdded()) {
+                if (isAdded()) {
                     enableFullscreen();
                 }
                 return true;
@@ -619,7 +619,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void stopFullscreen() {
-        if(isFullscreen) {
+        if (isFullscreen) {
             decorView.setSystemUiVisibility(0);
         }
     }
@@ -648,7 +648,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void toIndex(int index, int textOffset) {
-        if(Integer.MIN_VALUE == textOffset) {
+        if (Integer.MIN_VALUE == textOffset) {
             super.toIndex(index, 0);
         } else {
             TextView textView = getTextViewIndent(index);
@@ -676,7 +676,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         this.externalWork = null;
-        if(filePath != null) {
+        if (filePath != null) {
             this.externalWork = databaseService.getExternalWork(filePath);
             work = new Work(externalWork.getWorkUrl());
         } else if (incomingWork != null) {
@@ -921,26 +921,30 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     view.setOnTouchListener((v, event) -> {
                         if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
-                            if (mode.equals(Mode.SPEAK)) {
-                                int x = (int) event.getX();
-                                int y = (int) event.getY();
+                            int offset = 0;
+                            int x = (int) event.getX();
+                            int y = (int) event.getY();
 
-                                x -= textView.getTotalPaddingLeft();
-                                y -= textView.getTotalPaddingTop();
+                            x -= textView.getTotalPaddingLeft();
+                            y -= textView.getTotalPaddingTop();
 
-                                x += textView.getScrollX();
-                                y += textView.getScrollY();
+                            x += textView.getScrollX();
+                            y += textView.getScrollY();
 
-                                Layout layout = textView.getLayout();
+                            Layout layout = textView.getLayout();
 
-                                if (layout != null) {
-                                    int line = layout.getLineForVertical(y);
-                                    lastOffset = layout.getOffsetForHorizontal(line, x);
-                                }
+                            if (layout != null) {
+                                int line = layout.getLineForVertical(y);
+                                offset = layout.getOffsetForHorizontal(line, x);
                             }
+
+                            if (mode.equals(Mode.SPEAK)) {
+                                lastOffset = offset;
+                            }
+
                             if (textView.getText() instanceof SpannedString && !mode.equals(Mode.SPEAK)) {
                                 SpannedString spannableString = (SpannedString) textView.getText();
-                                URLSpanNoUnderline url[] = spannableString.getSpans(lastOffset, spannableString.length(), URLSpanNoUnderline.class);
+                                URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
                                 if (url.length > 0) {
                                     url[0].onClick(textView);
                                     return true;
@@ -953,7 +957,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     speedLayout.setVisibility(GONE);
                                 }
                             }
-                            if((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && isFullscreen) {
+                            if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && isFullscreen) {
                                 stopFullscreen();
                             }
                             v.performClick();

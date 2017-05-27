@@ -149,12 +149,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     author.setObservable(false);
                     new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntity())).start();
                     item.setChecked(false);
-                    return true;
                 } else {
                     new Thread(() -> databaseService.insertObservableAuthor(author.createEntity())).start();
                     item.setChecked(true);
-                    return true;
                 }
+                safeInvalidateOptionsMenu();
+                return true;
             case R.id.action_author_mode:
                 if (item.isChecked()) {
                     item.setChecked(simpleView = false);

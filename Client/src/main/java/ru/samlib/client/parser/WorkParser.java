@@ -94,7 +94,7 @@ public class WorkParser extends Parser {
 
     public static Work parseWork(File file, String encoding, Work work) {
         String[] parts;
-        if (!work.getLink().matches(work.getAuthor().getLink() + "/rating\\d.shtml")) {
+        if (!work.getLink().matches(work.getAuthor().getLink() + "rating\\d.shtml")) {
             parts = TextUtils.Splitter.extractLines(file, encoding, true,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
@@ -328,7 +328,11 @@ public class WorkParser extends Parser {
                                 bookmark.setIndent(href.substring(1));
                                 bookmarks.add(bookmark);
                             } else {
-                                append("<a href=\"" + parent.attr("href") + "\">" + getNodeHtml(node) + "");
+                                if(href.startsWith("/")) {
+                                    append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "");
+                                } else {
+                                    append("<a href=\"" + href + "\">" + getNodeHtml(node) + "");
+                                }
                             }
                         } else if (parent.hasAttr("name")) {
                             initBookmark(parent.attr("name"));
