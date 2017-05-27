@@ -1,28 +1,32 @@
 package ru.samlib.client.fragments;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.TextView;
+import net.vrallev.android.cat.Cat;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
+import ru.samlib.client.dialog.AddObservableDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
+import ru.samlib.client.domain.events.AuthorAddEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.kazantsev.template.lister.DataSource;
+import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
@@ -55,7 +59,73 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_observable);
+        setHasOptionsMenu(true);
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.observable, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_observable_add_link_or_author:
+                AddObservableDialog dialog = (AddObservableDialog) getFragmentManager().findFragmentByTag(AddObservableDialog.class.getSimpleName());
+                if (dialog == null) {
+                    dialog = new AddObservableDialog();
+                    dialog.show(getFragmentManager(), AddObservableDialog.class.getSimpleName());
+                }
+                return true;
+            case R.id.action_observable_import:
+
+                return true;
+            case R.id.action_observable_export:
+
+                return true;
+        }
+        return false;
+    }
+
+    @Subscribe
+    public void onEvent(AuthorAddEvent event) {
+        loadMoreBar.setVisibility(View.VISIBLE);
+        new AsyncTask<String, Void, Author>(){
+
+            @Override
+            protected Author doInBackground(String... params) {
+                Author author = null;
+                String link = params[0];
+                try {
+                    author = databaseService.getAuthor(link);
+                    if(author == null) {
+                        author = new AuthorParser(params[0]).parse();
+                        author.setParsed(true);
+                    }
+                } catch (Exception ex) {
+                    Cat.e(ex);
+                    author = new Author(link);
+                }
+                return author;
+            }
+
+            @Override
+            protected void onPostExecute(Author author) {
+                if(author.isEntity()) {
+                    GuiUtils.toast(getContext(), R.string.observable_add_link_or_author_exist);
+                } else if(!author.isParsed()) {
+                    GuiUtils.toast(getContext(), getString(R.string.observable_add_link_or_author_error_link) + " " + author.getFullLink());
+                } else {
+                    databaseService.insertObservableAuthor(author.createEntity());
+                    GuiUtils.toast(getContext(), R.string.observable_add_link_or_author_added);
+                }
+                loadMoreBar.setVisibility(View.GONE);
+            }
+
+        }.execute(event.link);
     }
 
     @Override
@@ -158,7 +228,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
             TextView annotationTextView = holder.getView(R.id.favorites_annotation);
             Author author = getItems().get(position);
             authorTextView.setText(author.getFullName());
-            if(author.getLastUpdateDate() != null) {
+            if (author.getLastUpdateDate() != null) {
                 lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
             }
             annotationTextView.setText(author.getAnnotation());

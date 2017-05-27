@@ -135,4 +135,13 @@
     <string name="network_not_available">Нет интернет соединения…</string>
     <string name="external_work_delete">Удалить</string>
     <string name="external_work_cancel">Отмена</string>
+    <string name="observable_add_link_or_author">Добавить по ссылке или имени</string>
+    <string name="observable_add_link_or_author_exist">Автор уже добавлен</string>
+    <string name="observable_add_link_or_author_added">Автор успешно добавлен</string>
+    <string name="observable_add_link_or_author_error">Вы ничего не ввели</string>
+    <string name="observable_add_link_or_author_error_link">Не могу найти автора по ссылке:</string>
+    <string name="observable_import">Импорт</string>
+    <string name="observable_export">Экспорт</string>
+    <string name="observable_link_or_author_hint">Введите имя автора или ссылку</string>
+    <string name="observable_link_or_author_title">Добавить</string>
 </resources>

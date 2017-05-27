@@ -16,10 +16,9 @@ import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.net.Response;
-import ru.kazantsev.template.net.SimpleResponse;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
-import ru.samlib.client.dialog.DialogNewComment;
+import ru.samlib.client.dialog.NewCommentDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.entity.Work;
@@ -158,9 +157,9 @@ public class CommentsFragment extends ListFragment<Comment> {
                             if (operation.equals(CommentsParser.Operation.delete)) {
                                 refreshWithDocument(Jsoup.parse(answer[1]));
                             } else {
-                                DialogNewComment dialog = (DialogNewComment) getFragmentManager().findFragmentByTag(DialogNewComment.class.getSimpleName());
+                                NewCommentDialog dialog = (NewCommentDialog) getFragmentManager().findFragmentByTag(NewCommentDialog.class.getSimpleName());
                                 if (dialog == null) {
-                                    dialog = new DialogNewComment();
+                                    dialog = new NewCommentDialog();
                                 }
                                 dialog.setIndexPage(showPage);
                                 dialog.setExisting(comment);
@@ -169,7 +168,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                                 else if(operation.equals(CommentsParser.Operation.edit))
                                 dialog.setOperation(CommentsParser.Operation.store_edit);
                                 dialog.setText(getTextareaText(answer[1]));
-                                dialog.show(getFragmentManager(), DialogNewComment.class.getSimpleName());
+                                dialog.show(getFragmentManager(), NewCommentDialog.class.getSimpleName());
                             }
                         } else {
                             GuiUtils.toast(getContext(), answer[0]);

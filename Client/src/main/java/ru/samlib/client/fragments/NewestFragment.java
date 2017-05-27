@@ -1,13 +1,10 @@
 package ru.samlib.client.fragments;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.activity.SectionActivity;
@@ -15,7 +12,7 @@ import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.parser.NewestParser;
 import ru.kazantsev.template.util.TextUtils;
-import ru.samlib.client.util.SamlibGuiUtils;
+import ru.samlib.client.util.SamlibUtils;
 
 import java.util.Locale;
 
@@ -80,7 +77,7 @@ public class NewestFragment extends FilterDialogListFragment {
             TextView timeTextView = holder.getView(R.id.newest_item_time);
             TextView genresView = holder.getView(R.id.newest_item_genres);
             Work work = getItems().get(position);
-            workTextView.setText(SamlibGuiUtils.generateText(getContext(), work.getTitle(), work.getSize() + "k", R.color.light_grey, 0.7f));
+            workTextView.setText(SamlibUtils.generateText(getContext(), work.getTitle(), work.getSize() + "k", R.color.light_grey, 0.7f));
             genresView.setText(work.printGenres());
             authorTextView.setText(work.getAuthor().getShortName());
             timeTextView.setText(TextUtils.getShortFormattedDate(work.getUpdateDate(), currentLocale));

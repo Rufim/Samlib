@@ -23,7 +23,7 @@ import ru.samlib.client.parser.CommentsParser;
 /**
  * Created by Admin on 10.05.2017.
  */
-public class DialogNewComment  extends BaseDialog {
+public class NewCommentDialog extends BaseDialog {
 
     View rootView;
     @BindView(R.id.comments_new_text)

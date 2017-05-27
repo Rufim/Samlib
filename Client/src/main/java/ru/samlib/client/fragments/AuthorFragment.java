@@ -14,7 +14,6 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
-import butterknife.OnClick;
 import com.annimon.stream.Stream;
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
@@ -45,7 +44,7 @@ import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.PicassoImageHandler;
-import ru.samlib.client.util.SamlibGuiUtils;
+import ru.samlib.client.util.SamlibUtils;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -426,7 +425,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (work.getRate() != null) {
             rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
         }
-        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibGuiUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
+        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
         Button illustrationButton = (Button) workView.findViewById(R.id.illustration_button);
         if (work.isHasIllustration()) {
             illustrationButton.setVisibility(View.VISIBLE);

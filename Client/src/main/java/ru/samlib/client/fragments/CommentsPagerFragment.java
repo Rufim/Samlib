@@ -22,7 +22,7 @@ import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
-import ru.samlib.client.dialog.DialogNewComment;
+import ru.samlib.client.dialog.NewCommentDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.CommentSendEvent;
@@ -80,10 +80,10 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_comments_add_new:
-                DialogNewComment dialog = (DialogNewComment) getFragmentManager().findFragmentByTag(DialogNewComment.class.getSimpleName());
+                NewCommentDialog dialog = (NewCommentDialog) getFragmentManager().findFragmentByTag(NewCommentDialog.class.getSimpleName());
                 if (dialog == null) {
-                    dialog = new DialogNewComment();
-                    dialog.show(getFragmentManager(), DialogNewComment.class.getSimpleName());
+                    dialog = new NewCommentDialog();
+                    dialog.show(getFragmentManager(), NewCommentDialog.class.getSimpleName());
                 }
                 return true;
         }

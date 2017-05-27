@@ -34,7 +34,7 @@ import ru.kazantsev.template.util.FragmentBuilder;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.parser.Parser;
-import ru.samlib.client.util.SamlibGuiUtils;
+import ru.samlib.client.util.SamlibUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -97,7 +97,7 @@ public class SectionActivity extends NavigationActivity<String> {
         if(state.equals(SectionActivityState.AUTHOR) && ((AuthorFragment)getCurrentFragment()).isSimpleView()) {
             Category category = Stream.of(author.getLinkableCategory()).filter(c -> title.equals(c.toString())).findFirst().orElse(null);
             if(category.isHasUpdates()) {
-                GuiUtils.setText(textView, SamlibGuiUtils.generateText(this, title, getResString(R.string.favorites_update), GuiUtils.getThemeColor(this, R.attr.colorAccent), 0.8f));
+                GuiUtils.setText(textView, SamlibUtils.generateText(this, title, getResString(R.string.favorites_update), GuiUtils.getThemeColor(this, R.attr.colorAccent), 0.8f));
                 return;
             }
         }

@@ -19,6 +19,7 @@
         <item name="colorControlActivated">@color/light_blue</item>
         <item name="colorControlHighlight">@color/light_blue</item>
         <item name="toolbarElevationSize">4dp</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat">

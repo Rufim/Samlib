@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_observable_add_link_or_author"
+          android:title="@string/observable_add_link_or_author"
+          android:orderInCategory="1"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_observable_import"
+          android:title="@string/observable_import"
+          android:orderInCategory="2"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_observable_export"
+          android:title="@string/observable_export"
+          android:orderInCategory="3"
+          app:showAsAction="never"/>
+</menu>
