@@ -178,11 +178,11 @@ public class DatabaseService {
     }
 
     public List<AuthorEntity> getObservableAuthors() {
-        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).get().toList();
+        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).orderBy(AuthorEntity.LAST_UPDATE_DATE.desc()).get().toList();
     }
 
     public List<AuthorEntity> getObservableAuthors(int skip, int size) {
-        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).limit(size).offset(skip).get().toList();
+        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).orderBy(AuthorEntity.LAST_UPDATE_DATE.desc()).limit(size).offset(skip).get().toList();
     }
 
     public List<BookmarkEntity> getHistory(int skip, int size) {
