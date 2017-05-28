@@ -235,12 +235,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
             });
         }
         category = event.category;
-        refreshData(true);
+        super.refreshData(false);
     }
 
     @Override
     public void refreshData(boolean showProgress) {
-        author.setParsed(savedDataSource != null);
+        author.setParsed(category != null);
         super.refreshData(showProgress);
     }
 
@@ -249,7 +249,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public boolean allowBackPress() {
         if (!restoreLister()) {
             category = null;
-            savedDataSource = null;
             return super.allowBackPress();
         } else {
             ((SectionActivity) getActivity()).cleanSelection();
@@ -320,7 +319,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (holder.getTag() == category) {
                 return;
             }
-            boolean navBarCategory = savedDataSource != null;
+            boolean navBarCategory = category != null;
             ViewGroup root = (ViewGroup) holder.getItemView();
             GuiUtils.setText(root, R.id.section_label, category.getTitle());
             ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);

@@ -7,6 +7,7 @@ import io.requery.query.JoinAndOr;
 import io.requery.query.Result;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.MissingKeyException;
+import net.vrallev.android.cat.Cat;
 import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.fragments.WorkFragment;
@@ -92,9 +93,11 @@ public class DatabaseService {
                 authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
             } else {
                 for (Work work : authorEntity.getWorks()) {
-                        try {
+                    try {
                         doAction(Action.UPDATE, work);
                     } catch (MissingKeyException ex) {
+                    } catch (ClassCastException ex) {
+                        Cat.e(work.getCategory().toString());
                     }
                 }
                 for (Link link : authorEntity.getLinks()) {

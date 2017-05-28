@@ -87,56 +87,62 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 }
                 return true;
             case R.id.action_observable_import:
-                DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), true, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
-                chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
-                chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
-                chooserDialogImport.setAllowRootDir(true);
-                chooserDialogImport.setFileTypes("txt");
-                chooserDialogImport.setOnChooseFileListener(chosenFile -> {
-                    if (chosenFile != null) {
-                        loadMoreBar.setVisibility(View.VISIBLE);
-                        new AsyncTask<File, Void, Boolean>(){
+                if (isAdded()) {
+                    getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, permissionGained -> {
+                        if (permissionGained) {
+                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), true, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
+                            chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
+                            chooserDialogImport.setAllowRootDir(true);
+                            chooserDialogImport.setFileTypes("txt");
+                            chooserDialogImport.setOnChooseFileListener(chosenFile -> {
+                                if (chosenFile != null) {
+                                    loadMoreBar.setVisibility(View.VISIBLE);
+                                    new AsyncTask<File, Void, Boolean>() {
 
-                            @Override
-                            protected Boolean doInBackground(File... params) {
-                                try {
-                                    String fileContent = SystemUtils.readFile(params[0], "UTF-8");
-                                    for (String line : fileContent.split("\n")) {
-                                        String link = TextUtils.eraseHost(line).replace("indexdate.shtml","").replace("indextitle.shtml", "");
-                                        Author author;
-                                        if (Linkable.isAuthorLink(link)) {
-                                            AuthorEntity entity = databaseService.getAuthor(link);
-                                            if(entity == null) {
-                                                author = new AuthorParser(link).parse();
-                                                if (!TextUtils.isEmpty(author.getShortName())) {
-                                                    databaseService.insertObservableAuthor(author.createEntity());
+                                        @Override
+                                        protected Boolean doInBackground(File... params) {
+                                            try {
+                                                String fileContent = SystemUtils.readFile(params[0], "UTF-8");
+                                                for (String line : fileContent.split("\n")) {
+                                                    String link = TextUtils.eraseHost(line).replace("indexdate.shtml", "").replace("indextitle.shtml", "");
+                                                    Author author;
+                                                    if (Linkable.isAuthorLink(link)) {
+                                                        AuthorEntity entity = databaseService.getAuthor(link);
+                                                        if (entity == null) {
+                                                            author = new AuthorParser(link).parse();
+                                                            if (!TextUtils.isEmpty(author.getShortName())) {
+                                                                databaseService.insertObservableAuthor(author.createEntity());
+                                                            }
+                                                        }
+                                                    }
                                                 }
+                                                return true;
+                                            } catch (Exception e) {
+                                                Cat.e("Unknown exception", e);
+                                                return false;
                                             }
                                         }
-                                    }
-                                    return true;
-                                } catch (Exception e) {
-                                    Cat.e("Unknown exception", e);
-                                    return false;
-                                }
-                            }
 
-                            @Override
-                            protected void onPostExecute(Boolean success) {
-                                if(isAdded()) {
-                                    if (success) {
-                                        refreshData(false);
-                                    } else {
-                                        GuiUtils.toast(getContext(), R.string.error);
-                                    }
+                                        @Override
+                                        protected void onPostExecute(Boolean success) {
+                                            if (isAdded()) {
+                                                if (success) {
+                                                    refreshData(false);
+                                                } else {
+                                                    GuiUtils.toast(getContext(), R.string.error);
+                                                }
+                                            }
+                                            loadMoreBar.setVisibility(View.GONE);
+                                        }
+                                    }.execute(chosenFile);
+                                    chooserDialogImport.dismiss();
                                 }
-                                loadMoreBar.setVisibility(View.GONE);
-                            }
-                        }.execute(chosenFile);
-                        chooserDialogImport.dismiss();
-                    }
-                });
-                chooserDialogImport.show();
+                            });
+                            chooserDialogImport.show();
+                        }
+                    });
+                }
                 return true;
             case R.id.action_observable_export:
                 if (isAdded()) {
@@ -158,7 +164,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                                         }
                                         SystemUtils.copy(new ByteArrayInputStream(builder.toString().getBytes()), new FileOutputStream(file));
                                     } catch (Exception e) {
-                                        Cat.e( "Unknown exception", e);
+                                        Cat.e("Unknown exception", e);
                                     }
                                 }
                             });
@@ -174,7 +180,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     @Subscribe
     public void onEvent(AuthorAddEvent event) {
         loadMoreBar.setVisibility(View.VISIBLE);
-        new AsyncTask<String, Void, Author>(){
+        new AsyncTask<String, Void, Author>() {
 
             @Override
             protected Author doInBackground(String... params) {
@@ -182,9 +188,9 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 String link = params[0];
                 try {
                     author = databaseService.getAuthor(link);
-                    if(author == null) {
+                    if (author == null) {
                         author = new AuthorParser(params[0]).parse();
-                        if(!TextUtils.isEmpty(author.getShortName())) {
+                        if (!TextUtils.isEmpty(author.getShortName())) {
                             author.setParsed(true);
                             databaseService.insertObservableAuthor(author.createEntity());
                         } else {
@@ -200,9 +206,9 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
 
             @Override
             protected void onPostExecute(Author author) {
-                if(author.isEntity()) {
+                if (author.isEntity()) {
                     GuiUtils.toast(getContext(), R.string.observable_add_link_or_author_exist);
-                } else if(!author.isParsed()) {
+                } else if (!author.isParsed()) {
                     GuiUtils.toast(getContext(), getString(R.string.observable_add_link_or_author_error_link) + " " + author.getFullLink());
                 } else {
                     refreshData(false);
@@ -260,7 +266,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
         adapter.clear();
         adapter.getItems().addAll(databaseService.getObservableAuthors());
         adapter.notifyDataSetChanged();
-        if(update) {
+        if (update) {
             new Thread(() -> {
                 ObservableUpdateJob.updateObservable(databaseService, getContext());
             }).start();

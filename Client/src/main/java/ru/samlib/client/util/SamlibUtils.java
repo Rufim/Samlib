@@ -1,10 +1,12 @@
 package ru.samlib.client.util;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.ColorRes;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
@@ -122,11 +124,15 @@ public class SamlibUtils {
     }
 
     public static CharSequence generateText(Context context, String title, String addition, @ColorRes int colorRes, float prop) {
+        return generateText(title, addition, context.getResources().getColor(colorRes), prop);
+    }
+
+    public static CharSequence generateText(String title, String addition, int color, float prop) {
         if (TextUtils.isEmpty(addition)) return title;
         String result = title + " " + addition;
         int from = title.length() + 1;
         int to = result.length();
-        SpannableStringBuilder spannable = GuiUtils.coloredText(context, result, from, to, colorRes);
+        SpannableStringBuilder spannable = GuiUtils.spannableText(result, new ForegroundColorSpan(color), from, to);
         spannable.setSpan(new RelativeSizeSpan(prop), from, to, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return spannable;
     }

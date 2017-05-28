@@ -2,6 +2,7 @@ package ru.samlib.client.net;
 
 import android.content.Context;
 import android.util.Log;
+import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.net.*;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.App;
@@ -134,23 +135,27 @@ public class HtmlClient {
     }
 
 
-    private void cache(CachedResponse cachedResponse) throws UnsupportedEncodingException, MalformedURLException {
-        if(!cachedResponse.getRequest().isWithParams()) {
-            String url = getUrl(cachedResponse.getRequest());
-            htmlfiles.put(url, cachedResponse);
-            SavedHtml savedHtml = app.getDataStore().findByKey(SavedHtml.class, cachedResponse.getAbsolutePath());
-            if (savedHtml == null) {
-                savedHtml = new SavedHtml(cachedResponse);
-                savedHtml.setSize(cachedResponse.length());
-                savedHtml.setUrl(url);
-                savedHtml.setUpdated(new Date());
-                app.getDataStore().insert(savedHtml);
-            } else {
-                savedHtml.setSize(cachedResponse.length());
-                savedHtml.setUrl(url);
-                savedHtml.setUpdated(new Date());
-                app.getDataStore().update(savedHtml);
+    private void cache(CachedResponse cachedResponse) {
+        try {
+            if (!cachedResponse.getRequest().isWithParams()) {
+                String url = getUrl(cachedResponse.getRequest());
+                htmlfiles.put(url, cachedResponse);
+                SavedHtml savedHtml = app.getDataStore().findByKey(SavedHtml.class, cachedResponse.getAbsolutePath());
+                if (savedHtml == null) {
+                    savedHtml = new SavedHtml(cachedResponse);
+                    savedHtml.setSize(cachedResponse.length());
+                    savedHtml.setUrl(url);
+                    savedHtml.setUpdated(new Date());
+                    app.getDataStore().insert(savedHtml);
+                } else {
+                    savedHtml.setSize(cachedResponse.length());
+                    savedHtml.setUrl(url);
+                    savedHtml.setUpdated(new Date());
+                    app.getDataStore().update(savedHtml);
+                }
             }
+        } catch (Exception e) {
+            Cat.e(e);
         }
     }
 
