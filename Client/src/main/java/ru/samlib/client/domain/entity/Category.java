@@ -192,7 +192,7 @@ public class Category implements Linkable, Serializable, Parsable {
         if (this == o) return true;
         if (!(o instanceof Category)) return false;
         Category category = (Category) o;
-        return isTitleEquals(this, category);
+        return isTitleEquals(this, category) && isLinkEquals(this, category);
     }
 
     @Override
@@ -211,7 +211,7 @@ public class Category implements Linkable, Serializable, Parsable {
             return true;
         }
         if (one.getTitle() == null || two.getTitle() == null) {
-            return true;
+            return false;
         }
         return TextUtils.trim(one.getTitle()).equalsIgnoreCase(TextUtils.trim(two.getTitle()));
     }
@@ -221,7 +221,7 @@ public class Category implements Linkable, Serializable, Parsable {
             return true;
         }
         if (one.getLink() == null || two.getLink() == null) {
-            return true;
+            return false;
         }
         return TextUtils.trim(one.getLink()).equalsIgnoreCase(TextUtils.trim(two.getLink()));
     }

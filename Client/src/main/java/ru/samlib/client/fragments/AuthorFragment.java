@@ -62,6 +62,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     private Author author;
     private Category category;
     private boolean simpleView = true;
+    private boolean onRestore = false;
     @Inject
     DatabaseService databaseService;
 
@@ -240,7 +241,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public void refreshData(boolean showProgress) {
-        author.setParsed(category != null);
+        author.setParsed(savedDataSource == null);
         super.refreshData(showProgress);
     }
 
@@ -248,9 +249,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
     @Override
     public boolean allowBackPress() {
         if (!restoreLister()) {
-            category = null;
             return super.allowBackPress();
         } else {
+            category = null;
             ((SectionActivity) getActivity()).cleanSelection();
             return false;
         }
@@ -319,7 +320,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (holder.getTag() == category) {
                 return;
             }
-            boolean navBarCategory = category != null;
+            boolean navBarCategory = savedDataSource != null;
             ViewGroup root = (ViewGroup) holder.getItemView();
             GuiUtils.setText(root, R.id.section_label, category.getTitle());
             ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
@@ -333,7 +334,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
             if(navBarCategory) {
                 GuiUtils.setVisibility(View.GONE, root, R.id.section_down_shadow, R.id.section_layout);
+            } else {
+                GuiUtils.setVisibility(View.VISIBLE, root, R.id.section_down_shadow, R.id.section_layout);
             }
+            expand.setOnCheckedChangeListener(null);
             if(category.isInUIExpanded() || navBarCategory) {
                 expand.setChecked(true);
                 for (Work work : category.getWorks()) {
