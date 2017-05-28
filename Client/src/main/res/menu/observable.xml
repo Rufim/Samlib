@@ -12,4 +12,16 @@
           android:title="@string/observable_export"
           android:orderInCategory="3"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_observable_check_updates"
+          android:title="@string/observable_check_updates"
+          android:orderInCategory="4"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_observable_delete"
+          android:title="@string/external_work_delete"
+          android:orderInCategory="5"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_observable_cancel"
+          android:title="@string/external_work_cancel"
+          android:orderInCategory="6"
+          app:showAsAction="never"/>
 </menu>

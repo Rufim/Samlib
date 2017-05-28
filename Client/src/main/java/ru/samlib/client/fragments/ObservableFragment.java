@@ -3,7 +3,9 @@ package ru.samlib.client.fragments;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.YuvImage;
 import android.os.*;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
@@ -26,6 +28,7 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.AuthorEntity;
+import ru.samlib.client.domain.entity.ExternalWork;
 import ru.samlib.client.domain.events.AuthorAddEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
@@ -51,6 +54,8 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
     private boolean loading;
+
+    List<AuthorEntity> toAction = new ArrayList<>();
 
     public static ObservableFragment newInstance() {
         return newInstance(ObservableFragment.class);
@@ -173,6 +178,22 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                     });
                 }
                 return true;
+            case R.id.action_observable_check_updates:
+                 refreshData(true);
+                 return true;
+            case R.id.action_observable_delete:
+                for (AuthorEntity entity : toAction) {
+                    entity.setObservable(false);
+                }
+                databaseService.deleteAuthors(toAction);
+                toAction.clear();
+                refreshData(false);
+                return true;
+            case R.id.action_observable_cancel:
+                toAction.clear();
+                refreshData(false);
+                return true;
+
         }
         return false;
     }
@@ -315,12 +336,32 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
         }
 
         @Override
+        public boolean onLongClick(View view, int position) {
+            ViewHolder holder = (ViewHolder) view.getTag();
+            Author author = getItems().get(position);
+            if (!toAction.contains(author)) {
+                toAction.add(getItems().get(position));
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+            } else {
+                toAction.remove(author);
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+            }
+            return true;
+        }
+
+
+        @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             TextView authorTextView = holder.getView(R.id.favorites_author);
             TextView lastUpdateView = holder.getView(R.id.favorites_last_update);
             TextView newText = holder.getView(R.id.favorites_update);
             TextView annotationTextView = holder.getView(R.id.favorites_annotation);
             Author author = getItems().get(position);
+            if(toAction.contains(author)) {
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+            } else {
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+            }
             authorTextView.setText(author.getFullName());
             if (author.getLastUpdateDate() != null) {
                 lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));

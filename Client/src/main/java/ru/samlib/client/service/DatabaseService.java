@@ -163,6 +163,16 @@ public class DatabaseService {
         doAction(Action.DELETE, getAuthor(author.getLink()));
     }
 
+    public void deleteAuthors(Collection<AuthorEntity> authors) {
+        try {
+            for (AuthorEntity author : authors) {
+                dataStore.delete(AuthorEntity.class).where(AuthorEntity.LINK.eq(author.getLink())).get().value();
+            }
+        } catch (Exception ex) {
+          Cat.e(ex);
+        }
+    }
+
     public AuthorEntity getAuthor(String link) {
         return getAuthorQuery().where(AuthorEntity.LINK.eq(link)).get().firstOrNull();
     }
@@ -181,7 +191,6 @@ public class DatabaseService {
 
     public void deleteHistory() {
         dataStore.delete(BookmarkEntity.class).get().value();
-        ;
     }
 
     public WorkEntity getWork(String link) {

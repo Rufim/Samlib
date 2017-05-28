@@ -124,8 +124,17 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
         @Override
         public boolean onLongClick(View view, @Nullable ExternalWork item) {
             ViewHolder holder = (ViewHolder) view.getTag();
-            holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
-            toActionWorks.add(item);
+            if (!toActionWorks.contains(item)) {
+                toActionWorks.add(item);
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+            } else {
+                toActionWorks.remove(item);
+                if (!item.isExist()) {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.light_grey));
+                } else {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+                }
+            }
             return true;
         }
 
@@ -133,12 +142,12 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
         public void onBindHolder(ViewHolder holder, @Nullable ExternalWork item) {
             ViewGroup root = (ViewGroup) holder.getItemView();
             if(toActionWorks.contains(item)) {
-                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+                root.setBackgroundColor(getResources().getColor(R.color.Orange));
             } else {
                 if (!item.isExist()) {
                     root.setBackgroundColor(getResources().getColor(R.color.light_grey));
                 } else {
-                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+                    root.setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
             }
             TextView titleView = GuiUtils.getView(root, R.id.external_item_work);

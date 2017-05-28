@@ -142,6 +142,7 @@
     <string name="observable_add_link_or_author_error_link">Не могу найти автора по ссылке:</string>
     <string name="observable_import">Импорт</string>
     <string name="observable_export">Экспорт</string>
+    <string name="observable_check_updates">Проверить обновления</string>
     <string name="observable_link_or_author_hint">Введите имя автора или ссылку</string>
     <string name="observable_link_or_author_title">Добавить</string>
 </resources>
