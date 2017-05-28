@@ -102,7 +102,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                                 try {
                                     String fileContent = SystemUtils.readFile(params[0], "UTF-8");
                                     for (String line : fileContent.split("\n")) {
-                                        String link = TextUtils.eraseHost(line);
+                                        String link = TextUtils.eraseHost(line).replace("indexdate.shtml","").replace("indextitle.shtml", "");
                                         Author author;
                                         if (Linkable.isAuthorLink(link)) {
                                             AuthorEntity entity = databaseService.getAuthor(link);
