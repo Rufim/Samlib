@@ -67,23 +67,31 @@ public class WorkParser extends Parser {
             work = new Work(rawContent.getRequest().getBaseUrl().getPath().replaceAll("/+", "/"));
         }
         work.setCachedResponse(rawContent);
-        Work parsedWork =  parse(rawContent, rawContent.getEncoding(), work, processChapters);
+        Work parsedWork = parse(rawContent, rawContent.getEncoding(), work, processChapters);
         parsedWork.setCachedResponse(rawContent);
         return parsedWork;
     }
 
     public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
-            work = parseWork(rawContent, encoding, work);
+            if (work.getLink() == null) {
+                Author author = new Author(rawContent.getParent());
+                author.setShortName(rawContent.getName());
+                work.setAuthor(author);
+                work.setTitle(rawContent.getName());
+                work.setRawContent(SystemUtils.readFile(rawContent, "CP1251"));
+            } else {
+                work = parseWork(rawContent, encoding, work);
+            }
             Log.i(TAG, "Work parsed using url " + work.getFullLink());
             work.setChanged(false);
             if (processChapters) {
                 processChapters(work);
             }
-            workCache.put(work.getLink(), work);
+            workCache.put(work.getLink() == null ? rawContent.getAbsolutePath() : work.getLink(), work);
         } catch (Exception ex) {
             work.setParsed(false);
-            if(rawContent instanceof  CachedResponse) {
+            if (rawContent instanceof CachedResponse) {
                 Log.e(TAG, "Error in work parsing using url " + work.getFullLink(), ex);
             } else {
                 Log.e(TAG, "Error in work parsing using file " + rawContent.getAbsolutePath(), ex);
@@ -161,9 +169,9 @@ public class WorkParser extends Parser {
                     work.setHasIllustration(true);
                 } else if (text.contains("Скачать")) {
                     break;
-                } else if(a != null) {
+                } else if (a != null) {
                     Category category;
-                    if(work instanceof WorkEntity) {
+                    if (work instanceof WorkEntity) {
                         category = new CategoryEntity();
                     } else {
                         category = new Category();
@@ -177,7 +185,7 @@ public class WorkParser extends Parser {
                     hasNotDefaultCategory = true;
                 }
             }
-            if(!hasNotDefaultCategory) {
+            if (!hasNotDefaultCategory) {
                 Category category = new Category();
                 category.setType(work.getType());
                 if (work.getCategory() == null || !work.getCategory().equals(category)) {
@@ -328,7 +336,7 @@ public class WorkParser extends Parser {
                                 bookmark.setIndent(href.substring(1));
                                 bookmarks.add(bookmark);
                             } else {
-                                if(href.startsWith("/")) {
+                                if (href.startsWith("/")) {
                                     append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "");
                                 } else {
                                     append("<a href=\"" + href + "\">" + getNodeHtml(node) + "");
@@ -352,7 +360,7 @@ public class WorkParser extends Parser {
                     append("\n" + getNodeHtml(node));
                 } else if (nodeName.equals("a")) {
                     Element a = (Element) node;
-                    if(a.hasAttr("name")) {
+                    if (a.hasAttr("name")) {
                         initBookmark(a.attr("name"));
                     }
                 }

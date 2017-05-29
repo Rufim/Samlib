@@ -186,7 +186,7 @@ public class DatabaseService {
     }
 
     public List<BookmarkEntity> getHistory(int skip, int size) {
-        return dataStore.select(BookmarkEntity.class).orderBy(BookmarkEntity.SAVED_DATE.desc()).limit(size).offset(skip).get().toList();
+        return dataStore.select(BookmarkEntity.class).where(BookmarkEntity.AUTHOR_URL.notNull()).orderBy(BookmarkEntity.SAVED_DATE.desc()).limit(size).offset(skip).get().toList();
     }
 
     public void deleteHistory() {

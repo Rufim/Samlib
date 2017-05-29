@@ -49,6 +49,7 @@
                 <data android:scheme="http" android:host="samlib.ru"/>
                 <data android:scheme="http" android:host="budclub.ru"/>
                 <data android:scheme="http" android:host="zhurnal.lib.ru"/>
+                <data android:scheme="file" android:mimeType="*/*" android:pathPattern=".*\\.html"/>
             </intent-filter>
         </activity>
 

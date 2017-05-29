@@ -32,6 +32,7 @@ import ru.samlib.client.util.TTSPlayer;
 import ru.kazantsev.template.util.TextUtils;
 
 import javax.inject.Inject;
+import java.io.File;
 
 /**
  * Created by Dmitry on 01.09.2015.
@@ -135,7 +136,12 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             Work work = WorkParser.getCachedWork(link);
             if(!work.isParsed()) {
                 if (work.getRawContent() == null) {
-                    work.setRawContent(SystemUtils.readFile(HtmlClient.getCachedFile(getBaseContext(), link), "CP1251"));
+                    File cached = HtmlClient.getCachedFile(getBaseContext(), link);
+                    if(cached.exists()) {
+                        work.setRawContent(SystemUtils.readFile(cached, "CP1251"));
+                    } else if(new File(link).exists()) {
+                        work.setRawContent(SystemUtils.readFile(new File(link), "CP1251"));
+                    }
                 }
                 if (!TextUtils.isEmpty(work.getRawContent())) {
                     WorkParser.processChapters(work);

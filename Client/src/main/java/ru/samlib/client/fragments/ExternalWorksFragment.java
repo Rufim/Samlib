@@ -130,7 +130,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
             } else {
                 toActionWorks.remove(item);
                 if (!item.isExist()) {
-                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.light_grey));
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent_light_grey));
                 } else {
                     holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
@@ -145,17 +145,26 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
                 root.setBackgroundColor(getResources().getColor(R.color.Orange));
             } else {
                 if (!item.isExist()) {
-                    root.setBackgroundColor(getResources().getColor(R.color.light_grey));
+                    root.setBackgroundColor(getResources().getColor(R.color.transparent_light_grey));
                 } else {
                     root.setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
             }
-            TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
             TextView filepathView = GuiUtils.getView(root, R.id.external_item_filepath);
-            TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
-            GuiUtils.setText(titleView, item.getWorkTitle());
             GuiUtils.setText(filepathView, item.getFilePath());
-            GuiUtils.setText(authorView, item.getAuthorShortName());
+            if(item.getWorkUrl() != null) {
+                GuiUtils.setVisibility(View.VISIBLE, root, R.id.external_item_author_layout);
+                TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
+                TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
+                GuiUtils.setText(titleView, item.getWorkTitle());
+                GuiUtils.setText(authorView, item.getAuthorShortName());
+            } else {
+                GuiUtils.setVisibility(View.GONE, root, R.id.external_item_author_layout);
+                TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
+                TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
+                GuiUtils.setText(titleView, item.getWorkTitle());
+                GuiUtils.setText(authorView, item.getAuthorShortName());
+            }
         }
     }
 }

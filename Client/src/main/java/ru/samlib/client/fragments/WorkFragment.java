@@ -35,10 +35,7 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Bookmark;
-import ru.samlib.client.domain.entity.ExternalWork;
-import ru.samlib.client.domain.entity.Work;
-import ru.samlib.client.domain.entity.WorkEntity;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
 import ru.samlib.client.domain.events.WorkParsedEvent;
 import ru.samlib.client.net.HtmlClient;
@@ -127,6 +124,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isParsed()) {
                 if (externalWork != null) {
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
+                    if(externalWork.getWorkUrl() == null) {
+                        databaseService.insertOrUpdateExternalWork(externalWork);
+                    }
                     isDownloaded = true;
                     safeInvalidateOptionsMenu();
                 } else {
@@ -213,8 +213,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             bookmark.setIndent(indent);
         }
         bookmark.setIndentIndex(index);
-        bookmark.setWorkUrl(work.getFullLink());
-        bookmark.setAuthorUrl(work.getAuthor().getFullLink());
+        if(externalWork == null || externalWork.getWorkUrl() != null) {
+            bookmark.setWorkUrl(work.getFullLink());
+            bookmark.setAuthorUrl(work.getAuthor().getFullLink());
+        } else {
+            bookmark.setWorkUrl(externalWork.getFilePath());
+        }
         bookmark.setAuthorShortName(work.getAuthor().getShortName());
         bookmark.setGenres(work.printGenres());
         bookmark.setWorkTitle(work.getTitle());
@@ -411,7 +415,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         ownTTSService = true;
         WorkFragment.this.selectText(lastIndent, null);
         Intent i = new Intent(getActivity(), TTSService.class);
-        i.putExtra(Constants.ArgsName.LINK, work.getLink());
+        i.putExtra(Constants.ArgsName.LINK, work.getLink() == null ? externalWork.getFilePath() : work.getLink());
         i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + offset);
         i.putExtra(Constants.ArgsName.TTS_SPEECH_RATE, getRate(speechRate));
         i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
@@ -678,6 +682,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         this.externalWork = null;
         if (filePath != null) {
             this.externalWork = databaseService.getExternalWork(filePath);
+            if(externalWork == null) {
+                externalWork = new ExternalWork();
+                externalWork.setFilePath(filePath);
+                externalWork.setWorkTitle(new File(filePath).getName());
+                externalWork.setGenres("");
+                externalWork.setSavedDate(new Date());
+                databaseService.insertOrUpdateExternalWork(externalWork);
+            }
             work = new Work(externalWork.getWorkUrl());
         } else if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
