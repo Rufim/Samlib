@@ -326,6 +326,7 @@ public class WorkParser extends Parser {
                 if (bookmark.getIndentIndex() != 0 && !TextUtils.isEmpty(bookmark.getTitle())) {
                     resultBookmarks.add(bookmark);
                 }
+
             }
             return resultBookmarks;
         }

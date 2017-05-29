@@ -315,6 +315,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
             if(work.getLink() == null) {
                 menu.removeItem(R.id.action_work_to_author);
+                menu.removeItem(R.id.action_work_share);
             }
             if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
