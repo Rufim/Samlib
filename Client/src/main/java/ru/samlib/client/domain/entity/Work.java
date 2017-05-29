@@ -178,6 +178,10 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return link;
     }
 
+    public boolean isNotSamlib() {
+        return getLink() == null;
+    }
+
     public String getLinkWithoutSuffix() {
         return getLink().replace(HTML_SUFFIX, "");
     }

@@ -79,7 +79,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                 && instance.getPlayer() != null
                 && !instance.getPlayer().getState().equals(TTSPlayer.State.UNAVAILABLE)
                 && instance.getPlayer().getWork() != null
-                && ((work.getLink() == null && work.getTitle().equals(instance.getPlayer().getWork().getTitle())) || instance.getPlayer().getWork().getLink().equals(work.getLink()));
+                && ((work.isNotSamlib() && work.getTitle().equals(instance.getPlayer().getWork().getTitle())) || instance.getPlayer().getWork().getLink().equals(work.getLink()));
     }
 
     public TTSPlayer.State getState() {
@@ -136,11 +136,14 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             Work work = WorkParser.getCachedWork(link);
             if(!work.isParsed()) {
                 if (work.getRawContent() == null) {
-                    File cached = HtmlClient.getCachedFile(getBaseContext(), link);
+                    File cached;
+                    if(work.isNotSamlib()) {
+                        cached = new File(link);
+                    } else {
+                        cached = HtmlClient.getCachedFile(getBaseContext(), link);
+                    }
                     if(cached.exists()) {
                         work.setRawContent(SystemUtils.readFile(cached, "CP1251"));
-                    } else if(new File(link).exists()) {
-                        work.setRawContent(SystemUtils.readFile(new File(link), "CP1251"));
                     }
                 }
                 if (!TextUtils.isEmpty(work.getRawContent())) {
@@ -161,6 +164,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                 ttsp.setLanguage(intent.getStringExtra(Constants.ArgsName.TTS_LANGUAGE));
             }
             playWork(work, intent.getStringExtra(Constants.ArgsName.TTS_PLAY_POSITION));
+            newNotification(work.isNotSamlib() ? "file://" + link : link);
             TTSPlayer.TTS_HANDLER = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message msg) {
@@ -204,7 +208,6 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             ttsp.pre();
                             break;
                     }
-                    newNotification();
                     Log.d(TAG, "TAG Pressed: " + action);
                     return false;
                 }
@@ -221,12 +224,12 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
      * Custom Bignotification is available from API 16
      */
     @SuppressLint("NewApi")
-    private void newNotification() {
+    private void newNotification(String link) {
         String title = ttsp.getWork().getTitle();
         String shortName = ttsp.getWork().getAuthor().getShortName();
         RemoteViews simpleContentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.tts_notification);
         Intent launch = new Intent(getApplicationContext(), SectionActivity.class);
-        launch.setData(Uri.parse(getPlayer().getWork().getFullLink()));
+        launch.setData(Uri.parse(link));
         Notification notification = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_action_book)
                 .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, 0))
@@ -301,7 +304,6 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         String[] pos = position.split(":");
         ttsp.playOnStart(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
         ttsp.onStart();
-        newNotification();
     }
 
     @SuppressLint("NewApi")

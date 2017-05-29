@@ -188,7 +188,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void firstLoad(boolean scroll) {
         try {
-            Bookmark bookmark = databaseService.getBookmark(work.getLink() == null ? externalWork.getFilePath() : work.getFullLink());
+            Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll) {
@@ -279,7 +279,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         editor.putInt(getString(R.string.preferenceWorkSpeechRate), speechRate.getProgress());
         editor.putInt(getString(R.string.preferenceWorkAutoScrollSpeed), autoScrollSpeed.getProgress());
         editor.putInt(getString(R.string.preferenceWorkPitch), pitch.getProgress());
-        editor.putString(getString(R.string.preferenceLastWork), isBack ? "" : work.getLink() == null ? "file://" + externalWork.getFilePath() : work.getLink());
+        editor.putString(getString(R.string.preferenceLastWork), isBack ? "" : work.isNotSamlib() ? "file://" + externalWork.getFilePath() : work.getLink());
         editor.apply();
         stopAutoScroll();
         stopFullscreen();
@@ -313,7 +313,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
-            if(work.getLink() == null) {
+            if(work.isNotSamlib()) {
                 menu.removeItem(R.id.action_work_to_author);
                 menu.removeItem(R.id.action_work_share);
             }
@@ -403,6 +403,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             getContext().stopService(i);
         }
         speakLayout.setVisibility(View.GONE);
+        GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
+        GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
     }
 
     private void safeCheckMenuItem(@IdRes int id, boolean state) {
@@ -418,7 +420,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         ownTTSService = true;
         WorkFragment.this.selectText(lastIndent, null);
         Intent i = new Intent(getActivity(), TTSService.class);
-        i.putExtra(Constants.ArgsName.LINK, work.getLink() == null ? externalWork.getFilePath() : work.getLink());
+        i.putExtra(Constants.ArgsName.LINK, work.isNotSamlib() ? externalWork.getFilePath() : work.getLink());
         i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + offset);
         i.putExtra(Constants.ArgsName.TTS_SPEECH_RATE, getRate(speechRate));
         i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
@@ -694,6 +696,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 databaseService.insertOrUpdateExternalWork(externalWork);
             }
             work = new Work(externalWork.getWorkUrl());
+            File external =  new File(externalWork.getFilePath());
+            work.setTitle(external.getName());
+            Author author = new Author(external.getParent());
+            author.setShortName(external.getName());
+            work.setAuthor(author);
         } else if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
                 work = incomingWork;

@@ -76,11 +76,7 @@ public class WorkParser extends Parser {
 
     public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
-            if (work.getLink() == null) {
-                Author author = new Author(rawContent.getParent());
-                author.setShortName(rawContent.getName());
-                work.setAuthor(author);
-                work.setTitle(rawContent.getName());
+            if (work.isNotSamlib()) {
                 CharsetDetector detector = new CharsetDetector();
                 BufferedInputStream stream = new BufferedInputStream(new FileInputStream(rawContent));
                 try {
@@ -102,7 +98,7 @@ public class WorkParser extends Parser {
             if (processChapters) {
                 processChapters(work);
             }
-            workCache.put(work.getLink() == null ? rawContent.getAbsolutePath() : work.getLink(), work);
+            workCache.put(work.isNotSamlib() ? rawContent.getAbsolutePath() : work.getLink(), work);
         } catch (Exception ex) {
             work.setParsed(false);
             if (rawContent instanceof CachedResponse) {
