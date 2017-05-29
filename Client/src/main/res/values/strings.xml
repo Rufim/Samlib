@@ -76,7 +76,7 @@
     <string name="work_updated">Изменён:</string>
     <string name="work_series">Серия:</string>
     <!-- Меню -->
-    <string name="work_speaking">Режим чтения</string>
+    <string name="work_speaking">Чтение вслух</string>
     <string name="work_to_author">К автору</string>
     <string name="work_save">Сохранить</string>
     <string name="work_parse">Парсинг…</string>

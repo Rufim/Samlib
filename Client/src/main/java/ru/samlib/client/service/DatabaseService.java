@@ -95,9 +95,8 @@ public class DatabaseService {
                 for (Work work : authorEntity.getWorks()) {
                     try {
                         doAction(Action.UPDATE, work);
-                    } catch (MissingKeyException ex) {
-                    } catch (ClassCastException ex) {
-                        Cat.e(work.getCategory().toString());
+                    } catch (Exception ex) {
+                        Cat.e(ex, work.getCategory().toString());
                     }
                 }
                 for (Link link : authorEntity.getLinks()) {
