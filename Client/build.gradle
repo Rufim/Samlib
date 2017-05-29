@@ -142,7 +142,7 @@ dependencies {
     compile "com.snappydb:snappydb-lib:0.5.2"
     compile "com.evernote:android-job:1.1.11-SNAPSHOT"
     compile "net.vrallev.android:cat:1.0.4"
-
+    compile group: 'com.ibm.icu', name: 'icu4j', version: '59.1'
     compile "io.requery:requery:$requeryVersion"
     compile "io.requery:requery-android:$requeryVersion" // for android
     compile 'com.android.support:multidex:1.0.1'

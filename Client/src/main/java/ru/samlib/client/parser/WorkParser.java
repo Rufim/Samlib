@@ -3,6 +3,8 @@ package ru.samlib.client.parser;
 import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
@@ -22,9 +24,9 @@ import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -79,7 +81,15 @@ public class WorkParser extends Parser {
                 author.setShortName(rawContent.getName());
                 work.setAuthor(author);
                 work.setTitle(rawContent.getName());
-                work.setRawContent(SystemUtils.readFile(rawContent, "CP1251"));
+                CharsetDetector detector = new CharsetDetector();
+                BufferedInputStream stream = new BufferedInputStream(new FileInputStream(rawContent));
+                try {
+                    detector.setText(stream);
+                    CharsetMatch charset = detector.detect();
+                    work.setRawContent(SystemUtils.readFile(rawContent, charset == null ? encoding : charset.getName()));
+                } finally {
+                    SystemUtils.close(stream);
+                }
             } else {
                 work = parseWork(rawContent, encoding, work);
             }
@@ -229,7 +239,11 @@ public class WorkParser extends Parser {
         //Element body = replaceTables(document.body());
         Elements rootElements = document.body().select("> *");
         HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
-        work.setIndents(forSpanner.getIndents(rootElements));
+        if(rootElements == null || rootElements.size() == 0) {
+            work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
+        } else {
+            work.setIndents(forSpanner.getIndents(rootElements));
+        }
         rootElements.clear();
         Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);

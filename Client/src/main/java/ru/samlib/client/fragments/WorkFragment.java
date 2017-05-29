@@ -49,6 +49,7 @@ import ru.samlib.client.util.*;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.CharsetDecoder;
 import java.util.*;
 
 import static android.view.View.GONE;
@@ -124,6 +125,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isParsed()) {
                 if (externalWork != null) {
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
+                    work.setParsed(true);
                     isDownloaded = true;
                     safeInvalidateOptionsMenu();
                 } else {
@@ -310,6 +312,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             inflater.inflate(R.menu.work, menu);
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
+            }
+            if(work.getLink() == null) {
+                menu.removeItem(R.id.action_work_to_author);
             }
             if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
