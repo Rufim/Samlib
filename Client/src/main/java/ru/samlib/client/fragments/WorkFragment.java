@@ -124,9 +124,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isParsed()) {
                 if (externalWork != null) {
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
-                    if(externalWork.getWorkUrl() == null) {
-                        databaseService.insertOrUpdateExternalWork(externalWork);
-                    }
                     isDownloaded = true;
                     safeInvalidateOptionsMenu();
                 } else {
@@ -189,7 +186,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void firstLoad(boolean scroll) {
         try {
-            Bookmark bookmark = databaseService.getBookmark(work.getFullLink());
+            Bookmark bookmark = databaseService.getBookmark(work.getLink() == null ? externalWork.getFilePath() : work.getFullLink());
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll) {

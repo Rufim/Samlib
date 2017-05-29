@@ -83,7 +83,11 @@ public class WorkParser extends Parser {
             } else {
                 work = parseWork(rawContent, encoding, work);
             }
-            Log.i(TAG, "Work parsed using url " + work.getFullLink());
+            if (rawContent instanceof CachedResponse) {
+                Log.i(TAG, "Work parsed using url " + work.getFullLink());
+            } else {
+                Log.i(TAG, "Work parsed using file " + rawContent.getAbsolutePath());
+            }
             work.setChanged(false);
             if (processChapters) {
                 processChapters(work);

@@ -49,7 +49,22 @@
                 <data android:scheme="http" android:host="samlib.ru"/>
                 <data android:scheme="http" android:host="budclub.ru"/>
                 <data android:scheme="http" android:host="zhurnal.lib.ru"/>
-                <data android:scheme="file" android:mimeType="*/*" android:pathPattern=".*\\.html"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="" android:scheme="file"/>
+                <data android:pathPattern=".*\\.txt"/>
+                <data android:pathPattern=".*\\.html"/>
+                <data android:pathPattern=".*\\.xhtml"/>
+                <data android:pathPattern=".*\\.htm"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="" android:scheme="file"/>
+                <data android:mimeType="text/plain"/>
+                <data android:mimeType="text/html"/>
             </intent-filter>
         </activity>
 
