@@ -1,6 +1,7 @@
 package ru.samlib.client.domain;
 
 import org.intellij.lang.annotations.RegExp;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.BuildConfig;
 
 /**

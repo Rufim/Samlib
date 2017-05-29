@@ -279,7 +279,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         editor.putInt(getString(R.string.preferenceWorkSpeechRate), speechRate.getProgress());
         editor.putInt(getString(R.string.preferenceWorkAutoScrollSpeed), autoScrollSpeed.getProgress());
         editor.putInt(getString(R.string.preferenceWorkPitch), pitch.getProgress());
-        editor.putString(getString(R.string.preferenceLastWork), isBack ? "" : work.getLink());
+        editor.putString(getString(R.string.preferenceLastWork), isBack ? "" : work.getLink() == null ? "file://" + externalWork.getFilePath() : work.getLink());
         editor.apply();
         stopAutoScroll();
         stopFullscreen();
