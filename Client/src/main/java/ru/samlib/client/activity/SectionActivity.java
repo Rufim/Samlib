@@ -179,7 +179,7 @@ public class SectionActivity extends NavigationActivity<String> {
         if(work != null) {
             setState(SectionActivityState.WORK);
             initNavigationView(R.layout.header_work_bar, work.getAutoBookmarks().toArray());
-            actionBar.setTitle(work.getAuthor().getShortName());
+            actionBar.setTitle(work.getTitle());
             TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
             TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
             TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
@@ -188,12 +188,28 @@ public class SectionActivity extends NavigationActivity<String> {
             GuiUtils.setText(workTitle, work.getTitle());
             if (work.getCreateDate() != null) {
                 GuiUtils.setText(workCreated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getCreateDate()));
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_created_layout);
+            } else {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_created_layout);
             }
             if (work.getUpdateDate() != null) {
                 GuiUtils.setText(workUpdated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getUpdateDate()));
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_updated_layout);
+            } else {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_updated_layout);
             }
-            GuiUtils.setText(workGenres, work.printGenres());
-            GuiUtils.setText(workSeries, work.getType().getTitle());
+            if(TextUtils.isEmpty(work.printGenres())) {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_genres_layout);
+            } else {
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_genres_layout);
+                GuiUtils.setText(workGenres, work.printGenres());
+            }
+            if(TextUtils.isEmpty(work.getType().getTitle())) {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_series_layout);
+            } else {
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_series_layout);
+                GuiUtils.setText(workSeries, work.getType().getTitle());
+            }
             setNavigationLayoutWidth(GuiUtils.dpToPx(navigationFixedDpWidth, this));
         }
     }

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
@@ -334,6 +335,23 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             menu.removeItem(R.id.action_work_fullscreen);
         }
+        if(TTSService.isReady(work)) {
+            syncState(TTSService.getInstance().getState());
+        }
+        if(mode.equals(Mode.SPEAK)) {
+            speakLayout.setVisibility(VISIBLE);
+            safeCheckMenuItem(R.id.action_work_speaking, true);
+        } else {
+            safeCheckMenuItem(R.id.action_work_speaking, false);
+            speakLayout.setVisibility(GONE);
+        }
+        if(mode.equals(Mode.AUTO_SCROLL)) {
+            speedLayout.setVisibility(VISIBLE);
+            safeCheckMenuItem(R.id.action_work_auto_scroll, true);
+        } else {
+            safeCheckMenuItem(R.id.action_work_auto_scroll, false);
+            speedLayout.setVisibility(GONE);
+        }
         searchView.setQueryHint(getString(R.string.search_hint));
     }
 
@@ -365,6 +383,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         itemList.post(() -> {
             autoScroller.start();
         });
+        getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
     }
 
     private void stopAutoScroll() {
@@ -372,6 +391,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             autoScroller.cancel();
         }
         autoScroller = null;
+        getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
     }
 
     public void playAutoScroll() {
@@ -426,6 +446,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
         if (isAdded()) {
             getActivity().startService(i);
+            getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
         }
     }
 
@@ -447,25 +468,58 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
     }
 
+    private void syncState(TTSPlayer.State state) {
+        isWaitingPlayerCallback = false;
+        switch (state) {
+            case SPEAKING:
+                if(speedLayout.findViewById(R.id.btnPlay).getVisibility() == VISIBLE) {
+                    getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+                }
+                GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
+                GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
+                break;
+            case STOPPED:
+            case PAUSE:
+                GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
+                GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
+                break;
+            case END:
+                if (isAdded()) {
+                    getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
+                }
+                speakLayout.setVisibility(View.GONE);
+                getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+                break;
+        }
+    }
 
     private void initFragmentForSpeak() {
         if (!TTSService.isReady(work)) {
             TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
         }
-        TTSService.setNextPhraseListener((speakIndex, phraseIndex, phrases) -> {
-            if (getActivity() != null && TTSService.isReady(work)) {
-                TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
-                lastIndent = speakIndex;
-                TextView textView = getTextViewIndent(speakIndex);
-                if (textView != null) {
-                    int visibleLines = getVisibleLines(textView);
-                    Layout layout = textView.getLayout();
-                    if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
-                        scrollToIndex(speakIndex, phrase.start);
+        TTSService.setNextPhraseListener(new TTSPlayer.OnNextPhraseListener() {
+            @Override
+            public void onNextPhrase(int speakIndex, int phraseIndex, List<TTSPlayer.Phrase> phrases) {
+                if (WorkFragment.this.getActivity() != null && TTSService.isReady(work)) {
+                    TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
+                    lastIndent = speakIndex;
+                    TextView textView = WorkFragment.this.getTextViewIndent(speakIndex);
+                    if (textView != null) {
+                        int visibleLines = WorkFragment.this.getVisibleLines(textView);
+                        Layout layout = textView.getLayout();
+                        if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
+                            WorkFragment.this.scrollToIndex(speakIndex, phrase.start);
+                        }
+                        WorkFragment.this.selectText(speakIndex, phrase.start, phrase.end);
+                    } else {
+                        WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
+                        itemList.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNextPhrase(speakIndex, phraseIndex, phrases);
+                            }
+                        }, 200);
                     }
-                    selectText(speakIndex, phrase.start, phrase.end);
-                } else {
-                    scrollToIndex(lastIndent, 0);
                 }
             }
         });
@@ -475,24 +529,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         });
         TTSService.setOnPlayerStateChanged(state -> {
-            isWaitingPlayerCallback = false;
-            switch (state) {
-                case SPEAKING:
-                    GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
-                    GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
-                    break;
-                case STOPPED:
-                case PAUSE:
-                    GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
-                    GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
-                    break;
-                case END:
-                    if (isAdded()) {
-                        getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
-                    }
-                    speakLayout.setVisibility(View.GONE);
-                    break;
-            }
+            itemList.post(() -> {
+                syncState(state);
+            });
         });
         speakLayout.setVisibility(VISIBLE);
     }
@@ -699,7 +738,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             File external =  new File(externalWork.getFilePath());
             work.setTitle(external.getName());
             Author author = new Author(external.getParent());
-            author.setShortName(external.getName());
+            author.setShortName(new File(external.getParent()).getName());
             work.setAuthor(author);
         } else if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
@@ -724,9 +763,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         ownTTSService = false;
         colorFoundedText = getResources().getColor(R.color.red_dark);
         colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
-        screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
-        screenLock.acquire();
         ViewGroup root = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
         speakLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_tts_controls, root, false);
         speedLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_auto_scroll, root, false);
@@ -773,6 +809,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return root;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
+        screenLock.acquire();
+    }
 
     @Override
     public void onClick(View v) {
