@@ -1,6 +1,8 @@
 package ru.samlib.client.fragments;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
@@ -17,6 +20,7 @@ import ru.samlib.client.R;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -65,7 +69,12 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         @Override
         public int getLayoutId(Object item) {
             if(item instanceof Preference) {
-                return R.layout.item_settings_text;
+                Preference preference = (Preference) item;
+                if(preference.layout == 0) {
+                    return R.layout.item_settings_text;
+                } else {
+                    return preference.layout;
+                }
             }
             if(item instanceof PreferenceGroup) {
                 return R.layout.item_settings_group;
@@ -92,6 +101,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         public void onBindViewHolder(ViewHolder holder, int position) {
             ViewGroup root = (ViewGroup) holder.getItemView();
             Object o = getItem(position);
+            Map<String, ?> preferences = AndroidSystemUtils.getDefaultPreference(root.getContext()).getAll();
             switch (holder.getItemViewType()) {
                 case R.layout.item_settings_group:
                     PreferenceGroup group = (PreferenceGroup) o;
@@ -101,6 +111,11 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     Preference preference = (Preference) o;
                     GuiUtils.setText(root, R.id.settings_title, preference.title);
                     GuiUtils.setText(root, R.id.settings_subtitle, preference.subTitle);
+                    if(preferences.containsKey(preference.key)) {
+                        GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
+                    } else {
+                        GuiUtils.setText(root, R.id.settings_value, "");
+                    }
                     if(TextUtils.isEmpty(preference.subTitle)) {
                         GuiUtils.setVisibility(GONE, root, R.id.settings_subtitle);
                     } else {
@@ -125,30 +140,43 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         }
 
         public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title) {
-            return addPreference(idKey, title, 0);
+            return addPreference(idKey, title, 0, 0);
         }
 
-        public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle) {
-            preferences.add(new Preference(idKey, title, subtitle));
+        public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @LayoutRes int layout) {
+            return addPreference(idKey, title, 0, layout);
+        }
+
+        public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout) {
+            preferences.add(new Preference(idKey, title, subtitle, layout));
             return this;
         }
     }
 
     public class Preference {
+        final int idKey;
+        final int layout;
         final String key;
         String title = "";
         String subTitle = "";
 
 
         public Preference(@StringRes int idKey) {
-            this(idKey, 0 ,0);
+            this(idKey, 0 ,0, 0);
         }
 
         public Preference(@StringRes int idKey, @StringRes int title) {
-            this(idKey, title, 0);
+            this(idKey, title, 0,0);
         }
 
-        public Preference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle) {
+        public Preference(@StringRes int idKey, @StringRes int title, @LayoutRes int layout) {
+            this(idKey, title, 0, layout);
+        }
+
+
+        public Preference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout) {
+            this.idKey = idKey;
+            this.layout = layout;
             this.key = getString(idKey);
             if(title > 0)
             this.title = getString(title);
