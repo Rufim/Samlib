@@ -96,21 +96,21 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     public static void setNextPhraseListener(TTSPlayer.OnNextPhraseListener nextPhraseListener) {
         TTSService.nextPhraseListener = nextPhraseListener;
-        if(instance.getPlayer() != null) {
+        if(instance != null && instance.getPlayer() != null) {
             instance.getPlayer().setOnNextPhraseListener(nextPhraseListener);
         }
     }
 
     public static void setIndexSpeakFinished(TTSPlayer.OnIndexSpeakFinished indexSpeakFinished) {
         TTSService.indexSpeakFinished = indexSpeakFinished;
-        if(instance.getPlayer() != null) {
+        if(instance != null && instance.getPlayer() != null) {
             instance.getPlayer().setOnIndexSpeakFinished(indexSpeakFinished);
         }
     }
 
     public static void setOnPlayerStateChanged(TTSPlayer.OnTTSPlayerStateChanged stateChanged) {
         TTSService.stateChanged = stateChanged;
-        if(instance.getPlayer() != null) {
+        if(instance != null && instance.getPlayer() != null) {
             instance.getPlayer().setOnTTSPlayerStateChanged(stateChanged);
         }
     }
