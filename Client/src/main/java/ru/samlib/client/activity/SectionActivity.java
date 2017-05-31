@@ -69,7 +69,7 @@ public class SectionActivity extends NavigationActivity<String> {
                 if (workFragment.getWork() != null && workFragment.getWork().getAuthor() != null) {
                     initializeAuthor(workFragment.getWork().getAuthor());
                 } else {
-                    Log.e(TAG, "Error ocurred unknown author!! Work url is: " + workFragment.getWork().getLink());
+                    Log.e(TAG, "Error ocurred unknown author!! Work url is: " + workFragment.getWork());
                 }
             }
             builder.replaceFragment(R.id.container, sectionFragment);

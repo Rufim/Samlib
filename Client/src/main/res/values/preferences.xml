@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="preferenceGroupCache">Кеш</string>
-    <string name="preferenceMaxCacheSizeName">Размер кеша</string>
+    <string name="preferenceMaxCacheSizeName">Размер кеша, Мб</string>
     <string name="preferenceMaxCacheSize">maxCacheSize</string>
     <integer name="preferenceMaxCacheSizeDefault">100</integer>
 
@@ -25,6 +25,9 @@
     <string name="preferenceColorFontReaderName">Цвет текста</string>
     <string name="preferenceColorBackgroundReader">ColorBackground</string>
     <string name="preferenceColorBackgroundReaderName">Цвет фона читалки</string>
-    <string name="preferenceVoiceLanguageName">Голос</string>
-    <string name="preferenceVoiceLanguage">Voice</string>
+    <string name="preferenceVoiceLanguageName">Язык голосового движка</string>
+    <string name="preferenceVoiceLanguage">VoiceLanguage</string>
+
+
+    <string name="preferenceTextHint">Введите новое значение</string>
 </resources>

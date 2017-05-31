@@ -305,4 +305,17 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             stateChanged.onStateChanged(state);
         }
     }
+
+    public static List<String> getAvailableLanguages(Context context) {
+        TextToSpeech myTTS = new TextToSpeech(context, null);
+        List<String> available = new ArrayList<>();
+        for (Locale each : Locale.getAvailableLocales()) {
+            if (TextToSpeech.LANG_AVAILABLE == myTTS.isLanguageAvailable(each)) {
+                available.add(each.toString());
+                break;
+            }
+        }
+        return available;
+    }
+
 }
