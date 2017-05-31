@@ -32,7 +32,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
     }
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter newAdaptor() {
         return new NewestArrayAdapter();
     }
 
@@ -40,6 +40,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_discuss);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_discuss);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -59,7 +60,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             int id = view.getId();
             String link = null;
             switch (id) {
@@ -73,6 +74,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
                     break;
             }
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override

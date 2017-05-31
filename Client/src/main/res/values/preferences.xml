@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="preferenceGroupCache">Кеш</string>
+    <string name="preferenceMaxCacheSizeName">Размер кеша</string>
     <string name="preferenceMaxCacheSize">maxCacheSize</string>
     <integer name="preferenceMaxCacheSizeDefault">100</integer>
 
@@ -15,4 +17,14 @@
 
     <string name="preferenceAuthorSimpleView">SimpleView</string>
     <string name="preferenceLastSavedWorkPath">SavedWorkPath</string>
+
+    <string name="preferenceGroupReader">Читалка</string>
+    <string name="preferenceFontReader">Font</string>
+    <string name="preferenceFontReaderName">Шрифт</string>
+    <string name="preferenceColorFontReader">ColorFont</string>
+    <string name="preferenceColorFontReaderName">Цвет текста</string>
+    <string name="preferenceColorBackgroundReader">ColorBackground</string>
+    <string name="preferenceColorBackgroundReaderName">Цвет фона читалки</string>
+    <string name="preferenceVoiceLanguageName">Голос</string>
+    <string name="preferenceVoiceLanguage">Voice</string>
 </resources>

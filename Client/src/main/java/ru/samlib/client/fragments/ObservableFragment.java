@@ -311,7 +311,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
 
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter newAdaptor() {
         return new FavoritesAdapter();
     }
 
@@ -322,7 +322,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             if (!loading) {
                 AuthorEntity authorEntity = getItems().get(position);
                 authorEntity.setHasUpdates(false);
@@ -333,6 +333,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 i.putExtra(Constants.ArgsName.AUTHOR, author);
                 startActivity(i);
             }
+            return true;
         }
 
         @Override

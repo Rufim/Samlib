@@ -36,6 +36,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_top);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_top);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -57,7 +58,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
     }
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter newAdaptor() {
         return new TopAuthorsAdapter();
     }
 
@@ -68,9 +69,10 @@ public class TopAuthorsFragment extends ListFragment<Author> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             String link = getItems().get(position).getFullLink();
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override

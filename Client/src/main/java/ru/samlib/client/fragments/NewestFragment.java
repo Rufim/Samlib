@@ -30,7 +30,7 @@ public class NewestFragment extends FilterDialogListFragment {
     }
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter newAdaptor() {
         return new NewestArrayAdapter();
     }
 
@@ -42,6 +42,7 @@ public class NewestFragment extends FilterDialogListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_new);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_new);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -54,7 +55,7 @@ public class NewestFragment extends FilterDialogListFragment {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             int id = view.getId();
             String link = null;
             switch (id) {
@@ -67,7 +68,10 @@ public class NewestFragment extends FilterDialogListFragment {
                     link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
                     break;
             }
-            SectionActivity.launchActivity(getContext(), link);
+            if(link != null) {
+                SectionActivity.launchActivity(getContext(), link);
+            }
+            return true;
         }
 
         @Override

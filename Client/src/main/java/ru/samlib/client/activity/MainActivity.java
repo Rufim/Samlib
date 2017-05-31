@@ -133,6 +133,9 @@ public class MainActivity extends BaseActivity {
             case R.id.drawer_observable:
                 replaceFragment(ObservableFragment.class);
                 break;
+            case R.id.drawer_settings:
+                replaceFragment(SettingsFragment.class);
+                break;
             default:
                 replaceFragment(BaseFragment.class);
                 break;

@@ -321,11 +321,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
             }
-            if (TTSService.isReady(work)) {
-                menu.findItem(R.id.action_work_speaking).setChecked(true);
-                mode = Mode.SPEAK;
-                initFragmentForSpeak();
-            }
         } else {
             menu.clear();
         }
@@ -335,12 +330,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             menu.removeItem(R.id.action_work_fullscreen);
         }
-        if(TTSService.isReady(work)) {
-            syncState(TTSService.getInstance().getState());
-        }
         if(mode.equals(Mode.SPEAK)) {
             speakLayout.setVisibility(VISIBLE);
             safeCheckMenuItem(R.id.action_work_speaking, true);
+
         } else {
             safeCheckMenuItem(R.id.action_work_speaking, false);
             speakLayout.setVisibility(GONE);
@@ -478,17 +471,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
                 break;
+            case END:
+                if (isAdded()) {
+                    safeCheckMenuItem(R.id.action_work_speaking, false);
+                }
+                speakLayout.setVisibility(View.GONE);
+                getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
             case STOPPED:
             case PAUSE:
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
                 GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
-                break;
-            case END:
-                if (isAdded()) {
-                    getBaseActivity().getToolbar().getMenu().findItem(R.id.action_work_speaking).setChecked(false);
-                }
-                speakLayout.setVisibility(View.GONE);
-                getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                 break;
         }
     }
@@ -815,6 +807,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
+        if(TTSService.isReady(work)) {
+            syncState(TTSService.getInstance().getState());
+            if(mode.equals(Mode.SPEAK)) {
+                initFragmentForSpeak();
+            }
+        } else {
+            syncState(TTSPlayer.State.END);
+        }
     }
 
     @Override
@@ -911,7 +911,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     @Override
-    protected ItemListAdapter<String> newAdapter() {
+    protected ItemListAdapter<String> newAdaptor() {
         return new WorkFragmentAdaptor();
     }
 
@@ -931,7 +931,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             if (view instanceof TextView) {
                 TextView textView = (TextView) view;
                 switch (mode) {
@@ -967,6 +967,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         break;
                 }
             }
+            return true;
         }
 
         @Override

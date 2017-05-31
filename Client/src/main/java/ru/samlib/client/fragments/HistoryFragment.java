@@ -42,11 +42,12 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_history);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_history);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override
-    protected ItemListAdapter<Bookmark> newAdapter() {
+    protected ItemListAdapter<Bookmark> newAdaptor() {
         return new HistoryAdapter();
     }
 
@@ -109,7 +110,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             int id = view.getId();
             String link = null;
             switch (id) {
@@ -123,6 +124,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
                     break;
             }
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override

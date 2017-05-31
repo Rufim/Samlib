@@ -49,7 +49,7 @@ public class SearchFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected ItemListAdapter<Linkable> newAdapter() {
+    protected ItemListAdapter<Linkable> newAdaptor() {
         return new SearchArrayAdapter();
     }
 
@@ -80,7 +80,7 @@ public class SearchFragment extends ListFragment<Linkable> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             Linkable linkable = getItems().get(position);
             String link;
             if (linkable instanceof Work) {
@@ -89,6 +89,7 @@ public class SearchFragment extends ListFragment<Linkable> {
                 link = linkable.getLink();
             }
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override

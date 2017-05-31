@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:padding="@dimen/spacing_medium"
+              android:layout_width="match_parent"
+              android:background="@android:drawable/list_selector_background"
+              android:layout_height="wrap_content">
+        <TextView android:layout_width="match_parent"
+                  android:textSize="@dimen/text_large"
+                  android:id="@+id/settings_title"
+                  android:ellipsize="end"
+                  android:text="Preference Title"
+                  android:layout_height="wrap_content"/>
+        <TextView android:layout_width="match_parent"
+                  style="@style/subtitle"
+                  android:text="Preference Subtitle"
+                  android:id="@+id/settings_subtitle"
+                  android:layout_height="wrap_content"/>
+</LinearLayout>

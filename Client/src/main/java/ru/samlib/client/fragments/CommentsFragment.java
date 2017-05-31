@@ -62,7 +62,7 @@ public class CommentsFragment extends ListFragment<Comment> {
     }
 
     @Override
-    protected ItemListAdapter<Comment> newAdapter() {
+    protected ItemListAdapter<Comment> newAdaptor() {
         return new CommentsAdapter(R.layout.item_comment);
     }
 
@@ -111,7 +111,7 @@ public class CommentsFragment extends ListFragment<Comment> {
 
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             final CommentsParser.Operation operation;
             switch (view.getId()) {
                 case R.id.comment_reply:
@@ -126,6 +126,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                     break;
                 default: operation = null;
             }
+
             final Comment comment = getItems().get(position);
             if(operation != null) {
                 ((CommentsPagerFragment) getParentFragment()).startLoading(true);
@@ -177,6 +178,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                     }
                 }.execute();
             }
+            return true;
         }
 
         private String getTextareaText(String body) {

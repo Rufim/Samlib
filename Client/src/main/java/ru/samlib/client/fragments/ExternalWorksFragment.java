@@ -42,6 +42,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_external_works);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_external_works);
         setHasOptionsMenu(true);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -85,7 +86,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
     }
 
     @Override
-    protected ItemListAdapter<ExternalWork> newAdapter() {
+    protected ItemListAdapter<ExternalWork> newAdaptor() {
         return new ExternalWorksAdapter();
     }
 
@@ -118,7 +119,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
                 }
 
             }
-            return false;
+            return true;
         }
 
         @Override

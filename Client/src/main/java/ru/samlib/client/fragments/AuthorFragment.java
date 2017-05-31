@@ -167,7 +167,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 if(adapter != null) {
                     adapter.getItems().clear();
                 }
-                adapter = newAdapter();
+                adapter = newAdaptor();
                 itemList.setAdapter(adapter);
                 super.refreshData(false);
                 return true;
@@ -258,7 +258,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected ItemListAdapter<Linkable> newAdapter() {
+    protected ItemListAdapter<Linkable> newAdaptor() {
         if(simpleView) {
             return new ExpandableAuthorFragmentAdaptor();
         } else {
@@ -504,7 +504,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) linkable);
                 return true;
         }
-        return false;
+        return true;
     }
 
     private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
@@ -514,8 +514,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
              onClickLinkable(view, getItem(position));
+             return true;
         }
 
         @Override

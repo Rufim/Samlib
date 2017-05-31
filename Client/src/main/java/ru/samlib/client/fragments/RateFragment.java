@@ -38,6 +38,7 @@ public class RateFragment extends ListFragment<Work> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_favorite);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_rate);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -59,7 +60,7 @@ public class RateFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected ItemListAdapter newAdapter() {
+    protected ItemListAdapter newAdaptor() {
         return new RateArrayAdapter();
     }
 
@@ -72,9 +73,10 @@ public class RateFragment extends ListFragment<Work> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             String link = getItems().get(position).getFullLink();
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override
