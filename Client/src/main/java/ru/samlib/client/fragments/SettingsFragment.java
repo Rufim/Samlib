@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.annimon.stream.Stream;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -25,10 +26,7 @@ import ru.samlib.client.dialog.OnPreferenceCommit;
 import ru.samlib.client.util.SamlibUtils;
 import ru.samlib.client.util.TTSPlayer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -52,12 +50,12 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         return (skip, size) -> {
             isEnd = true;
             PreferenceGroup groupReader = new PreferenceGroup(R.string.preferenceGroupReader)
-                    .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, SamlibUtils.Font.listFontNames(getContext().getAssets()))
-                    .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, 0, DialogType.COLOR)
-                    .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, 0, DialogType.COLOR)
-                    .addPreferenceList(R.string.preferenceVoiceLanguage, R.string.preferenceVoiceLanguageName, 0, 0, TTSPlayer.getAvailableLanguages(getContext()));
+                    .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, SamlibUtils.Font.mapFonts(getContext().getAssets()), "Roboto-Regular")
+                    .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.Snow))
+                    .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
+                    .addPreferenceList(R.string.preferenceVoiceLanguage, R.string.preferenceVoiceLanguageName, 0, 0, TTSPlayer.getAvailableLanguages(getContext()), TTSPlayer.getLanguageName(new Locale("ru")));
             PreferenceGroup groupCache = new PreferenceGroup(R.string.preferenceGroupCache)
-                    .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName);
+                    .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getInteger(R.integer.preferenceMaxCacheSizeDefault));
             return Arrays.asList(groupReader, groupCache);
         };
     }
@@ -121,9 +119,10 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     case COLOR:
                         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
                         ColorPickerDialog colorPickerDialog = ColorPickerDialog.newBuilder()
-                                .setColor(preferences.getInt(preference.key, getResources().getColor(R.color.transparent)))
+                                .setColor(preferences.getInt(preference.key, (Integer) preference.defValue))
                                 .setDialogTitle(preference.titleId)
                                 .setDialogType(ColorPickerDialog.TYPE_CUSTOM)
+                                .setShowAlphaSlider(true)
                                 .create();
                         colorPickerDialog.setColorPickerDialogListener(new ColorPickerDialogListener() {
 
@@ -171,9 +170,14 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     switch (holder.getItemViewType()) {
                         case R.layout.item_settings_text:
                             if (preferences.containsKey(preference.key)) {
-                                GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
+                                if(preference.dialogType.equals(DialogType.LIST)) {
+                                    Object value = preferences.get(preference.key);
+                                    GuiUtils.setText(root, R.id.settings_value, Stream.of(preference.keyValue).filter(entry -> entry.getValue().equals(value)).findFirst().map(Map.Entry::getKey).orElse(""));
+                                } else {
+                                    GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
+                                }
                             } else {
-                                GuiUtils.setText(root, R.id.settings_value, "");
+                                GuiUtils.setText(root, R.id.settings_value, preference.defValue.toString());
                             }
                             break;
                         case R.layout.item_settings_color:
@@ -181,7 +185,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                             if (preferences.containsKey(preference.key)) {
                                 colorView.setBackgroundColor((Integer) preferences.get(preference.key));
                             } else {
-                                colorView.setBackgroundColor(root.getResources().getColor(R.color.transparent));
+                                colorView.setBackgroundColor((Integer) preference.defValue);
                             }
                             break;
                     }
@@ -217,21 +221,17 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         }
 
         public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout) {
-            return addPreference(idKey, title, subtitle, layout, DialogType.TEXT);
+            return addPreference(idKey, title, subtitle, layout, DialogType.TEXT, "");
         }
 
-        public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType) {
-            preferences.add(new Preference(idKey, title, subtitle, layout, dialogType));
+        public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, Object defValue) {
+            preferences.add(new Preference(idKey, title, subtitle, layout, dialogType, defValue));
             return this;
         }
 
-        public PreferenceGroup addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, Object... listOptions) {
-            return addPreferenceList(idKey, title, subtitle, layout, Arrays.asList(listOptions));
-        }
-
-        public PreferenceGroup addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, List listOptions) {
-            Preference preference = new Preference(idKey, title, subtitle, layout, DialogType.LIST);
-            preference.listOptions = listOptions;
+        public PreferenceGroup addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, Map<String, ?> keyValue, Object defValue) {
+            Preference preference = new Preference(idKey, title, subtitle, layout, DialogType.LIST, defValue);
+            preference.keyValue = keyValue;
             preferences.add(preference);
             return this;
         }
@@ -244,28 +244,30 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         public final String key;
         public String title = "";
         public String subTitle = "";
+        public Object defValue;
         public final DialogType dialogType;
-        public List listOptions;
+        public Map<String, ?> keyValue;
 
 
         public Preference(@StringRes int idKey) {
-            this(idKey, 0, 0, 0, DialogType.TEXT);
+            this(idKey, 0, 0, 0, DialogType.TEXT, "");
         }
 
         public Preference(@StringRes int idKey, @StringRes int title) {
-            this(idKey, title, 0, 0, DialogType.TEXT);
+            this(idKey, title, 0, 0, DialogType.TEXT, "");
         }
 
         public Preference(@StringRes int idKey, @StringRes int title, @LayoutRes int layout) {
-            this(idKey, title, 0, layout, DialogType.TEXT);
+            this(idKey, title, 0, layout, DialogType.TEXT, "");
         }
 
 
-        public Preference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType) {
+        public Preference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, Object defValue) {
             this.idKey = idKey;
             this.layout = layout;
             this.titleId = title;
             this.key = getString(idKey);
+            this.defValue = defValue;
             this.dialogType = dialogType;
             if (title > 0)
                 this.title = getString(title);

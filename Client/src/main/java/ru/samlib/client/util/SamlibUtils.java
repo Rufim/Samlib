@@ -150,7 +150,7 @@ public class SamlibUtils {
 
     public static class Font {
 
-        private static Map<String, String> mapFonts(AssetManager manager) {
+        public static Map<String, String> mapFonts(AssetManager manager) {
             Map<String, String> ttf = new HashMap<>();
             try {
                 ttf = filterAssetDir(manager, "fonts", ".ttf");

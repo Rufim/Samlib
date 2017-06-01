@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import butterknife.BindView;
@@ -15,9 +16,12 @@ import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.dialog.BaseDialog;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.kazantsev.template.view.helper.DividerItemDecoration;
 import ru.samlib.client.R;
 import ru.samlib.client.fragments.SettingsFragment;
+
+import java.util.ArrayList;
 
 /**
  * Created by 0shad on 27.05.2017.
@@ -28,7 +32,7 @@ public class EditListPreferenceDialog extends BaseDialog {
     @BindView(R.id.settings_dialog_list)
     RecyclerView recyclerView;
     SettingsFragment.Preference preference;
-    Object selected;
+    String selected;
     OnPreferenceCommit onPreferenceCommit;
 
     public void setPreference(SettingsFragment.Preference preference) {
@@ -44,8 +48,7 @@ public class EditListPreferenceDialog extends BaseDialog {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_list_preferemce, null);
         ButterKnife.bind(this, rootView);
-        SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
-        recyclerView.setAdapter(new ItemListAdapter<Object>(preference.listOptions, R.layout.item_settings_dialog) {
+        recyclerView.setAdapter(new ItemListAdapter<String>(new ArrayList<String>(preference.keyValue.keySet()), R.layout.item_settings_dialog) {
 
             @Override
             public void onClick(View view) {
@@ -59,11 +62,14 @@ public class EditListPreferenceDialog extends BaseDialog {
             @Override
             public void onBindViewHolder(ViewHolder holder, int position) {
                 GuiUtils.setText(holder.getItemView().findViewById(R.id.settings_dialog_item_text), items.get(position).toString());
-                if(items.get(position) == selected) {
-                    holder.getItemView().setPressed(true);
+                if(items.get(position).equals(selected)) {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+                } else {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
             }
         });
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext()));
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                 .setTitle(preference.title)
@@ -77,10 +83,11 @@ public class EditListPreferenceDialog extends BaseDialog {
     public void onButtonPositive(DialogInterface dialog) {
         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
         // add others of need
-        if(selected instanceof Integer) {
-            editor.putInt(preference.key, (Integer) selected);
+        Object value = preference.keyValue.get(selected);
+        if(value instanceof Integer) {
+            editor.putInt(preference.key, (Integer) value);
         } else {
-            editor.putString(preference.key, selected.toString());
+            editor.putString(preference.key, value.toString());
         }
         editor.commit();
         if(onPreferenceCommit != null) {
