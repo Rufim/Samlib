@@ -2,6 +2,7 @@ package ru.samlib.client.fragments;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -25,6 +26,7 @@ import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
+import org.jdom2.Content;
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
@@ -46,6 +48,7 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
+import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -333,7 +336,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if(mode.equals(Mode.SPEAK)) {
             speakLayout.setVisibility(VISIBLE);
             safeCheckMenuItem(R.id.action_work_speaking, true);
-
         } else {
             safeCheckMenuItem(R.id.action_work_speaking, false);
             speakLayout.setVisibility(GONE);
@@ -496,6 +498,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
                     lastIndent = speakIndex;
                     TextView textView = WorkFragment.this.getTextViewIndent(speakIndex);
+                    if(phrase == null) return;
                     if (textView != null) {
                         int visibleLines = WorkFragment.this.getVisibleLines(textView);
                         Layout layout = textView.getLayout();
@@ -808,7 +811,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
         if(TTSService.isReady(work)) {
-            syncState(TTSService.getInstance().getState());
+            TTSPlayer.State state = TTSService.getInstance().getState();
+            syncState(state);
+            if(state.equals(TTSPlayer.State.PAUSE) || state.equals(TTSPlayer.State.SPEAKING)) {
+                mode = Mode.SPEAK;
+            }
             if(mode.equals(Mode.SPEAK)) {
                 initFragmentForSpeak();
             }
@@ -980,6 +987,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.registerHandler("a", new LinkHandler(annotationView));
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                     annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+                    holder.getItemView().setBackgroundColor(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceColorBackgroundReader, getResources().getColor(R.color.transparent)));
                     break;
                 case R.layout.item_indent:
                     String indent = getItem(position);
@@ -1036,12 +1044,19 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     view.setText(spanner.fromHtml(indent));
                     // fix wrong height when use image spans
                     view.setTextSize(20);
-                    view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                    initPreference(view);
                     // end
                     break;
             }
             selectText(holder, true, adapter.getLastQuery() == null ? null : adapter.getLastQuery().query, colorFoundedText);
         }
 
+        private void initPreference(TextView textView) {
+            Context context = textView.getContext();
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f));
+            textView.setTextColor(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow)));
+            CalligraphyUtils.applyFontToTextView(context, textView, AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Constants.Assets.ROBOTO_FONT_PATH));
+            ((ViewGroup) textView.getParent()).setBackgroundColor(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent)));
+        }
     }
 }

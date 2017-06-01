@@ -21,6 +21,8 @@
     <string name="preferenceGroupReader">Читалка</string>
     <string name="preferenceFontReader">Font</string>
     <string name="preferenceFontReaderName">Шрифт</string>
+    <string name="preferenceFontSizeReader">FontSize</string>
+    <string name="preferenceFontSizeReaderName">Размер шрифта</string>
     <string name="preferenceColorFontReader">ColorFont</string>
     <string name="preferenceColorFontReaderName">Цвет текста</string>
     <string name="preferenceColorBackgroundReader">ColorBackground</string>
