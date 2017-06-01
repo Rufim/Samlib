@@ -79,7 +79,8 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                 && instance.getPlayer() != null
                 && !instance.getPlayer().getState().equals(TTSPlayer.State.UNAVAILABLE)
                 && instance.getPlayer().getWork() != null
-                && ((work.isNotSamlib() && work.getTitle() != null && work.getTitle().equals(instance.getPlayer().getWork().getTitle())) || instance.getPlayer().getWork().getLink().equals(work.getLink()));
+                && ((work.isNotSamlib() && work.getTitle() != null && work.getTitle().equals(instance.getPlayer().getWork().getTitle()))
+                || (!work.isNotSamlib() && work.getLink().equals(instance.getPlayer().getWork().getLink())));
     }
 
     public TTSPlayer.State getState() {

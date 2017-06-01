@@ -502,7 +502,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     if (textView != null) {
                         int visibleLines = WorkFragment.this.getVisibleLines(textView);
                         Layout layout = textView.getLayout();
-                        if (visibleLines < layout.getLineForOffset(phrase.end) + 1) {
+                        if (layout == null || visibleLines < layout.getLineForOffset(phrase.end) + 1) {
                             WorkFragment.this.scrollToIndex(speakIndex, phrase.start);
                         }
                         WorkFragment.this.selectText(speakIndex, phrase.start, phrase.end);

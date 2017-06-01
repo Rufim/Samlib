@@ -408,7 +408,7 @@ public class DatabaseService {
 
 
     public List<ExternalWork> selectExternalWorks(int skip, int size) {
-        return dataStore.select(ExternalWork.class).orderBy(ExternalWork.SAVED_DATE.asc()).limit(size).offset(skip).get().toList();
+        return dataStore.select(ExternalWork.class).orderBy(ExternalWork.SAVED_DATE.desc()).limit(size).offset(skip).get().toList();
     }
 
     public ExternalWork saveExternalWork(Work work, String filePath) {

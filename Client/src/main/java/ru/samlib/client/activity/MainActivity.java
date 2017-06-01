@@ -33,6 +33,7 @@ import ru.samlib.client.parser.Parser;
 public class MainActivity extends BaseActivity {
 
     public static final String ONLINE = "online";
+    public static final String SELECTED = "selected";
 
     private boolean doubleBackToExitPressedOnce = false;
 
@@ -48,29 +49,30 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         singleInstance = this;
-        if (!isConfigChange(savedInstanceState)) {
-            online = AndroidSystemUtils.isNetworkAvailable(this);
-        } else {
-            online = savedInstanceState.getBoolean(ONLINE);
-        }
         View header = getLayoutInflater().inflate(R.layout.header_main, navigationView, false);
         SwitchCompat switchButton = GuiUtils.getView(header, R.id.header_main_status);
-        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (!switchMode(isChecked)) {
-                    switchButton.setChecked(false);
-                }
+        navigationView.addHeaderView(header);
+        switchButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (!switchMode(isChecked)) {
+                switchButton.setChecked(false);
             }
         });
         switchButton.setSwitchTextAppearance(this, R.style.SwitchTextAppearance);
-        navigationView.addHeaderView(header);
-        switchStatus(online);
+        if (!isConfigChange(savedInstanceState)) {
+            online = AndroidSystemUtils.isNetworkAvailable(this);
+            switchStatus(online, -1);
+        } else {
+            online = savedInstanceState.getBoolean(ONLINE);
+            switchStatus(online, savedInstanceState.getInt(SELECTED));
+        }
+
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(ONLINE, online);
+        outState.putInt(SELECTED, getCheckedNavigationItem());
     }
 
     protected void handleIntent(Intent intent) {
@@ -166,17 +168,16 @@ public class MainActivity extends BaseActivity {
                 GuiUtils.toast(this, R.string.network_not_available);
                 return false;
             } else {
-                switchStatus(online);
+                switchStatus(online, getCheckedNavigationItem());
                 return true;
             }
         }
         return true;
     }
 
-    private void switchStatus(boolean online) {
+    private void switchStatus(boolean online, int id) {
         this.online = online;
         Parser.setCachedMode(!online);
-        int id = getCheckedNavigationItem();
         navigationView.getMenu().clear();
         if (online) {
             navigationView.inflateMenu(R.menu.drawer);
