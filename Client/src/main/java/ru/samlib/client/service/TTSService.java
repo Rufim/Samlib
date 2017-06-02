@@ -142,7 +142,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-            String link =  intent.getStringExtra(Constants.ArgsName.LINK);
+            final String link =  intent.getStringExtra(Constants.ArgsName.LINK);
             Work work = WorkParser.getCachedWork(link);
             if(!work.isParsed()) {
                 if (work.getRawContent() == null) {
@@ -218,6 +218,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             ttsp.pre();
                             break;
                     }
+                    newNotification(link);
                     Log.d(TAG, "TAG Pressed: " + action);
                     return false;
                 }
@@ -248,7 +249,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
         setListeners(simpleContentView);
 
-        if (ttsp.getState().equals(TTSPlayer.State.PAUSE)) {
+        if (ttsp.getState().equals(TTSPlayer.State.PAUSE) || ttsp.getState().equals(TTSPlayer.State.STOPPED)) {
             notification.contentView.setViewVisibility(R.id.btnPause, View.GONE);
             notification.contentView.setViewVisibility(R.id.btnPlay, View.VISIBLE);
         } else {
