@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
@@ -378,7 +379,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         itemList.post(() -> {
             autoScroller.start();
         });
-        getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        lockOrientation();
     }
 
     private void stopAutoScroll() {
@@ -386,7 +387,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             autoScroller.cancel();
         }
         autoScroller = null;
-        getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        releaseOrientation();
     }
 
     public void playAutoScroll() {
@@ -420,6 +421,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         speakLayout.setVisibility(View.GONE);
         GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
         GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
+        releaseOrientation();
     }
 
     private void safeCheckMenuItem(@IdRes int id, boolean state) {
@@ -441,7 +443,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
         if (isAdded()) {
             getActivity().startService(i);
-            getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+            lockOrientation();
         }
     }
 
@@ -468,7 +470,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         switch (state) {
             case SPEAKING:
                 if(speedLayout.findViewById(R.id.btnPlay).getVisibility() == VISIBLE) {
-                    getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+                    lockOrientation();
                 }
                 GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
@@ -478,7 +480,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     safeCheckMenuItem(R.id.action_work_speaking, false);
                 }
                 speakLayout.setVisibility(View.GONE);
-                getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+                releaseOrientation();
             case STOPPED:
             case PAUSE:
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
@@ -924,6 +926,24 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
     }
 
+    private void lockOrientation() {
+        if(isAdded()) {
+            int currentOrientation = getResources().getConfiguration().orientation;
+            if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            } else {
+                getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+            }
+        }
+    }
+
+    private void releaseOrientation() {
+        if(isAdded()) {
+            getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        }
+    }
+
+
     @Override
     protected ItemListAdapter<String> newAdaptor() {
         return new WorkFragmentAdaptor();
@@ -1020,6 +1040,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             }
 
                             if (mode.equals(Mode.SPEAK)) {
+                                clearSelection();
+                                lastIndent = firstIsHeader + ((ViewHolder)view.getTag()).getLayoutPosition();
                                 lastOffset = offset;
                             }
 
