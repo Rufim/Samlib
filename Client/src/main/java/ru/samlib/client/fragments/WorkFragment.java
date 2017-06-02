@@ -697,8 +697,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         } else {
             TextView textView = getTextViewIndent(index);
             index += ((MultiItemListAdapter) adapter).getFirstIsHeader();
-            if (textView != null) {
-                Layout layout = textView.getLayout();
+            Layout layout;
+            if (textView != null && (layout = textView.getLayout()) != null) {
                 layoutManager.scrollToPositionWithOffset(index, -(layout.getLineForOffset(textOffset)) * textView.getLineHeight());
             } else {
                 layoutManager.scrollToPosition(index);
