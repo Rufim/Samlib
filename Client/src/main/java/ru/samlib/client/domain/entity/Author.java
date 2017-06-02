@@ -254,6 +254,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
             all.get(work.getLink()).setRecommendation(true);
         } else {
             work.setRecommendation(true);
+            work.setCategory(null);
             if(!isEntity()) {
                 this.getWorks().add(work);
             } else {
