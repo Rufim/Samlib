@@ -499,6 +499,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     lastIndent = speakIndex;
                     TextView textView = WorkFragment.this.getTextViewIndent(speakIndex);
                     if(phrase == null) return;
+                    lastOffset = phrase.start;
                     if (textView != null) {
                         int visibleLines = WorkFragment.this.getVisibleLines(textView);
                         Layout layout = textView.getLayout();
@@ -829,7 +830,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (!isWaitingPlayerCallback & mode.equals(Mode.SPEAK)) {
             switch (v.getId()) {
                 case R.id.btnPlay:
-                    startSpeak(findFirstVisibleItemPosition(false), 0);
+                    if (!TTSService.isReady(work) || !ownTTSService) {
+                        startSpeak(findFirstVisibleItemPosition(false), 0);
+                    } else {
+                        WorkFragment.this.selectText(lastIndent, null);
+                        TTSNotificationBroadcast.sendMessage(TTSService.Action.POSITION, lastIndent + ":" + lastOffset);
+                    }
                     isWaitingPlayerCallback = true;
                     break;
                 case R.id.btnPause:
