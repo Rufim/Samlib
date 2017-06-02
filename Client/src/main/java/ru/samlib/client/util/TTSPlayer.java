@@ -154,7 +154,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         return tts.isSpeaking() || State.SPEAKING == state;
     }
 
-    public void resume() {
+    public  void resume() {
         if (phrases != null) {
             nextPhrase();
         } else {
@@ -167,7 +167,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         startSpeak(0);
     }
 
-    public void pause() {
+    public synchronized void pause() {
         tts.stop();
         changeState(State.PAUSE);
     }
@@ -180,13 +180,13 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         changeState(State.STOPPED);
     }
 
-    public void next() {
+    public synchronized  void next() {
         int current = indentIndex;
         stop();
         startSpeak(current + 1);
     }
 
-    public void pre() {
+    public synchronized  void pre() {
         int current = indentIndex;
         stop();
         startSpeak(current - 1);
@@ -249,7 +249,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     @Override
-    public void onInit(int status) {
+    public synchronized  void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceCompletedListener(utteranceId -> {
                 if (state == State.SPEAKING) {
@@ -274,7 +274,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         }
     }
 
-    public void reset() {
+    public synchronized  void reset() {
         onStop();
         onStart();
     }
@@ -283,14 +283,14 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         tts = new TextToSpeech(context, this);
     }
 
-    public void playOnStart(Work work, int index, int offset) {
+    public synchronized  void playOnStart(Work work, int index, int offset) {
         playOnStart = true;
         this.work = work;
         indentIndex = index;
         this.offset = offset;
     }
 
-    public void onStop() {
+    public synchronized  void onStop() {
         if (tts != null) {
             tts.stop();
             tts.shutdown();

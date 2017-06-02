@@ -791,11 +791,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mode.equals(Mode.SPEAK)) {
+                if (mode.equals(Mode.SPEAK) && !isWaitingPlayerCallback) {
                     if (TTSService.isReady(work)) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
                         startSpeak(lastIndent, lastOffset);
                     }
+                    isWaitingPlayerCallback = true;
                 }
             }
         };
