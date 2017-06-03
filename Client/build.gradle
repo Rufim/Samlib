@@ -132,7 +132,7 @@ dependencies {
     compile "com.squareup.picasso:picasso:2.5.2"
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     compile "com.google.code.gson:gson:2.4"
-    compile "uk.co.chrisjenx:calligraphy:2.2.0"
+    compile "uk.co.chrisjenx:calligraphy:2.3.0"
     compile "com.google.dagger:dagger:$daggerVersion"
     //   compile "com.github.User:Repo:Tag"  for github repos
     compile "com.github.Rufim:HtmlSpanner:0.8.1"

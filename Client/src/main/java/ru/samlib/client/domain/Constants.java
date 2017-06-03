@@ -10,7 +10,7 @@ import ru.samlib.client.BuildConfig;
 public class Constants {
 
     public static class Assets {
-        public static final String ROBOTO_FONT_PATH = "fonts/roboto/Roboto-Regular.ttf";
+        public static final String ROBOTO_FONT_PATH = "fonts/roboto/Roboto.ttf";
         public static final String DROID_SANS_FONT_PATH = "fonts/droidsans/DroidSans.ttf";
         public static final String ROBOTO_Capture_it = "fonts/Capture-it/Capture_it.ttf";
 

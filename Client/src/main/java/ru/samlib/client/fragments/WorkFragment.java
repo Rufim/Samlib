@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
@@ -23,6 +25,9 @@ import android.util.TypedValue;
 import android.view.*;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import net.nightwhistler.htmlspanner.FontFamily;
+import net.nightwhistler.htmlspanner.FontResolver;
+import net.nightwhistler.htmlspanner.SystemFontResolver;
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -51,7 +56,9 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
+import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
+import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -973,10 +980,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<String> {
 
-        private String fontPath;
         private float fontSize;
         private int fontColor;
         private int backgroundColor;
+        private Font.Type defaultType;
+        private Font font;
+        private FontResolver fontResolver;
+        private String fontPath;
 
         public WorkFragmentAdaptor() {
             super(true, false, R.layout.header_work_list, R.layout.item_indent);
@@ -984,7 +994,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             backgroundColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent));
             fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f);
             fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow));
-            fontPath = Font.getFontPath(context, null, null);
+            font = Font.mapFonts(getContext().getAssets()).get(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Font.getDefFont().getName()));
+            defaultType = Font.Type.valueOf(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontStyleReader, Font.Type.PLAIN.name()));
+            fontResolver = new WorkFontResolver(getContext().getAssets(), font, defaultType);
+            fontPath = Font.getFontPath(getContext(), font.getName(),  defaultType);
         }
 
         @Override
@@ -1098,6 +1111,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
+                    spanner.setFontResolver(fontResolver);
                     view.setText(spanner.fromHtml(indent));
                     // fix wrong height when use image spans
                     view.setTextSize(20);
@@ -1109,11 +1123,32 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
 
         private void initPreference(TextView textView) {
-            Context context = textView.getContext();
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             textView.setTextColor(fontColor);
-            CalligraphyUtils.applyFontToTextView(context, textView, fontPath);
+            CalligraphyUtils.applyFontToTextView(getContext(), textView, fontPath);
             ((ViewGroup) textView.getParent()).setBackgroundColor(backgroundColor);
         }
+
+        private class  WorkFontResolver extends SystemFontResolver {
+
+            FontFamily defaultFont;
+
+            public WorkFontResolver(AssetManager manager, Font font, Font.Type type) {
+                Typeface typefaceDefault = font.getTypes().containsKey(type) ? TypefaceUtils.load(manager, font.getTypes().get(type)): Typeface.DEFAULT;
+                Typeface typefaceItalic = font.getTypes().containsKey(Font.Type.ITALIC) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.ITALIC)) : null;
+                Typeface typefaceBold = font.getTypes().containsKey(Font.Type.BOLD) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD)) : Typeface.DEFAULT_BOLD;
+                Typeface typefaceItalicBold = font.getTypes().containsKey(Font.Type.BOLD_ITALIC) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD_ITALIC)) : null;
+                FontFamily fontFamily = new FontFamily(font.getName(), typefaceDefault);
+                fontFamily.setBoldTypeface(typefaceBold);
+                fontFamily.setItalicTypeface(typefaceItalic);
+                fontFamily.setBoldItalicTypeface(typefaceItalicBold);
+                this.defaultFont = fontFamily;
+            }
+
+            @Override
+            public FontFamily getDefaultFont() {
+                return defaultFont;
+            }
+        };
     }
 }

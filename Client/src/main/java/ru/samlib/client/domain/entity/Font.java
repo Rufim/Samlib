@@ -20,7 +20,7 @@ import java.util.*;
 public class Font {
 
     private static Map<String, Font> fontMap;
-    private static Font defFont = new Font("Roboto-Regular").addType(Font.Type.PLAIN, Constants.Assets.ROBOTO_FONT_PATH);
+    private static Font defFont = new Font("Roboto").addType(Font.Type.PLAIN, Constants.Assets.ROBOTO_FONT_PATH);
 
     private String name;
     private float size;
@@ -113,12 +113,13 @@ public class Font {
 
     private static Map<String, Font> filterAssetDir(AssetManager manager, String path, String type, Map<String, Font> fontMap) throws IOException {
         String[] list = manager.list(path);
+        type = type.toLowerCase();
         for (String file : list) {
             String filePath = path + "/" + file;
             if (!file.contains(".")) {
                 filterAssetDir(manager, filePath, type, fontMap);
-            } else if (file.endsWith(type)) {
-                String name = file.substring(0, file.lastIndexOf(type));
+            } else if (file.toLowerCase().endsWith(type)) {
+                String name = file.substring(0, file.toLowerCase().lastIndexOf(type));
                 List<Type> fontTypes = new ArrayList<>();
                 if (name.toLowerCase().contains("italic")) {
                     name = name.replaceAll("(?i)italic", "");
