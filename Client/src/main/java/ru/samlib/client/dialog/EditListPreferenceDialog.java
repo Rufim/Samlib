@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,17 +12,16 @@ import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.annimon.stream.Stream;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.dialog.BaseDialog;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
-import ru.kazantsev.template.util.TextUtils;
 import ru.kazantsev.template.view.helper.DividerItemDecoration;
 import ru.samlib.client.R;
 import ru.samlib.client.fragments.SettingsFragment;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -35,15 +33,15 @@ public class EditListPreferenceDialog extends BaseDialog {
     @BindView(R.id.settings_dialog_list)
     RecyclerView recyclerView;
     SettingsFragment.Preference preference;
-    String selected;
+    Object selected;
     OnPreferenceCommit onPreferenceCommit;
     OnSetItemList setItemList = (textView, key, value) -> {
-        textView.setText(key);
+        textView.setText(key.toString());
     };
 
 
     public interface OnSetItemList {
-        void setItemList(TextView textView, String key, Object value);
+        void setItemList(TextView textView, Object key, Object value);
     }
 
     public void setPreference(SettingsFragment.Preference preference) {
@@ -65,11 +63,11 @@ public class EditListPreferenceDialog extends BaseDialog {
         ButterKnife.bind(this, rootView);
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
         if (preferences.contains(preference.key)) {
-            selected = getValueName(preference, preferences.getAll().get(preference.key));
+            selected = getValueKey(preference, preferences.getAll().get(preference.key));
         } else {
-            selected = getValueName(preference, preference.defValue);
+            selected = getValueKey(preference, preference.defValue);
         }
-        recyclerView.setAdapter(new ItemListAdapter<String>(new ArrayList<String>(preference.keyValue.keySet()), R.layout.item_settings_dialog) {
+        recyclerView.setAdapter(new ItemListAdapter<Object>(new ArrayList<>(preference.keyValue.keySet()), R.layout.item_settings_dialog) {
 
             @Override
             public void onClick(View view) {
@@ -82,7 +80,7 @@ public class EditListPreferenceDialog extends BaseDialog {
 
             @Override
             public void onBindViewHolder(ViewHolder holder, int position) {
-                String key = items.get(position);
+                Object key = items.get(position);
                 setItemList.setItemList(GuiUtils.getView(holder.getItemView(), R.id.settings_dialog_item_text), key, preference.keyValue.get(key));
                 if (items.get(position).equals(selected)) {
                     holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
@@ -101,25 +99,39 @@ public class EditListPreferenceDialog extends BaseDialog {
         return adb.create();
     }
 
-    public static String getValueName(SettingsFragment.Preference preference, Object value) {
-        return Stream.of((Map<String, ? extends Object>) preference.keyValue).filter(entry -> entry.getValue().equals(value)).findFirst().map(Map.Entry::getKey).orElse("");
+    public static Object getValueKey(SettingsFragment.Preference preference, Object value) {
+         Iterator iterator =  preference.keyValue.entrySet().iterator();
+         while (iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            Object entryValue = entry.getValue();
+            if(entryValue instanceof Enum) {
+                if (((Enum) entryValue).name().equals(value)) return entry.getKey();
+            } else {
+                if (entryValue.equals(value)) return entry.getKey();
+            }
+         }
+         return "";
     }
 
     @Override
     public void onButtonPositive(DialogInterface dialog) {
-        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
-        // add others of need
         Object value = preference.keyValue.get(selected);
-        if (value instanceof Integer) {
-            editor.putInt(preference.key, (Integer) value);
-        } else if (value instanceof Float) {
-            editor.putFloat(preference.key, (Float) value);
-        } else {
-            editor.putString(preference.key, value.toString());
-        }
-        editor.commit();
-        if (onPreferenceCommit != null) {
-            onPreferenceCommit.onCommit();
+        if(value != null) {
+            SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+            // add others of need
+            if (value instanceof Integer) {
+                editor.putInt(preference.key, (Integer) value);
+            } else if (value instanceof Float) {
+                editor.putFloat(preference.key, (Float) value);
+            } else if (value instanceof Enum) {
+                editor.putString(preference.key, ((Enum) value).name());
+            } else {
+                editor.putString(preference.key, value.toString());
+            }
+            editor.commit();
+            if (onPreferenceCommit != null) {
+                onPreferenceCommit.onCommit(value);
+            }
         }
     }
 

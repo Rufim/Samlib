@@ -1,17 +1,16 @@
 package ru.samlib.client.fragments;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
-import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import com.annimon.stream.Stream;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -25,7 +24,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
 import ru.samlib.client.dialog.EditTextPreferenceDialog;
 import ru.samlib.client.dialog.OnPreferenceCommit;
-import ru.samlib.client.util.SamlibUtils;
+import ru.samlib.client.domain.entity.Font;
 import ru.samlib.client.util.TTSPlayer;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
@@ -55,11 +54,12 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         return (skip, size) -> {
             isEnd = true;
             PreferenceGroup groupReader = new PreferenceGroup(R.string.preferenceGroupReader)
-                    .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, SamlibUtils.Font.mapFonts(getContext().getAssets()), "Roboto-Regular")
+                    .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, Font.mapFonts(getContext().getAssets()), Font.getDefFont())
                     .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0,  16f, 6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f)
+                    .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
                     .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.Snow))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
-                    .addPreferenceList(R.string.preferenceVoiceLanguage, R.string.preferenceVoiceLanguageName, 0, 0, TTSPlayer.getAvailableLanguages(getContext()), TTSPlayer.getLanguageName(new Locale("ru")));
+                    .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName);
             PreferenceGroup groupCache = new PreferenceGroup(R.string.preferenceGroupCache)
                     .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getInteger(R.integer.preferenceMaxCacheSizeDefault));
             return Arrays.asList(groupReader, groupCache);
@@ -109,12 +109,15 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             Object o = getItem(position);
             if(o instanceof Preference) {
                 Preference preference = (Preference) o;
-                OnPreferenceCommit onPreferenceCommit = new OnPreferenceCommit() {
-                    @Override
-                    public void onCommit() {
-                      notifyChanged();
-                    }
-                };
+                OnPreferenceCommit onPreferenceCommit = (value) -> notifyChanged();
+                if (preference.idKey == R.string.preferenceVoice) {
+                    Intent intent = new Intent();
+                    intent.setAction("com.android.settings.TTS_SETTINGS");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getBaseActivity().startActivity(intent);
+                    TTSPlayer.dropAvailableLanguages();
+                    return true;
+                }
                 switch (preference.dialogType) {
                     case TEXT:
                         EditTextPreferenceDialog editText = new EditTextPreferenceDialog();
@@ -150,18 +153,41 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     case LIST:
                         EditListPreferenceDialog editList = new EditListPreferenceDialog();
                         editList.setPreference(preference);
+                        editList.setOnPreferenceCommit(onPreferenceCommit);
                         if(preference.idKey == R.string.preferenceFontReader) {
                             editList.setSetItemList((textView, key, value) -> {
-                                CalligraphyUtils.applyFontToTextView(getContext(), textView, value.toString());
-                                textView.setText(key);
+                                CalligraphyUtils.applyFontToTextView(getContext(), textView, Font.getFontPath(getContext(), value.toString(), Font.Type.PLAIN));
+                                textView.setText(key.toString());
+                            });
+                            editList.setOnPreferenceCommit((Object val) -> {
+                                SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                                Font font = (Font) val;
+                                Font.Type type;
+                                if(font.getTypes().containsKey(Font.Type.PLAIN)) {
+                                    type = Font.Type.PLAIN;
+                                } else {
+                                    type = font.getTypes().keySet().iterator().next();
+                                }
+                                editor.putString(getString(R.string.preferenceFontStyleReader), type.name());
+                                editor.commit();
+                                for (Object obj: getItems()) {
+                                    if(obj instanceof Preference && ((Preference) obj).idKey == R.string.preferenceFontStyleReader) {
+                                        ((Preference) obj).keyValue = Font.getFontTypes(getContext(), null);
+                                    }
+                                }
+                                notifyChanged();
                             });
                         } else if(preference.idKey == R.string.preferenceFontSizeReader) {
                             editList.setSetItemList((textView, key, value) -> {
                                 textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, (Float) value);
-                                textView.setText(key);
+                                textView.setText(key.toString());
+                            });
+                        } else if(preference.idKey == R.string.preferenceFontStyleReader) {
+                            editList.setSetItemList((textView, key, value) -> {
+                                CalligraphyUtils.applyFontToTextView(getContext(), textView, Font.getFontPath(getContext(), null, (Font.Type) value));
+                                textView.setText(key.toString());
                             });
                         }
-                        editList.setOnPreferenceCommit(onPreferenceCommit);
                         editList.show(getFragmentManager(), editList.getClass().getSimpleName());
                         break;
                 }
@@ -189,7 +215,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                             if (preferences.containsKey(preference.key)) {
                                 if(preference.dialogType.equals(DialogType.LIST)) {
                                     Object value = preferences.get(preference.key);
-                                    GuiUtils.setText(root, R.id.settings_value, EditListPreferenceDialog.getValueName(preference, value));
+                                    GuiUtils.setText(root, R.id.settings_value, EditListPreferenceDialog.getValueKey(preference, value).toString());
                                 } else {
                                     GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
                                 }
@@ -242,12 +268,13 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         }
 
         public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, Object defValue) {
-            preferences.add(new Preference(idKey, title, subtitle, layout, dialogType, defValue));
+            preferences.add(new Preference(getContext(),idKey, title, subtitle, layout, dialogType, defValue));
             return this;
         }
 
         public <T> PreferenceGroup addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout,  T defValue, T... values) {
             Map<String, T> keyValue = new LinkedHashMap<>();
+            if(values != null)
             for (T value : values) {
                 keyValue.put(value.toString(), value);
             }
@@ -255,14 +282,14 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         }
 
         public <T> PreferenceGroup  addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, Map<String, T> keyValue, T defValue) {
-            Preference preference = new Preference(idKey, title, subtitle, layout, DialogType.LIST, defValue);
+            Preference preference = new Preference(getContext(), idKey, title, subtitle, layout, DialogType.LIST, defValue);
             preference.keyValue = keyValue;
             preferences.add(preference);
             return this;
         }
     }
 
-    public class Preference<T> {
+    public static class Preference<T> {
         public final int idKey;
         public final int layout;
         public final int titleId;
@@ -271,33 +298,33 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         public String subTitle = "";
         public T defValue;
         public final DialogType dialogType;
-        public Map<String, T> keyValue;
+        public Map<Object, T> keyValue;
 
 
-        public Preference(@StringRes int idKey, T defValue) {
-            this(idKey, 0, 0, 0, DialogType.TEXT, defValue);
+        public Preference(Context context, @StringRes int idKey, T defValue) {
+            this(context,idKey, 0, 0, 0, DialogType.TEXT, defValue);
         }
 
-        public Preference(@StringRes int idKey, @StringRes int title, T defValue) {
-            this(idKey, title, 0, 0, DialogType.TEXT, defValue);
+        public Preference(Context context, @StringRes int idKey, @StringRes int title, T defValue) {
+            this(context, idKey, title, 0, 0, DialogType.TEXT, defValue);
         }
 
-        public Preference(@StringRes int idKey, @StringRes int title, @LayoutRes int layout, T defValue) {
-            this(idKey, title, 0, layout, DialogType.TEXT, defValue);
+        public Preference(Context context, @StringRes int idKey, @StringRes int title, @LayoutRes int layout, T defValue) {
+            this(context, idKey, title, 0, layout, DialogType.TEXT, defValue);
         }
 
 
-        public Preference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, T defValue) {
+        public Preference(Context context, @StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, T defValue) {
             this.idKey = idKey;
             this.layout = layout;
             this.titleId = title;
-            this.key = getString(idKey);
+            this.key = context.getString(idKey);
             this.defValue = defValue;
             this.dialogType = dialogType;
             if (title > 0)
-                this.title = getString(title);
+                this.title = context.getString(title);
             if (subtitle > 0)
-                this.subTitle = getString(subtitle);
+                this.subTitle = context.getString(subtitle);
         }
     }
 

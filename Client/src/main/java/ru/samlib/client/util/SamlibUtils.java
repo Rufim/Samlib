@@ -148,43 +148,4 @@ public class SamlibUtils {
         return spannable;
     }
 
-    public static class Font {
-
-        public static Map<String, String> mapFonts(AssetManager manager) {
-            Map<String, String> ttf = new HashMap<>();
-            try {
-                ttf = filterAssetDir(manager, "fonts", ".ttf");
-            } catch (IOException e) {
-                Cat.e("Unknown exception", e);
-            }
-            return ttf;
-        }
-
-        private static Map<String, String> filterAssetDir(AssetManager manager, String path, String type) throws IOException {
-            Map<String, String> files = new HashMap<>();
-            String[] list = manager.list(path);
-            for (String file : list) {
-                if (!file.contains(".")) {
-                    files.putAll(filterAssetDir(manager, path + "/" + file, type));
-                } else if (file.endsWith(type)) {
-                    files.put(file.substring(0, file.lastIndexOf(type)), path + "/" + file);
-                }
-            }
-            return files;
-        }
-
-        public static List<String> listFontNames(AssetManager manager) {
-            return Stream.of(mapFonts(manager)).map(Map.Entry::getKey).collect(Collectors.toList());
-        }
-
-        public static String findPathForName(AssetManager manager, String name) {
-            Map.Entry<String,String> result = Stream.of(mapFonts(manager)).filter(entry -> entry.getKey().equals(name)).findFirst().orElse(null);
-            if(result != null) {
-                return result.getValue();
-            }
-            return null;
-        }
-
-    }
-
 }

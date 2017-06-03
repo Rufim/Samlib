@@ -23,13 +23,16 @@
     <string name="preferenceFontReaderName">Шрифт</string>
     <string name="preferenceFontSizeReader">FontSize</string>
     <string name="preferenceFontSizeReaderName">Размер шрифта</string>
+    <string name="preferenceFontStyleReader">FontStyle</string>
+    <string name="preferenceFontStyleReaderName">Стиль шрифта</string>
     <string name="preferenceColorFontReader">ColorFont</string>
     <string name="preferenceColorFontReaderName">Цвет текста</string>
     <string name="preferenceColorBackgroundReader">ColorBackground</string>
     <string name="preferenceColorBackgroundReaderName">Цвет фона читалки</string>
-    <string name="preferenceVoiceLanguageName">Язык голосового движка</string>
+    <string name="preferenceVoiceLanguageName">Язык синтеза</string>
     <string name="preferenceVoiceLanguage">VoiceLanguage</string>
-
+    <string name="preferenceVoiceName">Настройки синтеза речи</string>
+    <string name="preferenceVoice">Voice</string>
 
     <string name="preferenceTextHint">Введите новое значение</string>
 </resources>

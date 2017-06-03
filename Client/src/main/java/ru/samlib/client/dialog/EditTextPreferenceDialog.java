@@ -58,10 +58,11 @@ public class EditTextPreferenceDialog extends BaseDialog {
     @Override
     public void onButtonPositive(DialogInterface dialog) {
         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
-        editor.putString(preference.key, input.getText().toString());
+        String value = input.getText().toString();
+        editor.putString(preference.key, value);
         editor.commit();
         if (onPreferenceCommit != null) {
-            onPreferenceCommit.onCommit();
+            onPreferenceCommit.onCommit(value);
         }
     }
 

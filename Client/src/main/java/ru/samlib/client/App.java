@@ -23,6 +23,7 @@ import ru.samlib.client.dagger.DaggerAppComponent;
 import ru.samlib.client.database.BigDecimalConverter;
 import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.domain.entity.Font;
 import ru.samlib.client.domain.entity.Models;
 import ru.samlib.client.job.AppJobCreator;
 import ru.samlib.client.job.CleanCacheJob;
@@ -73,6 +74,7 @@ public class App extends MultiDexApplication {
                 .appModule(new AppModule(this)).build();
         ObservableUpdateJob.startSchedule();
         CleanCacheJob.startSchedule();
+        Font.mapFonts(getAssets());
     }
 
     @Override

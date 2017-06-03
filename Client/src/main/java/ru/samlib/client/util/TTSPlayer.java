@@ -39,6 +39,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     private float pitch = 1f;
     private String language = null;
 
+    private static Map<String, String> available;
+
     public static class Phrase {
         public String text;
         public int start;
@@ -264,7 +266,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             if(language == null) {
                 tts.setLanguage(Locale.getDefault());
             } else {
-                tts.setLanguage(new Locale(language));
+                tts.setLanguage(language.length() == 2 ? new Locale(language, language) : new Locale(language));
             }
             changeState(State.IDLE);
             if (playOnStart) {
@@ -309,6 +311,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public static Map<String, String> getAvailableLanguages(Context context) {
+        if (available != null) return available;
         final AtomicBoolean ready = new AtomicBoolean(false);
         TextToSpeech myTTS = new TextToSpeech(context, status -> {
             ready.set(true);
@@ -316,7 +319,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         while (!ready.get()) {
             SystemUtils.sleepQuietly(100);
         }
-        Map<String, String> available = new LinkedHashMap<>();
+        available = new LinkedHashMap<>();
         for (Locale each : Locale.getAvailableLocales()) {
             if (TextToSpeech.LANG_AVAILABLE == myTTS.isLanguageAvailable(each)) {
                 available.put(getLanguageName(each), each.toString());
@@ -326,12 +329,20 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         return available;
     }
 
+    public static void dropAvailableLanguages() {
+        available = null;
+    }
+
     public static String getLanguageName(Locale locale) {
-        String name = (locale.toString().length() == 2 ? new Locale(locale.toString(), locale.toString()) : locale).getDisplayName();
+        String name = resolveLanguage(locale).getDisplayName();
         if (TextUtils.isEmpty(name) && countryCodeMap.containsKey(locale.toString())) {
             name = countryCodeMap.get(locale.toString());
         }
         return name;
+    }
+
+    private static Locale resolveLanguage(Locale locale) {
+        return locale.toString().length() == 2 ? new Locale(locale.toString(), locale.toString()) : locale;
     }
 
     private static Map<String, String> countryCodeMap = new LinkedHashMap<>();

@@ -38,6 +38,8 @@ import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
+import ru.samlib.client.dialog.EditListPreferenceDialog;
+import ru.samlib.client.dialog.OnPreferenceCommit;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -124,6 +126,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         enableScrollbar = true;
         setDataSource(((skip, size) -> {
             if (skip != 0) return null;
+            TTSPlayer.getAvailableLanguages(getContext());
             while (work == null) {
                 SystemClock.sleep(100);
             }
@@ -325,28 +328,32 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
             }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                menu.removeItem(R.id.action_work_fullscreen);
+            }
+            if (mode.equals(Mode.SPEAK)) {
+                speakLayout.setVisibility(VISIBLE);
+                safeCheckMenuItem(R.id.action_work_speaking, true);
+            } else {
+                safeCheckMenuItem(R.id.action_work_speaking, false);
+                speakLayout.setVisibility(GONE);
+            }
+            if (mode.equals(Mode.AUTO_SCROLL)) {
+                speedLayout.setVisibility(VISIBLE);
+                safeCheckMenuItem(R.id.action_work_auto_scroll, true);
+            } else {
+                safeCheckMenuItem(R.id.action_work_auto_scroll, false);
+                speedLayout.setVisibility(GONE);
+            }
+            if(TTSPlayer.getAvailableLanguages(getContext()).isEmpty()) {
+                menu.removeItem(R.id.action_work_speaking);
+                menu.removeItem(R.id.action_work_speaking_language);
+            }
         } else {
             menu.clear();
         }
         if (!work.isParsed()) {
             searchView.setEnabled(false);
-        }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            menu.removeItem(R.id.action_work_fullscreen);
-        }
-        if(mode.equals(Mode.SPEAK)) {
-            speakLayout.setVisibility(VISIBLE);
-            safeCheckMenuItem(R.id.action_work_speaking, true);
-        } else {
-            safeCheckMenuItem(R.id.action_work_speaking, false);
-            speakLayout.setVisibility(GONE);
-        }
-        if(mode.equals(Mode.AUTO_SCROLL)) {
-            speedLayout.setVisibility(VISIBLE);
-            safeCheckMenuItem(R.id.action_work_auto_scroll, true);
-        } else {
-            safeCheckMenuItem(R.id.action_work_auto_scroll, false);
-            speedLayout.setVisibility(GONE);
         }
         searchView.setQueryHint(getString(R.string.search_hint));
     }
@@ -441,6 +448,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         i.putExtra(Constants.ArgsName.TTS_PLAY_POSITION, position + ":" + offset);
         i.putExtra(Constants.ArgsName.TTS_SPEECH_RATE, getRate(speechRate));
         i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
+        i.putExtra(Constants.ArgsName.TTS_LANGUAGE, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceVoiceLanguage, "ru"));
         if (isAdded()) {
             getActivity().startService(i);
             lockOrientation();
@@ -566,6 +574,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     initFragmentForSpeak();
                 }
                 return true;
+            case R.id.action_work_speaking_language:
+                EditListPreferenceDialog editListPreferenceDialog = new EditListPreferenceDialog();
+                SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), R.string.preferenceVoiceLanguage, "ru");
+                preference.keyValue = TTSPlayer.getAvailableLanguages(getContext());
+                editListPreferenceDialog.setPreference(preference);
+                editListPreferenceDialog.setOnPreferenceCommit(value -> safeInvalidateOptionsMenu());
+                editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
+                return true;
             case R.id.action_work_to_author:
                 AuthorFragment.show(this, work.getAuthor());
                 return true;
@@ -662,10 +678,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                     }
                 });
+        getBaseActivity().getToolbarShadow().setVisibility(GONE);
     }
 
     public void stopFullscreen() {
         if (isFullscreen) {
+            getBaseActivity().getToolbarShadow().setVisibility(VISIBLE);
             decorView.setSystemUiVisibility(0);
         }
     }
@@ -955,8 +973,18 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<String> {
 
+        private String fontPath;
+        private float fontSize;
+        private int fontColor;
+        private int backgroundColor;
+
         public WorkFragmentAdaptor() {
             super(true, false, R.layout.header_work_list, R.layout.item_indent);
+            Context context = getContext();
+            backgroundColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent));
+            fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f);
+            fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow));
+            fontPath = Font.getFontPath(context, null, null);
         }
 
         @Override
@@ -1014,7 +1042,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.registerHandler("a", new LinkHandler(annotationView));
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                     annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
-                    holder.getItemView().setBackgroundColor(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceColorBackgroundReader, getResources().getColor(R.color.transparent)));
+                    holder.getItemView().setBackgroundColor(backgroundColor);
                     break;
                 case R.layout.item_indent:
                     String indent = getItem(position);
@@ -1082,10 +1110,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         private void initPreference(TextView textView) {
             Context context = textView.getContext();
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f));
-            textView.setTextColor(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow)));
-            CalligraphyUtils.applyFontToTextView(context, textView, AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Constants.Assets.ROBOTO_FONT_PATH));
-            ((ViewGroup) textView.getParent()).setBackgroundColor(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent)));
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+            textView.setTextColor(fontColor);
+            CalligraphyUtils.applyFontToTextView(context, textView, fontPath);
+            ((ViewGroup) textView.getParent()).setBackgroundColor(backgroundColor);
         }
     }
 }
