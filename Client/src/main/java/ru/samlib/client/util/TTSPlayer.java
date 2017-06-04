@@ -212,7 +212,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public boolean notReady() {
-     return tts == null || state.equals(State.UNAVAILABLE) || state.equals(State.END) || state.equals(State.STOPPED);
+     return tts == null || state.equals(State.UNAVAILABLE) || state.equals(State.END) || state.equals(State.STOPPED) || state.equals(State.PAUSE);
     }
 
     private synchronized void nextPhrase() {
