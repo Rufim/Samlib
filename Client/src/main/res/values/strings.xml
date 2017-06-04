@@ -113,7 +113,7 @@
     <string name="help">
         <![CDATA[
            Это тестовая верия клиента для сайта Самиздат под Андройд, версии 0.1.0.
-            По вопросам и возникающим багам пишите по электронной почте <a href="caelum-rufim@ya.ru">caelum-rufim@ya.ru</a>.
+            По вопросам и возникающим багам пишите на электронную почту <a href="caelum-rufim@ya.ru">caelum-rufim@ya.ru</a>
         ]]>
     </string>
     <string name="comments_goto">Перейти</string>
