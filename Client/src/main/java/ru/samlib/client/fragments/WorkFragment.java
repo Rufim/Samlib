@@ -695,6 +695,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             speedLayout.findViewById(R.id.btnFullscreen).setVisibility(VISIBLE);
             speedLayout.findViewById(R.id.btnFullscreenExit).setVisibility(GONE);
             decorView.setSystemUiVisibility(0);
+            isFullscreen = false;
         }
     }
 
@@ -837,6 +838,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         speechRate.setOnSeekBarChangeListener(listener);
         pitch.setOnSeekBarChangeListener(listener);
         decorView = getActivity().getWindow().getDecorView();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            GuiUtils.getView(speakLayout, R.id.btnFullscreen).setVisibility(GONE);
+            GuiUtils.getView(speedLayout, R.id.btnFullscreen).setVisibility(GONE);
+        }
         return root;
     }
 
