@@ -39,6 +39,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     private float pitch = 1f;
     private String language = null;
 
+    private static AtomicBoolean ready = new AtomicBoolean(false);
+
     private static Map<String, String> available;
 
     public static class Phrase {
@@ -292,6 +294,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
                 playOnStart = false;
                 startSpeak(indentIndex, offset);
             }
+            ready.set(true);
         } else {
             tts = null;
             Toast.makeText(context, "Failed to initialize TTS engine.", Toast.LENGTH_SHORT).show();
@@ -334,9 +337,10 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         }
     }
 
+
+
     public static Map<String, String> getAvailableLanguages(Context context) {
         if (available != null) return available;
-        final AtomicBoolean ready = new AtomicBoolean(false);
         TextToSpeech myTTS = new TextToSpeech(context, status -> {
             ready.set(true);
         });
@@ -349,7 +353,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
                 available.put(getLanguageName(each), each.toString());
             }
         }
-        myTTS.shutdown();
+        new Thread(() -> myTTS.shutdown());
         return available;
     }
 
