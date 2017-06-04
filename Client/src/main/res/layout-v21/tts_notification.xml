@@ -15,10 +15,9 @@
         <ImageView
             android:id="@+id/imageViewAlbumArt"
             android:layout_marginRight="20dp"
-            android:layout_marginLeft="10dp"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_action_book_big_white"/>
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_action_book_big"/>
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -36,7 +35,7 @@
                 android:gravity="center_vertical"
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:textSize="20dp"/>
 
             <TextView
@@ -48,7 +47,7 @@
                 android:marqueeRepeatLimit="marquee_forever"
                 android:selectAllOnFocus="true"
                 android:singleLine="true"
-                android:textColor="@color/WhiteSmoke"
+                android:textColor="#C0C0C0"
                 android:textSize="15dp"/>
         </LinearLayout>
 
@@ -65,21 +64,21 @@
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
                 android:visibility="gone"
-                android:background="@drawable/ic_skip_previous_white_48dp"/>
+                android:background="@drawable/ic_skip_previous_grey600_48dp"/>
 
             <Button
                 android:id="@+id/btnPause"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
-                android:background="@drawable/ic_pause_white_48dp"/>
+                android:background="@drawable/ic_pause_grey600_48dp"/>
 
             <Button
                 android:id="@+id/btnPlay"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
-                android:background="@drawable/ic_play_white_48dp"
+                android:background="@drawable/ic_play_grey600_48dp"
                 android:visibility="gone"/>
 
             <Button
@@ -88,14 +87,14 @@
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
                 android:visibility="gone"
-                android:background="@drawable/ic_skip_next_white_48dp"/>
+                android:background="@drawable/ic_skip_next_grey600_48dp"/>
 
             <Button
                 android:id="@+id/btnStop"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_marginLeft="5dp"
-                android:background="@drawable/ic_stop_white_48dp"/>
+                android:background="@drawable/ic_stop_grey600_48dp"/>
         </LinearLayout>
 
 

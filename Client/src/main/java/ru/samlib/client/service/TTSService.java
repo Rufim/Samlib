@@ -24,7 +24,6 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.kazantsev.template.util.AndroidSystemUtils;
@@ -42,7 +41,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     private static final String TAG = TTSService.class.getSimpleName();
 
     public enum Action {
-        PLAY, STOP, PAUSE, POSITION, NEXT, PRE;
+        PLAY, END, STOP, PAUSE, POSITION, NEXT, PRE;
     }
 
     private TTSPlayer ttsp;
@@ -194,6 +193,13 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             }
                             ttsp.stop();
                             break;
+                        case END:
+                            if (currentVersionSupportLockScreenControls) {
+                                remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
+                            }
+                            ttsp.onStop();
+                            stopSelf();
+                            break;
                         case PAUSE:
                             if (currentVersionSupportLockScreenControls) {
                                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PAUSED);
@@ -311,10 +317,8 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             UpdateMetadata(work);
             remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
         }
-        ttsp.onStop();
         String[] pos = position.split(":");
-        ttsp.playOnStart(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
-        ttsp.onStart();
+        ttsp.play(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
     }
 
     @SuppressLint("NewApi")

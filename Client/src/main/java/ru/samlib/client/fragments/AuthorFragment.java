@@ -388,6 +388,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     databaseService.doAction(DatabaseService.Action.UPDATE, work);
                 }
                 view.setVisibility(View.GONE);
+                notifyChanged();
             }
         }
 

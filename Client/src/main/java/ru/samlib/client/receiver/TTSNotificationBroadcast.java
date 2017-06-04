@@ -59,8 +59,7 @@ public class TTSNotificationBroadcast extends BroadcastReceiver {
             } else if (intent.getAction().equals(TTSService.NOTIFY_NEXT)) {
                 sendMessage(TTSService.Action.NEXT);
             } else if (intent.getAction().equals(TTSService.NOTIFY_DELETE)) {
-                Intent i = new Intent(context, TTSService.class);
-                context.stopService(i);
+                sendMessage(TTSService.Action.END);
             } else if (intent.getAction().equals(TTSService.NOTIFY_PREVIOUS)) {
                 sendMessage(TTSService.Action.PRE);
             }

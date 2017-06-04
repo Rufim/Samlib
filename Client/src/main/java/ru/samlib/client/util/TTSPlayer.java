@@ -138,7 +138,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public synchronized void startSpeak(int index, int phrase, int offset) {
-        if (tts == null) return;
+        if (tts == null || state.equals(State.UNAVAILABLE) || state.equals(State.END)) return;
         if(work.getIndents().isEmpty()) return;
         if (index >= work.getIndents().size()) {
             tts.stop();
@@ -178,10 +178,10 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public synchronized void stop() {
+        tts.stop();
         indentIndex = 0;
         phraseIndex = 0;
         phrases = null;
-        tts.stop();
         changeState(State.STOPPED);
     }
 
@@ -288,11 +288,16 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         tts = new TextToSpeech(context, this);
     }
 
-    public synchronized  void playOnStart(Work work, int index, int offset) {
+    public synchronized  void play(Work work, int index, int offset) {
+        if(tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
         playOnStart = true;
         this.work = work;
         indentIndex = index;
         this.offset = offset;
+        onStart();
     }
 
     public synchronized  void onStop() {

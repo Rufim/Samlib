@@ -422,12 +422,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
 
-    public void stopSpeak() {
+    public void stopSpeak(boolean stopService) {
         if (TTSService.isReady(work)) {
             TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
         }
         clearSelection();
-        if (isAdded()) {
+        if (isAdded() && stopService) {
             safeCheckMenuItem(R.id.action_work_speaking, false);
             Intent i = new Intent(getContext(), TTSService.class);
             getContext().stopService(i);
@@ -466,36 +466,27 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         selectText(lastIndent, null);
     }
 
-    void showSpeedBar() {
-        if (!isSeekBarVisible && mode.equals(Mode.AUTO_SCROLL)) {
-            speakLayout.setVisibility(VISIBLE);
-            isSeekBarVisible = true;
-        }
-    }
 
-    void hideSpeedBar() {
-        if (isSeekBarVisible) {
-            speakLayout.setVisibility(GONE);
-            isSeekBarVisible = false;
-        }
+    public boolean isPaused() {
+        return speakLayout.findViewById(R.id.btnPlay).getVisibility() == VISIBLE;
     }
 
     private void syncState(TTSPlayer.State state) {
         isWaitingPlayerCallback = false;
         switch (state) {
             case SPEAKING:
-                if(speedLayout.findViewById(R.id.btnPlay).getVisibility() == VISIBLE) {
+                if(isPaused()) {
                     lockOrientation();
                 }
                 GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPause);
                 break;
             case END:
+            case UNAVAILABLE:
                 if (isAdded()) {
                     safeCheckMenuItem(R.id.action_work_speaking, false);
                 }
-                speakLayout.setVisibility(View.GONE);
-                releaseOrientation();
+                stopSpeak(false);
             case STOPPED:
             case PAUSE:
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
@@ -555,11 +546,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             case R.id.action_work_auto_scroll:
                 if (item.isChecked()) {
                     mode = Mode.NORMAL;
-                    stopAutoScroll();
+                    cancelAutoScroll();
                     item.setChecked(false);
                 } else {
                     if (Mode.SPEAK.equals(mode)) {
-                        stopSpeak();
+                        stopSpeak(true);
                     }
                     clearSelection();
                     mode = Mode.AUTO_SCROLL;
@@ -570,7 +561,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             case R.id.action_work_speaking:
                 if (item.isChecked()) {
                     mode = Mode.NORMAL;
-                    stopSpeak();
+                    stopSpeak(true);
                 } else {
                     if (Mode.AUTO_SCROLL.equals(mode)) {
                         cancelAutoScroll();
@@ -659,6 +650,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void enableFullscreen() {
+        isFullscreen = true;
         // Hide both the navigation bar and the status bar.
         // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
         // a general rule, you should design your app to hide the status bar whenever you
@@ -686,11 +678,19 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     }
                 });
         getBaseActivity().getToolbarShadow().setVisibility(GONE);
+        speakLayout.findViewById(R.id.btnFullscreen).setVisibility(GONE);
+        speakLayout.findViewById(R.id.btnFullscreenExit).setVisibility(VISIBLE);
+        speedLayout.findViewById(R.id.btnFullscreen).setVisibility(GONE);
+        speedLayout.findViewById(R.id.btnFullscreenExit).setVisibility(VISIBLE);
     }
 
     public void stopFullscreen() {
         if (isFullscreen) {
             getBaseActivity().getToolbarShadow().setVisibility(VISIBLE);
+            speakLayout.findViewById(R.id.btnFullscreen).setVisibility(VISIBLE);
+            speakLayout.findViewById(R.id.btnFullscreenExit).setVisibility(GONE);
+            speedLayout.findViewById(R.id.btnFullscreen).setVisibility(VISIBLE);
+            speedLayout.findViewById(R.id.btnFullscreenExit).setVisibility(GONE);
             decorView.setSystemUiVisibility(0);
         }
     }
@@ -797,9 +797,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         GuiUtils.getView(speakLayout, R.id.btnStop).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnNext).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnPrevious).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnFullscreen).setOnClickListener(this);
+        GuiUtils.getView(speakLayout, R.id.btnFullscreenExit).setOnClickListener(this);
         GuiUtils.getView(speedLayout, R.id.btnPlay).setOnClickListener(this);
         GuiUtils.getView(speedLayout, R.id.btnPause).setOnClickListener(this);
         GuiUtils.getView(speedLayout, R.id.btnStop).setOnClickListener(this);
+        GuiUtils.getView(speedLayout, R.id.btnFullscreen).setOnClickListener(this);
+        GuiUtils.getView(speedLayout, R.id.btnFullscreenExit).setOnClickListener(this);
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
         autoScrollSpeed = GuiUtils.getView(root, R.id.footer_work_speed);
         speechRate = GuiUtils.getView(root, R.id.footer_work_speech_rate);
@@ -887,7 +891,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 case R.id.btnStop:
                     if (TTSService.isReady(work)) {
                         mode = Mode.NORMAL;
-                        stopSpeak();
+                        stopSpeak(true);
                         isWaitingPlayerCallback = true;
                     }
                     break;
@@ -907,6 +911,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     mode = Mode.NORMAL;
                     break;
             }
+        }
+        switch (v.getId()) {
+            case R.id.btnFullscreen:
+                enableFullscreen();
+                break;
+            case R.id.btnFullscreenExit:
+                stopFullscreen();
+                break;
         }
     }
 
@@ -1080,10 +1092,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 offset = layout.getOffsetForHorizontal(line, x);
                             }
 
-                            if (mode.equals(Mode.SPEAK)) {
+                            if (mode.equals(Mode.SPEAK) && isPaused()) {
                                 clearSelection();
                                 lastIndent = firstIsHeader + ((ViewHolder)view.getTag()).getLayoutPosition();
                                 lastOffset = offset;
+                                v.performClick();
                             }
 
                             if (textView.getText() instanceof SpannedString && !mode.equals(Mode.SPEAK)) {
@@ -1101,10 +1114,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     speedLayout.setVisibility(GONE);
                                 }
                             }
+                            if (mode.equals(Mode.SPEAK) && !isPaused()) {
+                                if (speakLayout.getVisibility() == GONE) {
+                                    speakLayout.setVisibility(VISIBLE);
+                                } else {
+                                    speakLayout.setVisibility(GONE);
+                                }
+                            }
                             if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && isFullscreen) {
                                 stopFullscreen();
                             }
-                            v.performClick();
                         }
                         return true;
                     });
@@ -1136,7 +1155,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             public WorkFontResolver(AssetManager manager, Font font, Font.Type type) {
                 Typeface typefaceDefault = font.getTypes().containsKey(type) ? TypefaceUtils.load(manager, font.getTypes().get(type)): Typeface.DEFAULT;
                 Typeface typefaceItalic = font.getTypes().containsKey(Font.Type.ITALIC) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.ITALIC)) : null;
-                Typeface typefaceBold = font.getTypes().containsKey(Font.Type.BOLD) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD)) : Typeface.DEFAULT_BOLD;
+                Typeface typefaceBold = font.getTypes().containsKey(Font.Type.BOLD) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD)) : null;
                 Typeface typefaceItalicBold = font.getTypes().containsKey(Font.Type.BOLD_ITALIC) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD_ITALIC)) : null;
                 FontFamily fontFamily = new FontFamily(font.getName(), typefaceDefault);
                 fontFamily.setBoldTypeface(typefaceBold);
