@@ -15,6 +15,7 @@ import android.support.annotation.IdRes;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -1113,8 +1114,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 v.performClick();
                             }
 
-                            if (textView.getText() instanceof SpannedString && !mode.equals(Mode.SPEAK)) {
-                                SpannedString spannableString = (SpannedString) textView.getText();
+                            if (textView.getText() instanceof Spanned && !mode.equals(Mode.SPEAK)) {
+                                Spanned spannableString = (Spanned) textView.getText();
                                 URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
                                 if (url.length > 0) {
                                     url[0].onClick(textView);
