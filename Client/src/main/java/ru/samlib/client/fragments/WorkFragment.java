@@ -305,6 +305,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void refreshData(boolean showProgress) {
         work.setParsed(false);
+        ((WorkFragmentAdaptor) adapter).refreshSettings(getContext());
         super.refreshData(showProgress);
     }
 
@@ -1012,7 +1013,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         public WorkFragmentAdaptor() {
             super(true, false, R.layout.header_work_list, R.layout.item_indent);
-            Context context = getContext();
+            refreshSettings(getContext());
+        }
+
+        public void refreshSettings(Context context) {
             backgroundColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent));
             fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f);
             fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow));
