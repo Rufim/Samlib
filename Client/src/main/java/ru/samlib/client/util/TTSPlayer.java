@@ -151,8 +151,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         phrases = splitByPhrases(work.getIndents().get(index), offset);
         phraseIndex = phrase;
         this.indentIndex = index;
-        nextPhrase();
         changeState(State.SPEAKING);
+        nextPhrase();
     }
 
     public boolean isSpeaking() {
@@ -160,12 +160,12 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public  void resume() {
+        changeState(State.IDLE);
         if (phrases != null) {
             nextPhrase();
         } else {
             startSpeak(indentIndex);
         }
-        changeState(State.SPEAKING);
     }
 
     public void start() {
@@ -187,13 +187,21 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
 
     public synchronized  void next() {
         int current = indentIndex;
-        stop();
+        changeState(State.STOPPED);
+        tts.stop();
+        while (tts.isSpeaking()){
+            SystemUtils.sleepQuietly(100);
+        }
         startSpeak(current + 1);
     }
 
     public synchronized  void pre() {
         int current = indentIndex;
-        stop();
+        changeState(State.STOPPED);
+        tts.stop();
+        while (tts.isSpeaking()) {
+            SystemUtils.sleepQuietly(100);
+        }
         startSpeak(current - 1);
     }
 
@@ -201,13 +209,21 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         return state;
     }
 
+    public boolean notReady() {
+     return tts == null || state.equals(State.UNAVAILABLE) || state.equals(State.END) || state.equals(State.STOPPED);
+    }
+
     private synchronized void nextPhrase() {
+        if (notReady()) return;
         if (phraseIndex >= phrases.size()) {
             if (indexSpeakFinished != null) {
                 GuiUtils.runInUI(context, new GuiUtils.RunUIThread() {
                     @Override
                     public void run(Object... var) {
-                        indexSpeakFinished.onNextPhrase((int) var[0]);
+                        if (notReady()) return;
+                        if (indexSpeakFinished != null) {
+                            indexSpeakFinished.onNextPhrase((int) var[0]);
+                        }
                     }
                 }, indentIndex);
             }
@@ -221,7 +237,10 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             GuiUtils.runInUI(context, new GuiUtils.RunUIThread() {
                 @Override
                 public void run(Object... var) {
-                    nextPhraseListener.onNextPhrase((int) var[0], (int) var[1], (List<Phrase>) var[2]);
+                    if (notReady()) return;
+                    if(nextPhraseListener != null) {
+                        nextPhraseListener.onNextPhrase((int) var[0], (int) var[1], (List<Phrase>) var[2]);
+                    }
                 }
             }, indentIndex, phraseIndex, phrases);
         }

@@ -87,6 +87,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private boolean ownTTSService = false;
     private boolean isDownloaded = false;
     private boolean isSeekBarVisible = false;
+    private boolean isWaitingForSkipStart = false;
     private boolean isWaitingPlayerCallback = false;
     private boolean isFullscreen = false;
     private boolean isBack = false;
@@ -227,7 +228,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             bookmark.setIndent(indent);
         }
         bookmark.setIndentIndex(index);
-        if(externalWork == null || externalWork.getWorkUrl() != null) {
+        if (externalWork == null || externalWork.getWorkUrl() != null) {
             bookmark.setWorkUrl(work.getFullLink());
             bookmark.setAuthorUrl(work.getAuthor().getFullLink());
         } else {
@@ -328,7 +329,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
-            if(work.isNotSamlib()) {
+            if (work.isNotSamlib()) {
                 menu.removeItem(R.id.action_work_to_author);
                 menu.removeItem(R.id.action_work_share);
             }
@@ -352,7 +353,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 safeCheckMenuItem(R.id.action_work_auto_scroll, false);
                 speedLayout.setVisibility(GONE);
             }
-            if(TTSPlayer.getAvailableLanguages(getContext()).isEmpty()) {
+            if (TTSPlayer.getAvailableLanguages(getContext()).isEmpty()) {
                 menu.removeItem(R.id.action_work_speaking);
                 menu.removeItem(R.id.action_work_speaking_language);
             }
@@ -475,7 +476,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         isWaitingPlayerCallback = false;
         switch (state) {
             case SPEAKING:
-                if(isPaused()) {
+                if (isPaused()) {
                     lockOrientation();
                 }
                 GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPlay);
@@ -501,12 +502,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
         TTSService.setNextPhraseListener(new TTSPlayer.OnNextPhraseListener() {
             @Override
-            public void onNextPhrase(int speakIndex, int phraseIndex, List<TTSPlayer.Phrase> phrases) {
+            public synchronized void onNextPhrase(int speakIndex, int phraseIndex, List<TTSPlayer.Phrase> phrases) {
                 if (WorkFragment.this.getActivity() != null && TTSService.isReady(work)) {
                     TTSPlayer.Phrase phrase = phrases.get(phraseIndex);
                     lastIndent = speakIndex;
                     TextView textView = WorkFragment.this.getTextViewIndent(speakIndex);
-                    if(phrase == null) return;
+                    if (phrase == null) return;
                     lastOffset = phrase.start;
                     if (textView != null) {
                         int visibleLines = WorkFragment.this.getVisibleLines(textView);
@@ -515,7 +516,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             WorkFragment.this.scrollToIndex(speakIndex, phrase.start);
                         }
                         WorkFragment.this.selectText(speakIndex, phrase.start, phrase.end);
+                        isWaitingForSkipStart = false;
                     } else {
+                        clearSelection();
                         WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
                         itemList.postDelayed(new Runnable() {
                             @Override
@@ -749,7 +752,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         this.externalWork = null;
         if (filePath != null) {
             this.externalWork = databaseService.getExternalWork(filePath);
-            if(externalWork == null) {
+            if (externalWork == null) {
                 externalWork = new ExternalWork();
                 externalWork.setFilePath(filePath);
                 externalWork.setWorkTitle(new File(filePath).getName());
@@ -758,7 +761,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 databaseService.insertOrUpdateExternalWork(externalWork);
             }
             work = new Work(externalWork.getWorkUrl());
-            File external =  new File(externalWork.getFilePath());
+            File external = new File(externalWork.getFilePath());
             work.setTitle(external.getName());
             Author author = new Author(external.getParent());
             author.setShortName(new File(external.getParent()).getName());
@@ -843,13 +846,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
         screenLock.acquire();
-        if(TTSService.isReady(work)) {
+        if (TTSService.isReady(work)) {
             TTSPlayer.State state = TTSService.getInstance().getState();
             syncState(state);
-            if(state.equals(TTSPlayer.State.PAUSE) || state.equals(TTSPlayer.State.SPEAKING)) {
+            if (state.equals(TTSPlayer.State.PAUSE) || state.equals(TTSPlayer.State.SPEAKING)) {
                 mode = Mode.SPEAK;
             }
-            if(mode.equals(Mode.SPEAK)) {
+            if (mode.equals(Mode.SPEAK)) {
                 initFragmentForSpeak();
             }
         } else {
@@ -877,15 +880,17 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     }
                     break;
                 case R.id.btnNext:
-                    if (TTSService.isReady(work)) {
+                    if (!isWaitingForSkipStart && TTSService.isReady(work)) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.NEXT);
                         clearSelection();
+                        isWaitingForSkipStart = true;
                     }
                     break;
                 case R.id.btnPrevious:
-                    if (TTSService.isReady(work)) {
+                    if (!isWaitingForSkipStart && TTSService.isReady(work)) {
                         TTSNotificationBroadcast.sendMessage(TTSService.Action.PRE);
                         clearSelection();
+                        isWaitingForSkipStart = true;
                     }
                     break;
                 case R.id.btnStop:
@@ -964,7 +969,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     private void lockOrientation() {
-        if(isAdded()) {
+        if (isAdded()) {
             int currentOrientation = getResources().getConfiguration().orientation;
             if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
                 getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
@@ -975,7 +980,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     private void releaseOrientation() {
-        if(isAdded()) {
+        if (isAdded()) {
             getBaseActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         }
     }
@@ -1009,7 +1014,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             font = Font.mapFonts(getContext().getAssets()).get(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Font.getDefFont().getName()));
             defaultType = Font.Type.valueOf(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontStyleReader, Font.Type.PLAIN.name()));
             fontResolver = new WorkFontResolver(getContext().getAssets(), font, defaultType);
-            fontPath = Font.getFontPath(getContext(), font.getName(),  defaultType);
+            fontPath = Font.getFontPath(getContext(), font.getName(), defaultType);
         }
 
         @Override
@@ -1094,7 +1099,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
                             if (mode.equals(Mode.SPEAK) && isPaused()) {
                                 clearSelection();
-                                lastIndent = firstIsHeader + ((ViewHolder)view.getTag()).getLayoutPosition();
+                                lastIndent = firstIsHeader + ((ViewHolder) view.getTag()).getLayoutPosition();
                                 lastOffset = offset;
                                 v.performClick();
                             }
@@ -1131,7 +1136,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
                     spanner.setFontResolver(fontResolver);
-                    view.setText(spanner.fromHtml(indent));
+                    view.setText(spanner.fromHtml(indent), TextView.BufferType.SPANNABLE);
                     // fix wrong height when use image spans
                     view.setTextSize(20);
                     initPreference(view);
@@ -1148,12 +1153,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             ((ViewGroup) textView.getParent()).setBackgroundColor(backgroundColor);
         }
 
-        private class  WorkFontResolver extends SystemFontResolver {
+        private class WorkFontResolver extends SystemFontResolver {
 
             FontFamily defaultFont;
 
             public WorkFontResolver(AssetManager manager, Font font, Font.Type type) {
-                Typeface typefaceDefault = font.getTypes().containsKey(type) ? TypefaceUtils.load(manager, font.getTypes().get(type)): Typeface.DEFAULT;
+                Typeface typefaceDefault = font.getTypes().containsKey(type) ? TypefaceUtils.load(manager, font.getTypes().get(type)) : Typeface.DEFAULT;
                 Typeface typefaceItalic = font.getTypes().containsKey(Font.Type.ITALIC) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.ITALIC)) : null;
                 Typeface typefaceBold = font.getTypes().containsKey(Font.Type.BOLD) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD)) : null;
                 Typeface typefaceItalicBold = font.getTypes().containsKey(Font.Type.BOLD_ITALIC) ? TypefaceUtils.load(manager, font.getTypes().get(Font.Type.BOLD_ITALIC)) : null;
@@ -1168,6 +1173,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             public FontFamily getDefaultFont() {
                 return defaultFont;
             }
-        };
+        }
+
+        ;
     }
 }
