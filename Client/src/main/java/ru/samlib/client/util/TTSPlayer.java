@@ -103,7 +103,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         if(clearIndent.length() <= offset) {
             offset = 0;
         }
-        List<String> rawPhrases = TextUtils.Splitter.split(clearIndent.substring(offset), "[.!?]++",
+        List<String> rawPhrases = TextUtils.Splitter.split(clearIndent.substring(offset), "[.!?»]++",
                 TextUtils.Splitter.DelimiterMode.TO_END);
         List<Phrase> phrases = new ArrayList<>(rawPhrases.size());
         for (int i = 0; i < rawPhrases.size(); i++) {
