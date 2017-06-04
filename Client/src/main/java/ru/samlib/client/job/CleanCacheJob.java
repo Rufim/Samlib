@@ -10,6 +10,7 @@ import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.SystemUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
@@ -62,7 +63,8 @@ public class CleanCacheJob extends Job {
             totalSize += savedHtml.getSize();
         }
         SharedPreferences preference = AndroidSystemUtils.getDefaultPreference(context);
-        int maxSizeMB = preference.getInt(context.getString(R.string.preferenceMaxCacheSize), context.getResources().getInteger(R.integer.preferenceMaxCacheSizeDefault));
+        int maxSizeMB = TextUtils.parseInt(preference.getString(context.getString(R.string.preferenceMaxCacheSize), context.getResources().getString(R.string.preferenceMaxCacheSizeDefault)));
+        if(maxSizeMB < 0) return;
         long maxSize = maxSizeMB * 1024 * 1024;
         List<SavedHtml> delete = new ArrayList<>();
         int i = 0;

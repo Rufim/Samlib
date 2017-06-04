@@ -186,7 +186,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                     databaseService.createOrUpdateAuthor(author.createEntity());
                 }
-                super.refreshData(false);
+                adapter.notifyChanged();
                 return true;
 
         }
@@ -317,9 +317,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
         @Override
         public void onBindHolder(ViewHolder holder, @Nullable Linkable item) {
             Category category = (Category) item;
-            if (holder.getTag() == category) {
-                return;
-            }
             boolean navBarCategory = savedDataSource != null;
             ViewGroup root = (ViewGroup) holder.getItemView();
             GuiUtils.setText(root, R.id.section_label, category.getTitle());

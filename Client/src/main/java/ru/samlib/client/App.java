@@ -40,7 +40,7 @@ import java.util.List;
  */
 @Module
 @ReportsCrashes(
-        mailTo = "dmitry.kazantsev@constant.obninsk.ru",
+        mailTo = "caelum-rufim@ya.ru",
         mode = ReportingInteractionMode.DIALOG,
         resDialogIcon = R.drawable.sad_cat,
         resDialogTheme = R.style.AppTheme_Dialog,

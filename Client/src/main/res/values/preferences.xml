@@ -3,7 +3,7 @@
     <string name="preferenceGroupCache">Кеш</string>
     <string name="preferenceMaxCacheSizeName">Размер кеша, Мб</string>
     <string name="preferenceMaxCacheSize">maxCacheSize</string>
-    <integer name="preferenceMaxCacheSizeDefault">100</integer>
+    <string name="preferenceMaxCacheSizeDefault">100</string>
 
     <string name="preferenceCommentCoockie">CommentCoockie</string>
     <string name="preferenceCommentName">CommentName</string>

@@ -61,7 +61,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
                     .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName);
             PreferenceGroup groupCache = new PreferenceGroup(R.string.preferenceGroupCache)
-                    .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getInteger(R.integer.preferenceMaxCacheSizeDefault));
+                    .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getString(R.string.preferenceMaxCacheSizeDefault));
             return Arrays.asList(groupReader, groupCache);
         };
     }
