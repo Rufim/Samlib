@@ -311,6 +311,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public List<Pair<Integer, Integer>> search(String query) {
+        query = query.toLowerCase();
         List<Pair<Integer, Integer>> indexes = new ArrayList<>();
         for (int i = 0; i < adapter.getItems().size(); i++) {
             final String text = adapter.getItems().get(i).toLowerCase();
@@ -711,6 +712,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        if(mode.equals(Mode.SPEAK)) {
+            safeCheckMenuItem(R.id.action_work_speaking, false);
+            stopSpeak(true);
+        }
+        if(mode.equals(Mode.AUTO_SCROLL)) {
+            safeCheckMenuItem(R.id.action_work_auto_scroll, false);
+            cancelAutoScroll();
+        }
         mode = Mode.SEARCH;
         if (searched.isEmpty()) {
             searched.addAll(search(query));
@@ -718,7 +727,21 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         Pair<Integer, Integer> index = searched.poll();
         if (index != null) {
             adapter.setLastQuery(newFilterEvent(query));
-            scrollToIndex(index.first, index.second);
+            TextView textView = WorkFragment.this.getTextViewIndent(index.first);
+            if (textView != null) {
+                int visibleLines = WorkFragment.this.getVisibleLines(textView);
+                Layout layout = textView.getLayout();
+                scrollToIndex(index.first, index.second);
+                isWaitingForSkipStart = false;
+            } else {
+                scrollToIndex(index.first, Integer.MIN_VALUE);
+                itemList.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollToIndex(index.first, index.second);
+                    }
+                }, 200);
+            }
         }
         return true;
     }
@@ -994,7 +1017,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
 
     @Override
-    protected ItemListAdapter<String> newAdaptor() {
+    protected ItemListAdapter<String> newAdapter() {
         return new WorkFragmentAdaptor();
     }
 

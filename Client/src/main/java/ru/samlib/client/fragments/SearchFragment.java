@@ -49,7 +49,7 @@ public class SearchFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected ItemListAdapter<Linkable> newAdaptor() {
+    protected ItemListAdapter<Linkable> newAdapter() {
         return new SearchArrayAdapter();
     }
 

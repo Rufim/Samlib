@@ -67,7 +67,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
     }
 
     @Override
-    protected ItemListAdapter newAdaptor() {
+    protected ItemListAdapter newAdapter() {
         return new SettingsAdaptor();
     }
 

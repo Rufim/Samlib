@@ -63,7 +63,7 @@ public class GenreFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected ItemListAdapter newAdaptor() {
+    protected ItemListAdapter newAdapter() {
         return new GenreArrayAdapter();
     }
 

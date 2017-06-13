@@ -165,9 +165,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 editor.putBoolean(getString(R.string.preferenceAuthorSimpleView), simpleView);
                 editor.apply();
                 if(adapter != null) {
+
+
                     adapter.getItems().clear();
                 }
-                adapter = newAdaptor();
+                adapter = newAdapter();
                 itemList.setAdapter(adapter);
                 super.refreshData(false);
                 return true;
@@ -258,7 +260,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected ItemListAdapter<Linkable> newAdaptor() {
+    protected ItemListAdapter<Linkable> newAdapter() {
         if(simpleView) {
             return new ExpandableAuthorFragmentAdaptor();
         } else {

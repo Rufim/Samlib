@@ -30,7 +30,7 @@ public class NewestFragment extends FilterDialogListFragment {
     }
 
     @Override
-    protected ItemListAdapter newAdaptor() {
+    protected ItemListAdapter newAdapter() {
         return new NewestArrayAdapter();
     }
 

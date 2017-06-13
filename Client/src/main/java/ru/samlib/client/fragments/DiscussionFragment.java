@@ -32,7 +32,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
     }
 
     @Override
-    protected ItemListAdapter newAdaptor() {
+    protected ItemListAdapter newAdapter() {
         return new NewestArrayAdapter();
     }
 

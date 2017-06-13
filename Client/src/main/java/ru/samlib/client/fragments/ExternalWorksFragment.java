@@ -86,7 +86,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
     }
 
     @Override
-    protected ItemListAdapter<ExternalWork> newAdaptor() {
+    protected ItemListAdapter<ExternalWork> newAdapter() {
         return new ExternalWorksAdapter();
     }
 
