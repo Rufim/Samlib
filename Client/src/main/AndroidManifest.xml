@@ -36,7 +36,7 @@
 
         <activity
                 android:name=".activity.SectionActivity"
-                android:launchMode="singleInstance"
+                android:launchMode="singleTask"
                 android:parentActivityName=".activity.MainActivity"
                 android:windowSoftInputMode="adjustPan"
                 android:configChanges="orientation">
