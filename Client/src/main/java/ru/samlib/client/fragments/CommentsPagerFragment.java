@@ -52,17 +52,8 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsPagerFragment.class);
     }
 
-    public static CommentsPagerFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
-        return show(builder.putArg(Constants.ArgsName.WORK, work), container, CommentsPagerFragment.class);
-    }
-
-
     public static CommentsPagerFragment show(BaseFragment fragment, String link) {
         return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
-    }
-
-    public static CommentsPagerFragment show(BaseFragment fragment, Work work) {
-        return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.WORK, work);
     }
 
     @Override
@@ -104,11 +95,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         boolean newWork = false;
         String link = getArguments().getString(Constants.ArgsName.LINK);
-        Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        if (incomingWork != null && !incomingWork.equals(work)) {
-            work = incomingWork;
-            newWork = true;
-        } else if (link != null) {
+        if (link != null && (work == null || !work.getLink().equals(link))) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 newWork = true;

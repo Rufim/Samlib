@@ -42,16 +42,8 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, IllustrationPagerFragment.class);
     }
 
-    public static IllustrationPagerFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
-        return show(builder.putArg(Constants.ArgsName.WORK, work), container, IllustrationPagerFragment.class);
-    }
-
     public static IllustrationPagerFragment show(BaseFragment fragment, String link) {
         return show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.LINK, link);
-    }
-
-    public static IllustrationPagerFragment show(BaseFragment fragment, Work work) {
-        return show(fragment, IllustrationPagerFragment.class, Constants.ArgsName.WORK, work);
     }
 
     @Override
@@ -78,11 +70,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         boolean newWork = false;
         String link = getArguments().getString(Constants.ArgsName.LINK);
-        Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        if (incomingWork != null && !incomingWork.equals(work)) {
-            work = incomingWork;
-            newWork = true;
-        } else if (link != null) {
+        if (link != null && (work == null || !work.getLink().equals(link))) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 newWork = true;

@@ -644,7 +644,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 CommentsPagerFragment.show(newFragmentBuilder()
                         .addToBackStack()
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work);
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work.getLink());
                 return true;
             case R.id.action_work_fullscreen:
                 if (isAdded()) {
@@ -777,21 +777,23 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         this.externalWork = null;
         if (filePath != null) {
-            this.externalWork = databaseService.getExternalWork(filePath);
-            if (externalWork == null) {
-                externalWork = new ExternalWork();
-                externalWork.setFilePath(filePath);
-                externalWork.setWorkTitle(new File(filePath).getName());
-                externalWork.setGenres("");
-                externalWork.setSavedDate(new Date());
-                databaseService.insertOrUpdateExternalWork(externalWork);
+            if(externalWork == null || !externalWork.getFilePath().equals(filePath)) {
+                this.externalWork = databaseService.getExternalWork(filePath);
+                if (externalWork == null) {
+                    externalWork = new ExternalWork();
+                    externalWork.setFilePath(filePath);
+                    externalWork.setWorkTitle(new File(filePath).getName());
+                    externalWork.setGenres("");
+                    externalWork.setSavedDate(new Date());
+                    databaseService.insertOrUpdateExternalWork(externalWork);
+                }
+                work = new Work(externalWork.getWorkUrl());
+                File external = new File(externalWork.getFilePath());
+                work.setTitle(external.getName());
+                Author author = new Author(external.getParent());
+                author.setShortName(new File(external.getParent()).getName());
+                work.setAuthor(author);
             }
-            work = new Work(externalWork.getWorkUrl());
-            File external = new File(externalWork.getFilePath());
-            work.setTitle(external.getName());
-            Author author = new Author(external.getParent());
-            author.setShortName(new File(external.getParent()).getName());
-            work.setAuthor(author);
         } else if (incomingWork != null) {
             if (!incomingWork.equals(work)) {
                 work = incomingWork;

@@ -495,13 +495,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 IllustrationPagerFragment.show(newFragmentBuilder()
                         .addToBackStack()
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) linkable);
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
                 return true;
             case R.id.comments_button:
                 CommentsPagerFragment.show(newFragmentBuilder()
                         .addToBackStack()
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), (Work) linkable);
+                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
                 return true;
         }
         return true;
