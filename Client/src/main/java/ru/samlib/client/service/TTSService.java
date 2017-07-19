@@ -247,9 +247,11 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         RemoteViews simpleContentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.tts_notification);
         Intent launch = new Intent(getApplicationContext(), SectionActivity.class);
         launch.setData(Uri.parse(link));
+        launch.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        launch.putExtra(Constants.ArgsName.WORK_RESTORE, true);
         Notification notification = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_action_book)
-                .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, 0))
+                .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, PendingIntent.FLAG_UPDATE_CURRENT))
                 .setCustomContentView(simpleContentView)
                 .setContentTitle(title).build();
 

@@ -21,10 +21,7 @@ import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Category;
-import ru.samlib.client.domain.entity.Image;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.*;
 import ru.samlib.client.fragments.AuthorFragment;
 import ru.samlib.client.fragments.CommentsPagerFragment;
@@ -130,13 +127,20 @@ public class SectionActivity extends NavigationActivity<String> {
         Uri data;
         if ((data = intent.getData()) != null && (link = data.getPath()) != null) {
             if (Linkable.isAuthorLink(link)) {
+                if(current != null && current instanceof WorkFragment && intent.getBooleanExtra(Constants.ArgsName.WORK_RESTORE, false)) {
+
+                }
                 AuthorFragment.show(builder, id, link);
             }
             if (Linkable.isWorkLink(link)) {
-                WorkFragment.show(builder, id, link);
+                if(!isRestore(current, intent, false)) {
+                    WorkFragment.show(builder, id, link);
+                }
             }
             if(data.getScheme() != null && data.getScheme().startsWith("file")) {
-                WorkFragment.showFile(builder, id, link);
+                if(!isRestore(current, intent, true)) {
+                    WorkFragment.showFile(builder, id, link);
+                }
             }
             if (Linkable.isIllustrationsLink(link)) {
                 IllustrationPagerFragment.show(builder, id, link);
@@ -147,6 +151,28 @@ public class SectionActivity extends NavigationActivity<String> {
         }
     }
 
+    public boolean isRestore(Fragment current, Intent intent, boolean external) {
+        if(current != null && current instanceof WorkFragment && intent.getBooleanExtra(Constants.ArgsName.WORK_RESTORE, false)) {
+            Uri data = intent.getData();
+            if(external) {
+                ExternalWork externalWork = ((WorkFragment) current).getExternalWork();
+                if(externalWork != null && externalWork.getFilePath().equals(data.getPath())) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                Work work =  ((WorkFragment) current).getWork();
+                if(work != null && work.getLink().equals(data.getPath())) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    }
 
     public SectionActivityState getState() {
         return state;

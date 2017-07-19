@@ -20,7 +20,7 @@ public class TTSNotificationBroadcast extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) {
             KeyEvent keyEvent = (KeyEvent) intent.getExtras().get(Intent.EXTRA_KEY_EVENT);
-            if (keyEvent.getAction() != KeyEvent.ACTION_DOWN)
+            if (keyEvent.getAction() != KeyEvent.ACTION_DOWN || TTSService.getInstance() == null)
                 return;
 
             switch (keyEvent.getKeyCode()) {

@@ -226,7 +226,9 @@ public class WorkParser extends Parser {
 
     public static void processChapters(Work work) {
         List<String> indents = work.getIndents();
-        indents.clear();
+        if(!(indents instanceof AbstractList)) {
+            indents.clear();
+        }
         List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());
         document.setBaseUri(Constants.Net.BASE_DOMAIN);
@@ -240,7 +242,9 @@ public class WorkParser extends Parser {
         } else {
             work.setIndents(forSpanner.getIndents(rootElements));
         }
-        rootElements.clear();
+        if(rootElements != null) {
+            rootElements.clear();
+        }
         Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         bookmarks.clear();

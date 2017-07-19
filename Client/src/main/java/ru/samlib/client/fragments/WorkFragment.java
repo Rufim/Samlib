@@ -252,22 +252,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
-    }
-
-
-    @Override
-    public boolean allowBackPress() {
-        if (isFullscreen) {
-            stopFullscreen();
-            return false;
-        }
-        isBack = true;
-        return super.allowBackPress();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
         if (work != null && work.isParsed()) {
             try {
                 int index = findFirstVisibleItemPosition(false);
@@ -301,6 +285,17 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         stopAutoScroll();
         stopFullscreen();
         isBack = false;
+    }
+
+
+    @Override
+    public boolean allowBackPress() {
+        if (isFullscreen) {
+            stopFullscreen();
+            return false;
+        }
+        isBack = true;
+        return super.allowBackPress();
     }
 
     @Override
@@ -372,6 +367,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void onSearchViewClose(SearchView searchView) {
         adapter.setLastQuery(null);
+        clearSelection();
         mode = Mode.NORMAL;
     }
 
@@ -1025,6 +1021,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     public Work getWork() {
         return work;
+    }
+
+    public ExternalWork getExternalWork() {
+        return externalWork;
     }
 
     private class WorkFragmentAdaptor extends MultiItemListAdapter<String> {
