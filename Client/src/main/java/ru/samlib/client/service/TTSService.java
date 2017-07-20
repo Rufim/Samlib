@@ -142,7 +142,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             final String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            Work work = WorkParser.getCachedWork(link);
+            final Work work = WorkParser.getCachedWork(link);
             if(!work.isParsed()) {
                 if (work.getRawContent() == null) {
                     File cached;
@@ -224,7 +224,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             ttsp.pre();
                             break;
                     }
-                    newNotification(link);
+                    newNotification(work.isNotSamlib() ? "file://" + link : link);
                     Log.d(TAG, "TAG Pressed: " + action);
                     return false;
                 }

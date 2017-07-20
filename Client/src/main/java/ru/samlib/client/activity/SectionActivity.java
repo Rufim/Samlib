@@ -33,6 +33,7 @@ import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.util.SamlibUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -127,9 +128,6 @@ public class SectionActivity extends NavigationActivity<String> {
         Uri data;
         if ((data = intent.getData()) != null && (link = data.getPath()) != null) {
             if (Linkable.isAuthorLink(link)) {
-                if(current != null && current instanceof WorkFragment && intent.getBooleanExtra(Constants.ArgsName.WORK_RESTORE, false)) {
-
-                }
                 AuthorFragment.show(builder, id, link);
             }
             if (Linkable.isWorkLink(link)) {
@@ -137,7 +135,7 @@ public class SectionActivity extends NavigationActivity<String> {
                     WorkFragment.show(builder, id, link);
                 }
             }
-            if(data.getScheme() != null && data.getScheme().startsWith("file")) {
+            if((data.getScheme() != null && data.getScheme().startsWith("file")) || new File(link).exists()) {
                 if(!isRestore(current, intent, true)) {
                     WorkFragment.showFile(builder, id, link);
                 }
