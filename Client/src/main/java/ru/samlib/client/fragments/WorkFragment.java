@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -625,14 +626,21 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_open_with:
                 try {
+                    File workFile;
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    Activity activity = getActivity();
                     if (externalWork != null) {
-                        AndroidSystemUtils.openFileInExtApp(getActivity(), new File(externalWork.getFilePath()));
+                        workFile = new File(externalWork.getFilePath());
                     } else if (work.getCachedResponse() != null) {
-                        AndroidSystemUtils.openFileInExtApp(getActivity(), work.getCachedResponse());
+                        workFile = work.getCachedResponse();
                     } else {
-                        AndroidSystemUtils.openFileInExtApp(getActivity(), HtmlClient.getCachedFile(getContext(), work.getLink()));
+                        workFile =  HtmlClient.getCachedFile(getContext(), work.getLink());
                     }
-                } catch (IOException e) {
+                    Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", workFile);
+                    intent.setDataAndType(uri, workFile.getName().endsWith("html") ? "text/html" : "text/plain");
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(intent);
+                } catch (Exception e) {
                     Log.e(TAG, "Unknown exception", e);
                 }
                 return true;
