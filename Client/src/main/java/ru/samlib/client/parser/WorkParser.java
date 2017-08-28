@@ -226,8 +226,10 @@ public class WorkParser extends Parser {
 
     public static void processChapters(Work work) {
         List<String> indents = work.getIndents();
-        if(!(indents instanceof AbstractList)) {
+        try {
             indents.clear();
+        } catch (RuntimeException ex) {
+            // ignored
         }
         List<Bookmark> bookmarks = work.getAutoBookmarks();
         Document document = Jsoup.parseBodyFragment(work.getRawContent());

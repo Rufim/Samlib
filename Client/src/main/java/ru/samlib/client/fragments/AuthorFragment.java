@@ -475,34 +475,36 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     public boolean onClickLinkable(View view, Linkable linkable) {
-        switch (view.getId()) {
-            case R.id.work_item_update:
-                Work work = (Work) linkable;
-                work.setSizeDiff(0);
-                work.setChanged(false);
-                databaseService.doAction(DatabaseService.Action.UPDATE, linkable);
-                view.setVisibility(View.GONE);
-                if(!work.getCategory().isHasUpdates() && simpleView) {
-                    ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(View.GONE);
-                }
-                return true;
-            case R.id.work_item_layout:
-            case R.id.work_item_title:
-            case R.id.work_item_rate_and_size:
-                openLinkable(linkable);
-                return true;
-            case R.id.illustration_button:
-                IllustrationPagerFragment.show(newFragmentBuilder()
-                        .addToBackStack()
-                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
-                return true;
-            case R.id.comments_button:
-                CommentsPagerFragment.show(newFragmentBuilder()
-                        .addToBackStack()
-                        .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
-                        .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
-                return true;
+        if(linkable != null) {
+            switch (view.getId()) {
+                case R.id.work_item_update:
+                    Work work = (Work) linkable;
+                    work.setSizeDiff(0);
+                    work.setChanged(false);
+                    databaseService.doAction(DatabaseService.Action.UPDATE, linkable);
+                    view.setVisibility(View.GONE);
+                    if (!work.getCategory().isHasUpdates() && simpleView) {
+                        ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(View.GONE);
+                    }
+                    return true;
+                case R.id.work_item_layout:
+                case R.id.work_item_title:
+                case R.id.work_item_rate_and_size:
+                    openLinkable(linkable);
+                    return true;
+                case R.id.illustration_button:
+                    IllustrationPagerFragment.show(newFragmentBuilder()
+                            .addToBackStack()
+                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
+                    return true;
+                case R.id.comments_button:
+                    CommentsPagerFragment.show(newFragmentBuilder()
+                            .addToBackStack()
+                            .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
+                            .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
+                    return true;
+            }
         }
         return true;
     }

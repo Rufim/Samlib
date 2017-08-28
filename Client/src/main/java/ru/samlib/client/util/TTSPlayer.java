@@ -344,8 +344,12 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
         }
         available = new LinkedHashMap<>();
         for (Locale each : Locale.getAvailableLocales()) {
-            if (TextToSpeech.LANG_AVAILABLE == myTTS.isLanguageAvailable(each)) {
-                available.put(getLanguageName(each), each.toString());
+            // this bug https://stackoverflow.com/questions/26730082/illegalargumentexception-invalid-int-os-with-samsung-tts
+            try {
+                if (TextToSpeech.LANG_AVAILABLE == myTTS.isLanguageAvailable(each)) {
+                    available.put(getLanguageName(each), each.toString());
+                }
+            }catch (IllegalArgumentException ex) {
             }
         }
         new Thread(() -> myTTS.shutdown());
