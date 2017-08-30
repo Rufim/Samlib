@@ -1,12 +1,13 @@
 package ru.samlib.client.domain.entity;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by 0shad on 25.10.2015.
  */
-public enum Gender {
+public enum Gender implements Serializable {
 
     MALE, FEMALE, UNDEFINED;
 

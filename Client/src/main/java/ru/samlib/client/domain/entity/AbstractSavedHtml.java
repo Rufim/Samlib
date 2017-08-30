@@ -5,6 +5,7 @@ import io.requery.Entity;
 import io.requery.Key;
 import ru.kazantsev.template.net.CachedResponse;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.Date;
 
 
 @Entity
-public abstract class AbstractSavedHtml {
+public abstract class AbstractSavedHtml implements Serializable {
 
     @Key
     String filePath;

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import com.annimon.stream.Stream;
+import io.requery.util.ObservableList;
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -47,7 +48,9 @@ import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.SamlibUtils;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.*;

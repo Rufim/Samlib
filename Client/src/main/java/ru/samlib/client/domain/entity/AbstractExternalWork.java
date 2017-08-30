@@ -8,6 +8,7 @@ import ru.kazantsev.template.domain.Findable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -17,7 +18,7 @@ import java.util.List;
  * Created by 0shad on 17.05.2017.
  */
 @Entity
-public abstract class AbstractExternalWork implements Findable {
+public abstract class AbstractExternalWork implements Findable, Serializable {
     @Key
     String filePath;
     Date savedDate;
