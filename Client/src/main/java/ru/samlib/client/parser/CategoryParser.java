@@ -57,12 +57,14 @@ public class CategoryParser extends Parser{
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Categury Info
             if (parts.length > 0) {
-                String title = parts[0];
-                String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
-                if (hasNotAuthor) {
-                    author.setFullName(titles[0]);
+                String title = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text();
+                int delim = title.indexOf(":");
+                if(delim > 0) {
+                    category.setTitle(title.substring(delim + 1));
+                    if (hasNotAuthor) {
+                        author.setFullName(title.substring(0, delim));
+                    }
                 }
-                category.setTitle(titles[1].trim());
             }
             // Category info
             if (parts.length > 1 && hasNotAuthor) {
