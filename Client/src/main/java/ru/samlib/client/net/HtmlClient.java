@@ -1,6 +1,7 @@
 package ru.samlib.client.net;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.net.*;
@@ -81,7 +82,7 @@ public class HtmlClient {
 
     public static File getCachedFile(Context context, String link) {
         File cacheDir = context.getExternalCacheDir();
-        if(cacheDir == null)  {
+        if(cacheDir == null || !cacheDir.canWrite())  {
             cacheDir = context.getCacheDir();
         }
         String fileName = link.replaceAll("/+", "/");
