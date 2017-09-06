@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+    <View android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:id="@+id/section_up_shadow"
+          android:background="@drawable/up_shadow"/>
+    <LinearLayout android:layout_width="match_parent"
+                  android:orientation="horizontal"
+                  android:background="?attr/colorPrimary"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_vertical"
+                  android:id="@+id/section_layout">
+        <TextView android:layout_width="1dp"
+                  android:layout_weight="1"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/section_label"
+                  android:textColor="?attr/colorAccent"
+                  android:textSize="@dimen/text_super_nano"
+                  android:textStyle="bold"
+                  android:text="Глава"
+                  android:padding="7dp"
+                  style="@style/item_text"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/favorites_update"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="@dimen/spacing_nano"
+                android:visibility="gone"
+                android:id="@+id/section_update"
+                android:background="@android:drawable/list_selector_background"
+                android:textSize="@dimen/spacing_small"
+                style="@style/text.rate_column"/>
+        <ToggleButton android:layout_width="24dp"
+                      android:layout_height="24dp"
+                      android:id="@+id/section_expand_switch"
+                      android:textOn=""
+                      android:textOff=""
+                      android:text=""
+                      android:layout_gravity="center_vertical"
+                      android:layout_marginRight="@dimen/spacing_medium"
+                      android:background="@drawable/expand_toggle"  />
+    </LinearLayout>
+    <View android:layout_width="match_parent"
+          android:layout_height="3dp"
+          android:id="@+id/section_down_shadow"
+          android:background="@drawable/shadow"/>
+    <LinearLayout android:id="@+id/section_layout_subitems"
+                  android:layout_width="match_parent"
+                  android:orientation="vertical"
+                  android:layout_height="wrap_content">
+    </LinearLayout>
+</LinearLayout>

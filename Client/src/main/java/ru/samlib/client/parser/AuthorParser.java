@@ -15,10 +15,7 @@ import ru.kazantsev.template.util.TextUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by Rufim on 01.07.2015.
@@ -254,6 +251,7 @@ public class AuthorParser extends Parser {
                 boolean atLeastOne = false;
                 for (Work work : category.getWorks()) {
                     work.setChanged(true);
+                    work.setChangedDate(new Date());
                     atLeastOne = true;
                 }
                 if (atLeastOne) {
@@ -299,6 +297,7 @@ public class AuthorParser extends Parser {
                 }
                 if (!oldWork.getSize().equals(newWork.getSize())) {
                     oldWork.setChanged(true);
+                    oldWork.setChangedDate(new Date());
                     Integer oldSize = oldWork.getSize() == null ? 0 : oldWork.getSize();
                     Integer oldDiff = oldWork.getSizeDiff() == null ? 0 : oldWork.getSizeDiff();
                     oldWork.setSizeDiff(newWork.getSize() - oldWork.getSize());
@@ -318,6 +317,7 @@ public class AuthorParser extends Parser {
         if (!newWorks.isEmpty()) {
             for (Work newWork : newWorks) {
                 newWork.setChanged(true);
+                newWork.setChangedDate(new Date());
                 newWork.setAuthor(author);
                 if (category != null) {
                     newWork.createEntity(author, category);

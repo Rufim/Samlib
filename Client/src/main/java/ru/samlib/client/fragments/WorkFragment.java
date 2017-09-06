@@ -67,6 +67,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.CharsetDecoder;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -101,6 +102,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private CountDownTimer autoScroller;
 
     private View decorView;
+
+    private long timer = 0;
+    private boolean second = false;
 
     private int lastOffset = 0;
 
@@ -1046,7 +1050,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         private String fontPath;
 
         public WorkFragmentAdaptor() {
-            super(true, false, R.layout.header_work_list, R.layout.item_indent);
+            super(false, R.layout.header_work_list, R.layout.item_indent);
             refreshSettings(getContext());
         }
 
@@ -1169,8 +1173,18 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     speakLayout.setVisibility(GONE);
                                 }
                             }
-                            if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && isFullscreen) {
-                                stopFullscreen();
+                            if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                if(second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
+                                    if(isFullscreen) {
+                                        stopFullscreen();
+                                    } else {
+                                        enableFullscreen();
+                                    }
+                                    second = false;
+                                } else {
+                                    second = true;
+                                    timer = System.currentTimeMillis();
+                                }
                             }
                         }
                         return true;

@@ -62,6 +62,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     Date createDate;
     Date updateDate;
     Date cachedDate;
+    Date changedDate;
     New state = New.EMPTY;
     String description;
     boolean hasIllustration = false;

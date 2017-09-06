@@ -69,6 +69,8 @@
     <string name="author_about">Об авторе:</string>
     <string name="author_suggestion">Начните знакомство с:</string>
     <string name="author_annotation">Аннотация к разделу:</string>
+    <string name="author_section_updates">Обновления</string>
+    <string name="author_section_updates_annotation">Последние обновления в произведений автора</string>
     <string name="illustration">Иллюстрации</string>
     <string name="comments">Комментарии</string>
     <string name="author_page">Страничка автора</string>

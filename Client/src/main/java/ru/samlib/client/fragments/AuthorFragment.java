@@ -55,6 +55,9 @@ import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 /**
  * Created by Dmitry on 10.07.2015.
  */
@@ -64,11 +67,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private Author author;
     private Category category;
+    private Category categoryUpdate;
     private boolean simpleView = true;
     private boolean onRestore = false;
     @Inject
     DatabaseService databaseService;
-
 
 
     public static AuthorFragment show(FragmentBuilder builder, @IdRes int container, String link) {
@@ -104,6 +107,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 author.setParsed(true);
             }
             postEvent(new AuthorParsedEvent(author));
+            if (author.isObservable()) {
+                categoryUpdate = new Category();
+                categoryUpdate.setTitle(getString(R.string.author_section_updates));
+                categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
+                categoryUpdate.setWorks(author.getUpdates());
+            }
             safeInvalidateOptionsMenu();
             return new ArrayList<>(author.getStaticCategory());
         });
@@ -138,7 +147,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         } else {
             menu.removeItem(R.id.action_author_observable);
         }
-        if(!author.isObservable() || !author.isParsed()) {
+        if (!author.isObservable() || !author.isParsed()) {
             menu.removeItem(R.id.action_author_make_all_visited);
         }
         menu.findItem(R.id.action_author_mode).setChecked(simpleView);
@@ -167,9 +176,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
                 editor.putBoolean(getString(R.string.preferenceAuthorSimpleView), simpleView);
                 editor.apply();
-                if(adapter != null) {
-
-
+                if (adapter != null) {
                     adapter.getItems().clear();
                 }
                 adapter = newAdapter();
@@ -177,8 +184,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 super.refreshData(false);
                 return true;
             case R.id.action_author_make_all_visited:
-                if(author.isEntity()) {
-                    if(category == null) {
+                if (author.isEntity()) {
+                    if (category == null) {
                         Stream.of(author.getAllWorks().entrySet()).map(Map.Entry::getValue).forEach(work -> {
                             work.setChanged(false);
                             work.setSizeDiff(null);
@@ -264,7 +271,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     protected ItemListAdapter<Linkable> newAdapter() {
-        if(simpleView) {
+        if (simpleView) {
             return new ExpandableAuthorFragmentAdaptor();
         } else {
             return new AuthorFragmentAdaptor();
@@ -313,93 +320,141 @@ public class AuthorFragment extends ListFragment<Linkable> {
         }
     }
 
-    private class ExpandableAuthorFragmentAdaptor extends LazyItemListAdapter<Linkable> {
+    private class ExpandableAuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public ExpandableAuthorFragmentAdaptor() {
-            super(R.layout.item_section_expandable_header);
+            super(false, R.layout.item_section_expandable_header, R.layout.item_section_expandable);
         }
 
+
         @Override
-        public void onBindHolder(ViewHolder holder, @Nullable Linkable item) {
-            Category category = (Category) item;
+        public void onBindViewHolder(ViewHolder holder, int position) {
             boolean navBarCategory = savedDataSource != null;
-            ViewGroup root = (ViewGroup) holder.getItemView();
-            GuiUtils.setText(root, R.id.section_label, category.getTitle());
-            ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
-            expand.setTag(category);
-            ViewGroup itemsView = ((ViewGroup) root.findViewById(R.id.section_layout_subitems));
-            itemsView.removeAllViews();
-            if(category.isHasUpdates()) {
-                GuiUtils.setVisibility(View.VISIBLE, root,  R.id.section_update);
-            } else {
-                GuiUtils.setVisibility(View.GONE, root,  R.id.section_update);
+            switch (holder.getItemViewType()) {
+                case R.layout.item_section_expandable_header:
+                    initHeader(holder, this, navBarCategory);
+                    break;
+                case R.layout.item_section_expandable:
+                    Category category = (Category) getItem(position);
+                    if (category == null) return;
+                    ViewGroup root = (ViewGroup) holder.getItemView();
+                    GuiUtils.setText(root, R.id.section_label, category.getTitle());
+                    ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
+                    expand.setTag(category);
+                    ViewGroup itemsView = ((ViewGroup) root.findViewById(R.id.section_layout_subitems));
+                    itemsView.removeAllViews();
+                    if (category.isHasUpdates()) {
+                        GuiUtils.setVisibility(View.VISIBLE, root, R.id.section_update);
+                    } else {
+                        GuiUtils.setVisibility(GONE, root, R.id.section_update);
+                    }
+                    if (navBarCategory) {
+                        GuiUtils.setVisibility(GONE, root, R.id.section_down_shadow, R.id.section_layout);
+                    } else {
+                        GuiUtils.setVisibility(View.VISIBLE, root, R.id.section_down_shadow, R.id.section_layout);
+                    }
+                    expand.setOnCheckedChangeListener(null);
+                    if (category.isInUIExpanded() || navBarCategory) {
+                        expand.setChecked(true);
+                        for (Work work : category.getWorks()) {
+                            addWorkToRootItem(itemsView, work, this);
+                        }
+                        for (Link link : category.getLinks()) {
+                            addLinkToRootItem(itemsView, link);
+                        }
+                        if (category.getWorks().size() > 0 || category.getLinks().size() > 0) {
+                            itemsView.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
+                        }
+                    } else {
+                        expand.setChecked(false);
+                    }
+                    expand.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        ViewGroup itemRoot = (ViewGroup) ((ViewGroup) buttonView.getParent().getParent()).findViewById(R.id.section_layout_subitems);
+                        Category categoryTag = (Category) buttonView.getTag();
+                        categoryTag.setInUIExpanded(isChecked);
+                        if (isChecked) {
+                            for (Work work : categoryTag.getWorks()) {
+                                addWorkToRootItem(itemRoot, work, this);
+                            }
+                            for (Link link : categoryTag.getLinks()) {
+                                addLinkToRootItem(itemRoot, link);
+                            }
+                            if (categoryTag.getWorks().size() > 0 || categoryTag.getLinks().size() > 0) {
+                                itemRoot.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
+                            }
+                        } else {
+                            itemRoot.removeAllViews();
+                        }
+                    });
+                    holder.setTag(category);
+                    break;
             }
-            if(navBarCategory) {
-                GuiUtils.setVisibility(View.GONE, root, R.id.section_down_shadow, R.id.section_layout);
-            } else {
+        }
+
+
+        private void initHeader(ItemListAdapter.ViewHolder holder, MultiItemListAdapter adapter, boolean hideUpdates) {
+            if (author.isObservable() && categoryUpdate != null && categoryUpdate.getWorks() != null && categoryUpdate.getWorks().size() > 0 && !hideUpdates) {
+                ViewGroup root = (ViewGroup) holder.getItemView();
+                if(root.findViewById(R.id.section_layout_subitems) == null) {
+                    ViewGroup newRoot = GuiUtils.inflate(root, R.layout.item_section_expandable_header);
+                    root.addView(newRoot);
+                }
+                GuiUtils.setText(root, R.id.section_label, categoryUpdate.getTitle());
+                ToggleButton expand = (ToggleButton) root.findViewById(R.id.section_expand_switch);
+                ViewGroup itemsView = ((ViewGroup) root.findViewById(R.id.section_layout_subitems));
+                itemsView.removeAllViews();
+                expand.setTag(categoryUpdate);
+                GuiUtils.setVisibility(View.GONE, root, R.id.section_update);
                 GuiUtils.setVisibility(View.VISIBLE, root, R.id.section_down_shadow, R.id.section_layout);
-            }
-            expand.setOnCheckedChangeListener(null);
-            if(category.isInUIExpanded() || navBarCategory) {
-                expand.setChecked(true);
-                for (Work work : category.getWorks()) {
-                    addWorkToRootItem(itemsView, work);
-                }
-                for (Link link : category.getLinks()) {
-                    addLinkToRootItem(itemsView, link);
-                }
-                if(category.getWorks().size() > 0 || category.getLinks().size() > 0) {
-                    itemsView.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
-                }
-            } else {
-                expand.setChecked(false);
-            }
-            expand.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                ViewGroup itemRoot = (ViewGroup) ((ViewGroup) buttonView.getParent().getParent()).findViewById(R.id.section_layout_subitems);
-                Category categoryTag = (Category) buttonView.getTag();
-                categoryTag.setInUIExpanded(isChecked);
-                if(isChecked) {
-                    for (Work work : categoryTag.getWorks()) {
-                        addWorkToRootItem(itemRoot, work);
+                expand.setOnCheckedChangeListener(null);
+                if (categoryUpdate.isInUIExpanded()) {
+                    expand.setChecked(true);
+                    for (Work work : categoryUpdate.getWorks()) {
+                        addWorkToRootItem(itemsView, work, adapter);
                     }
-                    for (Link link : categoryTag.getLinks()) {
-                        addLinkToRootItem(itemRoot, link);
-                    }
-                    if(categoryTag.getWorks().size() > 0 || categoryTag.getLinks().size() > 0) {
-                        itemRoot.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
+                    if (categoryUpdate.getWorks().size() > 0) {
+                        itemsView.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
                     }
                 } else {
-                    itemRoot.removeAllViews();
+                    expand.setChecked(false);
                 }
-            });
-            holder.setTag(category);
+                expand.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    ViewGroup itemRoot = (ViewGroup) ((ViewGroup) buttonView.getParent().getParent()).findViewById(R.id.section_layout_subitems);
+                    Category categoryTag = (Category) buttonView.getTag();
+                    categoryTag.setInUIExpanded(isChecked);
+                    if (isChecked) {
+                        for (Work work : categoryTag.getWorks()) {
+                            addWorkToRootItem(itemRoot, work, adapter);
+                        }
+                        if (categoryTag.getWorks().size() > 0) {
+                            itemRoot.addView(new View(getContext()), -1, GuiUtils.dpToPx(3, getContext()));
+                        }
+                    } else {
+                        itemRoot.removeAllViews();
+                    }
+                });
+            } else {
+                ((ViewGroup) holder.getItemView()).removeAllViews();
+            }
         }
 
         @Override
         public void onClick(View view) {
-            if(view.getTag() instanceof  Linkable) {
+            if (view.getTag() instanceof Linkable) {
                 onClickLinkable(view, (Linkable) view.getTag());
             }
-            if(view.getId() == R.id.section_update) {
+            if (view.getId() == R.id.section_update) {
                 ViewHolder holder = (ViewHolder) view.getTag();
                 Category category = (Category) holder.getTag();
                 for (Work work : category.getWorks()) {
                     work.setChanged(false);
                     work.setSizeDiff(0);
-                    if(work.isEntity())
-                    databaseService.doAction(DatabaseService.Action.UPDATE, work);
+                    if (work.isEntity())
+                        databaseService.doAction(DatabaseService.Action.UPDATE, work);
                 }
-                view.setVisibility(View.GONE);
+                view.setVisibility(GONE);
                 notifyChanged();
             }
-        }
-
-        private void addWorkToRootItem(ViewGroup rootView, Work work) {
-            ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_subitem);
-            initWorkView(subitem, work);
-            Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {v.setOnClickListener(this); v.setTag(work);});
-            subitem.setOnClickListener(this);
-            rootView.addView(subitem);
         }
 
         private void addLinkToRootItem(ViewGroup rootView, Link link) {
@@ -410,10 +465,29 @@ public class AuthorFragment extends ListFragment<Linkable> {
             } else {
                 title = link.getTitle();
             }
-            Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {v.setOnClickListener(this); v.setTag(link);});
+            Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {
+                v.setOnClickListener(this);
+                v.setTag(link);
+            });
             GuiUtils.setText(subitem.findViewById(R.id.work_item_title), GuiUtils.coloredText(getActivity(), title, R.color.material_deep_teal_200));
             rootView.addView(subitem);
         }
+
+        @Override
+        public int getLayoutId(Linkable item) {
+            return R.layout.item_section_expandable;
+        }
+    }
+
+    private void addWorkToRootItem(ViewGroup rootView, Work work, ItemListAdapter adapter) {
+        ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_subitem);
+        initWorkView(subitem, work);
+        Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {
+            v.setOnClickListener(adapter);
+            v.setTag(work);
+        });
+        subitem.setOnClickListener(adapter);
+        rootView.addView(subitem);
     }
 
     private void initWorkView(View workView, Work work) {
@@ -436,21 +510,21 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (work.isHasIllustration()) {
             illustrationButton.setVisibility(View.VISIBLE);
         } else {
-            illustrationButton.setVisibility(View.GONE);
+            illustrationButton.setVisibility(GONE);
         }
         Button commentsButton = (Button) workView.findViewById(R.id.comments_button);
         if (work.isHasComments()) {
             commentsButton.setVisibility(View.VISIBLE);
         } else {
-            commentsButton.setVisibility(View.GONE);
+            commentsButton.setVisibility(GONE);
         }
         if (!work.getGenres().isEmpty()) {
             GuiUtils.setTextOrHide(workView.findViewById(R.id.work_item_subtitle),
                     getString(R.string.item_genres_label) + " " + work.printGenres());
         } else {
-            workView.findViewById(R.id.work_item_subtitle).setVisibility(View.GONE);
+            workView.findViewById(R.id.work_item_subtitle).setVisibility(GONE);
         }
-        if(workView.findViewById(R.id.work_annotation) != null) {
+        if (workView.findViewById(R.id.work_annotation) != null) {
             if (!work.getAnnotationBlocks().isEmpty()) {
                 workView.findViewById(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
                 View annotation_view = workView.findViewById(R.id.work_annotation);
@@ -462,7 +536,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
                 textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
             } else {
-                workView.findViewById(R.id.work_annotation).setVisibility(View.GONE);
+                workView.findViewById(R.id.work_annotation).setVisibility(GONE);
             }
         }
         if (work.isChanged() && author.isObservable()) {
@@ -473,21 +547,21 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 GuiUtils.setText((TextView) workView.findViewById(R.id.work_item_update), R.string.favorites_new);
             }
         } else {
-            workView.findViewById(R.id.work_item_update).setVisibility(View.GONE);
+            workView.findViewById(R.id.work_item_update).setVisibility(GONE);
         }
     }
 
     public boolean onClickLinkable(View view, Linkable linkable) {
-        if(linkable != null) {
+        if (linkable != null) {
             switch (view.getId()) {
                 case R.id.work_item_update:
                     Work work = (Work) linkable;
                     work.setSizeDiff(0);
                     work.setChanged(false);
                     databaseService.doAction(DatabaseService.Action.UPDATE, linkable);
-                    view.setVisibility(View.GONE);
+                    view.setVisibility(GONE);
                     if (!work.getCategory().isHasUpdates() && simpleView) {
-                        ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(View.GONE);
+                        ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(GONE);
                     }
                     return true;
                 case R.id.work_item_layout:
@@ -515,20 +589,20 @@ public class AuthorFragment extends ListFragment<Linkable> {
     private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public AuthorFragmentAdaptor() {
-            super(true, R.layout.header_author_list, R.layout.item_section, R.layout.item_work);
+            super(R.layout.header_author_list, R.layout.item_section, R.layout.item_work);
         }
 
         @Override
         public boolean onClick(View view, int position) {
-             onClickLinkable(view, getItem(position));
-             return true;
+            onClickLinkable(view, getItem(position));
+            return true;
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
                 case R.layout.header_author_list:
-                    initHeader(holder);
+                    initHeader(holder, this, savedDataSource != null);
                     break;
                 case R.layout.item_section:
                     Category category = (Category) getItem(position);
@@ -543,7 +617,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                         annotationView.setText(spanner.fromHtml(category.processAnnotation(getResources().getColor(R.color.SeaGreen))));
                     } else {
-                        holder.getView(R.id.section_annotation).setVisibility(View.GONE);
+                        holder.getView(R.id.section_annotation).setVisibility(GONE);
                     }
                     break;
                 case R.layout.item_work:
@@ -564,7 +638,31 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
         }
 
-        private void initHeader(ViewHolder holder) {
+        @Override
+        public int getLayoutId(Linkable item) {
+            if (item instanceof Category) {
+                return R.layout.item_section;
+            } else {
+                return R.layout.item_work;
+            }
+        }
+
+        @Override
+        public List<Linkable> getSubItems(Linkable item) {
+            if (item instanceof Category) {
+                return ((Category) item).getLinkables();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public boolean hasSubItems(Linkable item) {
+            return item instanceof Category;
+        }
+
+        private void initHeader(ItemListAdapter.ViewHolder holder, MultiItemListAdapter adapter, boolean hideUpdates) {
+            GuiUtils.setVisibility(VISIBLE, (ViewGroup) holder.getItemView(), R.id.author_header_annotation_root);
             TextView authorAboutText = holder.getView(R.id.author_about_text);
             LinearLayout authorAboutLayout = holder.getView(R.id.author_about_layout);
             LinearLayout authorSuggestions = holder.getView(R.id.author_suggestions);//holder.getView(R.id.author_suggestions);
@@ -597,7 +695,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 });
                 authorSuggestionLayout.setVisibility(View.VISIBLE);
             } else {
-                authorSuggestionLayout.setVisibility(View.GONE);
+                authorSuggestionLayout.setVisibility(GONE);
             }
             authorGridInfo.removeAllViews();
             for (String title : getResources().getStringArray(R.array.author_grid)) {
@@ -631,6 +729,20 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         break;
                 }
             }
+            if (author.isObservable() && categoryUpdate != null && categoryUpdate.getWorks() != null && categoryUpdate.getWorks().size() > 0 && !hideUpdates) {
+                GuiUtils.setVisibility(VISIBLE, (ViewGroup) holder.getItemView(), R.id.author_header_updates);
+                ViewGroup root = (ViewGroup) holder.getItemView().findViewById(R.id.author_header_updates);
+                GuiUtils.setText(root, R.id.section_label, categoryUpdate.getTitle() + ":");
+                GuiUtils.setText(root, R.id.section_annotation, new HtmlSpanner().fromHtml(categoryUpdate.processAnnotation(getResources().getColor(R.color.SeaGreen))));
+                root.removeViews(1, root.getChildCount() - 1);
+                for (Work work : categoryUpdate.getWorks()) {
+                    View view = GuiUtils.inflate(root, R.layout.item_work);
+                    root.addView(view);
+                    initWorkView(view, work);
+                }
+            } else {
+                GuiUtils.setVisibility(GONE, (ViewGroup) holder.getItemView(), R.id.author_header_updates);
+            }
         }
 
         private void addToGrid(GridLayout authorGridInfo, String title, Object content) {
@@ -647,28 +759,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
         }
 
-        @Override
-        public int getLayoutId(Linkable item) {
-            if (item instanceof Category) {
-                return R.layout.item_section;
-            } else {
-                return R.layout.item_work;
-            }
-        }
-
-        @Override
-        public List<Linkable> getSubItems(Linkable item) {
-            if (item instanceof Category) {
-                return ((Category) item).getLinkables();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public boolean hasSubItems(Linkable item) {
-            return item instanceof Category;
-        }
     }
 
 }

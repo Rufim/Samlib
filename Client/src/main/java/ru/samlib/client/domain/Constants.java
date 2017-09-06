@@ -60,7 +60,7 @@ public class Constants {
         public static final int VERSION = BuildConfig.VERSION_CODE;
         public static final String VERSION_NAME = BuildConfig.VERSION_NAME;
         public static final String DATABASE_NAME = BuildConfig.APPLICATION_ID + ".db";
-        public static final int DATABASE_VERSION = 1;
+        public static final int DATABASE_VERSION = 2;
     }
 
     public static class Pattern {
