@@ -105,10 +105,10 @@ public class DatabaseService {
                     } catch (MissingKeyException ex) {
                     }
                 }
+                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
                 for (Category category : authorEntity.getCategories()) {
                     updateCategory(category);
                 }
-                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
             }
             return authorEntity;
         }

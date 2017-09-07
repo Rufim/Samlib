@@ -211,7 +211,7 @@ public class WorkParser extends Parser {
             }
             if (parts[3].contains("<!--Section Begins-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
-                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->").setMatchCount(999))[0]);
             } else {
                 work.setRawContent(parts[3]);
             }

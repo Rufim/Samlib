@@ -253,7 +253,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public void refreshData(boolean showProgress) {
-        author.setParsed(savedDataSource == null);
+        author.setParsed(savedDataSource != null);
         super.refreshData(showProgress);
     }
 
@@ -738,6 +738,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 for (Work work : categoryUpdate.getWorks()) {
                     View view = GuiUtils.inflate(root, R.layout.item_work);
                     root.addView(view);
+                    view.setTag(work);
+                    view.setOnClickListener(v -> WorkFragment.show(AuthorFragment.this, ((Work) v.getTag()).getLink()));
                     initWorkView(view, work);
                 }
             } else {
