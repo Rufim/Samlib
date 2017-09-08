@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
 import android.support.v4.content.FileProvider;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -25,16 +26,22 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.*;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import net.nightwhistler.htmlspanner.FontFamily;
 import net.nightwhistler.htmlspanner.FontResolver;
 import net.nightwhistler.htmlspanner.SystemFontResolver;
+
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
+
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.jdom2.Content;
+
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
@@ -63,10 +70,13 @@ import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.CharsetDecoder;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.GONE;
@@ -381,14 +391,67 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return ((float) seekBar.getProgress() / 100f);
     }
 
+    float multiplier = 1;
+    double lastValue = 0;
+    int moveBy = 0;
+
+    class MultiplierUpdate implements Runnable {
+
+        @Override
+        public void run() {
+            int first = ((LinearLayoutManager) itemList.getLayoutManager()).findFirstVisibleItemPosition();
+            int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
+            int len = 0;
+
+            TextView textView = null;
+            for (int i = first; i <= last; i++) {
+                textView = getTextViewIndent(i);
+                if (textView != null) break;
+            }
+            if (textView == null) return;
+            int width = textView.getWidth();
+            int height = itemList.getHeight();
+            float tsize = textView.getTextSize();
+
+            HtmlSpanner spanner = new HtmlSpanner();
+            for (int i = first; i <= last; i++) {
+                len += spanner.fromHtml(adapter.getItems().get(i)).toString().length();
+            }
+
+            float maxLen = width / (tsize * 1.3f) * height / (tsize * 1.1f);
+
+            multiplier = (float) Math.sqrt(maxLen / len);
+
+            if (multiplier > 1.8f) {
+                multiplier = 1.8f;
+            } else if (multiplier < 0.5f) {
+                multiplier = 0.5f;
+            }
+        }
+    }
+
+    ScheduledExecutorService executorService;
+
     private void startAutoScroll() {
-        final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enouth to infinity. if not enought you can restart timer in onFinish()
-        final int scrollPeriod = 20; // every 20 ms scoll will happened. smaller values for smoother
-        final int heightToScroll = 20; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enough to infinity. if not enough you can restart timer in onFinish()
+        final int scrollPeriod = 40; // every 20 ms scroll will happened. smaller values for smoother
+        final int heightToScroll = 1; // will be scrolled to 20 px every time. smaller values for smoother scrolling
         if (autoScroller != null) autoScroller.cancel();
+        if(executorService != null)
+        executorService.shutdown();
+        executorService = Executors.newScheduledThreadPool(1);
+        executorService.scheduleAtFixedRate(new MultiplierUpdate(), 0, 2, TimeUnit.SECONDS);
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
-                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.20)));
+                lastValue += heightToScroll * multiplier * getRate(autoScrollSpeed);
+                moveBy = (int) lastValue;
+                itemList.scrollBy(0, moveBy);
+                if (moveBy >= 1) {
+                    lastValue = lastValue - moveBy;
+                    if (lastValue < 0.01) {
+                        lastValue = 0;
+                    }
+                }
             }
 
             public void onFinish() {
@@ -638,7 +701,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     } else if (work.getCachedResponse() != null) {
                         workFile = work.getCachedResponse();
                     } else {
-                        workFile =  HtmlClient.getCachedFile(getContext(), work.getLink());
+                        workFile = HtmlClient.getCachedFile(getContext(), work.getLink());
                     }
                     Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", workFile);
                     intent.setDataAndType(uri, workFile.getName().endsWith("html") ? "text/html" : "text/plain");
@@ -720,11 +783,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if(mode.equals(Mode.SPEAK)) {
+        if (mode.equals(Mode.SPEAK)) {
             safeCheckMenuItem(R.id.action_work_speaking, false);
             stopSpeak(true);
         }
-        if(mode.equals(Mode.AUTO_SCROLL)) {
+        if (mode.equals(Mode.AUTO_SCROLL)) {
             safeCheckMenuItem(R.id.action_work_auto_scroll, false);
             cancelAutoScroll();
         }
