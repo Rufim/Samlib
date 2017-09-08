@@ -9,9 +9,11 @@ import dagger.Module;
 import io.requery.Persistable;
 import io.requery.android.DefaultMapping;
 import io.requery.android.sqlite.DatabaseSource;
+import io.requery.cache.EntityCacheBuilder;
 import io.requery.rx.RxSupport;
 import io.requery.rx.SingleEntityStore;
 import io.requery.sql.Configuration;
+import io.requery.sql.ConfigurationBuilder;
 import io.requery.sql.EntityDataStore;
 import io.requery.sql.TableCreationMode;
 import org.acra.ACRA;
@@ -34,6 +36,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Rufim on 03.07.2015.
@@ -106,8 +109,16 @@ public class App extends MultiDexApplication {
                 //source.setTableCreationMode(TableCreationMode.DROP_CREATE);
                 source.setLoggingEnabled(true);
             }
-
-            Configuration configuration = source.getConfiguration();
+            Configuration configuration = new ConfigurationBuilder(source, Models.DEFAULT)
+                    .useDefaultLogging()
+                    .setWriteExecutor(Executors.newSingleThreadExecutor())
+                    .setEntityCache(new EntityCacheBuilder(Models.DEFAULT)
+                            .useReferenceCache(false)
+                            .useSerializableCache(false)
+                            .build())
+                    .setMapping(source.getConfiguration().getMapping())
+                    .build();
+           // Configuration configuration = source.getConfiguration();
             ((DefaultMapping)configuration.getMapping()).addConverter(new BigDecimalConverter(), BigDecimal.class);
             ((DefaultMapping) configuration.getMapping()).addConverter(new ListConverter(), List.class);
             dataStore = new EntityDataStore<Persistable>(configuration);

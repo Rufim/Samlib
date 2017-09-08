@@ -92,6 +92,10 @@ public class DatabaseService {
                 }
                 authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
             } else {
+                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
+                for (Category category : authorEntity.getCategories()) {
+                    updateCategory(category);
+                }
                 for (Work work : authorEntity.getWorks()) {
                     try {
                         doAction(Action.UPDATE, work);
@@ -104,10 +108,6 @@ public class DatabaseService {
                         doAction(Action.UPDATE, link);
                     } catch (MissingKeyException ex) {
                     }
-                }
-                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
-                for (Category category : authorEntity.getCategories()) {
-                    updateCategory(category);
                 }
             }
             return authorEntity;
