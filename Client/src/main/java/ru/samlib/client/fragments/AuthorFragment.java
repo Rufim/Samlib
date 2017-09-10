@@ -15,7 +15,7 @@ import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import com.annimon.stream.Stream;
-import io.requery.util.ObservableList;
+
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -99,7 +99,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 new AuthorParser(author).parse();
                 if (!Parser.isCachedMode() && author.isObservable()) {
-                    databaseService.createOrUpdateAuthor(author.createEntity()).setParsed(true);
+                    databaseService.createOrUpdateAuthor(author).setParsed(true);
                     if (author.isHasUpdates()) {
                         postEvent(new AuthorUpdatedEvent(author));
                     }
@@ -156,10 +156,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
             case R.id.action_author_observable:
                 if (item.isChecked()) {
                     author.setObservable(false);
-                    new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntity())).start();
+                    new Thread(() -> databaseService.createOrUpdateAuthor(author)).start();
                     item.setChecked(false);
                 } else {
-                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntity())).start();
+                    new Thread(() -> databaseService.insertObservableAuthor(author)).start();
                     item.setChecked(true);
                 }
                 safeInvalidateOptionsMenu();
@@ -193,7 +193,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             work.setSizeDiff(null);
                         });
                     }
-                    databaseService.createOrUpdateAuthor(author.createEntity());
+                    databaseService.createOrUpdateAuthor(author);
                 }
                 adapter.notifyChanged();
                 return true;
@@ -229,7 +229,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             setDataSource((skip, size) -> {
                 if (skip != 0) return null;
                 if (category != null) {
-                    if (!category.isParsed() && !(category instanceof CategoryEntity)) {
+                    if (!category.isParsed()) {
                         try {
                             category = new CategoryParser(category).parse();
                         } catch (MalformedURLException e) {
@@ -287,7 +287,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             intentAuthor = new Author(link);
         }
         if (intentAuthor != null) {
-            AuthorEntity entity;
+            Author entity;
             if ((entity = databaseService.getAuthor(intentAuthor.getLink())) != null) {
                 author = entity;
             } else {

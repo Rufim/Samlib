@@ -10,7 +10,7 @@ ext {
     versionProjectName = "0.5.7"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
-    requeryVersion = '1.4.0'
+    dbflowVersion = '4.0.3'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'
     butterknifeVersion = '8.5.1'
@@ -116,7 +116,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
     annotationProcessor "com.jakewharton:butterknife-compiler:$butterknifeVersion"
-    annotationProcessor "io.requery:requery-processor:$requeryVersion"   // use an APT plugin
+    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:$dbflowVersion"
     provided "javax.annotation:jsr250-api:1.0"
     provided "org.projectlombok:lombok:$lombokVersion"
     compile "com.android.support:gridlayout-v7:$supportLibraryVersion"
@@ -142,9 +142,10 @@ dependencies {
     compile "com.snappydb:snappydb-lib:0.5.2"
     compile "com.evernote:android-job:1.1.11-SNAPSHOT"
     compile "net.vrallev.android:cat:1.0.4"
- 
-    compile "io.requery:requery:$requeryVersion"
-    compile "io.requery:requery-android:$requeryVersion" // for android
+
+
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:$dbflowVersion"
+    compile "com.github.Raizlabs.DBFlow:dbflow:$dbflowVersion"
     compile 'com.android.support:multidex:1.0.1'
     compile project(':template')
     compile 'ch.acra:acra:4.9.2'

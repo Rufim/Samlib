@@ -1,7 +1,6 @@
 package ru.samlib.client.database;
 
-import io.requery.Converter;
-import io.requery.Nullable;
+import com.raizlabs.android.dbflow.converter.TypeConverter;
 import net.vrallev.android.cat.Cat;
 
 import java.util.ArrayList;
@@ -12,29 +11,13 @@ import java.util.List;
 /**
  * Created by 0shad on 26.06.2016.
  */
-public class ListConverter implements Converter<List, String> {
+public class ListConverter<T> extends TypeConverter<String, List<T>> {
     private static final String SEPARATOR = "\0007";
     private static final char STRING = 'S';
     private static final char ENUM = 'E';
 
-
-    public Class<List> getMappedType() {
-        //noinspection unchecked
-        return (Class) List.class;
-    }
-
-
-    public Class<String> getPersistedType() {
-        return String.class;
-    }
-
-    @Nullable
-    public Integer getPersistedSize() {
-        return null;
-    }
-
     @Override
-    public String convertToPersisted(List list) {
+    public String getDBValue(List list) {
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -66,7 +49,7 @@ public class ListConverter implements Converter<List, String> {
     }
 
     @Override
-    public List convertToMapped(Class<? extends List> type, String value) {
+    public List getModelValue(String value) {
         if (value == null) {
             return Collections.emptyList();
         }
@@ -77,7 +60,7 @@ public class ListConverter implements Converter<List, String> {
                     ArrayList<Enum> enumArrayList = new ArrayList<>();
                     for (String name : value.substring(value.indexOf("]") + 1).split(SEPARATOR)) {
                         for (Enum anEnum : enums) {
-                            if(anEnum.name().equals(name)) {
+                            if (anEnum.name().equals(name)) {
                                 enumArrayList.add(anEnum);
                             }
                         }

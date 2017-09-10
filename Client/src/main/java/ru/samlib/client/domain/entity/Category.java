@@ -1,13 +1,16 @@
 package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
-import io.requery.*;
-import io.requery.sql.MissingKeyException;
+
+
+import com.raizlabs.android.dbflow.annotation.*;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 
@@ -19,96 +22,31 @@ import java.util.List;
  * Created by Rufim on 01.07.2015.
  */
 @Data
-@Entity
+@Table(database = MyDatabase.class, allFields = true)
 public class Category implements Linkable, Serializable, Parsable {
 
     private static final long serialVersionUID = 6549621729790810154L;
 
-    @Key
-    @Generated
+    @PrimaryKey(autoincrement = true)
     Integer id;
 
     String title;
     String annotation;
-    @ManyToOne
+    @ForeignKey
     Author author;
     Type type = Type.OTHER;
-    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> works;
-    @OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Link> links;
     String link;
 
-    @Transient
+    @ColumnIgnore
     boolean parsed = false;
-    @Transient
+    @ColumnIgnore
     boolean inUIExpanded = false;
 
     public Category() {
-        if (!(getClass().equals(CategoryEntity.class))) {
-            works = new ArrayList<>();
-            links = new ArrayList<>();
-        }
-    }
-
-    public Integer getIdNoDB() {
-        if (id != null) return id;
-        try {
-            id = getId();
-        } catch (MissingKeyException ex) {
-            id = null;
-        }
-        return id;
-    }
-
-    public CategoryEntity createEntity(AuthorEntity authorEntity) {
-        CategoryEntity entity;
-        if (isEntity()) {
-            entity = (CategoryEntity) this;
-        } else {
-            entity = new CategoryEntity();
-        }
-        setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
-        if (authorEntity != null) {
-            if (authorEntity.getCategories() == null) {
-                authorEntity.setCategories(new ArrayList<>());
-            }
-            boolean found = false;
-            for (int i = 0; i < authorEntity.getCategories().size(); i++) {
-                Category category = authorEntity.getCategories().get(i);
-                if (category.equals(this)) {
-                    found = true;
-                    if (category.isEntity()) {
-                        entity = (CategoryEntity) category;
-                    } else {
-                        authorEntity.getCategories().set(i, entity);
-                    }
-                }
-            }
-            if (!found) {
-                authorEntity.getCategories().add(entity);
-            }
-        }
-        if (isEntity()) {
-            return entity;
-        }
-        entity.setAnnotation(annotation);
-        entity.setId(id);
-        entity.setLink(link);
-        entity.setParsed(parsed);
-        entity.setTitle(getTitle());
-        entity.setType(type);
-        for (Work work : works) {
-            work.createEntity(getAuthor().createEntity(), entity);
-        }
-        for (Link link1 : links) {
-            link1.createEntity(getAuthor().createEntity(), entity);
-        }
-        return entity;
-    }
-
-    public CategoryEntity createEntity() {
-        return createEntity(author != null ? author.createEntity() : null);
     }
 
     public List<Work> getOriginalWorks() {
@@ -117,6 +55,21 @@ public class Category implements Linkable, Serializable, Parsable {
 
     public List<Link> getOriginalLinks() {
         return links;
+    }
+
+    @OneToMany(methods = OneToMany.Method.ALL, variableName = "businesses")
+    public List<Work> loadWorks() {
+        if (works == null) {
+            works = SQLite.select()
+                    .from(Work.class)
+                   // .where(Work_Table.userId.eq(id))
+                    .queryList();
+        }
+        return works;
+    }
+
+    public boolean isEntity() {
+        return true;
     }
 
     public void setTitle(String title) {
@@ -200,10 +153,6 @@ public class Category implements Linkable, Serializable, Parsable {
         int result = title != null ? title.hashCode() : 0;
         result = 31 * result + (link != null ? link.hashCode() : 0);
         return result;
-    }
-
-    public boolean isEntity() {
-        return getClass() == CategoryEntity.class;
     }
 
     public static boolean isTitleEquals(Category one, Category two) {

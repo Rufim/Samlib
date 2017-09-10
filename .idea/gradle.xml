@@ -5,15 +5,14 @@
       <GradleProjectSettings>
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="C:/Program Files (x86)/gradle-2.10" />
+        <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="E:/AndroidTemplate/app" />
+            <option value="C:/AndroidTemplate/app" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Client" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

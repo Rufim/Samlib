@@ -2,12 +2,17 @@ package ru.samlib.client.domain.entity;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import io.requery.*;
+
+import com.raizlabs.android.dbflow.annotation.*;
+import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
+import ru.samlib.client.database.ListConverter;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -23,17 +28,16 @@ import java.util.*;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Entity
+@Table(database = MyDatabase.class, allFields = true)
 public class Author implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
     private static final String AVATAR = ".photo2.jpg";
 
-    @Key
+    @PrimaryKey
     String link;
     String fullName;
-    ;
     String shortName;
     String email;
     String annotation;
@@ -50,33 +54,29 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     Date lastUpdateDate;
     Integer size;
     Integer workCount;
+    @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal rate;
     Integer kudoed;
     Integer views;
     String about;
     String sectionAnnotation;
-    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Category> categories;
-    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Link> links;
-    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     List<Work> works;
-    @Transient
+
+    @ColumnIgnore
     List<Author> friendList = new ArrayList<>();
-    @Transient
+    @ColumnIgnore
     List<Author> friendOfList = new ArrayList<>();
     Integer friends;
     Integer friendsOf;
-
-    @Transient
-    boolean parsed = false;
+    
+    private boolean parsed = false;
 
     public Author() {
-        if (!isEntity()) {
-            categories = new ArrayList<>();
-            works = new ArrayList<>();
-            links = new ArrayList<>();
-        }
     }
 
     public Author(Author other) {
@@ -110,54 +110,6 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.parsed = other.isParsed();
     }
 
-    public AuthorEntity createEntity() {
-        if (isEntity()) return (AuthorEntity) this;
-        AuthorEntity entity = new AuthorEntity();
-        entity.setHasUpdates(hasUpdates);
-        entity.setHasAvatar(hasAvatar);
-        entity.setHasAbout(hasAbout);
-        entity.setObservable(observable);
-        entity.setDateBirth(dateBirth);
-        entity.setRate(rate);
-        entity.setSize(size);
-        entity.setKudoed(kudoed);
-        entity.setLink(link);
-        entity.setNewest(newest);
-        entity.setShortName(getShortName());
-        entity.setFullName(fullName);
-        entity.setAnnotation(annotation);
-        entity.setEmail(email);
-        entity.setWorkCount(workCount);
-        entity.setSectionAnnotation(sectionAnnotation);
-        entity.setGender(getGender());
-        entity.setAbout(about);
-        entity.setViews(views);
-        entity.setAddress(address);
-        entity.setParsed(parsed);
-        entity.setAuthorSiteUrl(authorSiteUrl);
-        entity.setLastUpdateDate(lastUpdateDate);
-        for (Category category : categories) {
-            category.createEntity(entity);
-        }
-        for (Work rootWork : getRootWorks()) {
-            entity.addRootLink(rootWork.createEntity(entity, null));
-        }
-        for (Link rootLink : getRootLinks()) {
-            entity.addRootLink(rootLink.createEntity(entity, null));
-        }
-        for (Author author : friendList) {
-            entity.addFriend(author.createEntity());
-        }
-        for (Author author : friendOfList) {
-            entity.addFriendOf(author.createEntity());
-        }
-        return entity;
-    }
-
-    public boolean isEntity() {
-        return getClass() == AuthorEntity.class;
-    }
-
     public void setShortName(String shortName) {
         this.shortName = shortName;
     }
@@ -165,6 +117,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     public Author(String link) {
         this();
         setLink(link);
+    }
+
+    public boolean isEntity() {
+        return true;
     }
 
     public void setLink(String link) {
@@ -274,11 +230,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         } else {
             work.setRecommendation(true);
             work.setCategory(null);
-            if (!isEntity()) {
-                this.getWorks().add(work);
-            } else {
-                getWorks().add(work.createEntity((AuthorEntity) this, null));
-            }
+            this.getWorks().add(work);
         }
     }
 
