@@ -16,6 +16,14 @@ import java.util.*;
 
 public class DatabaseService {
 
+    public void insertOrUpdateSavedHtml(SavedHtml savedHtml) {
+
+    }
+
+    public SavedHtml getSavedHtml(String absolutePath) {
+        return null;
+    }
+
     public enum Action {INSERT, UPDATE, DELETE, UPSERT}
 
 

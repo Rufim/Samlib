@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Data
 @Table(database = MyDatabase.class, allFields = true)
-public class Category implements Linkable, Serializable, Parsable {
+public class Category implements Linkable, Serializable, Parsable, DBFlowFetch {
 
     private static final long serialVersionUID = 6549621729790810154L;
 
@@ -35,9 +35,9 @@ public class Category implements Linkable, Serializable, Parsable {
     @ForeignKey
     Author author;
     Type type = Type.OTHER;
-    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @ColumnIgnore
     List<Work> works;
-    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @ColumnIgnore
     List<Link> links;
     String link;
 
@@ -57,15 +57,14 @@ public class Category implements Linkable, Serializable, Parsable {
         return links;
     }
 
-    @OneToMany(methods = OneToMany.Method.ALL, variableName = "businesses")
+    @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
     public List<Work> loadWorks() {
-        if (works == null) {
-            works = SQLite.select()
-                    .from(Work.class)
-                   // .where(Work_Table.userId.eq(id))
-                    .queryList();
-        }
-        return works;
+        return dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.category_id.eq(id));
+    }
+
+    @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
+    public List<Link> loadLinks() {
+        return dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.category_id.eq(id));
     }
 
     public boolean isEntity() {

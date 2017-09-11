@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Table(database = MyDatabase.class, allFields = true)
 @Data
-public abstract class ExternalWork implements Findable, Serializable {
+public class ExternalWork implements Findable, Serializable {
     @PrimaryKey
     String filePath;
     Date savedDate;
@@ -36,6 +36,7 @@ public abstract class ExternalWork implements Findable, Serializable {
     String workTitle;
     String authorShortName;
 
+    public ExternalWork() {};
 
     public boolean isExist() {
         return new File(filePath == null ? "" : filePath).exists();

@@ -1,7 +1,9 @@
 package ru.samlib.client.database;
 
+import android.annotation.SuppressLint;
 import com.raizlabs.android.dbflow.converter.TypeConverter;
 import net.vrallev.android.cat.Cat;
+import ru.samlib.client.domain.entity.Genre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,13 +13,13 @@ import java.util.List;
 /**
  * Created by 0shad on 26.06.2016.
  */
-public class ListConverter<T> extends TypeConverter<String, List<T>> {
-    private static final String SEPARATOR = "\0007";
-    private static final char STRING = 'S';
-    private static final char ENUM = 'E';
+public interface ListConverter {
+    String SEPARATOR = "\0007";
+    char STRING = 'S';
+    char ENUM = 'E';
 
-    @Override
-    public String getDBValue(List list) {
+    @SuppressLint("NewApi")
+    default String getStringDBValue(List list) {
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -48,8 +50,8 @@ public class ListConverter<T> extends TypeConverter<String, List<T>> {
         return sb.toString();
     }
 
-    @Override
-    public List getModelValue(String value) {
+    @SuppressLint("NewApi")
+    default List getListModelValue(String value) {
         if (value == null) {
             return Collections.emptyList();
         }

@@ -180,12 +180,7 @@ public class WorkParser extends Parser {
                 } else if (text.contains("Скачать")) {
                     break;
                 } else if (a != null) {
-                    Category category;
-                    if (work instanceof WorkEntity) {
-                        category = new CategoryEntity();
-                    } else {
-                        category = new Category();
-                    }
+                    Category category = new Category();
                     category.setTitle(text);
                     category.setLink(a.attr("href"));
                     category.setAuthor(work.getAuthor());

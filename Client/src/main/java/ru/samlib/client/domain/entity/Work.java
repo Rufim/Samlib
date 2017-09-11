@@ -34,7 +34,6 @@ import java.util.*;
 /**
  * Created by Rufim on 22.05.2014.
  */
-@NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 @ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
@@ -97,6 +96,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     List<Bookmark> autoBookmarks = new ArrayList<>();
     @ColumnIgnore
     boolean parsed = false;
+
+
+    public Work(){}
 
     public Work(String link) {
         setLink(link);

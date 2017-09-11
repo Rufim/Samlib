@@ -16,7 +16,6 @@ import java.util.ArrayList;
 /**
  * Created by Rufim on 01.07.2015.
  */
-@NoArgsConstructor
 @Data
 @Table(database = MyDatabase.class, allFields = true)
 public class Link implements Validatable, Linkable, Serializable {
@@ -33,6 +32,8 @@ public class Link implements Validatable, Linkable, Serializable {
     String title;
     String link;
     String annotation;
+
+    public Link(){}
 
     public Link(String title, String link, String annotation) {
         this.title = title;

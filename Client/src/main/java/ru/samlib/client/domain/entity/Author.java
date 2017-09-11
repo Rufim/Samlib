@@ -29,7 +29,7 @@ import java.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Table(database = MyDatabase.class, allFields = true)
-public class Author implements Serializable, Linkable, Validatable, Parsable, Findable {
+public class Author implements Serializable, Linkable, Validatable, Parsable, Findable, DBFlowFetch {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
@@ -61,10 +61,13 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     String about;
     String sectionAnnotation;
     //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @ColumnIgnore
     List<Category> categories;
     //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @ColumnIgnore
     List<Link> links;
     //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
+    @ColumnIgnore
     List<Work> works;
 
     @ColumnIgnore
@@ -73,8 +76,24 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     List<Author> friendOfList = new ArrayList<>();
     Integer friends;
     Integer friendsOf;
-    
-    private boolean parsed = false;
+
+    @ColumnIgnore
+    boolean parsed = false;
+
+    @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
+    public List<Work> loadWorks() {
+        return dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.author_link.eq(link));
+    }
+
+    @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
+    public List<Link> loadLinks() {
+        return dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
+    }
+
+    @OneToMany(methods = OneToMany.Method.ALL, variableName = "categories")
+    public List<Category> loadCategories() {
+        return dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
+    }
 
     public Author() {
     }

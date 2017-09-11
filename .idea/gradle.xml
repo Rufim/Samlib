@@ -8,11 +8,12 @@
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="C:/AndroidTemplate/app" />
+            <option value="E:/AndroidTemplate/app" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Client" />
           </set>
         </option>
+        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

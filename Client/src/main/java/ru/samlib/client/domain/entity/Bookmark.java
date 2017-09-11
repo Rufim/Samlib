@@ -21,7 +21,6 @@ import java.util.List;
 /**
  * Created by 0shad on 23.07.2015.
  */
-@NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Table(database = MyDatabase.class, allFields = true)
@@ -37,6 +36,8 @@ public class Bookmark implements Serializable, Findable {
     String genres;
     String authorShortName;
     Date savedDate;
+
+    public Bookmark(){};
 
     public Bookmark(String title){
         this.title = title;

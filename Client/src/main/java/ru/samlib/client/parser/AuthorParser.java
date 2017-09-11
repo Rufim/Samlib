@@ -187,7 +187,7 @@ public class AuthorParser extends Parser {
                 }
             }
             if (author.isEntity() && author.isObservable()) {
-                merge((AuthorEntity) author, categories, rootWorks, rootLinks);
+                merge(author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {
                 for (Category category : categories) {

@@ -22,7 +22,7 @@ import java.util.Date;
 
 @Table(database = MyDatabase.class, allFields= true)
 @Data
-public abstract class SavedHtml implements Serializable {
+public class SavedHtml implements Serializable {
 
     @PrimaryKey
     String filePath;
@@ -30,7 +30,7 @@ public abstract class SavedHtml implements Serializable {
     long size;
     Date updated;
 
-    protected SavedHtml(){};
+    public SavedHtml() {}
 
     public SavedHtml(CachedResponse response) {
         filePath = response.getAbsolutePath();
