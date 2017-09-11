@@ -4,9 +4,8 @@ import android.graphics.Color;
 
 
 import com.raizlabs.android.dbflow.annotation.*;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.kazantsev.template.util.TextUtils;
@@ -18,12 +17,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.samlib.client.util.DBFlowUtils.dbFlowOneTwoManyUtilMethod;
+
 /**
  * Created by Rufim on 01.07.2015.
  */
 @Data
 @Table(database = MyDatabase.class, allFields = true)
-public class Category implements Linkable, Serializable, Parsable, DBFlowFetch {
+public class Category extends BaseModel implements Linkable, Serializable, Parsable {
 
     private static final long serialVersionUID = 6549621729790810154L;
 
@@ -68,7 +69,7 @@ public class Category implements Linkable, Serializable, Parsable, DBFlowFetch {
     }
 
     public boolean isEntity() {
-        return true;
+        return exists();
     }
 
     public void setTitle(String title) {

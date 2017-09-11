@@ -3,6 +3,7 @@ package ru.samlib.client.domain.entity;
 
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Table(database = MyDatabase.class, allFields = true)
-public class Bookmark implements Serializable, Findable {
+public class Bookmark extends BaseModel implements Serializable, Findable {
     @PrimaryKey
     String workUrl;
     String authorUrl;

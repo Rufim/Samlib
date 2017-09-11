@@ -23,6 +23,8 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.acra.config.ConfigurationBuilder;
 import ru.samlib.client.dagger.AppComponent;
+import ru.samlib.client.dagger.AppModule;
+import ru.samlib.client.dagger.DaggerAppComponent;
 import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Font;
@@ -71,8 +73,8 @@ public class App extends MultiDexApplication {
                 .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
                 .setFontAttrId(R.attr.fontPath)
                 .build());
-        //component = DaggerAppComponent.builder()
-       //         .appModule(new AppModule(this)).build();
+        component = DaggerAppComponent.builder()
+                .appModule(new AppModule(this)).build();
         ObservableUpdateJob.startSchedule();
         CleanCacheJob.startSchedule();
         Font.mapFonts(getAssets());

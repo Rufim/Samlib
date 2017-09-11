@@ -5,23 +5,23 @@ import com.annimon.stream.Stream;
 
 import com.raizlabs.android.dbflow.annotation.*;
 import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
-import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.kazantsev.template.util.TextUtils;
-import ru.samlib.client.domain.google.Page;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
+
+import static ru.samlib.client.util.DBFlowUtils.dbFlowOneTwoManyUtilMethod;
 
 /**
  * Created by Rufim on 22.05.2014.
@@ -29,7 +29,7 @@ import java.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Table(database = MyDatabase.class, allFields = true)
-public class Author implements Serializable, Linkable, Validatable, Parsable, Findable, DBFlowFetch {
+public class Author extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
@@ -60,13 +60,10 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     Integer views;
     String about;
     String sectionAnnotation;
-    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     @ColumnIgnore
     List<Category> categories;
-    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     @ColumnIgnore
     List<Link> links;
-    //@OneToMany(cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
     @ColumnIgnore
     List<Work> works;
 
@@ -139,7 +136,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public boolean isEntity() {
-        return true;
+        return exists();
     }
 
     public void setLink(String link) {

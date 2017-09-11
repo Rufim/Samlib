@@ -8,6 +8,7 @@ package ru.samlib.client.domain.entity;
 import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
@@ -26,7 +27,7 @@ import java.util.List;
  */
 @Table(database = MyDatabase.class, allFields = true)
 @Data
-public class ExternalWork implements Findable, Serializable {
+public class ExternalWork extends BaseModel implements Findable, Serializable {
     @PrimaryKey
     String filePath;
     Date savedDate;

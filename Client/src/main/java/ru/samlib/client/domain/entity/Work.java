@@ -3,6 +3,7 @@ package ru.samlib.client.domain.entity;
 import android.graphics.Color;
 import com.raizlabs.android.dbflow.annotation.*;
 import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import ru.kazantsev.template.util.TextUtils;
 
 import lombok.Data;
@@ -38,7 +39,7 @@ import java.util.*;
 @EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 @ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 @Table(database = MyDatabase.class, allFields = true)
-public class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
+public class Work extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
@@ -126,7 +127,7 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     }
 
     public boolean isEntity() {
-        return true;
+        return exists();
     }
 
 

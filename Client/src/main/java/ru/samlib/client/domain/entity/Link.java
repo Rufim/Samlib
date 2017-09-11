@@ -4,6 +4,7 @@ package ru.samlib.client.domain.entity;
 import com.raizlabs.android.dbflow.annotation.ForeignKey;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.samlib.client.database.MyDatabase;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
  */
 @Data
 @Table(database = MyDatabase.class, allFields = true)
-public class Link implements Validatable, Linkable, Serializable {
+public class Link extends BaseModel implements Validatable, Linkable, Serializable {
 
     @PrimaryKey(autoincrement = true)
     Integer id;

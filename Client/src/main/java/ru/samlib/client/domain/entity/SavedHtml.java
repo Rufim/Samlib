@@ -6,6 +6,8 @@ import android.util.Log;
 import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
+import com.raizlabs.android.dbflow.structure.Model;
 import lombok.Data;
 import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.database.MyDatabase;
@@ -22,7 +24,7 @@ import java.util.Date;
 
 @Table(database = MyDatabase.class, allFields= true)
 @Data
-public class SavedHtml implements Serializable {
+public class SavedHtml extends BaseModel implements Serializable {
 
     @PrimaryKey
     String filePath;
