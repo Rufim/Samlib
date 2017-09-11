@@ -394,6 +394,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     float multiplier = 1;
     double lastValue = 0;
     int moveBy = 0;
+    float userAdaptSpeed = 0.1f; // 0 - 1 range part of multiplier will be used
+    final float minimalMove = 0.01f;
 
     class MultiplierUpdate implements Runnable {
 
@@ -420,12 +422,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
             float maxLen = width / (tsize * 1.3f) * height / (tsize * 1.1f);
 
-            multiplier = (float) Math.sqrt(maxLen / len);
+            multiplier = 1 + (float) Math.sqrt(maxLen / len) * userAdaptSpeed;
 
-            if (multiplier > 1.8f) {
-                multiplier = 1.8f;
-            } else if (multiplier < 0.5f) {
-                multiplier = 0.5f;
+            // multiplier never slow down the speed, but can increase speed if there no much text
+            if (multiplier > 2f) {
+                multiplier = 2f;
             }
         }
     }
@@ -434,8 +435,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     private void startAutoScroll() {
         final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enough to infinity. if not enough you can restart timer in onFinish()
-        final int scrollPeriod = 40; // every 20 ms scroll will happened. smaller values for smoother
-        final int heightToScroll = 1; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        final int scrollPeriod = 20; // every 20 ms scroll will happened. smaller values for smoother
+        final int heightToScroll = 10; // will be scrolled to 20 px every time. smaller values for smoother scrolling
         if (autoScroller != null) autoScroller.cancel();
         if(executorService != null)
         executorService.shutdown();
@@ -443,12 +444,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         executorService.scheduleAtFixedRate(new MultiplierUpdate(), 0, 2, TimeUnit.SECONDS);
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
-                lastValue += heightToScroll * multiplier * getRate(autoScrollSpeed);
+                lastValue += heightToScroll * getRate(autoScrollSpeed) * multiplier;
                 moveBy = (int) lastValue;
                 itemList.scrollBy(0, moveBy);
                 if (moveBy >= 1) {
                     lastValue = lastValue - moveBy;
-                    if (lastValue < 0.01) {
+                    if (lastValue < minimalMove) {
                         lastValue = 0;
                     }
                 }
