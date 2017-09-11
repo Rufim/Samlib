@@ -22,6 +22,7 @@ import android.text.SpannedString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
 import android.util.TypedValue;
@@ -394,7 +395,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     float multiplier = 1;
     double lastValue = 0;
     int moveBy = 0;
-    float userAdaptSpeed = 0.1f; // 0 - 1 range part of multiplier will be used
+    float userAdaptSpeed = 0.3f; // 0 - 1 range part of multiplier will be used
+    float bigDensityAdaptSpeed = 0.5f;
+    float maxLen = 0;
+
     final float minimalMove = 0.01f;
 
     class MultiplierUpdate implements Runnable {
@@ -403,7 +407,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         public void run() {
             int first = ((LinearLayoutManager) itemList.getLayoutManager()).findFirstVisibleItemPosition();
             int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
-            int len = 0;
+            int len = 1;
 
             TextView textView = null;
             for (int i = first; i <= last; i++) {
@@ -413,16 +417,27 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (textView == null) return;
             int width = textView.getWidth();
             int height = itemList.getHeight();
-            float tsize = textView.getTextSize();
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            float tsize = textView.getTextSize() / metrics.scaledDensity;
 
             HtmlSpanner spanner = new HtmlSpanner();
             for (int i = first; i <= last; i++) {
                 len += spanner.fromHtml(adapter.getItems().get(i)).toString().length();
             }
 
-            float maxLen = width / (tsize * 1.3f) * height / (tsize * 1.1f);
+            if (maxLen < len) {
+                maxLen = len;
+            }
+            float symbolsNumber = width * height / tsize / tsize;
+            if (maxLen < symbolsNumber) {
+                maxLen = symbolsNumber;
+            }
 
-            multiplier = 1 + (float) Math.sqrt(maxLen / len) * userAdaptSpeed;
+            if (metrics.scaledDensity > 1) {
+                multiplier = (1 - bigDensityAdaptSpeed) + maxLen / len * bigDensityAdaptSpeed;
+            } else {
+                multiplier = (1 - userAdaptSpeed) + maxLen / len * userAdaptSpeed;
+            }
 
             // multiplier never slow down the speed, but can increase speed if there no much text
             if (multiplier > 2f) {
@@ -435,8 +450,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     private void startAutoScroll() {
         final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enough to infinity. if not enough you can restart timer in onFinish()
-        final int scrollPeriod = 20; // every 20 ms scroll will happened. smaller values for smoother
-        final int heightToScroll = 10; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        final int scrollPeriod = 25; // every 20 ms scroll will happened. smaller values for smoother
+        final int heightToScroll = 2; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        // formula 1000/25*4 = 160px in sec
         if (autoScroller != null) autoScroller.cancel();
         if(executorService != null)
         executorService.shutdown();
