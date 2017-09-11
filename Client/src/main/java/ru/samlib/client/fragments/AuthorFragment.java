@@ -108,9 +108,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
             postEvent(new AuthorParsedEvent(author));
             if (author.isObservable()) {
-                categoryUpdate = new Category();
-                categoryUpdate.setTitle(getString(R.string.author_section_updates));
-                categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
                 categoryUpdate.setWorks(author.getUpdates());
             }
             safeInvalidateOptionsMenu();
@@ -302,6 +299,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
             safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
+        categoryUpdate = new Category();
+        categoryUpdate.setTitle(getString(R.string.author_section_updates));
+        categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
         simpleView = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceAuthorSimpleView, false);
         return super.onCreateView(inflater, container, savedInstanceState);
     }

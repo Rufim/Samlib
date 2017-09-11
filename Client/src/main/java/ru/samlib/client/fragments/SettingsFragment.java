@@ -74,7 +74,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
     public class SettingsAdaptor extends MultiItemListAdapter<Object> {
 
         public SettingsAdaptor() {
-            super(R.layout.item_settings_group, R.layout.item_settings_text);
+            super(-1, R.layout.item_settings_group, R.layout.item_settings_text);
         }
 
 
