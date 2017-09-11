@@ -14,6 +14,7 @@ import com.raizlabs.android.dbflow.structure.database.transaction.Transaction;
 import net.vrallev.android.cat.Cat;
 
 import java.lang.reflect.Field;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ import java.util.List;
 public class DBFlowUtils {
 
     public static <C> List<C> dbFlowOneTwoManyUtilMethod(List<C> list, Class<C> clazz, Operator in) {
-        if (list == null) {
+        if (list == null || list instanceof LinkedList) {
             list = dbFlowQueryList(clazz, in);
         }
         return list;

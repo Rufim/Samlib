@@ -15,6 +15,7 @@ import ru.samlib.client.domain.Parsable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static ru.samlib.client.util.DBFlowUtils.dbFlowOneTwoManyUtilMethod;
@@ -28,18 +29,18 @@ public class Category extends BaseModel implements Linkable, Serializable, Parsa
 
     private static final long serialVersionUID = 6549621729790810154L;
 
-    @PrimaryKey(autoincrement = true)
-    Integer id;
+    @PrimaryKey(autoincrement = true, quickCheckAutoIncrement = true)
+    Integer id = 0;
 
     String title;
     String annotation;
-    @ForeignKey
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Author author;
     Type type = Type.OTHER;
     @ColumnIgnore
-    List<Work> works;
+    List<Work> works = new LinkedList<>();
     @ColumnIgnore
-    List<Link> links;
+    List<Link> links = new LinkedList<>();
     String link;
 
     @ColumnIgnore
@@ -60,12 +61,12 @@ public class Category extends BaseModel implements Linkable, Serializable, Parsa
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
     public List<Work> loadWorks() {
-        return dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.category_id.eq(id));
+        return works = dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.category_id.eq(id));
     }
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
     public List<Link> loadLinks() {
-        return dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.category_id.eq(id));
+        return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.category_id.eq(id));
     }
 
     public boolean isEntity() {

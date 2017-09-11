@@ -10,7 +10,7 @@ ext {
     versionProjectName = "0.5.7"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
-    dbflowVersion = '4.0.3'
+    dbflowVersion = '4.1.1'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'
     butterknifeVersion = '8.5.1'
@@ -128,7 +128,7 @@ dependencies {
     compile "org.greenrobot:eventbus:3.0.0"
     compile "com.squareup.picasso:picasso:2.5.2"
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    compile "com.google.code.gson:gson:2.4"
+    compile "com.google.code.gson:gson:2.7"
     compile "uk.co.chrisjenx:calligraphy:2.3.0"
     compile "com.google.dagger:dagger:$daggerVersion"
     //   compile "com.github.User:Repo:Tag"  for github repos

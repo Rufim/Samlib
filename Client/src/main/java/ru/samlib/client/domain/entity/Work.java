@@ -51,7 +51,7 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     @PrimaryKey
     String link;
     String title;
-    @ForeignKey
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Author author;
     String imageLink;
     Integer size;
@@ -65,7 +65,7 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     @Column(typeConverter = ListGenreConverter.class)
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ForeignKey
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Category category;
     @Column(typeConverter = ListStringConverter.class)
     List<String> annotationBlocks = new ArrayList<>();

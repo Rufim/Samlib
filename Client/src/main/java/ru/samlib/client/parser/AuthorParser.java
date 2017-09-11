@@ -227,12 +227,6 @@ public class AuthorParser extends Parser {
                 oldCategory.setTitle(newCategory.getTitle());
                 oldCategory.setType(newCategory.getType());
                 oldCategory.setLink(newCategory.getLink());
-                for (Work work : newCategory.getWorks()) {
-                    work.setCategory(oldCategory);
-                }
-                for (Link link : newCategory.getLinks()) {
-                    link.setCategory(oldCategory);
-                }
                 merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks(), oldCategory, author);
                 Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
                 newCategories.remove(newCategoryIndex);

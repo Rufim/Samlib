@@ -61,11 +61,11 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     String about;
     String sectionAnnotation;
     @ColumnIgnore
-    List<Category> categories;
+    List<Category> categories = new LinkedList<>();
     @ColumnIgnore
-    List<Link> links;
+    List<Link> links = new LinkedList<>();
     @ColumnIgnore
-    List<Work> works;
+    List<Work> works = new LinkedList<>();
 
     @ColumnIgnore
     List<Author> friendList = new ArrayList<>();
@@ -79,17 +79,17 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
     public List<Work> loadWorks() {
-        return dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.author_link.eq(link));
+        return works = dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.author_link.eq(link));
     }
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
     public List<Link> loadLinks() {
-        return dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
+        return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
     }
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "categories")
     public List<Category> loadCategories() {
-        return dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
+        return categories = dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
     }
 
     public Author() {

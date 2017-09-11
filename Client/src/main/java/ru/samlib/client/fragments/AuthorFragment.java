@@ -558,7 +558,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     Work work = (Work) linkable;
                     work.setSizeDiff(0);
                     work.setChanged(false);
-                    databaseService.doAction(DatabaseService.Action.UPDATE, linkable);
+                    databaseService.doAction(DatabaseService.Action.UPDATE, work);
                     view.setVisibility(GONE);
                     if (!work.getCategory().isHasUpdates() && simpleView) {
                         ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(GONE);
