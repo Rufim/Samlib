@@ -37,16 +37,13 @@ public class DBFlowUtils {
     }
 
     public static long dbFlowDelete(Class clazz, Operator in) {
-        From from = SQLite.select()
+        From from = SQLite.delete()
                 .from(clazz);
         long affected = 0;
         if(in != null) {
-            affected =from.where(in).executeUpdateDelete();
+            from.where(in).execute();
         } else {
-            affected =from.executeUpdateDelete();
-        }
-        if(affected == 0) {
-            Cat.w("Potential error in DB operation: Delete. Zero rows affected! See log for more info. Class:" + clazz);
+            from.execute();
         }
         return affected;
     }
