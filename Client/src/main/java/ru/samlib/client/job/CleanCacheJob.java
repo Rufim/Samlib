@@ -65,9 +65,9 @@ public class CleanCacheJob extends Job {
                 return (x < y) ? -1 : ((x == y) ? 0 : 1);
             }
         });
-        allCachedFiles.addAll(SystemUtils.listFilesRecursive(context.getCacheDir()));
+        SystemUtils.listFilesRecursive(context.getCacheDir(), allCachedFiles);
         if(context.getExternalCacheDir().canWrite()) {
-                   allCachedFiles.addAll(SystemUtils.listFiles(context.getExternalCacheDir()));
+            SystemUtils.listFilesRecursive(context.getExternalCacheDir(), allCachedFiles);
         }
         long totalSize = 0;
         List<SavedHtml> savedHtmls = databaseService.selectCachedEntities();

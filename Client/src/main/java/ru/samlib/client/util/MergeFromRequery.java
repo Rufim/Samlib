@@ -63,13 +63,13 @@ public class MergeFromRequery {
                     }
                 }
                 if(authorsCopied) {
-                    db.execSQL("DROP TABLE Bookmark;");
-                    db.execSQL("DROP TABLE Author;");
-                    db.execSQL("DROP TABLE SavedHtml;");
-                    db.execSQL("DROP TABLE Category;");
-                    db.execSQL("DROP TABLE ExternalWork;");
-                    db.execSQL("DROP TABLE Work;");
-                    db.execSQL("DROP TABLE Link;");
+                    db.execSQL("DROP TABLE IF EXISTS Bookmark;");
+                    db.execSQL("DROP TABLE IF EXISTS ExternalWork;");
+                    db.execSQL("DROP TABLE IF EXISTS SavedHtml;");
+                    db.execSQL("DROP TABLE IF EXISTS Work;");
+                    db.execSQL("DROP TABLE IF EXISTS Link;");
+                    db.execSQL("DROP TABLE IF EXISTS Category;");
+                    db.execSQL("DROP TABLE IF EXISTS Author;");
                 }
             }
             db.endTransaction();
