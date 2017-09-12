@@ -1,9 +1,13 @@
 package ru.samlib.client.util;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
+import net.vrallev.android.cat.Cat;
 import org.jdom2.Content;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.database.ListConverter;
@@ -25,51 +29,70 @@ import java.util.List;
 public class MergeFromRequery {
 
 
+    private static final String DATA_FLAG = "dataMergedFromRequery";
+
     public static void merge(Context context, DatabaseService databaseService) {
-// load subscriptions from Requery
+        // load subscriptions from Requery
         File oldDatabase;
-        if ((oldDatabase = context.getDatabasePath("default")).exists()) {
-            SQLiteDatabase db = SQLiteDatabase.openDatabase(oldDatabase.getAbsolutePath(), null, 0);
+        SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(context);
+        if ((oldDatabase = context.getDatabasePath("default")).exists() && preferences.getInt(DATA_FLAG, 0) != 2) {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(oldDatabase.getAbsolutePath(), null, 2);
             db.beginTransaction();
-            Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
-            boolean hasOldData = false;
-            while (cursor.moveToNext()) {
-                if ("Author".equals(cursor.getString(0))) {
-                    hasOldData = true;
-                    break;
-                }
-            }
-            if (hasOldData) {
+            if (preferences.getInt(DATA_FLAG, 0) == 1) {
+                db.execSQL("DROP TABLE IF EXISTS Bookmark");
+                db.execSQL("DROP TABLE IF EXISTS ExternalWork");
+                db.execSQL("DROP TABLE IF EXISTS SavedHtml");
+                db.execSQL("DROP TABLE IF EXISTS Work");
+                db.execSQL("DROP TABLE IF EXISTS Link");
+                db.execSQL("DROP TABLE IF EXISTS Category");
+                db.execSQL("DROP TABLE IF EXISTS Author");
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putInt(DATA_FLAG, 2);
+                editor.commit();
+            } else {
+                Cursor cursor = null;
                 boolean authorsCopied = false;
+                boolean bookmarksCopied = false;
                 if (AndroidSystemUtils.isNetworkAvailable(context)) {
-                    cursor = db.rawQuery("SELECT link FROM Author;", null);
-                    while (cursor.moveToNext()) {
-                        Author author = new Author(cursor.getString(0));
-                        if (!author.exists()) {
-                            try {
-                                databaseService.insertObservableAuthor(new AuthorParser(author).parse());
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                    try {
+                        cursor = db.rawQuery("SELECT link FROM Author;", null);
+                    } catch (SQLiteException ex) {
+                        authorsCopied = true;
+                    }
+                    if (!authorsCopied) {
+                        try {
+                            while (cursor.moveToNext()) {
+                                Author author = new Author(cursor.getString(0));
+                                if (!author.exists()) {
+
+                                    databaseService.insertObservableAuthor(new AuthorParser(author).parse());
+
+                                }
                             }
+                            authorsCopied = true;
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
-                    authorsCopied  = true;
                 }
-                cursor = db.rawQuery(" SELECT * FROM Bookmark;", null);
-                while (cursor.moveToNext()) {
-                    Bookmark bookmark = getFromCursor(cursor);
-                    if (!bookmark.exists()) {
-                        bookmark.insert();
+                try {
+                    cursor = db.rawQuery(" SELECT * FROM Bookmark;", null);
+                } catch (SQLiteException ex) {
+                    bookmarksCopied = true;
+                }
+                if (!bookmarksCopied) {
+                    while (cursor.moveToNext()) {
+                        Bookmark bookmark = getFromCursor(cursor);
+                        if (!bookmark.exists()) {
+                            bookmark.insert();
+                        }
                     }
+                    bookmarksCopied = true;
                 }
-                if(authorsCopied) {
-                    db.execSQL("DROP TABLE IF EXISTS Bookmark;");
-                    db.execSQL("DROP TABLE IF EXISTS ExternalWork;");
-                    db.execSQL("DROP TABLE IF EXISTS SavedHtml;");
-                    db.execSQL("DROP TABLE IF EXISTS Work;");
-                    db.execSQL("DROP TABLE IF EXISTS Link;");
-                    db.execSQL("DROP TABLE IF EXISTS Category;");
-                    db.execSQL("DROP TABLE IF EXISTS Author;");
+                if (bookmarksCopied && authorsCopied) {
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putInt(DATA_FLAG, 1);
+                    editor.commit();
                 }
             }
             db.endTransaction();

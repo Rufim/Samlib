@@ -7,6 +7,7 @@ import com.annimon.stream.Stream;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
 import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.raizlabs.android.dbflow.structure.Model;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
@@ -149,7 +150,7 @@ public class DatabaseService {
     }
 
     public List<Bookmark> getHistory(int skip, int size) {
-        return dbFlowQueryList(Bookmark.class, null, skip, size);
+        return SQLite.select().from(Bookmark.class).offset(skip).limit(size).orderBy(Bookmark_Table.savedDate, false).queryList();
     }
 
     public void deleteHistory() {
