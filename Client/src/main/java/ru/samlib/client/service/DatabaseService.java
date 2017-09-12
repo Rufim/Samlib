@@ -8,6 +8,7 @@ import com.annimon.stream.Stream;
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.structure.BaseModel;
+import com.raizlabs.android.dbflow.structure.Model;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.transaction.ProcessModelTransaction;
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction;
@@ -67,26 +68,34 @@ public class DatabaseService {
         doAction(Action.UPDATE, category);
     }
 
-    public <C extends BaseModel> C doAction(Action action, C value) {
+    public <C extends BaseModel> C doAction(Action action, C value, boolean async) {
         boolean result = false;
+        Model model = value;
+        if(async) {
+            model = value.async();
+        }
         switch (action) {
             case INSERT:
-                result = value.insert() > 0;
+                result = model.insert() > 0;
                 break;
             case UPDATE:
-                result = value.update();
+                result = model.update();
                 break;
             case DELETE:
-                result = value.delete();
+                result = model.delete();
                 break;
             case UPSERT:
-                result = value.save();
+                result = model.save();
                 break;
         }
         if (!result) {
             Cat.e("Error in DB operation:" + action + ". See log for more info. Class:" + value.getClass());
         }
         return value;
+    }
+
+    public <C extends BaseModel> C doAction(Action action, C value) {
+        return doAction(action, value, false);
     }
 
     public <C extends BaseModel> void doAction(Action action, Collection<C> list) {
@@ -105,7 +114,7 @@ public class DatabaseService {
         Transaction transaction = database.beginTransactionAsync(processModelTransaction).error(new Transaction.Error() {
             @Override
             public void onError(@NonNull Transaction transaction, @NonNull Throwable error) {
-                Cat.e("Potential error in DB operation:" + action + ".", error);
+                Cat.e("Error in DB operation:" + action + ".", error);
             }
         }).build();
         if (async) {

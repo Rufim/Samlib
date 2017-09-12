@@ -3,12 +3,14 @@ package ru.samlib.client;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.multidex.MultiDexApplication;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.util.JobApi;
 import com.raizlabs.android.dbflow.config.FlowConfig;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import dagger.Module;
 
 
@@ -34,6 +36,7 @@ import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.service.DatabaseService;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +82,13 @@ public class App extends MultiDexApplication {
         CleanCacheJob.startSchedule();
         Font.mapFonts(getAssets());
         FlowManager.init(new FlowConfig.Builder(this).build());
+        // load subscriptions from Requery
+        File oldDatabase;
+        if((oldDatabase = getDatabasePath( "default")).exists()) {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(oldDatabase.getAbsolutePath(), null, 0);
+            db.beginTransaction();
+            db.endTransaction();
+        }
     }
 
     @Override
