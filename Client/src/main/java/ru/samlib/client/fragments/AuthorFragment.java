@@ -154,6 +154,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     author.setObservable(false);
                     new Thread(() -> databaseService.deleteAuthor(author)).start();
                     item.setChecked(false);
+                    item.setEnabled(false);
+                    author = new Author(author.getLink());
+                    refreshData(true);
                 } else {
                     new Thread(() -> databaseService.insertObservableAuthor(author)).start();
                     item.setChecked(true);
