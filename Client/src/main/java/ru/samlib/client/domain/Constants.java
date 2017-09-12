@@ -68,6 +68,7 @@ public class Constants {
         public static final String DATA_PATTERN = "dd-MM-yyyy";
         public static final String DATA_TIME_PATTERN = "dd-MM-yyyy HH:mm";
         public static final String DATA_ISO_8601_24H_FULL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        public static final String DATA_ISO_8601_24H_FULL_FORMAT_WITHOUT_MC = "yyyy-MM-dd'T'HH:mm:ss'Z'";
         @RegExp
         public static final String WORK_URL_REGEXP = "/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml";
         @RegExp

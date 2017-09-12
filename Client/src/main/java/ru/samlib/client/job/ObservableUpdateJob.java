@@ -20,6 +20,7 @@ import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.DatabaseService;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.samlib.client.util.MergeFromRequery;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class ObservableUpdateJob extends Job {
 
     public static void updateObservable(DatabaseService service, Context context) {
         List<CharSequence> notifyAuthors = new ArrayList<>();
+        MergeFromRequery.merge(context, service);
         Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {
                 boolean wasUpdates = author.isHasUpdates();

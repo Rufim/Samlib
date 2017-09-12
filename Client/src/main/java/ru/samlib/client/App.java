@@ -34,6 +34,7 @@ import ru.samlib.client.job.AppJobCreator;
 import ru.samlib.client.job.CleanCacheJob;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.service.DatabaseService;
+import ru.samlib.client.util.MergeFromRequery;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.io.File;
@@ -82,13 +83,6 @@ public class App extends MultiDexApplication {
         CleanCacheJob.startSchedule();
         Font.mapFonts(getAssets());
         FlowManager.init(new FlowConfig.Builder(this).build());
-        // load subscriptions from Requery
-        File oldDatabase;
-        if((oldDatabase = getDatabasePath( "default")).exists()) {
-            SQLiteDatabase db = SQLiteDatabase.openDatabase(oldDatabase.getAbsolutePath(), null, 0);
-            db.beginTransaction();
-            db.endTransaction();
-        }
     }
 
     @Override
@@ -104,7 +98,7 @@ public class App extends MultiDexApplication {
     }
 
     public DatabaseService getDatabaseService() {
-        return new DatabaseService();
+        return databaseService == null ? new DatabaseService() : databaseService;
     }
 
     public void setDatabaseService(DatabaseService databaseService) {
