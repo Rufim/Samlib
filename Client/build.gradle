@@ -6,8 +6,8 @@ ext {
     compileSdkProjectVersion = 25
     buildToolsProjectVersion = '25.0.2'
     supportLibraryVersion = '25.3.1'
-    versionProjectCode = 12
-    versionProjectName = "0.5.7"
+    versionProjectCode = 13
+    versionProjectName = "0.6.0"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
     dbflowVersion = '4.1.1'
