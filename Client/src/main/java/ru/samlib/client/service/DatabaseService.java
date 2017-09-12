@@ -152,6 +152,7 @@ public class DatabaseService {
     }
 
     public synchronized Bookmark insertOrUpdateBookmark(Bookmark bookmark) {
+        bookmark.setSavedDate(new Date());
         return doAction(Action.UPSERT, bookmark);
     }
 
@@ -173,6 +174,7 @@ public class DatabaseService {
     }
 
     public ExternalWork insertOrUpdateExternalWork(ExternalWork externalWork) {
+        externalWork.setSavedDate(new Date());
         return doAction(Action.UPSERT, externalWork);
     }
 
