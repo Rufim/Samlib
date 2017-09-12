@@ -18,16 +18,14 @@ import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.*;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -41,7 +39,6 @@ import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.jdom2.Content;
 
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
@@ -54,7 +51,6 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
-import ru.samlib.client.dialog.OnPreferenceCommit;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -66,7 +62,6 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
-import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
@@ -74,7 +69,6 @@ import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.CharsetDecoder;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -395,9 +389,18 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     float multiplier = 1;
     double lastValue = 0;
     int moveBy = 0;
-    float userAdaptSpeed = 0.3f; // 0 - 1 range part of multiplier will be used
-    float bigDensityAdaptSpeed = 0.5f;
+    float userAdaptSpeed = 0.5f; // 0 - 1 range part of multiplier will be used
     float maxLen = 0;
+    int len = 1;
+    float tsize = 0;
+    HtmlSpanner spanner = new HtmlSpanner();
+
+    float userSpeed = 160; //symbols per minute
+    float minute = 60000; // ms in minute
+    int updaterCount = 0;
+
+//    HashMap<Integer, Integer> textSizes = new HashMap<>();
+    SparseIntArray textSizes = new SparseIntArray();
 
     final float minimalMove = 0.01f;
 
@@ -407,7 +410,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         public void run() {
             int first = ((LinearLayoutManager) itemList.getLayoutManager()).findFirstVisibleItemPosition();
             int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
-            int len = 1;
+            len = 1;
 
             TextView textView = null;
             for (int i = first; i <= last; i++) {
@@ -417,31 +420,29 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (textView == null) return;
             int width = textView.getWidth();
             int height = itemList.getHeight();
-            DisplayMetrics metrics = getResources().getDisplayMetrics();
-            float tsize = textView.getTextSize() / metrics.scaledDensity;
-
-            HtmlSpanner spanner = new HtmlSpanner();
+            if (tsize == 0) {
+                tsize = textView.getTextSize();
+            }
             for (int i = first; i <= last; i++) {
-                len += spanner.fromHtml(adapter.getItems().get(i)).toString().length();
+//                textSizes.putIfAbsent(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+                if (textSizes.indexOfKey(i) < 0) {
+                    textSizes.put(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+                }
+                len += textSizes.get(i);
             }
-
-            if (maxLen < len) {
-                maxLen = len;
-            }
+//            if (maxLen < 2 * len) {
+//                maxLen = (len + maxLen) / 2;
+//            }
             float symbolsNumber = width * height / tsize / tsize;
             if (maxLen < symbolsNumber) {
                 maxLen = symbolsNumber;
             }
 
-            if (metrics.scaledDensity > 1) {
-                multiplier = (1 - bigDensityAdaptSpeed) + maxLen / len * bigDensityAdaptSpeed;
-            } else {
-                multiplier = (1 - userAdaptSpeed) + maxLen / len * userAdaptSpeed;
-            }
+            // multiplier consist of base and adapt speed
+            multiplier = (1 - userAdaptSpeed) + maxLen / len * userAdaptSpeed;
 
-            // multiplier never slow down the speed, but can increase speed if there no much text
-            if (multiplier > 2f) {
-                multiplier = 2f;
+            if (multiplier > 3f) {
+                multiplier = 3f;
             }
         }
     }
@@ -450,25 +451,30 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     private void startAutoScroll() {
         final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enough to infinity. if not enough you can restart timer in onFinish()
-        final int scrollPeriod = 25; // every 20 ms scroll will happened. smaller values for smoother
-        final int heightToScroll = 2; // will be scrolled to 20 px every time. smaller values for smoother scrolling
-        // formula 1000/25*4 = 160px in sec
+        final float step = (getResources().getDisplayMetrics().density > 1)? getResources().getDisplayMetrics().density: 1;
+
+        final int scrollPeriod = 20; // every 20 ms scroll will happened. smaller values for smoother
+        final int heightToScroll = (int) step; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        // formula 1000/25*2 = 80px in sec
         if (autoScroller != null) autoScroller.cancel();
         if(executorService != null)
         executorService.shutdown();
         executorService = Executors.newScheduledThreadPool(1);
-        executorService.scheduleAtFixedRate(new MultiplierUpdate(), 0, 2, TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(new MultiplierUpdate(), 0, scrollPeriod * 10, TimeUnit.MILLISECONDS);
+
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
                 lastValue += heightToScroll * getRate(autoScrollSpeed) * multiplier;
-                moveBy = (int) lastValue;
-                itemList.scrollBy(0, moveBy);
-                if (moveBy >= 1) {
+                if (lastValue > step) {
+                    moveBy = (int) lastValue;
+                    itemList.scrollBy(0, moveBy);
+
                     lastValue = lastValue - moveBy;
                     if (lastValue < minimalMove) {
                         lastValue = 0;
                     }
                 }
+
             }
 
             public void onFinish() {
