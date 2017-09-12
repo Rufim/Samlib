@@ -325,7 +325,7 @@ public class ObservableFragment extends ListFragment<Author> {
             if (!loading) {
                 Author authorEntity = getItems().get(position);
                 authorEntity.setHasUpdates(false);
-                databaseService.createOrUpdateAuthor(authorEntity);
+                databaseService.doAction(DatabaseService.Action.UPDATE, authorEntity);
                 adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
                 Author author = new Author(authorEntity.getLink());

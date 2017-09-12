@@ -236,10 +236,12 @@ public class AuthorParser extends Parser {
         }
         if (!newCategories.isEmpty()) {
             for (Category category : newCategories) {
+                oldCategories.add(category);
                 category.setAuthor(author);
                 boolean atLeastOne = false;
                 for (Work work : category.getWorks()) {
                     work.setChanged(true);
+                    work.setCategory(category);
                     work.setChangedDate(new Date());
                     atLeastOne = true;
                 }
@@ -365,7 +367,6 @@ public class AuthorParser extends Parser {
         into.setGenres(from.getGenres());
         into.setType(from.getType());
         into.setAnnotationBlocks(from.getAnnotationBlocks());
-        into.setCategory(from.getCategory());
         into.setState(from.getState());
         into.setHasIllustration(from.isHasIllustration());
         into.setHasComments(from.isHasComments());

@@ -38,7 +38,7 @@ import java.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
 @ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
-@Table(database = MyDatabase.class, allFields = true)
+@Table(database = MyDatabase.class, allFields = true, updateConflict = ConflictAction.REPLACE, insertConflict = ConflictAction.REPLACE)
 public class Work extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
@@ -51,6 +51,8 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     @PrimaryKey
     String link;
     String title;
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
+    Category category;
     @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Author author;
     String imageLink;
@@ -65,8 +67,6 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     @Column(typeConverter = ListGenreConverter.class)
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
-    Category category;
     @Column(typeConverter = ListStringConverter.class)
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;

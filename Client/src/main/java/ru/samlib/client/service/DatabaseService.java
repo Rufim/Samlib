@@ -46,11 +46,21 @@ public class DatabaseService {
 
     public synchronized Author insertObservableAuthor(Author author) {
         author.setObservable(true);
-        return doAction(Action.INSERT, author);
+        doAction(Action.INSERT, author);
+        doAction(Action.UPSERT, author.getCategories());
+        return getAuthor(author.getLink());
     }
 
     public synchronized Author createOrUpdateAuthor(Author author) {
-        return doAction(Action.UPSERT, author);
+        doAction(Action.UPSERT, author);
+        doAction(Action.UPSERT, author.getCategories());
+        author = getAuthor(author.getLink());
+        for (Category category : author.getCategories()) {
+            if(category.getWorks().isEmpty()  && category.getLinks().isEmpty()) {
+                category.delete();
+            }
+        }
+        return author;
     }
 
     private void updateCategory(Category category) {
@@ -61,7 +71,7 @@ public class DatabaseService {
         boolean result = false;
         switch (action) {
             case INSERT:
-                result = value.save();
+                result = value.insert() > 0;
                 break;
             case UPDATE:
                 result = value.update();
@@ -70,11 +80,7 @@ public class DatabaseService {
                 result = value.delete();
                 break;
             case UPSERT:
-                if (value.exists()) {
-                    result = value.update();
-                } else {
-                    result = value.save();
-                }
+                result = value.save();
                 break;
         }
         if (!result) {

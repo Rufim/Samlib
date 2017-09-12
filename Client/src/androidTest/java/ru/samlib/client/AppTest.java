@@ -9,7 +9,6 @@ import ru.samlib.client.dagger.AppModule;
 import ru.samlib.client.dagger.DaggerTestComponent;
 import ru.samlib.client.dagger.TestComponent;
 import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.DatabaseService;
 
@@ -40,7 +39,7 @@ public class AppTest {
     @Test
     public void observableServiceTest() throws Exception {
         Author author = new AuthorParser("http://samlib.ru/s/sedrik/").parse();
-        AuthorEntity entity = databaseService.insertObservableAuthor(author.createEntity());
+        Author entity = databaseService.insertObservableAuthor(author);
         databaseService.deleteAuthor(entity);
     }
 }

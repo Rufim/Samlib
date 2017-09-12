@@ -24,7 +24,7 @@ import static ru.samlib.client.util.DBFlowUtils.dbFlowOneTwoManyUtilMethod;
  * Created by Rufim on 01.07.2015.
  */
 @Data
-@Table(database = MyDatabase.class, allFields = true)
+@Table(database = MyDatabase.class, allFields = true,updateConflict = ConflictAction.REPLACE, insertConflict = ConflictAction.REPLACE)
 public class Category extends BaseModel implements Linkable, Serializable, Parsable {
 
     private static final long serialVersionUID = 6549621729790810154L;

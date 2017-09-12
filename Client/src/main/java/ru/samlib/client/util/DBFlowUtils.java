@@ -23,7 +23,7 @@ import java.util.List;
 public class DBFlowUtils {
 
     public static <C> List<C> dbFlowOneTwoManyUtilMethod(List<C> list, Class<C> clazz, Operator in) {
-        if (list == null || list instanceof LinkedList) {
+        if (list == null || list.isEmpty()) {
             list = dbFlowQueryList(clazz, in);
         }
         return list;

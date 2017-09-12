@@ -193,7 +193,7 @@ public class WorkParser extends Parser {
             if (!hasNotDefaultCategory) {
                 Category category = new Category();
                 category.setType(work.getType());
-                if (work.getCategory() == null || !work.getCategory().equals(category)) {
+                if (work.getCategory() == null) {
                     work.setCategory(category);
                 }
             }
