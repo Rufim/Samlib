@@ -85,7 +85,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private Integer lastIndent = 0;
     private int colorSpeakingText;
     private int colorFoundedText;
-    private PowerManager.WakeLock screenLock;
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
     private boolean isDownloaded = false;
@@ -209,20 +208,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     protected void firstLoad(boolean scroll) {
-        try {
-            Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
-            if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
-                loadMoreBar.setVisibility(View.GONE);
-                if (bookmark != null && scroll) {
-                    scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
+        if(!mode.equals(Mode.SPEAK)) {
+            try {
+                Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
+                if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
+                    loadMoreBar.setVisibility(View.GONE);
+                    if (bookmark != null && scroll && bookmark.getIndentIndex() != 0) {
+                        scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
+                    } else {
+                        loadItems(false);
+                    }
                 } else {
-                    loadItems(false);
+                    stopLoading();
                 }
-            } else {
-                stopLoading();
+            } catch (Exception e) {
+                Log.e(TAG, "Unknown exception", e);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Unknown exception", e);
         }
     }
 
@@ -270,16 +271,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         }
         // sanity check for null as this is a public method
-        if (screenLock != null) {
-            Log.v(TAG, "Releasing wakelock");
-            try {
-                screenLock.release();
-            } catch (Throwable th) {
-                // ignoring this exception, probably wakeLock was already released
-            }
-        } else {
-            // should never happen during normal workflow
-            Log.e(TAG, "Wakelock reference is null");
+        if(isAdded()) {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
         editor.putInt(getString(R.string.preferenceWorkSpeechRate), speechRate.getProgress());
@@ -424,6 +417,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public void cancelAutoScroll() {
         pauseAutoScroll();
         speedLayout.setVisibility(GONE);
+        safeCheckMenuItem(R.id.action_work_auto_scroll, false);
     }
 
 
@@ -468,6 +462,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void clearSelection() {
+        int i = findFirstVisibleItemPosition(false);
+        int j = findLastVisibleItemPosition(false);
+        for (; i < j; i++) {
+            selectText(i, null);
+        }
         selectText(lastIndent, null);
     }
 
@@ -488,9 +487,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 break;
             case END:
             case UNAVAILABLE:
-                if (isAdded()) {
-                    safeCheckMenuItem(R.id.action_work_speaking, false);
-                }
+                safeCheckMenuItem(R.id.action_work_speaking, false);
                 stopSpeak(false);
             case STOPPED:
             case PAUSE:
@@ -554,7 +551,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 if (item.isChecked()) {
                     mode = Mode.NORMAL;
                     cancelAutoScroll();
-                    item.setChecked(false);
                 } else {
                     if (Mode.SPEAK.equals(mode)) {
                         stopSpeak(true);
@@ -883,9 +879,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void onResume() {
         super.onResume();
-        screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
-        screenLock.acquire();
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (TTSService.isReady(work)) {
             TTSPlayer.State state = TTSService.getInstance().getState();
             syncState(state);
@@ -902,7 +896,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        if (!isWaitingPlayerCallback & mode.equals(Mode.SPEAK)) {
+        if ((!isWaitingPlayerCallback || v.getId() == R.id.btnStop) && mode.equals(Mode.SPEAK)) {
             switch (v.getId()) {
                 case R.id.btnPlay:
                     if (!TTSService.isReady(work) || !ownTTSService) {
@@ -938,6 +932,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         mode = Mode.NORMAL;
                         stopSpeak(true);
                         isWaitingPlayerCallback = true;
+                    } else {
+                        safeCheckMenuItem(R.id.action_work_speaking, false);
+                        stopSpeak(false);
                     }
                     break;
             }
