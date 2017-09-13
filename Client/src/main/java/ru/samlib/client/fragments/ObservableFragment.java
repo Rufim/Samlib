@@ -27,7 +27,6 @@ import ru.samlib.client.dialog.AddObservableDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.entity.ExternalWork;
 import ru.samlib.client.domain.events.AuthorAddEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
@@ -47,7 +46,7 @@ import java.util.List;
 /**
  * Created by 0shad on 16.06.2016.
  */
-public class ObservableFragment extends ListFragment<AuthorEntity> {
+public class ObservableFragment extends ListFragment<Author> {
 
     @Inject
     DatabaseService databaseService;
@@ -55,7 +54,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
 
     private boolean loading;
 
-    List<AuthorEntity> toAction = new ArrayList<>();
+    List<Author> toAction = new ArrayList<>();
 
     public static ObservableFragment newInstance() {
         return newInstance(ObservableFragment.class);
@@ -113,11 +112,11 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                                                     String link = TextUtils.eraseHost(line).replace("indexdate.shtml", "").replace("indextitle.shtml", "");
                                                     Author author;
                                                     if (Linkable.isAuthorLink(link)) {
-                                                        AuthorEntity entity = databaseService.getAuthor(link);
+                                                        Author entity = databaseService.getAuthor(link);
                                                         if (entity == null) {
                                                             author = new AuthorParser(link).parse();
                                                             if (!TextUtils.isEmpty(author.getShortName())) {
-                                                                databaseService.insertObservableAuthor(author.createEntity());
+                                                                databaseService.insertObservableAuthor(author);
                                                             }
                                                         }
                                                     }
@@ -163,7 +162,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                                     try {
                                         File file = new File(chosenFile, "authors.txt");
                                         StringBuilder builder = new StringBuilder();
-                                        for (AuthorEntity authorEntity : databaseService.getObservableAuthors()) {
+                                        for (Author authorEntity : databaseService.getObservableAuthors()) {
                                             builder.append(authorEntity.getFullLink());
                                             builder.append("\n");
                                         }
@@ -182,7 +181,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                  refreshData(true);
                  return true;
             case R.id.action_observable_delete:
-                for (AuthorEntity entity : toAction) {
+                for (Author entity : toAction) {
                     entity.setObservable(false);
                 }
                 databaseService.deleteAuthors(toAction);
@@ -213,7 +212,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                         author = new AuthorParser(params[0]).parse();
                         if (!TextUtils.isEmpty(author.getShortName())) {
                             author.setParsed(true);
-                            databaseService.insertObservableAuthor(author.createEntity());
+                            databaseService.insertObservableAuthor(author);
                         } else {
                             author.setParsed(false);
                         }
@@ -242,10 +241,10 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     }
 
     @Override
-    protected DataSource<AuthorEntity> newDataSource() throws Exception {
-        return new DataSource<AuthorEntity>() {
+    protected DataSource<Author> newDataSource() throws Exception {
+        return new DataSource<Author>() {
             @Override
-            public List<AuthorEntity> getItems(int skip, int size) throws IOException {
+            public List<Author> getItems(int skip, int size) throws IOException {
                 return new ArrayList<>(databaseService.getObservableAuthors(skip, size));
             }
         };
@@ -300,7 +299,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
             for (int i = 0; i < adapter.getItems().size(); i++) {
                 if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
                     index = i;
-                    adapter.getItems().set(i, author.createEntity());
+                    adapter.getItems().set(i, author);
                     Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(() -> adapter.notifyItemChanged(index));
                     break;
@@ -315,7 +314,7 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends ItemListAdapter<AuthorEntity> {
+    protected class FavoritesAdapter extends ItemListAdapter<Author> {
 
         public FavoritesAdapter() {
             super(R.layout.item_favorites);
@@ -324,9 +323,9 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
         @Override
         public boolean onClick(View view, int position) {
             if (!loading) {
-                AuthorEntity authorEntity = getItems().get(position);
+                Author authorEntity = getItems().get(position);
                 authorEntity.setHasUpdates(false);
-                App.getInstance().getDataStore().update(authorEntity);
+                databaseService.doAction(DatabaseService.Action.UPDATE, authorEntity);
                 adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
                 Author author = new Author(authorEntity.getLink());

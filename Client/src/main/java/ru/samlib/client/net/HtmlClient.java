@@ -141,18 +141,18 @@ public class HtmlClient {
             if (!cachedResponse.getRequest().isWithParams()) {
                 String url = getUrl(cachedResponse.getRequest());
                 htmlfiles.put(url, cachedResponse);
-                SavedHtml savedHtml = app.getDataStore().findByKey(SavedHtml.class, cachedResponse.getAbsolutePath());
+                SavedHtml savedHtml = databaseService.getSavedHtml(cachedResponse.getAbsolutePath());
                 if (savedHtml == null) {
                     savedHtml = new SavedHtml(cachedResponse);
                     savedHtml.setSize(cachedResponse.length());
                     savedHtml.setUrl(url);
                     savedHtml.setUpdated(new Date());
-                    app.getDataStore().insert(savedHtml);
+                    databaseService.insertOrUpdateSavedHtml(savedHtml);
                 } else {
                     savedHtml.setSize(cachedResponse.length());
                     savedHtml.setUrl(url);
                     savedHtml.setUpdated(new Date());
-                    app.getDataStore().update(savedHtml);
+                    databaseService.insertOrUpdateSavedHtml(savedHtml);
                 }
             }
         } catch (Exception e) {

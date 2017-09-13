@@ -1,19 +1,27 @@
 package ru.samlib.client.service;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import com.annimon.stream.Stream;
-import io.requery.Persistable;
-import io.requery.query.Condition;
-import io.requery.query.JoinAndOr;
-import io.requery.query.Result;
-import io.requery.sql.EntityDataStore;
-import io.requery.sql.MissingKeyException;
+
+
+import com.raizlabs.android.dbflow.config.DatabaseDefinition;
+import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.structure.BaseModel;
+import com.raizlabs.android.dbflow.structure.Model;
+import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
+import com.raizlabs.android.dbflow.structure.database.transaction.ProcessModelTransaction;
+import com.raizlabs.android.dbflow.structure.database.transaction.Transaction;
 import net.vrallev.android.cat.Cat;
 import ru.samlib.client.App;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
-import ru.samlib.client.fragments.WorkFragment;
+import ru.samlib.client.util.DBFlowUtils;
 
-import javax.inject.Inject;
 import java.util.*;
+
+import static ru.samlib.client.util.DBFlowUtils.*;
 
 
 /**
@@ -22,315 +30,175 @@ import java.util.*;
 
 public class DatabaseService {
 
+
     public enum Action {INSERT, UPDATE, DELETE, UPSERT}
 
-    @Inject
-    EntityDataStore<Persistable> dataStore;
+
+    public void insertOrUpdateSavedHtml(SavedHtml savedHtml) {
+        doAction(Action.UPSERT, savedHtml);
+    }
+
+    public SavedHtml getSavedHtml(String absolutePath) {
+        return dbFlowFindFirst(SavedHtml.class, SavedHtml_Table.filePath.eq(absolutePath));
+    }
 
     public DatabaseService() {
         App.getInstance().getComponent().inject(this);
     }
 
-    public DatabaseService(EntityDataStore<Persistable> dataStore) {
-        this.dataStore = dataStore;
+    public synchronized Author insertObservableAuthor(Author author) {
+        author.setObservable(true);
+        doAction(Action.INSERT, author);
+        doAction(Action.UPSERT, author.getCategories());
+        return getAuthor(author.getLink());
     }
 
-    private JoinAndOr<Result<AuthorEntity>> getAuthorQuery() {
-        return dataStore.select(AuthorEntity.class).distinct()
-                .leftJoin(CategoryEntity.class).on((Condition) CategoryEntity.AUTHOR_ID.equal(AuthorEntity.LINK))
-                .leftJoin(WorkEntity.class).on(WorkEntity.AUTHOR_ID.equal(AuthorEntity.LINK).or(WorkEntity.CATEGORY_ID.equal(CategoryEntity.ID)))
-                .leftJoin(LinkEntity.class).on(LinkEntity.AUTHOR_ID.equal(AuthorEntity.LINK).or(LinkEntity.CATEGORY_ID.equal(CategoryEntity.ID)));
-    }
-
-    public synchronized AuthorEntity insertObservableAuthor(AuthorEntity entity) {
-        entity.setObservable(true);
-        return createOrUpdateAuthor(entity);
-    }
-
-    public synchronized AuthorEntity createOrUpdateAuthor(AuthorEntity entity) {
-        AuthorEntity authorEntity = getAuthor(entity.getLink());
-        if (authorEntity == null) {
-            for (Category category : new ArrayList<>(entity.getCategories())) {
-                category.setAuthor(entity);
-                for (Work work : new ArrayList<>(addCategoryToAuthor(entity, category).getWorks())) {
-                    work.setAuthor(entity);
-                    resolveCategory(entity, work, category);
-                }
+    public synchronized Author createOrUpdateAuthor(Author author) {
+        doAction(Action.UPSERT, author);
+        doAction(Action.UPSERT, author.getCategories());
+        author = getAuthor(author.getLink());
+        for (Category category : author.getCategories()) {
+            if(category.getWorks().isEmpty()  && category.getLinks().isEmpty()) {
+                category.delete();
             }
-            return (AuthorEntity) doAction(Action.INSERT, entity);
-        } else {
-            if (entity != authorEntity) {
-                updateAuthor(authorEntity, entity);
-                List<Category> deleteCategories = new ArrayList<>(authorEntity.getCategories());
-                for (Category category : new ArrayList<>(entity.getCategories())) {
-                    CategoryEntity categoryEntity = addCategoryToAuthor(authorEntity, category);
-                    deleteCategories.remove(categoryEntity);
-                    if (categoryEntity != null) {
-                        updateCategory(categoryEntity);
-                    }
-                }
-                if (deleteCategories.size() > 0) {
-                    authorEntity.getCategories().removeAll(deleteCategories);
-                }
-                Iterator<Work> itWork = authorEntity.getWorks().iterator();
-                while (itWork.hasNext()) {
-                    if (!entity.getWorks().contains(itWork.next())) {
-                        itWork.remove();
-                    }
-                }
-                Iterator<Link> itLink = authorEntity.getLinks().iterator();
-                while (itLink.hasNext()) {
-                    if (!entity.getLinks().contains(itLink.next())) {
-                        itLink.remove();
-                    }
-                }
-                for (Work work : new ArrayList<>(entity.getWorks())) {
-                    addWorkToAuthor(work, authorEntity);
-                }
-                for (Link link : new ArrayList<>(entity.getLinks())) {
-                    addLinkToAuthor(link, authorEntity);
-                }
-                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
-            } else {
-                authorEntity = (AuthorEntity) doAction(Action.UPDATE, authorEntity);
-                for (Category category : authorEntity.getCategories()) {
-                    updateCategory(category);
-                }
-                for (Work work : authorEntity.getWorks()) {
-                    try {
-                        doAction(Action.UPDATE, work);
-                    } catch (Exception ex) {
-                        Cat.e(ex, work.getCategory().toString());
-                    }
-                }
-                for (Link link : authorEntity.getLinks()) {
-                    try {
-                        doAction(Action.UPDATE, link);
-                    } catch (MissingKeyException ex) {
-                    }
-                }
-            }
-            return authorEntity;
         }
+        return author;
     }
 
     private void updateCategory(Category category) {
-        if (category.getIdNoDB() != null) {
-            doAction(Action.UPDATE, category);
-            for (Work work : category.getWorks()) {
-                try {
-                    doAction(Action.UPDATE, work);
-                } catch (MissingKeyException ex) {
-                }
-            }
-            for (Link link : category.getLinks()) {
-                try {
-                    doAction(Action.UPDATE, link);
-                } catch (MissingKeyException ex) {
-                }
-            }
-        }
+        doAction(Action.UPDATE, category);
     }
 
-    public Persistable doAction(Action action, Object value) {
-        Persistable result = null;
-        if (value instanceof Persistable) {
-            Persistable entity = (Persistable) value;
-            switch (action) {
-                case INSERT:
-                    result = dataStore.insert(entity);
-                    break;
-                case UPDATE:
-                    result = dataStore.update(entity);
-                    break;
-                case DELETE:
-                    dataStore.delete(entity);
-                    break;
-                case UPSERT:
-                    result = dataStore.upsert(entity);
-                    break;
-            }
+    public <C extends BaseModel> C doAction(Action action, C value, boolean async) {
+        boolean result = false;
+        Model model = value;
+        if(async) {
+            model = value.async();
         }
-        return result;
+        switch (action) {
+            case INSERT:
+                result = model.insert() > 0;
+                break;
+            case UPDATE:
+                result = model.update();
+                break;
+            case DELETE:
+                result = model.delete();
+                break;
+            case UPSERT:
+                result = model.save();
+                break;
+        }
+        if (!result) {
+            Cat.e("Error in DB operation:" + action + ". See log for more info. Class:" + value.getClass());
+        }
+        return value;
     }
 
-    public void deleteAuthor(AuthorEntity entity) {
-        doAction(Action.DELETE, entity);
+    public <C extends BaseModel> C doAction(Action action, C value) {
+        return doAction(action, value, false);
+    }
+
+    public <C extends BaseModel> void doAction(Action action, Collection<C> list) {
+        doAction(action, list, false);
+    }
+
+    public <C extends BaseModel> void doAction(Action action, Collection<C> list, boolean async) {
+        ProcessModelTransaction<C> processModelTransaction =
+                new ProcessModelTransaction.Builder<>(new ProcessModelTransaction.ProcessModel<C>() {
+                    @Override
+                    public void processModel(C model, DatabaseWrapper wrapper) {
+                        doAction(action, model);
+                    }
+                }).addAll(list).build();
+        DatabaseDefinition database = FlowManager.getDatabase(Constants.App.DATABASE_NAME);
+        Transaction transaction = database.beginTransactionAsync(processModelTransaction).error(new Transaction.Error() {
+            @Override
+            public void onError(@NonNull Transaction transaction, @NonNull Throwable error) {
+                Cat.e("Error in DB operation:" + action + ".", error);
+            }
+        }).build();
+        if (async) {
+            transaction.execute();
+        } else {
+            transaction.executeSync();
+        }
     }
 
     public void deleteAuthor(Author author) {
-        doAction(Action.DELETE, getAuthor(author.getLink()));
+        doAction(Action.DELETE, author);
     }
 
-    public void deleteAuthors(Collection<AuthorEntity> authors) {
-        try {
-            for (AuthorEntity author : authors) {
-                dataStore.delete(AuthorEntity.class).where(AuthorEntity.LINK.eq(author.getLink())).get().value();
-            }
-        } catch (Exception ex) {
-          Cat.e(ex);
-        }
+    public void deleteAuthor(String link) {
+        dbFlowDelete(Author.class, Author_Table.link.eq(link));
     }
 
-    public AuthorEntity getAuthor(String link) {
-        return getAuthorQuery().where(AuthorEntity.LINK.eq(link)).get().firstOrNull();
+    public void deleteAuthors(Collection<Author> authors) {
+        doAction(Action.DELETE, authors);
     }
 
-    public List<AuthorEntity> getObservableAuthors() {
-        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).orderBy(AuthorEntity.LAST_UPDATE_DATE.desc()).get().toList();
+    public Author getAuthor(String link) {
+        return dbFlowFindFirst(Author.class, Author_Table.link.eq(link));
     }
 
-    public List<AuthorEntity> getObservableAuthors(int skip, int size) {
-        return getAuthorQuery().where(AuthorEntity.OBSERVABLE.eq(true)).orderBy(AuthorEntity.LAST_UPDATE_DATE.desc()).limit(size).offset(skip).get().toList();
+    public List<Author> getObservableAuthors() {
+        return SQLite.select().from(Author.class).orderBy(Author_Table.lastUpdateDate, false).queryList();
     }
 
-    public List<BookmarkEntity> getHistory(int skip, int size) {
-        return dataStore.select(BookmarkEntity.class).where(BookmarkEntity.AUTHOR_URL.notNull()).orderBy(BookmarkEntity.SAVED_DATE.desc()).limit(size).offset(skip).get().toList();
+    public List<Author> getObservableAuthors(int skip, int size) {
+        return SQLite.select().from(Author.class).offset(skip).limit(size).orderBy(Author_Table.lastUpdateDate, false).queryList();
+    }
+
+    public List<Bookmark> getHistory(int skip, int size) {
+        return SQLite.select().from(Bookmark.class).offset(skip).limit(size).orderBy(Bookmark_Table.savedDate, false).queryList();
     }
 
     public void deleteHistory() {
-        dataStore.delete(BookmarkEntity.class).get().value();
+        dbFlowDelete(Bookmark.class, null);
     }
 
-    public WorkEntity getWork(String link) {
-        return dataStore.select(WorkEntity.class).where(WorkEntity.LINK.eq(link)).get().firstOrNull();
+    public Work getWork(String link) {
+        return dbFlowFindFirst(Work.class, Work_Table.link.eq(link));
     }
 
-    public synchronized BookmarkEntity insertOrUpdateBookmark(Bookmark bookmark) {
-        BookmarkEntity bookmarkEntity = getBookmark(bookmark.getWorkUrl());
-        if (bookmarkEntity == null) {
-            bookmark.setSavedDate(new Date());
-            bookmarkEntity = (BookmarkEntity) doAction(Action.INSERT, bookmark.createEntity());
-        } else {
-            bookmarkEntity.setSavedDate(new Date());
-            updateField(bookmarkEntity::setIndent, bookmark.getIndent());
-            updateField(bookmarkEntity::setAuthorShortName, bookmark.getAuthorShortName());
-            updateField(bookmarkEntity::setPercent, bookmark.getPercent());
-            updateField(bookmarkEntity::setTitle, bookmark.getTitle());
-            updateField(bookmarkEntity::setWorkTitle, bookmark.getWorkTitle());
-            updateField(bookmarkEntity::setIndentIndex, bookmark.getIndentIndex());
-            updateField(bookmarkEntity::setAuthorUrl, bookmark.getAuthorUrl());
-            updateField(bookmarkEntity::setGenres, bookmark.getGenres());
-            bookmarkEntity = (BookmarkEntity) doAction(Action.UPDATE, bookmarkEntity);
-        }
-        return bookmarkEntity;
+    public synchronized Bookmark insertOrUpdateBookmark(Bookmark bookmark) {
+        bookmark.setSavedDate(new Date());
+        return doAction(Action.UPSERT, bookmark);
     }
 
-    public synchronized BookmarkEntity getBookmark(String workUrl) {
-        return dataStore.findByKey(BookmarkEntity.class, workUrl);
-    }
-
-    public CategoryEntity addCategoryToAuthor(AuthorEntity author, Category category) {
-        Category result = Stream.of(author.getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
-        CategoryEntity categoryEntity = null;
-        if (result == null) {
-            categoryEntity = category.createEntity(author);
-        } else {
-            if (!result.isEntity()) {
-                int index = author.getCategories().indexOf(result);
-                result = result.createEntity(author);
-                author.getCategories().set(index, result);
-            }
-            if (result != author.getCategories().get(author.getCategories().size() - 1)) {
-                author.getCategories().remove(result);
-                author.getCategories().add(result);
-            }
-            categoryEntity = (CategoryEntity) result;
-            Iterator<Work> itWork = result.getWorks().iterator();
-            while (itWork.hasNext()) {
-                if (!category.getWorks().contains(itWork.next())) {
-                    itWork.remove();
-                }
-            }
-            Iterator<Link> itLink = result.getLinks().iterator();
-            while (itLink.hasNext()) {
-                if (!category.getLinks().contains(itLink.next())) {
-                    itLink.remove();
-                }
-            }
-            for (Work work : new ArrayList<>(category.getWorks())) {
-                work.setAuthor(author);
-                addWorkToCategory(author, work, categoryEntity);
-            }
-            for (Link link : new ArrayList<>(category.getLinks())) {
-                link.setAuthor(author);
-                addLinkToCategory(author, link, categoryEntity);
-            }
-        }
-        return categoryEntity;
+    public synchronized Bookmark getBookmark(String workUrl) {
+        return dbFlowFindFirst(Bookmark.class, Bookmark_Table.workUrl.eq(workUrl));
     }
 
 
-    public CategoryEntity resolveCategory(AuthorEntity authorEntity, Work into, Category category) {
-        Category result = Stream.of(into.getAuthor().getCategories()).filter(cat -> cat.equals(category)).findFirst().orElse(null);
-        if (result == null) {
-            into.setCategory(category.createEntity(authorEntity));
-            addWorkToCategory(authorEntity, into, (CategoryEntity) into.getCategory());
-            into.getAuthor().getCategories().add(into.getCategory());
-        } else {
-            if (!result.isEntity()) {
-                int index = into.getAuthor().getCategories().indexOf(result);
-                result = result.createEntity(authorEntity);
-                into.getAuthor().getCategories().set(index, result);
-            }
-            addWorkToCategory(authorEntity, into, (CategoryEntity) result);
-            updateField(result::setAnnotation, category.getAnnotation());
-            updateField(result::setType, category.getType());
-            updateField(result::setLink, category.getLink());
-        }
-        return (CategoryEntity) into.getCategory();
+    public List<SavedHtml> selectCachedEntities() {
+        return dbFlowQueryList(SavedHtml.class, null);
     }
 
-    private void addWorkToCategory(AuthorEntity authorEntity, Work into, CategoryEntity category) {
-        List<Work> works;
-        if (category.getIdNoDB() == null) {
-            if (category.getOriginalWorks() == null) {
-                works = new ArrayList<>();
-            } else {
-                works = category.getOriginalWorks();
-            }
-        } else {
-            works = category.getWorks();
-        }
-        into.setAuthor(authorEntity);
-        into.setCategory(category);
-        if (!into.isEntity()) {
-            into.createEntity(authorEntity, category);
-        } else {
-            for (int i = 0; i < works.size(); i++) {
-                if (works.get(i).equals(into)) {
-                    works.remove(i);
-                }
-            }
-            works.add(into);
-        }
+    public void saveHtml(SavedHtml savedHtml) {
+        doAction(Action.INSERT, savedHtml);
     }
 
-
-    private void addLinkToCategory(AuthorEntity authorEntity, Link into, CategoryEntity category) {
-        List<Link> links;
-        if (category.getIdNoDB() == null) {
-            if (category.getOriginalLinks() == null) {
-                links = new ArrayList<>();
-            } else {
-                links = category.getOriginalLinks();
-            }
-        } else {
-            links = category.getLinks();
-        }
-        into.setAuthor(authorEntity);
-        into.setCategory(category);
-        if (into.getClass() != LinkEntity.class) {
-            into = into.createEntity(authorEntity, category);
-        }
-        for (int i = 0; i < links.size(); i++) {
-            if (links.get(i).equals(into)) {
-                links.remove(i);
-            }
-        }
-        links.add(into);
+    public ExternalWork getExternalWork(String filePath) {
+        return dbFlowFindFirst(ExternalWork.class, ExternalWork_Table.filePath.eq(filePath));
     }
 
+    public ExternalWork insertOrUpdateExternalWork(ExternalWork externalWork) {
+        externalWork.setSavedDate(new Date());
+        return doAction(Action.UPSERT, externalWork);
+    }
+
+    public void deleteExternalWorks(List<ExternalWork> delete) {
+        doAction(Action.DELETE, delete);
+    }
+
+    public void deleteCachedEntities(List<SavedHtml> delete) {
+        doAction(Action.DELETE, delete);
+    }
+
+    public List<ExternalWork> selectExternalWorks(int skip, int size) {
+        return new ArrayList<>();
+    }
     private void addWorkToAuthor(Work into, Author author) {
         if (author != null && (into.isRootWork() || into.isRecommendation())) {
             if (author.getWorks() == null) {
@@ -389,27 +257,6 @@ public class DatabaseService {
         }
     }
 
-    public List<SavedHtml> selectCachedEntities() {
-        return dataStore.select(SavedHtml.class).orderBy(SavedHtml.UPDATED.asc()).get().toList();
-    }
-
-    public void saveHtml(SavedHtml savedHtml) {
-        SavedHtml htmlDB = dataStore.findByKey(SavedHtml.class, savedHtml.getFilePath());
-        if (htmlDB == null) {
-            dataStore.insert(savedHtml);
-        } else {
-            dataStore.update(savedHtml);
-        }
-    }
-
-    public ExternalWork getExternalWork(String filePath) {
-        return dataStore.select(ExternalWork.class).where(ExternalWork.FILE_PATH.eq(filePath)).get().firstOrNull();
-    }
-
-
-    public List<ExternalWork> selectExternalWorks(int skip, int size) {
-        return dataStore.select(ExternalWork.class).orderBy(ExternalWork.SAVED_DATE.desc()).limit(size).offset(skip).get().toList();
-    }
 
     public ExternalWork saveExternalWork(Work work, String filePath) {
         ExternalWork externalWork = new ExternalWork();
@@ -420,31 +267,6 @@ public class DatabaseService {
         updateField(externalWork::setAuthorShortName, work.getAuthor().getShortName());
         updateField(externalWork::setAuthorUrl, work.getAuthor().getFullLink());
         return insertOrUpdateExternalWork(externalWork);
-    }
-
-    public ExternalWork insertOrUpdateExternalWork(ExternalWork externalWork) {
-        ExternalWork work = dataStore.findByKey(ExternalWork.class, externalWork.getFilePath());
-        if (work == null) {
-            externalWork.setSavedDate(new Date());
-            work = (ExternalWork) doAction(Action.INSERT, externalWork);
-        } else {
-            work.setSavedDate(new Date());
-            updateField(work::setAuthorShortName, externalWork.getAuthorShortName());
-            updateField(work::setWorkUrl, externalWork.getWorkUrl());
-            updateField(work::setWorkTitle, externalWork.getWorkTitle());
-            updateField(work::setAuthorUrl, externalWork.getAuthorUrl());
-            updateField(work::setGenres, externalWork.getGenres());
-            work = (ExternalWork) doAction(Action.UPDATE, work);
-        }
-        return work;
-    }
-
-    public void deleteExternalWorks(List<ExternalWork> delete) {
-        dataStore.delete(delete);
-    }
-
-    public void deleteCachedEntities(List<SavedHtml> delete) {
-        dataStore.delete(delete);
     }
 
     interface UpdateAction<F> {

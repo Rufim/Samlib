@@ -1,12 +1,16 @@
 package ru.samlib.client.domain.entity;
 
-import io.requery.*;
+
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jsoup.Jsoup;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 
 import java.io.Serializable;
@@ -18,12 +22,11 @@ import java.util.List;
 /**
  * Created by 0shad on 23.07.2015.
  */
-@NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Entity
-public class Bookmark implements Serializable, Findable {
-    @Key
+@Table(database = MyDatabase.class, allFields = true)
+public class Bookmark extends BaseModel implements Serializable, Findable {
+    @PrimaryKey
     String workUrl;
     String authorUrl;
     String title;
@@ -35,27 +38,11 @@ public class Bookmark implements Serializable, Findable {
     String authorShortName;
     Date savedDate;
 
+    public Bookmark(){};
+
     public Bookmark(String title){
         this.title = title;
     }
-
-    public BookmarkEntity createEntity() {
-        if(getClass() == BookmarkEntity.class) {
-            return (BookmarkEntity) this;
-        }
-        BookmarkEntity entity = new BookmarkEntity();
-        entity.setIndent(indent);
-        entity.setIndentIndex(indentIndex);
-        entity.setPercent(percent);
-        entity.setTitle(title);
-        entity.setWorkTitle(workTitle);
-        entity.setAuthorShortName(authorShortName);
-        entity.setSavedDate(savedDate);
-        entity.setAuthorUrl(authorUrl);
-        entity.setWorkUrl(workUrl);
-        return entity;
-    }
-
 
     public String toString() {
         if(title != null) {

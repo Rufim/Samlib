@@ -243,7 +243,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         bookmark.setAuthorShortName(work.getAuthor().getShortName());
         bookmark.setGenres(work.printGenres());
         bookmark.setWorkTitle(work.getTitle());
-        work.setBookmark(bookmark.createEntity());
+        work.setBookmark(bookmark);
     }
 
 

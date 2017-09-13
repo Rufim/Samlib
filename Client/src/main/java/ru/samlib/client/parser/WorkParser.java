@@ -180,12 +180,7 @@ public class WorkParser extends Parser {
                 } else if (text.contains("Скачать")) {
                     break;
                 } else if (a != null) {
-                    Category category;
-                    if (work instanceof WorkEntity) {
-                        category = new CategoryEntity();
-                    } else {
-                        category = new Category();
-                    }
+                    Category category = new Category();
                     category.setTitle(text);
                     category.setLink(a.attr("href"));
                     category.setAuthor(work.getAuthor());
@@ -198,7 +193,7 @@ public class WorkParser extends Parser {
             if (!hasNotDefaultCategory) {
                 Category category = new Category();
                 category.setType(work.getType());
-                if (work.getCategory() == null || !work.getCategory().equals(category)) {
+                if (work.getCategory() == null) {
                     work.setCategory(category);
                 }
             }

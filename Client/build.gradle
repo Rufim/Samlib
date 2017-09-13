@@ -6,11 +6,11 @@ ext {
     compileSdkProjectVersion = 25
     buildToolsProjectVersion = '25.0.2'
     supportLibraryVersion = '25.3.1'
-    versionProjectCode = 12
-    versionProjectName = "0.5.7"
+    versionProjectCode = 14
+    versionProjectName = "0.6.1"
     baseScheme = 'http'
     baseHost = 'budclub.ru'
-    requeryVersion = '1.4.0'
+    dbflowVersion = '4.1.1'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'
     butterknifeVersion = '8.5.1'
@@ -105,9 +105,6 @@ android {
 }
 
 retrolambda {
-    jdk System.getenv("JAVA8_HOME")
-    oldJdk System.getenv("JAVA7_HOME")
-    javaVersion JavaVersion.VERSION_1_7
     defaultMethods true
 }
 
@@ -116,7 +113,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
     annotationProcessor "com.jakewharton:butterknife-compiler:$butterknifeVersion"
-    annotationProcessor "io.requery:requery-processor:$requeryVersion"   // use an APT plugin
+    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:$dbflowVersion"
     provided "javax.annotation:jsr250-api:1.0"
     provided "org.projectlombok:lombok:$lombokVersion"
     compile "com.android.support:gridlayout-v7:$supportLibraryVersion"
@@ -131,7 +128,7 @@ dependencies {
     compile "org.greenrobot:eventbus:3.0.0"
     compile "com.squareup.picasso:picasso:2.5.2"
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    compile "com.google.code.gson:gson:2.4"
+    compile "com.google.code.gson:gson:2.7"
     compile "uk.co.chrisjenx:calligraphy:2.3.0"
     compile "com.google.dagger:dagger:$daggerVersion"
     //   compile "com.github.User:Repo:Tag"  for github repos
@@ -142,9 +139,10 @@ dependencies {
     compile "com.snappydb:snappydb-lib:0.5.2"
     compile "com.evernote:android-job:1.1.11-SNAPSHOT"
     compile "net.vrallev.android:cat:1.0.4"
- 
-    compile "io.requery:requery:$requeryVersion"
-    compile "io.requery:requery-android:$requeryVersion" // for android
+
+
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:$dbflowVersion"
+    compile "com.github.Raizlabs.DBFlow:dbflow:$dbflowVersion"
     compile 'com.android.support:multidex:1.0.1'
     compile project(':template')
     compile 'ch.acra:acra:4.9.2'

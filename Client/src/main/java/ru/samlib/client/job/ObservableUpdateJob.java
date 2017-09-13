@@ -13,7 +13,6 @@ import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.kazantsev.template.domain.event.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
@@ -21,6 +20,7 @@ import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.DatabaseService;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.samlib.client.util.MergeFromRequery;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -66,11 +66,12 @@ public class ObservableUpdateJob extends Job {
 
     public static void updateObservable(DatabaseService service, Context context) {
         List<CharSequence> notifyAuthors = new ArrayList<>();
+        MergeFromRequery.merge(context, service);
         Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {
                 boolean wasUpdates = author.isHasUpdates();
                 AuthorParser parser = new AuthorParser(author);
-                author = service.createOrUpdateAuthor((AuthorEntity) parser.parse());
+                author = service.createOrUpdateAuthor(parser.parse());
                 author.setParsed(true);
                 if(context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
                     notifyAuthors.add(author.getShortName());
