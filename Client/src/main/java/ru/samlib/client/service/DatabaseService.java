@@ -142,11 +142,11 @@ public class DatabaseService {
     }
 
     public List<Author> getObservableAuthors() {
-        return dbFlowQueryList(Author.class, Author_Table.observable.eq(true));
+        return SQLite.select().from(Author.class).orderBy(Author_Table.lastUpdateDate, false).queryList();
     }
 
     public List<Author> getObservableAuthors(int skip, int size) {
-        return dbFlowQueryList(Author.class, Author_Table.observable.eq(true), skip, size);
+        return SQLite.select().from(Author.class).offset(skip).limit(size).orderBy(Author_Table.lastUpdateDate, false).queryList();
     }
 
     public List<Bookmark> getHistory(int skip, int size) {
