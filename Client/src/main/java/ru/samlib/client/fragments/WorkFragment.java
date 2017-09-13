@@ -17,7 +17,6 @@ import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
@@ -34,7 +33,6 @@ import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
-import org.jdom2.Content;
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
@@ -46,7 +44,6 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
-import ru.samlib.client.dialog.OnPreferenceCommit;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -58,16 +55,13 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
-import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.CharsetDecoder;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -147,35 +141,31 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 if (externalWork != null) {
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
                     work.setParsed(true);
-                    isDownloaded = true;
-                    safeInvalidateOptionsMenu();
                 } else {
-                    work = new WorkParser(work).parse(true, Parser.isCachedMode());
-                    if (!Parser.isCachedMode()) {
-                        work.setCachedDate(new Date());
-                        if (work.getBookmark() == null) {
-                            setBookmark(work, "", 0);
-                        }
-                        databaseService.insertOrUpdateBookmark(work.getBookmark());
-                        Work workEntity = databaseService.getWork(work.getLink());
-                        if (workEntity != null) {
-                            workEntity.setSizeDiff(0);
-                            workEntity.setChanged(false);
-                            databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
-                        }
+                    work = new WorkParser(work).parse(true, false);
+                    work.setCachedDate(new Date());
+                    if (work.getBookmark() == null) {
+                        setBookmark(work, "", 0);
+                    }
+                    databaseService.insertOrUpdateBookmark(work.getBookmark());
+                    Work workEntity = databaseService.getWork(work.getLink());
+                    if (workEntity != null) {
+                        workEntity.setSizeDiff(0);
+                        workEntity.setChanged(false);
+                        databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
+                    }
+                    if(isAdded()) {
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
-                        isDownloaded = true;
-                        safeInvalidateOptionsMenu();
                         WorkParser.processChapters(work);
                         GuiUtils.runInUI(getContext(), (v) -> {
                             if (searchView != null) searchView.setEnabled(true);
                         });
+                    } else {
+                        return new ArrayList<>();
                     }
                 }
             }
             if (work.isParsed()) {
-                isDownloaded = true;
-                safeInvalidateOptionsMenu();
                 postEvent(new WorkParsedEvent(work));
                 return work.getIndents();
             } else {
@@ -208,7 +198,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     protected void firstLoad(boolean scroll) {
-        if(!mode.equals(Mode.SPEAK)) {
+        if (!mode.equals(Mode.SPEAK)) {
             try {
                 Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
                 if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
@@ -255,6 +245,20 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     @Override
+    public void onPostLoadItems() {
+        if(work != null) {
+            isDownloaded = work.isParsed();
+        }
+        safeInvalidateOptionsMenu();
+        PreferenceMaster master = new PreferenceMaster(getContext());
+        boolean firstTime = master.getValue(R.string.preferenceNavigationWork, true);
+        if (firstTime) {
+            getBaseActivity().openDrawer();
+            master.putValue(R.string.preferenceNavigationWork, false);
+        }
+    }
+
+    @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
@@ -271,7 +275,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         }
         // sanity check for null as this is a public method
-        if(isAdded()) {
+        if (isAdded()) {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
@@ -634,7 +638,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     } else if (work.getCachedResponse() != null) {
                         workFile = work.getCachedResponse();
                     } else {
-                        workFile =  HtmlClient.getCachedFile(getContext(), work.getLink());
+                        workFile = HtmlClient.getCachedFile(getContext(), work.getLink());
                     }
                     Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".provider", workFile);
                     intent.setDataAndType(uri, workFile.getName().endsWith("html") ? "text/html" : "text/plain");
@@ -716,11 +720,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if(mode.equals(Mode.SPEAK)) {
+        if (mode.equals(Mode.SPEAK)) {
             safeCheckMenuItem(R.id.action_work_speaking, false);
             stopSpeak(true);
         }
-        if(mode.equals(Mode.AUTO_SCROLL)) {
+        if (mode.equals(Mode.AUTO_SCROLL)) {
             safeCheckMenuItem(R.id.action_work_auto_scroll, false);
             cancelAutoScroll();
         }
@@ -781,7 +785,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         this.externalWork = null;
         if (filePath != null) {
-            if(externalWork == null || !externalWork.getFilePath().equals(filePath)) {
+            if (externalWork == null || !externalWork.getFilePath().equals(filePath)) {
                 this.externalWork = databaseService.getExternalWork(filePath);
                 if (externalWork == null) {
                     externalWork = new ExternalWork();
@@ -1171,8 +1175,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 }
                             }
                             if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                if(second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
-                                    if(isFullscreen) {
+                                if (second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
+                                    if (isFullscreen) {
                                         stopFullscreen();
                                     } else {
                                         enableFullscreen();
