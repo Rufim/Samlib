@@ -22,6 +22,7 @@
         <item name="toolbarShadowDrawable">@drawable/shadow</item>
         <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
         <item name="textColorAnnotations">@color/light_gold</item>
+        <item name="textColorOverlay">@color/deep_grey</item>
     </style>
 
     <style name="SandyTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -45,6 +46,7 @@
         <item name="toolbarShadowDrawable">@drawable/shadow_light</item>
         <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
         <item name="textColorAnnotations">@color/DarkGoldenrod</item>
+        <item name="textColorOverlay">@color/Bisque</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat">

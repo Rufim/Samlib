@@ -87,6 +87,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private boolean isWaitingPlayerCallback = false;
     private boolean isFullscreen = false;
     private boolean isBack = false;
+    private boolean isStopped = true;
     private SeekBar autoScrollSpeed;
     private SeekBar pitch;
     private SeekBar speechRate;
@@ -239,6 +240,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void onStart() {
         super.onStart();
+        isStopped = false;
         EventBus.getDefault().register(this);
     }
 
@@ -260,6 +262,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
+        isStopped = true;
         if (work != null && work.isParsed()) {
             try {
                 int index = findFirstVisibleItemPosition(false);
@@ -464,8 +467,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void clearSelection() {
-        int i = findFirstVisibleItemPosition(false);
-        int j = findLastVisibleItemPosition(false);
+        int i = layoutManager.findFirstVisibleItemPosition();
+        int j = layoutManager.findLastVisibleItemPosition();
         for (; i < j; i++) {
             selectText(i, null);
         }
@@ -520,7 +523,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                         WorkFragment.this.selectText(speakIndex, phrase.start, phrase.end);
                         isWaitingForSkipStart = false;
-                    } else {
+                    } else if(isAdded() && !isStopped){
                         clearSelection();
                         WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
                         itemList.postDelayed(new Runnable() {

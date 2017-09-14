@@ -6,7 +6,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_alignParentBottom="true"
                                     android:layout_centerHorizontal="true"
-                                    card_view:cardBackgroundColor="@color/deep_grey"
+                                    card_view:cardBackgroundColor="?attr/textColorOverlay"
                                     android:layout_marginBottom="50dp"
                                     card_view:cardElevation="@dimen/spacing_medium"
                                     card_view:cardCornerRadius="12dp">
