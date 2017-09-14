@@ -38,6 +38,7 @@ public class Constants {
         public static final String COMMENTS_PAGE = "comments_page";
         public static final String FILE_PATH = "file_path";
         public static final String WORK_RESTORE = "from_notification";
+        public static final String ON_CHANGE_THEME = "onChangeTheme";
     }
 
 

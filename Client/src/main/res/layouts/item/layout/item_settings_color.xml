@@ -1,33 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
-              android:padding="@dimen/spacing_medium"
-              android:layout_width="match_parent"
-              android:gravity="center_vertical"
-              android:background="@android:drawable/list_selector_background"
-              android:layout_height="wrap_content">
-    <LinearLayout android:layout_width="0dp"
-                  android:layout_weight="1"
-                  android:orientation="vertical"
-                  android:layout_height="wrap_content">
-        <TextView android:layout_width="match_parent"
-                  android:textSize="@dimen/text_large"
-                  android:id="@+id/settings_title"
-                  android:ellipsize="end"
-                  android:text="Preference Title"
-                  android:layout_height="wrap_content"/>
-        <TextView android:layout_width="match_parent"
-                  style="@style/subtitle"
-                  android:text="Preference Subtitle"
-                  android:id="@+id/settings_subtitle"
-                  android:layout_height="wrap_content"/>
-    </LinearLayout>
+                                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                    android:orientation="horizontal"
+                                    android:padding="@dimen/spacing_medium"
+                                    android:layout_width="match_parent"
+                                    android:gravity="center_vertical"
+                                    android:background="@android:drawable/list_selector_background"
+                                    android:layout_height="wrap_content">
 
-    <LinearLayout android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:background="@drawable/border">
-        <View android:layout_width="35dp"
-              android:layout_height="35dp"
-              android:id="@+id/settings_color"/>
+    <include layout="@layout/item_settings_title"/>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border">
+    <android.support.v7.widget.CardView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:id="@+id/settings_color"
+            card_view:cardElevation="0dp"
+            card_view:cardBackgroundColor="@color/transparent"
+            card_view:cardCornerRadius="6dp"/>
     </LinearLayout>
 </LinearLayout>

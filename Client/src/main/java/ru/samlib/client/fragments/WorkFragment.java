@@ -582,7 +582,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), R.string.preferenceVoiceLanguage, "ru");
                 preference.keyValue = TTSPlayer.getAvailableLanguages(getContext());
                 editListPreferenceDialog.setPreference(preference);
-                editListPreferenceDialog.setOnPreferenceCommit(value -> safeInvalidateOptionsMenu());
+                editListPreferenceDialog.setOnPreferenceCommit((value,d) -> {safeInvalidateOptionsMenu(); return true;});
                 editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
                 return true;
             case R.id.action_work_to_author:

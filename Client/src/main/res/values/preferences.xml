@@ -7,6 +7,7 @@
     <string name="preferenceMaxCacheSizeName">Размер кеша, Мб</string>
     <string name="preferenceMaxCacheSize">maxCacheSize</string>
     <string name="preferenceMaxCacheSizeDefault">100</string>
+    <string name="preferenceMaxCacheSizeError">Введите целое число больше 0!</string>
 
     <string name="preferenceCommentCoockie">CommentCoockie</string>
     <string name="preferenceCommentName">CommentName</string>
@@ -36,6 +37,18 @@
     <string name="preferenceVoiceLanguage">VoiceLanguage</string>
     <string name="preferenceVoiceName">Настройки синтеза речи</string>
     <string name="preferenceVoice">Voice</string>
+    <string name="preferenceGroupTheme">Тема</string>
+    <string name="preferenceCurrentThemeName">Текущая тема</string>
+    <string name="preferenceCurrentTheme">CurrentTheme</string>
+    <string-array name="preferenceThemeNames">
+        <item>Ночной город</item>
+        <item>Утро в пустыне</item>
+    </string-array>
+
+    <integer-array name="preferenceThemeIds">
+        <item>@style/CityNightTheme</item>
+        <item>@style/SandyTheme</item>
+    </integer-array>
 
     <string name="preferenceTextHint">Введите новое значение</string>
 </resources>

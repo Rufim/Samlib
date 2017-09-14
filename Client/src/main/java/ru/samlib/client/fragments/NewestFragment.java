@@ -21,13 +21,6 @@ import java.util.Locale;
  */
 public class NewestFragment extends FilterDialogListFragment {
 
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
-    public static NewestFragment newInstance() {
-        return newInstance(NewestFragment.class);
-    }
 
     @Override
     protected ItemListAdapter newAdapter() {

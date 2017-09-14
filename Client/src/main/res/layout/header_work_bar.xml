@@ -11,7 +11,7 @@
             android:layout_height="wrap_content"
             android:minHeight="@dimen/spacing_xlarge"
             android:gravity="center"
-            android:textColor="@color/Snow"
+            android:textColor="?android:attr/textColor"
             android:textSize="@dimen/text_huge"
             android:layout_margin="@dimen/spacing_small"
             android:textStyle="bold"/>
@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_medium"
-                android:textColor="@color/red_dark"
+                android:textColor="?attr/colorAccent"
                 style="@style/item_text"/>
 
         <TextView
@@ -77,7 +77,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_medium"
-                android:textColor="@color/red_dark"
+                android:textColor="?attr/colorAccent"
                 style="@style/item_text"/>
 
         <TextView
@@ -100,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_medium"
-                android:textColor="@color/red_dark"
+                android:textColor="?attr/colorAccent"
                 style="@style/item_text"/>
 
         <TextView

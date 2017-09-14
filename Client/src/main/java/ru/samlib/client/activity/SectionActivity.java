@@ -55,6 +55,7 @@ public class SectionActivity extends NavigationActivity<String> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(AndroidSystemUtils.getStringResPreference(this, R.string.preferenceCurrentTheme, getApplicationInfo().theme));
         super.onCreate(savedInstanceState);
         Fragment sectionFragment = getLastFragment(savedInstanceState);
         if (sectionFragment != null) {

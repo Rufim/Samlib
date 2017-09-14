@@ -1,12 +1,16 @@
 package ru.samlib.client.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.ColorInt;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
+import android.support.v7.widget.CardView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +28,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
 import ru.samlib.client.dialog.EditTextPreferenceDialog;
 import ru.samlib.client.dialog.OnPreferenceCommit;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Font;
 import ru.samlib.client.util.TTSPlayer;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
@@ -57,13 +62,26 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, Font.mapFonts(getContext().getAssets()), Font.getDefFont())
                     .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0,  16f, 6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f)
                     .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
-                    .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.Snow))
+                    .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
                     .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName);
             PreferenceGroup groupCache = new PreferenceGroup(R.string.preferenceGroupCache)
                     .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getString(R.string.preferenceMaxCacheSizeDefault));
-            return Arrays.asList(groupReader, groupCache);
+            PreferenceGroup themeGroup = new PreferenceGroup(R.string.preferenceGroupTheme)
+                    .addPreferenceList(R.string.preferenceCurrentTheme,R.string.preferenceCurrentThemeName, 0, 0, generateThemeMap(), getActivity().getApplicationInfo().theme);
+            return Arrays.asList(groupReader, groupCache, themeGroup);
         };
+    }
+
+    private  Map<String, Integer> generateThemeMap() {
+        Map<String, Integer> themes = new LinkedHashMap<>();
+        String[] names = getResources().getStringArray(R.array.preferenceThemeNames);
+        TypedArray ids = getResources().obtainTypedArray(R.array.preferenceThemeIds);
+        for (int i = 0; i < names.length; i++) {
+            themes.put(names[i], ids.getResourceId(i, -1));
+        }
+        ids.recycle();
+        return themes;
     }
 
     @Override
@@ -109,7 +127,6 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             Object o = getItem(position);
             if(o instanceof Preference) {
                 Preference preference = (Preference) o;
-                OnPreferenceCommit onPreferenceCommit = (value) -> notifyChanged();
                 if (preference.idKey == R.string.preferenceVoice) {
                     Intent intent = new Intent();
                     intent.setAction("com.android.settings.TTS_SETTINGS");
@@ -122,7 +139,18 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     case TEXT:
                         EditTextPreferenceDialog editText = new EditTextPreferenceDialog();
                         editText.setPreference(preference);
-                        editText.setOnPreferenceCommit(onPreferenceCommit);
+                        editText.setOnPreferenceCommit((value, d) -> {notifyChanged(); return true;});
+                        if(preference.idKey == R.string.preferenceMaxCacheSize) {
+                            editText.setOnPreferenceCommit((value, dialog) -> {
+                                if(TextUtils.parseInt(value.toString()) < 1) {
+                                    dialog.setError(R.string.preferenceMaxCacheSizeError);
+                                    return false;
+                                } else {
+                                    notifyChanged();
+                                    return true;
+                                }
+                            });
+                        }
                         editText.show(getFragmentManager(), editText.getClass().getSimpleName());
                         break;
                     case COLOR:
@@ -153,13 +181,13 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     case LIST:
                         EditListPreferenceDialog editList = new EditListPreferenceDialog();
                         editList.setPreference(preference);
-                        editList.setOnPreferenceCommit(onPreferenceCommit);
+                        editList.setOnPreferenceCommit((value, d) -> {notifyChanged(); return true;});
                         if(preference.idKey == R.string.preferenceFontReader) {
                             editList.setSetItemList((textView, key, value) -> {
                                 CalligraphyUtils.applyFontToTextView(getContext(), textView, Font.getFontPath(getContext(), value.toString(), Font.Type.PLAIN));
                                 textView.setText(key.toString());
                             });
-                            editList.setOnPreferenceCommit((Object val) -> {
+                            editList.setOnPreferenceCommit((Object val, EditListPreferenceDialog dialog) -> {
                                 SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
                                 Font font = (Font) val;
                                 Font.Type type;
@@ -176,6 +204,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                     }
                                 }
                                 notifyChanged();
+                                return true;
                             });
                         } else if(preference.idKey == R.string.preferenceFontSizeReader) {
                             editList.setSetItemList((textView, key, value) -> {
@@ -186,6 +215,22 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                             editList.setSetItemList((textView, key, value) -> {
                                 CalligraphyUtils.applyFontToTextView(getContext(), textView, Font.getFontPath(getContext(), null, (Font.Type) value));
                                 textView.setText(key.toString());
+                            });
+                        }  else if(preference.idKey == R.string.preferenceCurrentTheme) {
+                            editList.setOnPreferenceCommit(new OnPreferenceCommit<EditListPreferenceDialog>() {
+                                @Override
+                                public boolean onCommit(Object value, EditListPreferenceDialog dialog) {
+                                    new Handler().postDelayed(() -> {
+                                        Activity activity = getActivity();
+                                        if(activity != null) {
+                                            Intent intent = activity.getIntent();
+                                            intent.putExtra(Constants.ArgsName.ON_CHANGE_THEME, true);
+                                            activity.finish();
+                                            activity.startActivity(intent);
+                                        }
+                                    }, 1000);
+                                    return true;
+                                }
                             });
                         }
                         editList.show(getFragmentManager(), editList.getClass().getSimpleName());
@@ -220,15 +265,19 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                     GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
                                 }
                             } else {
-                                GuiUtils.setText(root, R.id.settings_value, preference.defValue.toString());
+                                if(preference.dialogType.equals(DialogType.LIST)) {
+                                    GuiUtils.setText(root, R.id.settings_value, EditListPreferenceDialog.getValueKey(preference, preference.defValue).toString());
+                                } else {
+                                    GuiUtils.setText(root, R.id.settings_value, preference.defValue.toString());
+                                }
                             }
                             break;
                         case R.layout.item_settings_color:
-                            View colorView = root.findViewById(R.id.settings_color);
+                            CardView colorView = (CardView) root.findViewById(R.id.settings_color);
                             if (preferences.containsKey(preference.key)) {
-                                colorView.setBackgroundColor((Integer) preferences.get(preference.key));
+                                colorView.setCardBackgroundColor((Integer) preferences.get(preference.key));
                             } else {
-                                colorView.setBackgroundColor((Integer) preference.defValue);
+                                colorView.setCardBackgroundColor((Integer) preference.defValue);
                             }
                             break;
                     }

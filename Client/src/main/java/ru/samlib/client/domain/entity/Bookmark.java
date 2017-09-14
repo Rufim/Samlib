@@ -66,14 +66,17 @@ public class Bookmark extends BaseModel implements Serializable, Findable {
         if (stringQuery == null || (authorShortName + " " + workTitle).toLowerCase().contains(stringQuery)) {
             if (genres == null && filterQuery.genders == null) {
                 result = true;
-            }
-            if (genres != null) {
-                List<Genre> genreList = new ArrayList<>();
-                for (String s : this.genres.split(",")) {
-                    genreList.add(Genre.parseGenre(s));
+            } else if (genres != null) {
+                if(this.genres == null) {
+                    result = false;
+                } else {
+                    List<Genre> genreList = new ArrayList<>();
+                    for (String s : this.genres.split(",")) {
+                        genreList.add(Genre.parseGenre(s));
+                    }
+                    result = Collections.disjoint(genres, genreList);
+                    if (!filterQuery.excluding) result = !result;
                 }
-                result = Collections.disjoint(genres, genreList);
-                if (!filterQuery.excluding) result = !result;
             }
             if (!result) return result;
             if (filterQuery.genders != null && filterQuery.genders.size() != Gender.values().length) {

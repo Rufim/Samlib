@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="CityNightTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="searchViewStyle">@style/AppSearchViewStyle</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -24,7 +24,7 @@
         <item name="textColorAnnotations">@color/light_gold</item>
     </style>
 
-    <style name="LightTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="SandyTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="searchViewStyle">@style/AppSearchViewStyle</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
