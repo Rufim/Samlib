@@ -19,10 +19,40 @@
         <item name="colorControlActivated">@color/light_blue</item>
         <item name="colorControlHighlight">@color/light_blue</item>
         <item name="toolbarElevationSize">4dp</item>
+        <item name="toolbarShadowDrawable">@drawable/shadow</item>
         <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
+        <item name="textColorAnnotations">@color/light_gold</item>
+    </style>
+
+    <style name="LightTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="searchViewStyle">@style/AppSearchViewStyle</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- customize the color palette -->
+        <item name="colorPrimary">@color/BurlyWood</item>
+        <item name="colorPrimaryDark">@color/Wheat</item>
+        <item name="colorAccent">@color/DarkCyan</item>
+        <item name="android:textColorPrimary">@color/light_black</item>
+        <item name="android:textColor">@color/light_black</item>
+        <item name="android:navigationBarColor">@color/Wheat</item>
+        <item name="android:windowBackground">@color/PapayaWhip</item>
+        <item name="android:popupBackground">@color/PapayaWhip</item>
+        <item name="android:textColorLink">@color/light_blue</item>
+        <item name="colorControlNormal">@color/light_grey</item>
+        <item name="colorControlActivated">@color/light_blue</item>
+        <item name="colorControlHighlight">@color/light_blue</item>
+        <item name="toolbarElevationSize">4dp</item>
+        <item name="toolbarShadowDrawable">@drawable/shadow_light</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
+        <item name="textColorAnnotations">@color/DarkGoldenrod</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat">
+        <item name="android:paddingRight">4dp</item>
+        <item name="android:paddingLeft">4dp</item>
+    </style>
+
+    <style name="LightTheme.Dialog" parent="Theme.AppCompat">
         <item name="android:paddingRight">4dp</item>
         <item name="android:paddingLeft">4dp</item>
     </style>
@@ -116,7 +146,7 @@
     <style name="author_info_content">
         <item name="android:textSize">@dimen/text_medium</item>
         <item name="android:textStyle">italic</item>
-        <item name="android:textColor">@color/light_gold</item>
+        <item name="android:textColor">?attr/textColorAnnotations</item>
         <item name="android:autoLink">email|web</item>
         <item name="android:linksClickable">true</item>
     </style>

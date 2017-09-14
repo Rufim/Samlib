@@ -504,7 +504,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (work.getRate() != null) {
             rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
         }
-        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
+        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibUtils.generateText(work.getTitle(), rate_and_size, GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations), 0.7f));
         Button illustrationButton = (Button) workView.findViewById(R.id.illustration_button);
         if (work.isHasIllustration()) {
             illustrationButton.setVisibility(View.VISIBLE);
@@ -533,7 +533,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 spanner.registerHandler("a", new LinkHandler(textView));
                 spanner.setStripExtraWhiteSpace(true);
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
-                textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+                textView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
             } else {
                 workView.findViewById(R.id.work_annotation_layout).setVisibility(GONE);
             }

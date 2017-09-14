@@ -1057,7 +1057,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         public void refreshSettings(Context context) {
             backgroundColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent));
             fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f);
-            fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow));
+            fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, GuiUtils.getThemeColor(context, android.R.attr.textColor));
             font = Font.mapFonts(getContext().getAssets()).get(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Font.getDefFont().getName()));
             defaultType = Font.Type.valueOf(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontStyleReader, Font.Type.PLAIN.name()));
             fontResolver = new WorkFontResolver(getContext().getAssets(), font, defaultType);
@@ -1118,7 +1118,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.registerHandler("img", new PicassoImageHandler(annotationView));
                     spanner.registerHandler("a", new LinkHandler(annotationView));
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
-                    annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+                    annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
                     holder.getItemView().setBackgroundColor(backgroundColor);
                     break;
                 case R.layout.item_indent:

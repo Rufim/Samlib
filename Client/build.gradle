@@ -9,7 +9,7 @@ ext {
     versionProjectCode = 14
     versionProjectName = "0.6.1"
     baseScheme = 'http'
-    baseHost = 'budclub.ru'
+    baseHost = 'samlib.ru'
     dbflowVersion = '4.1.1'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'
