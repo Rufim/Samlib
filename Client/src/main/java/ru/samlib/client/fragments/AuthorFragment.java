@@ -22,8 +22,7 @@ import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
-import ru.kazantsev.template.util.AndroidSystemUtils;
-import ru.kazantsev.template.util.TextUtils;
+import ru.kazantsev.template.util.*;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -39,8 +38,6 @@ import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.service.DatabaseService;
-import ru.kazantsev.template.util.FragmentBuilder;
-import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.SamlibUtils;
@@ -101,12 +98,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     }
                 }
                 author.setParsed(true);
+                postEvent(new AuthorParsedEvent(author));
             }
-            postEvent(new AuthorParsedEvent(author));
             if (author.isObservable()) {
                 categoryUpdate.setWorks(author.getUpdates());
             }
-            safeInvalidateOptionsMenu();
             return new ArrayList<>(author.getStaticCategory());
         });
     }
@@ -205,6 +201,17 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onPostLoadItems() {
+        safeInvalidateOptionsMenu();
+        PreferenceMaster master = new PreferenceMaster(getContext());
+        boolean firstTime = master.getValue(R.string.preferenceNavigationAuthor, true);
+        if(firstTime) {
+            getBaseActivity().openDrawer();
+            master.putValue(R.string.preferenceNavigationAuthor, false);
+        }
     }
 
     @Override
