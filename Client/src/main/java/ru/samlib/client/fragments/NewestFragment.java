@@ -22,6 +22,16 @@ import java.util.Locale;
 public class NewestFragment extends FilterDialogListFragment {
 
 
+    public NewestFragment() {
+        pageSize = 15;
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        setDataSource(null);
+        super.refreshData(showProgress);
+    }
+
     @Override
     protected ItemListAdapter newAdapter() {
         return new NewestArrayAdapter();
