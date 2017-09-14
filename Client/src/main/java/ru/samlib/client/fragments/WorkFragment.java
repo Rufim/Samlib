@@ -710,23 +710,26 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean onQueryTextChange(String query) {
-        searched.clear();
-        adapter.selectText(query, true, colorFoundedText);
+        if(!TextUtils.isEmpty(query)) {
+            if (mode.equals(Mode.SPEAK)) {
+                safeCheckMenuItem(R.id.action_work_speaking, false);
+                stopSpeak(true);
+            }
+            if (mode.equals(Mode.AUTO_SCROLL)) {
+                safeCheckMenuItem(R.id.action_work_auto_scroll, false);
+                cancelAutoScroll();
+            }
+            mode = Mode.SEARCH;
+            searched.clear();
+            adapter.selectText(query, true, colorFoundedText);
+
+        }
         super.onQueryTextChange(query);
         return true;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (mode.equals(Mode.SPEAK)) {
-            safeCheckMenuItem(R.id.action_work_speaking, false);
-            stopSpeak(true);
-        }
-        if (mode.equals(Mode.AUTO_SCROLL)) {
-            safeCheckMenuItem(R.id.action_work_auto_scroll, false);
-            cancelAutoScroll();
-        }
-        mode = Mode.SEARCH;
         if (searched.isEmpty()) {
             searched.addAll(search(query));
         }
