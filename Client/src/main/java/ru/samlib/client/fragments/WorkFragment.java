@@ -154,7 +154,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         workEntity.setChanged(false);
                         databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
                     }
-                    if(isAdded()) {
+                    if (isAdded()) {
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
                         WorkParser.processChapters(work);
                         GuiUtils.runInUI(getContext(), (v) -> {
@@ -198,22 +198,20 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     protected void firstLoad(boolean scroll) {
-        if (!mode.equals(Mode.SPEAK)) {
-            try {
-                Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
-                if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
-                    loadMoreBar.setVisibility(View.GONE);
-                    if (bookmark != null && scroll && bookmark.getIndentIndex() != 0) {
-                        scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
-                    } else {
-                        loadItems(false);
-                    }
+        try {
+            Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
+            if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
+                loadMoreBar.setVisibility(View.GONE);
+                if (bookmark != null && scroll && bookmark.getIndentIndex() != 0) {
+                    scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
                 } else {
-                    stopLoading();
+                    loadItems(false);
                 }
-            } catch (Exception e) {
-                Log.e(TAG, "Unknown exception", e);
+            } else {
+                stopLoading();
             }
+        } catch (Exception e) {
+            Log.e(TAG, "Unknown exception", e);
         }
     }
 
@@ -246,7 +244,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onPostLoadItems() {
-        if(work != null) {
+        if (work != null) {
             isDownloaded = work.isParsed();
         }
         safeInvalidateOptionsMenu();
@@ -741,7 +739,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 Layout layout = textView.getLayout();
                 scrollToIndex(index.first, index.second);
                 isWaitingForSkipStart = false;
-            } else {
+            } else if (isAdded()) {
                 scrollToIndex(index.first, Integer.MIN_VALUE);
                 itemList.postDelayed(new Runnable() {
                     @Override
