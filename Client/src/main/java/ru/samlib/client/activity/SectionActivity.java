@@ -140,7 +140,7 @@ public class SectionActivity extends NavigationActivity<String> {
                 IllustrationPagerFragment.show(builder, id, link);
             } else if (Linkable.isCommentsLink(link)) {
                 CommentsPagerFragment.show(builder, id, link);
-            } if((data.getScheme() != null && data.getScheme().startsWith("file")) || (file.exists() && file.isFile())) {
+            } else if((data.getScheme() != null && data.getScheme().startsWith("file")) || (file.exists() && file.isFile())) {
                 if(!isRestore(current, intent, true)) {
                     WorkFragment.showFile(builder, id, link);
                 }
