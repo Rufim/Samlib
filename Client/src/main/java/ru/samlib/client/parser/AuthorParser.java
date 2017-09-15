@@ -231,6 +231,7 @@ public class AuthorParser extends Parser {
                 Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
                 newCategories.remove(newCategoryIndex);
             } else {
+                oldCategory.delete();
                 ocit.remove();
             }
         }
@@ -263,6 +264,7 @@ public class AuthorParser extends Parser {
                 oldLink.setTitle(newLink.getTitle());
                 newLinks.remove(newLinkIndex);
             } else {
+                oldLink.delete();
                 olit.remove();
                 if(author.getLinks() != oldLinks) {
                     author.getWorks().remove(oldLink);
@@ -301,6 +303,7 @@ public class AuthorParser extends Parser {
                 }
                 newWorks.remove(newWorkIndex);
             } else {
+                oldWork.delete();
                 owit.remove();
                 if(author.getWorks() != oldWorks) {
                     author.getWorks().remove(oldWork);

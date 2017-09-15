@@ -51,6 +51,7 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     boolean newest = false;
     boolean notNotified = false;
     boolean observable = false;
+    boolean deleted = false;
     Date lastUpdateDate;
     Integer size;
     Integer workCount;
@@ -77,19 +78,31 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     @ColumnIgnore
     boolean parsed = false;
 
-    @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
+    @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "works")
     public List<Work> loadWorks() {
         return works = dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.author_link.eq(link));
     }
 
-    @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
+    @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "links")
     public List<Link> loadLinks() {
         return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
     }
 
-    @OneToMany(methods = OneToMany.Method.ALL, variableName = "categories")
+    @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "categories")
     public List<Category> loadCategories() {
         return categories = dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
+    }
+
+    public List<Work> getWorks() {
+        return loadWorks();
+    }
+
+    public List<Link> getLinks() {
+        return loadLinks();
+    }
+
+    public List<Category> getCategories() {
+        return loadCategories();
     }
 
     public Author() {
