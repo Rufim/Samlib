@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import ru.kazantsev.template.activity.NavigationActivity;
+import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
@@ -128,24 +129,23 @@ public class SectionActivity extends NavigationActivity<String> {
         String link;
         Uri data;
         if ((data = intent.getData()) != null && (link = data.getPath()) != null) {
+            File file = new File(link);
             if (Linkable.isAuthorLink(link)) {
                 AuthorFragment.show(builder, id, link);
-            }
-            if (Linkable.isWorkLink(link)) {
+            } else if (Linkable.isWorkLink(link)) {
                 if(!isRestore(current, intent, false)) {
                     WorkFragment.show(builder, id, link);
                 }
-            }
-            if((data.getScheme() != null && data.getScheme().startsWith("file")) || new File(link).exists()) {
+            } else if (Linkable.isIllustrationsLink(link)) {
+                IllustrationPagerFragment.show(builder, id, link);
+            } else if (Linkable.isCommentsLink(link)) {
+                CommentsPagerFragment.show(builder, id, link);
+            } if((data.getScheme() != null && data.getScheme().startsWith("file")) || (file.exists() && file.isFile())) {
                 if(!isRestore(current, intent, true)) {
                     WorkFragment.showFile(builder, id, link);
                 }
-            }
-            if (Linkable.isIllustrationsLink(link)) {
-                IllustrationPagerFragment.show(builder, id, link);
-            }
-            if (Linkable.isCommentsLink(link)) {
-                CommentsPagerFragment.show(builder, id, link);
+            } else {
+                BaseFragment.show(builder, id, getResString(R.string.page_not_supported));
             }
         }
     }
