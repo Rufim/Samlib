@@ -255,10 +255,22 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    public void refreshData(boolean showProgress) {
-        if(savedDataSource == null) {
-            super.refreshData(showProgress);
+    public boolean restoreLister() {
+        if (savedDataSource != null) {
+            dataSource = savedDataSource;
+            savedDataSource = null;
+            clearData();
+            loadItems(true);
+            return true;
+        } else {
+            return false;
         }
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        author.setParsed(false);
+        super.refreshData(showProgress);
     }
 
 
