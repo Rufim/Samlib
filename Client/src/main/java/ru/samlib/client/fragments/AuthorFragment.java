@@ -256,8 +256,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public void refreshData(boolean showProgress) {
-        author.setParsed(savedDataSource != null);
-        super.refreshData(showProgress);
+        if(savedDataSource == null) {
+            super.refreshData(showProgress);
+        }
     }
 
 
