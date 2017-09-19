@@ -65,6 +65,7 @@ import java.util.*;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static ru.samlib.client.domain.Constants.ArgsName.MESSAGE;
 
 /**
  * Created by Dmitry on 23.06.2015.
@@ -178,7 +179,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void onDataTaskException(Exception ex) {
         if (ex instanceof IOException) {
-            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+            if(Parser.isCachedMode()) {
+                ErrorFragment.show(this, R.string.work_not_in_cache, 0, ex);
+            } else {
+                ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+            }
         } else {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
             ACRA.getErrorReporter().handleException(ex);

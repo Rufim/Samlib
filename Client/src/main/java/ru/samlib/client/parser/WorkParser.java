@@ -62,8 +62,8 @@ public class WorkParser extends Parser {
         } else {
             rawContent = HtmlClient.executeRequest(request, cached);
         }
-        if (rawContent == null) {
-            return work;
+        if (rawContent == null || rawContent.length() == 0) {
+            throw new IOException("Закешированный файл не найден и отцутствует соединение с интернетом");
         }
         if (work == null) {
             work = new Work(rawContent.getRequest().getBaseUrl().getPath().replaceAll("/+", "/"));

@@ -115,7 +115,7 @@
     <string name="help">
         <![CDATA[
            Это тестовая верия клиента для сайта Самиздат под Андройд, версии 0.5.+.
-            По вопросам и возникающим багам пишите на электронную почту <a href="caelum-rufim@ya.ru">caelum-rufim@ya.ru</a>
+            По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a>
         ]]>
     </string>
     <string name="comments_goto">Перейти</string>
@@ -155,4 +155,5 @@
     <string name="observable_link_or_author_hint">Введите имя автора или ссылку</string>
     <string name="observable_link_or_author_title">Добавить</string>
     <string name="page_not_supported">Страница не поддерживается!</string>
+    <string name="work_not_in_cache">Произведение не закешированно.</string>
 </resources>

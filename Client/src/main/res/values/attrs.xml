@@ -3,4 +3,5 @@
     <attr name="textColorAnnotations" format="color|reference"/>
     <attr name="textColorOverlay" format="color|reference"/>
     <attr name="colorBorderComment" format="color|reference"/>
+    <attr name="actionBarNavigationColor" format="color|reference"/>
 </resources>
