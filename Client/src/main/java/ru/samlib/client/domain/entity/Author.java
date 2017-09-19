@@ -5,6 +5,7 @@ import com.annimon.stream.Stream;
 
 import com.raizlabs.android.dbflow.annotation.*;
 import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -80,7 +81,14 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
 
     @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "works")
     public List<Work> loadWorks() {
-        return works = dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.author_link.eq(link));
+        if (works == null || works.isEmpty()) {
+            works =  SQLite.select()
+                    .from(Work.class)
+                    .where(Work_Table.author_link.eq(link))
+                    .orderBy(Work_Table.changedDate, false)
+                    .queryList();
+        }
+        return works;
     }
 
     @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "links")

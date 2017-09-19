@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
+import com.annimon.stream.Stream;
 import net.vrallev.android.cat.Cat;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -41,6 +42,7 @@ import javax.inject.Inject;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -53,6 +55,7 @@ public class ObservableFragment extends ListFragment<Author> {
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
     private boolean loading;
+    private Thread updateThread;
 
     List<Author> toAction = new ArrayList<>();
 
@@ -242,12 +245,7 @@ public class ObservableFragment extends ListFragment<Author> {
 
     @Override
     protected DataSource<Author> newDataSource() throws Exception {
-        return new DataSource<Author>() {
-            @Override
-            public List<Author> getItems(int skip, int size) throws IOException {
-                return new ArrayList<>(databaseService.getObservableAuthors(skip, size));
-            }
-        };
+        return (skip, size) -> databaseService.getObservableAuthors(skip, size);
     }
 
     @Override
@@ -286,11 +284,16 @@ public class ObservableFragment extends ListFragment<Author> {
         adapter.clear();
         adapter.getItems().addAll(databaseService.getObservableAuthors());
         adapter.notifyDataSetChanged();
-        if (update) {
-            new Thread(() -> {
+        if (update && !isUpdateThreadActive()) {
+            updateThread = new Thread(() -> {
                 ObservableUpdateJob.updateObservable(databaseService, getContext());
-            }).start();
+            });
+            updateThread.start();
         }
+    }
+
+    private boolean isUpdateThreadActive() {
+        return updateThread != null && updateThread.isAlive() && !updateThread.isInterrupted();
     }
 
     private void initializeAuthor(Author author) {
@@ -324,9 +327,6 @@ public class ObservableFragment extends ListFragment<Author> {
         public boolean onClick(View view, int position) {
             if (!loading) {
                 Author authorEntity = getItems().get(position);
-                authorEntity.setHasUpdates(false);
-                databaseService.doAction(DatabaseService.Action.UPDATE, authorEntity);
-                adapter.notifyDataSetChanged();
                 Intent i = new Intent(getActivity(), SectionActivity.class);
                 Author author = new Author(authorEntity.getLink());
                 i.putExtra(Constants.ArgsName.AUTHOR, author);

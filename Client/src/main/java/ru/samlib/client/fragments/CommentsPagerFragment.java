@@ -121,7 +121,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         } else {
             postEvent(new CommentsParsedEvent(adapter.getItems()));
         }
-      
+        ((SectionActivity) getActivity()).setSelected(0);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 

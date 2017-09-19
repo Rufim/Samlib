@@ -57,11 +57,6 @@ public class DatabaseService {
         doAction(Action.UPSERT, author);
         doAction(Action.UPSERT, author.getCategories());
         author = getAuthor(author.getLink());
-        for (Category category : author.getCategories()) {
-            if(category.getWorks().isEmpty()  && category.getLinks().isEmpty()) {
-                category.delete();
-            }
-        }
         return author;
     }
 
@@ -146,7 +141,7 @@ public class DatabaseService {
     }
 
     public List<Author> getObservableAuthors(int skip, int size) {
-        return SQLite.select().from(Author.class).offset(skip).limit(size).orderBy(Author_Table.lastUpdateDate, false).queryList();
+        return SQLite.select().from(Author.class).offset(skip).limit(size).orderBy(Author_Table.lastUpdateDate, false).orderBy(Author_Table.hasUpdates, true).queryList();
     }
 
     public List<Bookmark> getHistory(int skip, int size) {
