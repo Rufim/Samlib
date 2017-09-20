@@ -4,4 +4,5 @@
     <attr name="textColorOverlay" format="color|reference"/>
     <attr name="colorBorderComment" format="color|reference"/>
     <attr name="actionBarNavigationColor" format="color|reference"/>
+    <attr name="colorPopupBackground" format="color|reference"/>
 </resources>

@@ -56,6 +56,7 @@ public class ObservableFragment extends ListFragment<Author> {
 
     private boolean loading;
     private Thread updateThread;
+    private boolean stopped = false;
 
     List<Author> toAction = new ArrayList<>();
 
@@ -257,12 +258,17 @@ public class ObservableFragment extends ListFragment<Author> {
     @Override
     public void onStart() {
         super.onStart();
+        if(stopped) {
+            refreshData(false);
+        }
+        stopped = false;
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
+        stopped = true;
         super.onStop();
     }
 
@@ -281,8 +287,9 @@ public class ObservableFragment extends ListFragment<Author> {
     public void refreshData(boolean update) {
         swipeRefresh.setRefreshing(update);
         loading = update;
+        int size = adapter.getItemCount();
         adapter.clear();
-        adapter.getItems().addAll(databaseService.getObservableAuthors());
+        adapter.getItems().addAll(databaseService.getObservableAuthors(0, size));
         adapter.notifyDataSetChanged();
         if (update && !isUpdateThreadActive()) {
             updateThread = new Thread(() -> {

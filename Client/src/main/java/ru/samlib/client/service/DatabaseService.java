@@ -137,11 +137,11 @@ public class DatabaseService {
     }
 
     public List<Author> getObservableAuthors() {
-        return SQLite.select().from(Author.class).orderBy(Author_Table.lastUpdateDate, false).queryList();
+        return SQLite.select().from(Author.class).orderBy(Author_Table.hasUpdates, false).orderBy(Author_Table.lastUpdateDate, false).queryList();
     }
 
     public List<Author> getObservableAuthors(int skip, int size) {
-        return SQLite.select().from(Author.class).offset(skip).limit(size).orderBy(Author_Table.lastUpdateDate, false).orderBy(Author_Table.hasUpdates, true).queryList();
+        return SQLite.select().from(Author.class).offset(skip).limit(size).orderBy(Author_Table.hasUpdates, false).orderBy(Author_Table.lastUpdateDate, false).queryList();
     }
 
     public List<Bookmark> getHistory(int skip, int size) {

@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 
 import com.raizlabs.android.dbflow.annotation.*;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import org.jsoup.Jsoup;
@@ -61,7 +62,14 @@ public class Category extends BaseModel implements Linkable, Serializable, Parsa
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
     public List<Work> loadWorks() {
-        return works = dbFlowOneTwoManyUtilMethod(works, Work.class, Work_Table.category_id.eq(id));
+        if (works == null || works.isEmpty()) {
+            works = SQLite.select()
+                    .from(Work.class)
+                    .where(Work_Table.category_id.eq(id))
+                    .orderBy(Work_Table.changedDate, false)
+                    .queryList();
+        }
+        return works;
     }
 
     @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
