@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="textColorAnnotations" format="color|reference"/>
-    <attr name="textColorOverlay" format="color|reference"/>
     <attr name="colorBorderComment" format="color|reference"/>
     <attr name="actionBarNavigationColor" format="color|reference"/>
     <attr name="colorPopupBackground" format="color|reference"/>

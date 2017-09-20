@@ -22,7 +22,7 @@
         <item name="toolbarShadowDrawable">@drawable/shadow</item>
         <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
         <item name="textColorAnnotations">@color/light_gold</item>
-        <item name="textColorOverlay">@color/deep_grey</item>
+        <item name="colorOverlay">@color/primaryDark</item>
         <item name="colorBorderComment">@color/material_blue_grey_950</item>
     </style>
 
@@ -47,7 +47,7 @@
         <item name="toolbarShadowDrawable">@drawable/shadow_light</item>
         <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
         <item name="textColorAnnotations">@color/DarkGoldenrod</item>
-        <item name="textColorOverlay">@color/Bisque</item>
+        <item name="colorOverlay">@color/Wheat</item>
         <item name="colorBorderComment">@color/material_deep_teal_200</item>
     </style>
 

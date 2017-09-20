@@ -7,7 +7,7 @@
                                     android:layout_alignParentBottom="true"
                                     android:layout_centerHorizontal="true"
                                     android:visibility="gone"
-                                    card_view:cardBackgroundColor="?attr/textColorOverlay"
+                                    card_view:cardBackgroundColor="?attr/colorOverlay"
                                     android:layout_marginBottom="50dp"
                                     card_view:cardElevation="@dimen/spacing_medium"
                                     card_view:cardCornerRadius="12dp">
