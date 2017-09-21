@@ -7,6 +7,7 @@ import com.annimon.stream.Stream;
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
 import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.sql.language.Operator;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.raizlabs.android.dbflow.structure.Model;
@@ -153,7 +154,7 @@ public class DatabaseService {
     }
 
     public void deleteHistory() {
-        dbFlowDelete(Bookmark.class, null);
+        SQLite.delete().from(Bookmark.class).where(Bookmark_Table.userBookmark.eq(false)).or(Bookmark_Table.userBookmark.isNull()).execute();
     }
 
     public Work getWork(String link) {
@@ -196,7 +197,7 @@ public class DatabaseService {
     }
 
     public List<ExternalWork> selectExternalWorks(int skip, int size) {
-        return dbFlowQueryList(ExternalWork.class, ExternalWork_Table.filePath.notLike("/data/data/%"), skip, size);
+        return dbFlowQueryList(ExternalWork.class, skip, size, ExternalWork_Table.filePath.notLike("/data/data/%"));
     }
     private void addWorkToAuthor(Work into, Author author) {
         if (author != null && (into.isRootWork() || into.isRecommendation())) {

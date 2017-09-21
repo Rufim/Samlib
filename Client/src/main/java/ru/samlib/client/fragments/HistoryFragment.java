@@ -110,6 +110,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.history, menu);
+        menu.findItem(R.id.action_history_only_locked).setChecked(onlyLocked);
     }
 
     @Override
@@ -155,6 +156,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
                     alert.getWindow().setBackgroundDrawableResource(ru.kazantsev.template.R.drawable.base_dialog_background);
                 }
                 alert.show();
+                return true;
             case R.id.action_history_only_locked:
                 item.setChecked(onlyLocked = !item.isChecked());
                 SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
