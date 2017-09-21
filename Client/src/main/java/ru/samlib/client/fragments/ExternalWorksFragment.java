@@ -153,13 +153,14 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
             }
             TextView filepathView = GuiUtils.getView(root, R.id.external_item_filepath);
             GuiUtils.setText(filepathView, item.getFilePath());
-            if(item.getWorkUrl() != null) {
+            /*if(item.getWorkUrl() != null) {
                 GuiUtils.setVisibility(View.VISIBLE, root, R.id.external_item_author_layout);
                 TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
                 TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
                 GuiUtils.setText(titleView, item.getWorkTitle());
                 GuiUtils.setText(authorView, item.getAuthorShortName());
-            } else {
+            } else*/
+            {
                 GuiUtils.setVisibility(View.GONE, root, R.id.external_item_author_layout);
                 TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
                 TextView authorView = GuiUtils.getView(root, R.id.external_item_author);

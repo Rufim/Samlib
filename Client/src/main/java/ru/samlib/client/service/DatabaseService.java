@@ -192,7 +192,7 @@ public class DatabaseService {
     }
 
     public List<ExternalWork> selectExternalWorks(int skip, int size) {
-        return new ArrayList<>();
+        return dbFlowQueryList(ExternalWork.class, ExternalWork_Table.filePath.notLike("/data/data/%"), skip, size);
     }
     private void addWorkToAuthor(Work into, Author author) {
         if (author != null && (into.isRootWork() || into.isRecommendation())) {
