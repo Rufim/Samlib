@@ -84,8 +84,7 @@ public class App extends MultiDexApplication {
         CleanCacheJob.startSchedule();
         Font.mapFonts(getAssets());
         FlowManager.init(new FlowConfig.Builder(this).build());
-        FlowLog.setMinimumLoggingLevel(FlowLog.Level.V);
-    }
+   }
 
     @Override
     public void onLowMemory() {
