@@ -24,6 +24,10 @@
         <item name="textColorAnnotations">@color/light_gold</item>
         <item name="colorOverlay">@color/primaryDark</item>
         <item name="colorBorderComment">@color/material_blue_grey_950</item>
+
+        <item name="settingsColorBorder">@drawable/border_city_night</item>
+        <item name="switchThumb">@drawable/switch_text_thumb_main_city_night</item>
+        <item name="switchTextColor">@drawable/switch_text_color_main_city_night</item>
     </style>
 
     <style name="SandyTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -49,6 +53,10 @@
         <item name="textColorAnnotations">@color/DarkGoldenrod</item>
         <item name="colorOverlay">@color/Wheat</item>
         <item name="colorBorderComment">@color/material_deep_teal_200</item>
+
+        <item name="settingsColorBorder">@drawable/border_sandy</item>
+        <item name="switchThumb">@drawable/switch_text_thumb_main_sandy</item>
+        <item name="switchTextColor">@drawable/switch_text_color_main_sandy</item>
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.AppCompat">
@@ -80,10 +88,10 @@
     </style>
 
     <style name="SwitchTextAppearance">
-        <item name="android:textColor">@drawable/switch_text_color_main</item>
-        <item name="android:textColorHighlight">@drawable/switch_text_color_main</item>
-        <item name="android:textColorHint">@drawable/switch_text_color_main</item>
-        <item name="android:textColorLink">@drawable/switch_text_color_main</item>
+        <item name="android:textColor">?attr/switchTextColor</item>
+        <item name="android:textColorHighlight">?attr/switchTextColor</item>
+        <item name="android:textColorHint">?attr/switchTextColor</item>
+        <item name="android:textColorLink">?attr/switchTextColor</item>
         <item name="android:textSize">10sp</item>
         <item name="android:textStyle">normal</item>
     </style>

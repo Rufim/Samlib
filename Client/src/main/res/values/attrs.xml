@@ -4,4 +4,10 @@
     <attr name="colorBorderComment" format="color|reference"/>
     <attr name="actionBarNavigationColor" format="color|reference"/>
     <attr name="colorPopupBackground" format="color|reference"/>
+
+
+    <!-- Гребанные костыли!!!! -->
+    <attr name="settingsColorBorder" format="reference"/>
+    <attr name="switchThumb" format="reference"/>
+    <attr name="switchTextColor" format="reference"/>
 </resources>

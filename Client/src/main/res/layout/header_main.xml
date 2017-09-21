@@ -14,7 +14,7 @@
             android:textOn="@string/online"
             android:textOff="@string/offline"
             app:showText="true"
-            android:thumb="@drawable/switch_text_thumb_main"
+            android:thumb="?attr/switchThumb"
             android:id="@+id/header_main_status"
             android:textStyle="normal|bold"
             android:textAllCaps="false"

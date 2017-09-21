@@ -106,10 +106,12 @@ public class HtmlClient {
             if (htmlfiles.containsKey(url)) {
                 return htmlfiles.get(url);
             }
+            throw new IOException("Файл не найден в кеше");
+        } else {
+            CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
+            cache(response);
+            return response;
         }
-        CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
-        cache(response);
-        return response;
     }
 
     public static synchronized CachedResponse executeRequest(Request request, boolean cached) throws IOException {
