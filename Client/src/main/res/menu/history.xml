@@ -11,7 +11,7 @@
           android:orderInCategory="2"
           app:showAsAction="always"/>
     <item android:id="@+id/action_history_only_locked"
-          android:title="@string/history_clean"
+          android:title="@string/history_only_locked"
           android:checked="false"
           android:checkable="true"
           android:orderInCategory="3"
