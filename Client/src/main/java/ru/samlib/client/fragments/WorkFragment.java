@@ -171,6 +171,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                     }
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
+                    if (work.getBookmark() == null) {
+                        setBookmark(work, "", 0);
+                    }
                 } else {
                     work = new WorkParser(work).parse(true, false);
                     work.setCachedDate(new Date());
@@ -234,6 +237,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     protected void firstLoad(boolean scroll) {
         try {
             Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
+            work.setBookmark(bookmark);
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
                 if (bookmark != null && scroll && bookmark.getIndentIndex() != 0) {
