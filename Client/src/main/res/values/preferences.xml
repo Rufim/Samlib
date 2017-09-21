@@ -51,4 +51,6 @@
     </integer-array>
 
     <string name="preferenceTextHint">Введите новое значение</string>
+
+    <string name="preferenceHistoryMode">HistoryMode</string>
 </resources>

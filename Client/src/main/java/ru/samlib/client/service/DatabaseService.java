@@ -148,6 +148,10 @@ public class DatabaseService {
         return SQLite.select().from(Bookmark.class).offset(skip).limit(size).orderBy(Bookmark_Table.savedDate, false).queryList();
     }
 
+    public List<Bookmark> getHistory(int skip, int size, boolean locked) {
+        return SQLite.select().from(Bookmark.class).where(Bookmark_Table.userBookmark.eq(locked)).offset(skip).limit(size).orderBy(Bookmark_Table.savedDate, false).queryList();
+    }
+
     public void deleteHistory() {
         dbFlowDelete(Bookmark.class, null);
     }

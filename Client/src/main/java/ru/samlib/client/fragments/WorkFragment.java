@@ -60,12 +60,10 @@ import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
 import java.io.*;
-import java.net.URI;
 import java.util.*;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
-import static ru.samlib.client.domain.Constants.ArgsName.MESSAGE;
 
 /**
  * Created by Dmitry on 23.06.2015.
@@ -393,6 +391,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 menu.removeItem(R.id.action_work_speaking);
                 menu.removeItem(R.id.action_work_speaking_language);
             }
+            if(work.getBookmark().isUserBookmark()) {
+                safeCheckMenuItem(R.id.action_work_lock_bookmark, true);
+            }
         } else {
             menu.clear();
         }
@@ -625,6 +626,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_to_author:
                 AuthorFragment.show(this, work.getAuthor());
+            case R.id.action_work_lock_bookmark:
+                boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                work.getBookmark().setUserBookmark(checked);
+                work.getBookmark().save();
                 return true;
             case R.id.action_work_share:
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");

@@ -38,6 +38,8 @@ public class Bookmark extends BaseModel implements Serializable, Findable {
     String authorShortName;
     Date savedDate;
 
+    boolean userBookmark = false;
+
     public Bookmark(){};
 
     public Bookmark(String title){

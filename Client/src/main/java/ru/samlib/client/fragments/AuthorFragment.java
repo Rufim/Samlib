@@ -160,11 +160,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 safeInvalidateOptionsMenu();
                 return true;
             case R.id.action_author_mode:
-                if (item.isChecked()) {
-                    item.setChecked(simpleView = false);
-                } else {
-                    item.setChecked(simpleView = true);
-                }
+                item.setChecked(simpleView = !item.isChecked());
                 SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
                 editor.putBoolean(getString(R.string.preferenceAuthorSimpleView), simpleView);
                 editor.apply();
