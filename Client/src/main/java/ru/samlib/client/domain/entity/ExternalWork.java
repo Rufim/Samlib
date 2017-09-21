@@ -5,9 +5,12 @@ package ru.samlib.client.domain.entity;
 
 
 
+import android.net.Uri;
 import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.ColumnIgnore;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.annotation.provider.ContentUri;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -36,6 +39,9 @@ public class ExternalWork extends BaseModel implements Findable, Serializable {
     String genres;
     String workTitle;
     String authorShortName;
+
+    @ColumnIgnore
+    Uri ContentUri;
 
     public ExternalWork() {};
 

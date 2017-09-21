@@ -144,6 +144,10 @@ public class SectionActivity extends NavigationActivity<String> {
                 if(!isRestore(current, intent, true)) {
                     WorkFragment.showFile(builder, id, link);
                 }
+            } else if(data.getScheme() != null && data.getScheme().startsWith("content")) {
+                if (!isRestore(current, intent, true)) {
+                    WorkFragment.showContent(builder, id, intent.getData());
+                }
             } else {
                 BaseFragment.show(builder, id, getResString(R.string.page_not_supported));
             }
@@ -155,18 +159,14 @@ public class SectionActivity extends NavigationActivity<String> {
             Uri data = intent.getData();
             if(external) {
                 ExternalWork externalWork = ((WorkFragment) current).getExternalWork();
-                if(externalWork != null && externalWork.getFilePath().equals(data.getPath())) {
-                    return true;
-                } else {
-                    return false;
+                if(intent.getScheme() != null && intent.getScheme().equals("content")) {
+                    return externalWork != null && externalWork.getContentUri() != null && externalWork.getContentUri().equals(data);
+                }  else {
+                    return externalWork != null && externalWork.getFilePath().equals(data.getPath());
                 }
             } else {
                 Work work =  ((WorkFragment) current).getWork();
-                if(work != null && work.getLink().equals(data.getPath())) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return work != null && work.getLink().equals(data.getPath());
             }
         } else {
             return false;

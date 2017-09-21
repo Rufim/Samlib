@@ -1,15 +1,12 @@
 package ru.samlib.client.net;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.net.*;
-import ru.kazantsev.template.util.AndroidSystemUtils;
-import ru.samlib.client.App;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.SavedHtml;
-import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.service.DatabaseService;
 
 import java.io.File;
@@ -89,10 +86,9 @@ public class HtmlClient {
         if (fileName.endsWith("/")) {
             fileName = fileName.substring(0, fileName.lastIndexOf("/"));
         }
-        if (!ru.kazantsev.template.util.TextUtils.contains(fileName, false, ".shtml", ".html", ".htm")) {
+        if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt")) {
             fileName += ".html";
-        }
-        if (fileName.endsWith(".shtml")) {
+        } else if (fileName.endsWith(".shtml")) {
             fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
         }
         return new File(cacheDir, fileName);

@@ -59,8 +59,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
 import java.util.*;
 
 import static android.view.View.GONE;
@@ -118,6 +118,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return show(builder.putArg(Constants.ArgsName.FILE_PATH, link), container, WorkFragment.class);
     }
 
+    public static WorkFragment showContent(FragmentBuilder builder, @IdRes int container, Uri uri) {
+        return show(builder.putArg(Constants.ArgsName.CONTENT_URI, uri), container, WorkFragment.class);
+    }
+
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
         return show(builder.putArg(Constants.ArgsName.WORK, work), container, WorkFragment.class);
     }
@@ -141,8 +145,34 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
             if (!work.isParsed()) {
                 if (externalWork != null) {
+                    if(externalWork.getContentUri() != null) {
+                        FileDescriptor descriptor = getContext().getContentResolver().openFileDescriptor(externalWork.getContentUri(), "r").getFileDescriptor();
+                        File cachedFile = new File(externalWork.getFilePath());
+                        if(cachedFile.exists()) {
+                            cachedFile.delete();
+                        }
+                        if(cachedFile.getParentFile().mkdirs() || cachedFile.createNewFile()) {
+                            FileInputStream in = null;
+                            FileOutputStream out = null;
+                            try {
+                                in = new FileInputStream(descriptor);
+                                out = new FileOutputStream(cachedFile);
+                                SystemUtils.copy(in, out);
+                            } finally {
+                                SystemUtils.close(in);
+                                SystemUtils.close(out);
+                            }
+                            SavedHtml savedHtml = new SavedHtml();
+                            savedHtml.setFilePath(cachedFile.getAbsolutePath());
+                            savedHtml.setSize(cachedFile.length());
+                            savedHtml.setUpdated(new Date());
+                            databaseService.insertOrUpdateSavedHtml(savedHtml);
+                            externalWork.setContentUri(null);
+                        } else {
+                            throw new IOException("Cant create content file on path:" + cachedFile.getAbsolutePath());
+                        }
+                    }
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
-                    work.setParsed(true);
                 } else {
                     work = new WorkParser(work).parse(true, false);
                     work.setCachedDate(new Date());
@@ -158,7 +188,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     }
                     if (isAdded()) {
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
-                        WorkParser.processChapters(work);
+                        WorkParser.processChapters(work, false);
                         GuiUtils.runInUI(getContext(), (v) -> {
                             if (searchView != null) searchView.setEnabled(true);
                         });
@@ -791,19 +821,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
+        Uri contentUri = getArguments().getParcelable(Constants.ArgsName.CONTENT_URI);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        this.externalWork = null;
-        if (filePath != null) {
-            if (externalWork == null || !externalWork.getFilePath().equals(filePath)) {
+        if (filePath != null || contentUri != null) {
+            if (externalWork == null || !externalWork.getFilePath().equals(filePath) || !contentUri.equals(externalWork.getContentUri())) {
+                if (contentUri != null) {
+                    filePath = HtmlClient.getCachedFile(getContext(), contentUri.getPath()).getAbsolutePath();
+                }
                 this.externalWork = databaseService.getExternalWork(filePath);
                 if (externalWork == null) {
                     externalWork = new ExternalWork();
                     externalWork.setFilePath(filePath);
                     externalWork.setWorkTitle(new File(filePath).getName());
                     externalWork.setGenres("");
-                    externalWork.setSavedDate(new Date());
-                    databaseService.insertOrUpdateExternalWork(externalWork);
                 }
+                externalWork.setContentUri(contentUri);
+                databaseService.insertOrUpdateExternalWork(externalWork);
                 work = new Work(externalWork.getWorkUrl());
                 File external = new File(externalWork.getFilePath());
                 work.setTitle(external.getName());

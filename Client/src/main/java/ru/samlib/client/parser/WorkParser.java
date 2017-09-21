@@ -74,18 +74,25 @@ public class WorkParser extends Parser {
         return parsedWork;
     }
 
+    public static String detectCharset(File file, String defaultCharset) {
+        CharsetDetector detector = new CharsetDetector();
+        BufferedInputStream stream = null;
+        try {
+            stream = new BufferedInputStream(new FileInputStream(file));
+            detector.setText(stream);
+            CharsetMatch charset = detector.detect();
+            return charset == null ? defaultCharset : charset.getName();
+        } catch (IOException e) {
+            return defaultCharset;
+        } finally {
+            SystemUtils.close(stream);
+        }
+    }
+
     public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
             if (work.isNotSamlib()) {
-                CharsetDetector detector = new CharsetDetector();
-                BufferedInputStream stream = new BufferedInputStream(new FileInputStream(rawContent));
-                try {
-                    detector.setText(stream);
-                    CharsetMatch charset = detector.detect();
-                    work.setRawContent(SystemUtils.readFile(rawContent, charset == null ? encoding : charset.getName()));
-                } finally {
-                    SystemUtils.close(stream);
-                }
+                work.setRawContent(SystemUtils.readFile(rawContent, detectCharset(rawContent, encoding)));
             } else {
                 work = parseWork(rawContent, encoding, work);
             }
@@ -96,7 +103,7 @@ public class WorkParser extends Parser {
             }
             work.setChanged(false);
             if (processChapters) {
-                processChapters(work);
+                processChapters(work, work.isNotSamlib() && !rawContent.getName().endsWith(".html"));
             }
             workCache.put(work.isNotSamlib() ? rawContent.getAbsolutePath() : work.getLink(), work);
         } catch (Exception ex) {
@@ -219,33 +226,32 @@ public class WorkParser extends Parser {
         return work;
     }
 
-    public static void processChapters(Work work) {
-        List<String> indents = work.getIndents();
-        try {
-            indents.clear();
-        } catch (RuntimeException ex) {
-            // ignored
-        }
-        List<Bookmark> bookmarks = work.getAutoBookmarks();
-        Document document = Jsoup.parseBodyFragment(work.getRawContent());
-        document.setBaseUri(Constants.Net.BASE_DOMAIN);
-        document.outputSettings().prettyPrint(false);
-        List<Node> rootNodes = new ArrayList<>();
-        //Element body = replaceTables(document.body());
-        Elements rootElements = document.body().select("> *");
-        HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
-        if(rootElements == null || rootElements.size() == 0) {
+    public static void processChapters(Work work, boolean isTextFile) {
+        if(isTextFile && !work.getRawContent().startsWith("<html>")) {
             work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
         } else {
+            List<String> indents = work.getIndents();
+            try {
+                indents.clear();
+            } catch (RuntimeException ex) {
+                // ignored
+            }
+            List<Bookmark> bookmarks = work.getAutoBookmarks();
+            Document document = Jsoup.parseBodyFragment(work.getRawContent());
+            document.setBaseUri(Constants.Net.BASE_DOMAIN);
+            document.outputSettings().prettyPrint(false);
+            List<Node> rootNodes = new ArrayList<>();
+            //Element body = replaceTables(document.body());
+            Elements rootElements = document.body().select("> *");
+            HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
             work.setIndents(forSpanner.getIndents(rootElements));
-        }
-        if(rootElements != null) {
-            rootElements.clear();
-        }
-        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
-                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        bookmarks.clear();
-        bookmarks.addAll(forSpanner.getBookmarks());
+            if (rootElements != null) {
+                rootElements.clear();
+            }
+            Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            bookmarks.clear();
+            bookmarks.addAll(forSpanner.getBookmarks());
         /*if(bookmarks.size() == 0) {
             for (int i = 0; i < indents.size(); i++) {
                 String text = indents.get(i);
@@ -257,6 +263,7 @@ public class WorkParser extends Parser {
                 }
             }
         }*/
+        }
         work.setParsed(true);
     }
 
