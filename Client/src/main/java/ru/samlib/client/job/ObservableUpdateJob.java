@@ -71,14 +71,18 @@ public class ObservableUpdateJob extends Job {
             try {
                 boolean wasUpdates = author.isHasUpdates();
                 AuthorParser parser = new AuthorParser(author);
+                author.setDeleted(false);
                 author = service.createOrUpdateAuthor(parser.parse());
                 author.setParsed(true);
-                if(context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
+                if (context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
                     notifyAuthors.add(author.getShortName());
                     author.setNotNotified(false);
                 }
                 EventBus.getDefault().post(new AuthorUpdatedEvent(author));
-                Log.e(TAG, "Author " +  author.getShortName() + " updated");
+                Log.e(TAG, "Author " + author.getShortName() + " updated");
+            } catch (AuthorParser.AuthorNotExistException ex) {
+                author.setDeleted(true);
+                author.save();
             } catch (Exception e) {
                 Log.e(TAG, "Unknown exception while update", e);
             }

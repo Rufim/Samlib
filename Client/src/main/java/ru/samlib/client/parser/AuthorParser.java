@@ -6,6 +6,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.kazantsev.template.net.HTTPExecutor;
+import ru.kazantsev.template.util.AndroidSystemUtils;
+import ru.samlib.client.App;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
@@ -22,6 +26,11 @@ import java.util.*;
  */
 public class AuthorParser extends Parser {
 
+
+    public static class AuthorNotExistException extends Exception {
+
+    }
+
     private static final String TAG = AuthorParser.class.getSimpleName();
 
     private Author author;
@@ -35,11 +44,18 @@ public class AuthorParser extends Parser {
         this(new Author(authorLink));
     }
 
-    public Author parse() throws IOException {
+    public Author parse() throws IOException, AuthorNotExistException {
         try {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
+            if(!cached && AndroidSystemUtils.isNetworkAvailable(App.getInstance())) {
+                if(HTTPExecutor.pingHost(Constants.Net.BASE_HOST, 80, 1000)) {
+                   if(HTTPExecutor.pingURL(request.getUrl().toString(), 1000) == 404) {
+                        throw new AuthorNotExistException();
+                   }
+                }
+            }
             if (author.getCategories().isEmpty()) {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached);
             } else {
@@ -203,7 +219,7 @@ public class AuthorParser extends Parser {
             for (Work recommendation : recommendations) {
                 author.addRecommendation(recommendation);
             }
-        } catch (Exception | Error e) {
+        } catch (IOException | Error e) {
             Log.e(TAG, e.getMessage(), e);
             if (e instanceof IOException) {
                 throw e;

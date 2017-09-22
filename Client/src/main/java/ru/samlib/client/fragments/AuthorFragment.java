@@ -109,10 +109,16 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     protected void onDataTaskException(Exception ex) {
-        if (ex instanceof IOException) {
-            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        if(ex instanceof  AuthorParser.AuthorNotExistException) {
+            if(author != null && author.isEntity()) {
+                author.setDeleted(true);
+                author.save();
+            }
+            ErrorFragment.show(this, R.string.author_not_exist, ex);
+        } else if (ex instanceof IOException) {
+            ErrorFragment.show(this, R.string.error_network, ex);
         } else {
-            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
+            ErrorFragment.show(this, R.string.error, ex);
             ACRA.getErrorReporter().handleException(ex);
         }
     }

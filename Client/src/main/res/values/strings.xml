@@ -139,6 +139,8 @@
     <string name="author_observable">Подписка</string>
     <string name="author_make_all_visited">Отметить все, как прочитанное</string>
     <string name="author_mode">Компактный вид</string>
+    <string name="author_not_exist">Раздел не существует!</string>
+    <string name="author_deleted">Раздел удалён.</string>
     <string name="history_clean">Очистить историю</string>
     <string name="history_only_locked">Только закреплённые</string>
     <string name="history_lock">Закрепить/открепить</string>

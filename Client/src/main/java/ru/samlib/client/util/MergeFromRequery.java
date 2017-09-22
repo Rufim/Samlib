@@ -68,7 +68,7 @@ public class MergeFromRequery {
                                 }
                             }
                             authorsCopied = true;
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
