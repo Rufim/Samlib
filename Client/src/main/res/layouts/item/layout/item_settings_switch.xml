@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                                    android:orientation="horizontal"
+                                    android:padding="@dimen/spacing_medium"
+                                    android:layout_width="match_parent"
+                                    android:gravity="center_vertical"
+                                    android:background="@android:drawable/list_selector_background"
+                                    android:layout_height="wrap_content">
+
+    <include layout="@layout/item_settings_title"/>
+
+    <android.support.v7.widget.SwitchCompat
+            android:enabled="false"
+            android:id="@+id/item_settings_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</LinearLayout>

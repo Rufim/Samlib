@@ -9,6 +9,12 @@
     <string name="preferenceMaxCacheSizeDefault">100</string>
     <string name="preferenceMaxCacheSizeError">Введите целое число больше 0!</string>
 
+    <string name="preferenceGroupObservableName">Подписки</string>
+    <string name="preferenceObservableNotificationName">Нотификации при обновлениях</string>
+    <string name="preferenceObservableNotification">ObservableNotification</string>
+    <string name="preferenceObservableAutoName">Отслеживать обновления</string>
+    <string name="preferenceObservableAuto">ObservableAuto</string>
+
     <string name="preferenceCommentCoockie">CommentCoockie</string>
     <string name="preferenceCommentName">CommentName</string>
     <string name="preferenceCommentEmail">CommentEmail</string>
@@ -27,6 +33,8 @@
     <string name="preferenceFontReaderName">Шрифт</string>
     <string name="preferenceFontSizeReader">FontSize</string>
     <string name="preferenceFontSizeReaderName">Размер шрифта</string>
+    <string name="preferenceFontSizeComments">FontSizeComments</string>
+    <string name="preferenceFontSizeCommentsName">Размер шрифта в комментариях</string>
     <string name="preferenceFontStyleReader">FontStyle</string>
     <string name="preferenceFontStyleReaderName">Стиль шрифта</string>
     <string name="preferenceColorFontReader">ColorFont</string>

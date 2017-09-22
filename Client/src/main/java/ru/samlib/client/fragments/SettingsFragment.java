@@ -44,6 +44,8 @@ import static android.view.View.VISIBLE;
 public class SettingsFragment extends ListFragment<SettingsFragment.Preference> {
 
 
+    private final static float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getBaseActivity().setTitle(R.string.drawer_settings);
@@ -60,7 +62,8 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             isEnd = true;
             PreferenceGroup groupReader = new PreferenceGroup(R.string.preferenceGroupReader)
                     .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, Font.mapFonts(getContext().getAssets()), Font.getDefFont())
-                    .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0,  16f, 6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f)
+                    .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0,  16f,  fontSizes)
+                    .addPreferenceList(R.string.preferenceFontSizeComments, R.string.preferenceFontSizeCommentsName, 0, 0,  16f,  fontSizes)
                     .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
                     .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
@@ -69,7 +72,10 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getString(R.string.preferenceMaxCacheSizeDefault));
             PreferenceGroup themeGroup = new PreferenceGroup(R.string.preferenceGroupTheme)
                     .addPreferenceList(R.string.preferenceCurrentTheme,R.string.preferenceCurrentThemeName, 0, 0, generateThemeMap(), getActivity().getApplicationInfo().theme);
-            return Arrays.asList(groupReader, groupCache, themeGroup);
+            PreferenceGroup observableGroup = new PreferenceGroup(R.string.preferenceGroupObservableName)
+                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.SWITCH, false)
+                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.SWITCH, false);
+            return Arrays.asList(groupReader, groupCache, themeGroup, observableGroup);
         };
     }
 
@@ -235,6 +241,9 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                         }
                         editList.show(getFragmentManager(), editList.getClass().getSimpleName());
                         break;
+                    case SWITCH:
+
+                        break;
                 }
             }
             return true;
@@ -378,6 +387,6 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
     }
 
     public enum DialogType {
-        TEXT, COLOR, LIST
+        TEXT, COLOR, LIST, SWITCH
     }
 }
