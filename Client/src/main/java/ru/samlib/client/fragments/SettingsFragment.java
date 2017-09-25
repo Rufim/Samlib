@@ -302,12 +302,14 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                 Preference pref  = (Preference) buttonView.getTag();
                                 PreferenceMaster master = new PreferenceMaster(getContext());
                                 master.putValue(pref.idKey, isChecked);
-                                if(pref.idKey == R.string.preferenceObservableAuto && !isChecked) {
+                                if(pref.idKey == R.string.preferenceObservableAuto) {
                                     for (Object o1 : getItems()) {
                                         if(o1 instanceof Preference) {
                                             Preference p = (Preference) o1;
                                             if(p.idKey == R.string.preferenceObservableNotification) {
-                                                master.putValue(R.string.preferenceObservableNotification, false);
+                                                if(!isChecked) {
+                                                    master.putValue(R.string.preferenceObservableNotification, false);
+                                                }
                                                 notifyItemChanged(p.position);
                                                 break;
                                             }
