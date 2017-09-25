@@ -63,6 +63,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
 
         public NewestArrayAdapter() {
             super(R.layout.item_discussion);
+            performSelectRoot = true;
         }
 
         @Override

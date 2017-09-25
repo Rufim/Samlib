@@ -186,6 +186,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
 
         public HistoryAdapter() {
             super(R.layout.item_history);
+            performSelectRoot = true;
         }
 
         @Override

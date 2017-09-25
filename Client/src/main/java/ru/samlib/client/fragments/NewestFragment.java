@@ -55,6 +55,7 @@ public class NewestFragment extends FilterDialogListFragment {
 
         public NewestArrayAdapter() {
             super(R.layout.item_newest);
+            performSelectRoot = true;
         }
 
         @Override

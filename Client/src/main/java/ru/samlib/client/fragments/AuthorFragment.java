@@ -350,6 +350,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public ExpandableAuthorFragmentAdaptor() {
             super(false, R.layout.item_section_expandable_header, R.layout.item_section_expandable);
+            performSelectRoot = true;
         }
 
 

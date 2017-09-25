@@ -341,6 +341,7 @@ public class ObservableFragment extends ListFragment<Author> {
 
         public FavoritesAdapter() {
             super(R.layout.item_favorites);
+            performSelectRoot = true;
         }
 
         @Override
