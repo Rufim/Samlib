@@ -11,10 +11,12 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.SwitchCompat;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -23,6 +25,7 @@ import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.PreferenceMaster;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
@@ -44,7 +47,7 @@ import static android.view.View.VISIBLE;
 public class SettingsFragment extends ListFragment<SettingsFragment.Preference> {
 
 
-    private final static float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
+    private final static Float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -73,8 +76,8 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             PreferenceGroup themeGroup = new PreferenceGroup(R.string.preferenceGroupTheme)
                     .addPreferenceList(R.string.preferenceCurrentTheme,R.string.preferenceCurrentThemeName, 0, 0, generateThemeMap(), getActivity().getApplicationInfo().theme);
             PreferenceGroup observableGroup = new PreferenceGroup(R.string.preferenceGroupObservableName)
-                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.SWITCH, false)
-                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.SWITCH, false);
+                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, false)
+                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, false);
             return Arrays.asList(groupReader, groupCache, themeGroup, observableGroup);
         };
     }
@@ -241,9 +244,6 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                         }
                         editList.show(getFragmentManager(), editList.getClass().getSimpleName());
                         break;
-                    case SWITCH:
-
-                        break;
                 }
             }
             return true;
@@ -261,7 +261,9 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     break;
                 case R.layout.item_settings_text:
                 case R.layout.item_settings_color:
+                case R.layout.item_settings_switch:
                     Preference preference = (Preference) o;
+                    preference.position = position;
                     GuiUtils.setText(root, R.id.settings_title, preference.title);
                     GuiUtils.setText(root, R.id.settings_subtitle, preference.subTitle);
                     switch (holder.getItemViewType()) {
@@ -277,7 +279,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                 if(preference.dialogType.equals(DialogType.LIST)) {
                                     GuiUtils.setText(root, R.id.settings_value, EditListPreferenceDialog.getValueKey(preference, preference.defValue).toString());
                                 } else {
-                                    GuiUtils.setText(root, R.id.settings_value, preference.defValue.toString());
+                                    GuiUtils.setText(root, R.id.settings_value, preference.defValue == null ? "" : preference.defValue.toString());
                                 }
                             }
                             break;
@@ -286,8 +288,33 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                             if (preferences.containsKey(preference.key)) {
                                 colorView.setCardBackgroundColor((Integer) preferences.get(preference.key));
                             } else {
-                                colorView.setCardBackgroundColor((Integer) preference.defValue);
+                                colorView.setCardBackgroundColor(preference.defValue == null ? 0 : (Integer)  preference.defValue);
                             }
+                            break;
+                        case R.layout.item_settings_switch:
+                            SwitchCompat switchCompat = (SwitchCompat) root.findViewById(R.id.item_settings_switch);
+                            switchCompat.setTag(preference);
+                            switchCompat.setChecked(AndroidSystemUtils.getStringResPreference(getContext(), preference.idKey, preference.defValue == null ? false : (Boolean)  preference.defValue));
+                            if(preference.idKey == R.string.preferenceObservableNotification) {
+                                switchCompat.setEnabled(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceObservableAuto, false));
+                            }
+                            switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                                Preference pref  = (Preference) buttonView.getTag();
+                                PreferenceMaster master = new PreferenceMaster(getContext());
+                                master.putValue(pref.idKey, isChecked);
+                                if(pref.idKey == R.string.preferenceObservableAuto && !isChecked) {
+                                    for (Object o1 : getItems()) {
+                                        if(o1 instanceof Preference) {
+                                            Preference p = (Preference) o1;
+                                            if(p.idKey == R.string.preferenceObservableNotification) {
+                                                master.putValue(R.string.preferenceObservableNotification, false);
+                                                notifyItemChanged(p.position);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            });
                             break;
                     }
                     if (TextUtils.isEmpty(preference.subTitle)) {
@@ -322,7 +349,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         }
 
         public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout) {
-            return addPreference(idKey, title, subtitle, layout, DialogType.TEXT, "");
+            return addPreference(idKey, title, subtitle, layout, DialogType.NONE, "");
         }
 
         public PreferenceGroup addPreference(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, Object defValue) {
@@ -330,7 +357,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             return this;
         }
 
-        public <T> PreferenceGroup addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout,  T defValue, T... values) {
+        public <T> PreferenceGroup addPreferenceList(@StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout,  T defValue, T [] values) {
             Map<String, T> keyValue = new LinkedHashMap<>();
             if(values != null)
             for (T value : values) {
@@ -357,6 +384,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         public T defValue;
         public final DialogType dialogType;
         public Map<Object, T> keyValue;
+        public int position = -1;
 
 
         public Preference(Context context, @StringRes int idKey, T defValue) {
@@ -387,6 +415,6 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
     }
 
     public enum DialogType {
-        TEXT, COLOR, LIST, SWITCH
+        TEXT, COLOR, LIST, NONE
     }
 }

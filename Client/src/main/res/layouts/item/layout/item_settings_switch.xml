@@ -11,7 +11,6 @@
     <include layout="@layout/item_settings_title"/>
 
     <android.support.v7.widget.SwitchCompat
-            android:enabled="false"
             android:id="@+id/item_settings_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
