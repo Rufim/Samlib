@@ -507,12 +507,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void clearSelection() {
-        int i = layoutManager.findFirstVisibleItemPosition();
-        int j = layoutManager.findLastVisibleItemPosition();
-        for (; i < j; i++) {
-            selectText(i, null);
-        }
-        selectText(lastIndent, null);
+        adapter.selectText(null, true, 0);
     }
 
 
