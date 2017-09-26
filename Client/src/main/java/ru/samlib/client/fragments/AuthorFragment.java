@@ -626,6 +626,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public AuthorFragmentAdaptor() {
             super(R.layout.header_author_list, R.layout.item_section, R.layout.item_section_work);
+            performSelectRoot = true;
+            bindOnlyRootViews = false;
         }
 
         @Override

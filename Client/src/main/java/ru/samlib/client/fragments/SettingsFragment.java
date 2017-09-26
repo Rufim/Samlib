@@ -66,7 +66,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             PreferenceGroup groupReader = new PreferenceGroup(R.string.preferenceGroupReader)
                     .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, Font.mapFonts(getContext().getAssets()), Font.getDefFont())
                     .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0,  16f,  fontSizes)
-                    .addPreferenceList(R.string.preferenceFontSizeComments, R.string.preferenceFontSizeCommentsName, 0, 0,  16f,  fontSizes)
+                    .addPreferenceList(R.string.preferenceFontSizeComments, R.string.preferenceFontSizeCommentsName, 0, 0,  13f,  fontSizes)
                     .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
                     .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
@@ -76,8 +76,8 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             PreferenceGroup themeGroup = new PreferenceGroup(R.string.preferenceGroupTheme)
                     .addPreferenceList(R.string.preferenceCurrentTheme,R.string.preferenceCurrentThemeName, 0, 0, generateThemeMap(), getActivity().getApplicationInfo().theme);
             PreferenceGroup observableGroup = new PreferenceGroup(R.string.preferenceGroupObservableName)
-                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, false)
-                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, false);
+                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, true)
+                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, true);
             return Arrays.asList(groupReader, groupCache, themeGroup, observableGroup);
         };
     }
@@ -245,8 +245,9 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                         editList.show(getFragmentManager(), editList.getClass().getSimpleName());
                         break;
                 }
+                return true;
             }
-            return true;
+            return false;
         }
 
         @Override
