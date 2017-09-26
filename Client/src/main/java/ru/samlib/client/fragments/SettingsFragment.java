@@ -215,7 +215,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                 notifyChanged();
                                 return true;
                             });
-                        } else if(preference.idKey == R.string.preferenceFontSizeReader) {
+                        } else if(preference.idKey == R.string.preferenceFontSizeReader || preference.idKey == R.string.preferenceFontSizeComments) {
                             editList.setSetItemList((textView, key, value) -> {
                                 textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, (Float) value);
                                 textView.setText(key.toString());
