@@ -1099,6 +1099,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         public WorkFragmentAdaptor() {
             super(false, R.layout.header_work_list, R.layout.item_indent);
+            bindOnlyRootViews = false;
             refreshSettings(getContext());
         }
 
