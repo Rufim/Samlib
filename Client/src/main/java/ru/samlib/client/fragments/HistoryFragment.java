@@ -186,6 +186,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
 
         public HistoryAdapter() {
             super(R.layout.item_history);
+            performSelectRoot = true;
         }
 
         @Override
@@ -200,6 +201,12 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
                 case R.id.history_item_author:
                 case R.id.history_item_author_layout:
                     link = getItems().get(position).getAuthorUrl();
+                    break;
+                case R.id.history_locked_layout:
+                    Bookmark bookmark = getItems().get(position);
+                    bookmark.setUserBookmark(false);
+                    bookmark.save();
+                    notifyItemChanged(position);
                     break;
             }
             SectionActivity.launchActivity(getContext(), link);

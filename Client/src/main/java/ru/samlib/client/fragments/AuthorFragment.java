@@ -325,9 +325,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
             safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
-        categoryUpdate = new Category();
-        categoryUpdate.setTitle(getString(R.string.author_section_updates));
-        categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
+        if(categoryUpdate == null) {
+            categoryUpdate = new Category();
+            categoryUpdate.setTitle(getString(R.string.author_section_updates));
+            categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
+        }
         simpleView = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceAuthorSimpleView, false);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -350,6 +352,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public ExpandableAuthorFragmentAdaptor() {
             super(false, R.layout.item_section_expandable_header, R.layout.item_section_expandable);
+            performSelectRoot = true;
+            bindOnlyRootViews = false;
         }
 
 
@@ -625,6 +629,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public AuthorFragmentAdaptor() {
             super(R.layout.header_author_list, R.layout.item_section, R.layout.item_section_work);
+            performSelectRoot = true;
+            bindOnlyRootViews = false;
         }
 
         @Override

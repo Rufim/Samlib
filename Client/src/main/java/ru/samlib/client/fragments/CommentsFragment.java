@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.net.Response;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.NewCommentDialog;
@@ -104,9 +106,12 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     protected class CommentsAdapter extends ItemListAdapter<Comment> {
 
+        private float fontSize;
+
         public CommentsAdapter(int layoutId) {
             super(layoutId);
             bindClicks = false;
+            fontSize = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceFontSizeComments, 13f);
         }
 
 
@@ -222,6 +227,7 @@ public class CommentsFragment extends ListFragment<Comment> {
             spanner.registerHandler("a", new LinkHandler(content));
             GuiUtils.setTextOrHide(content, spanner.fromHtml(comment.getRawContent()));
             content.setMovementMethod(LinkMovementMethod.getInstance());
+            content.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             if (comment.getLink() != null) {
                 GuiUtils.setTextOrHide(author, GuiUtils.spannableText(comment.getNickName(),
                         new URLSpanNoUnderline(comment.getLink().isAuthor() ? comment.getLink().getFullLink() : comment.getLink().getLink())));
