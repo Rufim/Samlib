@@ -119,7 +119,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
             ErrorFragment.show(this, R.string.error_network, ex);
         } else {
             ErrorFragment.show(this, R.string.error, ex);
-            ACRA.getErrorReporter().handleException(ex);
+            if(author != null && author.getLink() != null) {
+                ACRA.getErrorReporter().handleException(new Exception("Unhandled exception occurred while parse author by url: " + author.getLink(), ex));
+            } else {
+                ACRA.getErrorReporter().handleException(ex);
+            }
         }
     }
 

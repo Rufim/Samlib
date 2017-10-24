@@ -217,7 +217,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         } else {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
-            ACRA.getErrorReporter().handleException(ex);
+            if(work != null && work.getLink() != null) {
+                ACRA.getErrorReporter().handleException(new Exception("Unhandled exception occurred while parse author by url: " + work.getLink(), ex));
+            } else {
+                ACRA.getErrorReporter().handleException(ex);
+            }
         }
     }
 

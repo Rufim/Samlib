@@ -74,8 +74,7 @@ public class AuthorParser extends Parser {
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Author Info
-            if (parts.length > 0) {
-                String title = parts[0];
+            if (parts.length > 0 && parts[0] != null) {
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
                 author.setFullName(titles[0]);
                 author.setAnnotation(titles[1].trim());
