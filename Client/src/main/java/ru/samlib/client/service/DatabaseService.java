@@ -8,6 +8,7 @@ import com.annimon.stream.Stream;
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.language.Operator;
+import com.raizlabs.android.dbflow.sql.language.OrderBy;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.raizlabs.android.dbflow.structure.Model;
@@ -197,7 +198,7 @@ public class DatabaseService {
     }
 
     public List<ExternalWork> selectExternalWorks(int skip, int size) {
-        return dbFlowQueryList(ExternalWork.class, skip, size, ExternalWork_Table.filePath.notLike("/data/data/%"));
+        return dbFlowQueryList(ExternalWork.class, skip, size, OrderBy.fromProperty(ExternalWork_Table.savedDate).descending(), ExternalWork_Table.filePath.notLike("/data/data/%"));
     }
     private void addWorkToAuthor(Work into, Author author) {
         if (author != null && (into.isRootWork() || into.isRecommendation())) {

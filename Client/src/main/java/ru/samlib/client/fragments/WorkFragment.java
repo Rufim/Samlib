@@ -33,6 +33,7 @@ import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.activity.BaseActivity;
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
@@ -61,6 +62,8 @@ import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 import javax.inject.Inject;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -170,6 +173,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             throw new IOException("Cant create content file on path:" + cachedFile.getAbsolutePath());
                         }
                     }
+                    File externalFile = new File(externalWork.getFilePath());
+                    AtomicInteger gained = new AtomicInteger(-1);
+                    if(!externalFile.canRead()) {
+                        getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new BaseActivity.PermissionAction() {
+                            @Override
+                            public void doAction(boolean permissionGained) {
+                                gained.set(permissionGained ? 1 : 0);
+                            }
+                        });
+                    }
+                    while (gained.get() == -1) {
+                        SystemUtils.sleepQuietly(100);
+                    }
+                    if(gained.get() == 0 || !externalFile.exists()) {
+                        throw new IOException();
+                    }
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
                     if (work.getBookmark() == null) {
                         setBookmark(work, "", 0);
@@ -210,8 +229,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void onDataTaskException(Exception ex) {
         if (ex instanceof IOException) {
-            if(Parser.isCachedMode()) {
-                ErrorFragment.show(this, R.string.work_not_in_cache, 0, ex);
+            if(Parser.isCachedMode() || externalWork != null) {
+                if(externalWork == null) {
+                    ErrorFragment.show(this, R.string.work_not_in_cache, 0, ex);
+                } else {
+                    ErrorFragment.show(this, R.string.work_cant_open, 0, ex);
+                }
             } else {
                 ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
             }

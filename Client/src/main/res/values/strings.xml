@@ -161,4 +161,5 @@
     <string name="observable_link_or_author_title">Добавить</string>
     <string name="page_not_supported">Страница не поддерживается!</string>
     <string name="work_not_in_cache">Произведение не закешированно.</string>
+    <string name="work_cant_open">Не могу открыть файл. Возможно, он находится в недоступном программе месте.</string>
 </resources>
