@@ -182,6 +182,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 gained.set(permissionGained ? 1 : 0);
                             }
                         });
+                    } else {
+                        gained.set(1);
                     }
                     while (gained.get() == -1) {
                         SystemUtils.sleepQuietly(100);
