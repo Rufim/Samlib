@@ -7,10 +7,7 @@ import com.raizlabs.android.dbflow.annotation.Migration;
 import com.raizlabs.android.dbflow.sql.SQLiteType;
 import com.raizlabs.android.dbflow.sql.migration.AlterTableMigration;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Author_Table;
-import ru.samlib.client.domain.entity.Bookmark;
-import ru.samlib.client.domain.entity.Bookmark_Table;
+import ru.samlib.client.domain.entity.*;
 
 @Database(name = Constants.App.DATABASE_NAME, version = Constants.App.DATABASE_VERSION, insertConflict = ConflictAction.REPLACE, updateConflict = ConflictAction.REPLACE)
 public class MyDatabase {
@@ -39,6 +36,18 @@ public class MyDatabase {
         @Override
         public void onPreMigrate() {
             addColumn(SQLiteType.get(Boolean.class.getName()), Bookmark_Table.userBookmark.getNameAlias().nameRaw());
+        }
+    }
+
+    public static class MigrationWork extends AlterTableMigration<Work>  {
+
+        public MigrationWork() {
+            super(Work.class);
+        }
+
+        @Override
+        public void onPreMigrate() {
+            addColumn(SQLiteType.get(Boolean.class.getName()), Work_Table.hasRate.getNameAlias().nameRaw());
         }
     }
 }

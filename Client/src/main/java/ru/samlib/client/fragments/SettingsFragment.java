@@ -16,7 +16,6 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -30,7 +29,7 @@ import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
 import ru.samlib.client.dialog.EditTextPreferenceDialog;
-import ru.samlib.client.dialog.OnPreferenceCommit;
+import ru.samlib.client.dialog.OnCommit;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Font;
 import ru.samlib.client.util.TTSPlayer;
@@ -148,9 +147,9 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     case TEXT:
                         EditTextPreferenceDialog editText = new EditTextPreferenceDialog();
                         editText.setPreference(preference);
-                        editText.setOnPreferenceCommit((value, d) -> {notifyChanged(); return true;});
+                        editText.setOnCommit((value, d) -> {notifyChanged(); return true;});
                         if(preference.idKey == R.string.preferenceMaxCacheSize) {
-                            editText.setOnPreferenceCommit((value, dialog) -> {
+                            editText.setOnCommit((value, dialog) -> {
                                 if(TextUtils.parseInt(value.toString()) < 1) {
                                     dialog.setError(R.string.preferenceMaxCacheSizeError);
                                     return false;
@@ -190,13 +189,13 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     case LIST:
                         EditListPreferenceDialog editList = new EditListPreferenceDialog();
                         editList.setPreference(preference);
-                        editList.setOnPreferenceCommit((value, d) -> {notifyChanged(); return true;});
+                        editList.setOnCommit((value, d) -> {notifyChanged(); return true;});
                         if(preference.idKey == R.string.preferenceFontReader) {
                             editList.setSetItemList((textView, key, value) -> {
                                 CalligraphyUtils.applyFontToTextView(getContext(), textView, Font.getFontPath(getContext(), value.toString(), Font.Type.PLAIN));
                                 textView.setText(key.toString());
                             });
-                            editList.setOnPreferenceCommit((Object val, EditListPreferenceDialog dialog) -> {
+                            editList.setOnCommit((Object val, EditListPreferenceDialog dialog) -> {
                                 SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
                                 Font font = (Font) val;
                                 Font.Type type;
@@ -226,7 +225,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                 textView.setText(key.toString());
                             });
                         }  else if(preference.idKey == R.string.preferenceCurrentTheme) {
-                            editList.setOnPreferenceCommit(new OnPreferenceCommit<EditListPreferenceDialog>() {
+                            editList.setOnCommit(new OnCommit<Object, EditListPreferenceDialog>() {
                                 @Override
                                 public boolean onCommit(Object value, EditListPreferenceDialog dialog) {
                                     new Handler().postDelayed(() -> {

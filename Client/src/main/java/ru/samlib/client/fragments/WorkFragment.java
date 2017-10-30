@@ -38,6 +38,7 @@ import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.*;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
@@ -45,6 +46,8 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
+import ru.samlib.client.dialog.ListChooseDialog;
+import ru.samlib.client.dialog.OnCommit;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -62,7 +65,6 @@ import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 import javax.inject.Inject;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.view.View.GONE;
@@ -396,6 +398,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
+            if(!work.isHasRate()){
+                menu.removeItem(R.id.action_work_rate);
+            }
             if (work.isNotSamlib()) {
                 menu.removeItem(R.id.action_work_to_author);
                 menu.removeItem(R.id.action_work_share);
@@ -649,11 +654,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), R.string.preferenceVoiceLanguage, "ru");
                 preference.keyValue = TTSPlayer.getAvailableLanguages(getContext());
                 editListPreferenceDialog.setPreference(preference);
-                editListPreferenceDialog.setOnPreferenceCommit((value,d) -> {safeInvalidateOptionsMenu(); return true;});
+                editListPreferenceDialog.setOnCommit((value, d) -> {safeInvalidateOptionsMenu(); return true;});
                 editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
                 return true;
             case R.id.action_work_to_author:
-                AuthorFragment.show(this, work.getAuthor());
+                AuthorFragment.show(new FragmentBuilder(getFragmentManager()), getBaseActivity().getContainer().getId(),  work.getAuthor());
             case R.id.action_work_lock_bookmark:
                 boolean checked = !item.isChecked();
                 item.setChecked(checked);
@@ -723,6 +728,24 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         .addToBackStack()
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                         .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work.getLink());
+                return true;
+            case R.id.action_work_rate:
+                ListChooseDialog<Integer> chooseDialog = new ListChooseDialog<>();
+                LinkedHashMap<Integer, String> map = new LinkedHashMap();
+                String[] ratingVals = getResources().getStringArray(R.array.work_rating);
+                for (int i = 0; i < ratingVals.length; i++) {
+                    map.put(i, ratingVals[i]);
+                }
+                chooseDialog.setSelected(0);
+                chooseDialog.setValues(map);
+                chooseDialog.setOnCommit(new OnCommit<Integer, ListChooseDialog>() {
+                    @Override
+                    public boolean onCommit(Integer value, ListChooseDialog dialog) {
+                        Response response = WorkParser.sendRate(work, value);
+                        return true;
+                    }
+                });
+                chooseDialog.show(getFragmentManager(), ListChooseDialog.class.getName());
                 return true;
             case R.id.action_work_fullscreen:
                 if (isAdded()) {

@@ -3,6 +3,9 @@ package ru.samlib.client.parser;
 import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
+import ru.kazantsev.template.domain.Valuable;
+import ru.kazantsev.template.net.HTTPExecutor;
+import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.charset.CharsetDetector;
 import ru.kazantsev.template.util.charset.CharsetMatch;
 import org.jsoup.Jsoup;
@@ -210,6 +213,10 @@ public class WorkParser extends Parser {
         } else if (parts.length == 4) {
             if (parts[2].contains("Аннотация")) {
                 work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
+
+            }
+            if(parts[2].contains("Оценка:")) {
+                work.setHasRate(true);
             }
             if (parts[3].contains("<!--Section Begins-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
@@ -494,6 +501,39 @@ public class WorkParser extends Parser {
                 }
                 return null;
             }
+        }
+    }
+
+    private static final String WORK_SEND_RATE = "/cgi-bin/votecounter";
+
+    public enum RateParams {
+        FILE, DIR, BALL, OK;
+    }
+
+    public static Response sendRate(Work work, int rate) {
+        try {
+            String link = Constants.Net.BASE_DOMAIN + WORK_SEND_RATE;
+            String wlink = work.getLinkWithoutSuffix();
+            String alink = work.getAuthor().getLink();
+            commentCookie = CommentsParser.requestCookie(work);
+            Request request = new Request(link)
+                    .setMethod(Request.Method.POST)
+                    .addHeader("Accept", ACCEPT_VALUE)
+                    .addHeader("User-Agent", USER_AGENT)
+                    .addHeader("Accept-Encoding", ACCEPT_ENCODING_VALUE)
+                    .addHeader("Host", Constants.Net.BASE_HOST)
+                    .addHeader("Referer", link)
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                    .addHeader("Upgrade-Insecure-Requests", "1")
+                    .setEncoding("CP1251")
+                    .addParam(RateParams.FILE, wlink.substring(wlink.lastIndexOf('/') + 1))
+                    .addParam(RateParams.DIR, alink.substring(1, alink.length() - 1))
+                    .addParam(RateParams.BALL, String.valueOf(rate))
+                    .addParam(RateParams.OK, "OK");
+            HTTPExecutor executor = new HTTPExecutor(request);
+            return executor.execute();
+        } catch (Exception e) {
+            return null;
         }
     }
 }

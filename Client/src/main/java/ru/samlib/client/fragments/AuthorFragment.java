@@ -43,6 +43,7 @@ import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.SamlibUtils;
 
 import javax.inject.Inject;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -109,7 +110,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     protected void onDataTaskException(Exception ex) {
-        if(ex instanceof  AuthorParser.AuthorNotExistException) {
+        if(ex instanceof EOFException) {
+            ErrorFragment.show(this, R.string.author_parse_error, ex);
+            ACRA.getErrorReporter().handleException(ex, false);
+        } else if(ex instanceof  AuthorParser.AuthorNotExistException) {
             if(author != null && author.isEntity()) {
                 author.setDeleted(true);
                 author.save();

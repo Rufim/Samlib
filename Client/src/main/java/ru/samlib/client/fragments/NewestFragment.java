@@ -23,7 +23,7 @@ public class NewestFragment extends FilterDialogListFragment {
 
 
     public NewestFragment() {
-        pageSize = 15;
+        pageSize = 25;
     }
 
     @Override

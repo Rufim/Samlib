@@ -1,7 +1,6 @@
 package ru.samlib.client.dialog;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -16,13 +15,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.kazantsev.template.dialog.BaseDialog;
 import ru.kazantsev.template.util.AndroidSystemUtils;
-import ru.kazantsev.template.util.GuiUtils;
-import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
-import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.domain.events.AuthorAddEvent;
 import ru.samlib.client.fragments.SettingsFragment;
-import ru.samlib.client.util.SamlibUtils;
 
 /**
  * Created by 0shad on 27.05.2017.
@@ -35,14 +29,14 @@ public class EditTextPreferenceDialog extends BaseDialog {
     @BindView(R.id.settings_dialog_text)
     TextInputEditText input;
     SettingsFragment.Preference preference;
-    OnPreferenceCommit<EditTextPreferenceDialog> onPreferenceCommit = (v, dialog) -> true;
+    OnCommit<Object, EditTextPreferenceDialog> onCommit = (v, dialog) -> true;
 
     public void setPreference(SettingsFragment.Preference preference) {
         this.preference = preference;
     }
 
-    public void setOnPreferenceCommit(OnPreferenceCommit<EditTextPreferenceDialog> onPreferenceCommit) {
-        this.onPreferenceCommit = onPreferenceCommit;
+    public void setOnCommit(OnCommit<Object, EditTextPreferenceDialog> onCommit) {
+        this.onCommit = onCommit;
     }
 
     @NonNull
@@ -81,8 +75,8 @@ public class EditTextPreferenceDialog extends BaseDialog {
                     SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
                     String value = input.getText().toString();
                     editor.putString(preference.key, value);
-                    if (onPreferenceCommit != null) {
-                        if(onPreferenceCommit.onCommit(value, EditTextPreferenceDialog.this)) {
+                    if (onCommit != null) {
+                        if(onCommit.onCommit(value, EditTextPreferenceDialog.this)) {
                             editor.commit();
                             d.dismiss();
                         }

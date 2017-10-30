@@ -14,6 +14,7 @@
     <string name="preferenceObservableNotification">ObservableNotification</string>
     <string name="preferenceObservableAutoName">Отслеживать обновления</string>
     <string name="preferenceObservableAuto">ObservableAuto</string>
+    <string name="preferenceObservableAddLastAuthor">ObservableAddLastAuthor</string>
 
     <string name="preferenceCommentCoockie">CommentCoockie</string>
     <string name="preferenceCommentName">CommentName</string>

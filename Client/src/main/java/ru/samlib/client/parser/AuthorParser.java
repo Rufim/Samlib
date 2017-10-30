@@ -17,8 +17,10 @@ import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -50,8 +52,8 @@ public class AuthorParser extends Parser {
             Elements elements;
             CachedResponse rawFile;
             if(!cached && AndroidSystemUtils.isNetworkAvailable(App.getInstance())) {
-                if(HTTPExecutor.pingHost(Constants.Net.BASE_HOST, 80, 1000)) {
-                   if(HTTPExecutor.pingURL(request.getUrl().toString(), 1000) == 404) {
+                if(HTTPExecutor.pingHost(Constants.Net.BASE_HOST, 80, 2000)) {
+                   if(HTTPExecutor.pingURL(request.getUrl().toString(), 2000) == 404) {
                         throw new AuthorNotExistException();
                    }
                 }
@@ -74,13 +76,16 @@ public class AuthorParser extends Parser {
                     new TextUtils.Splitter("Блок шапки", "Блок управления разделом"),
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Author Info
-            if (parts.length > 0 && parts[0] != null) {
+            if (parts.length > 0) {
+                if(parts[0] == null) {
+                    throw new EOFException(author.getLink() == null ? "null" : author.getLink() + " invalid state of parsing");
+                }
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
                 author.setFullName(titles[0]);
                 author.setAnnotation(titles[1].trim());
             }
             // Author info
-            if (parts.length > 1) {
+            if (parts.length > 1 && parts[0] != null) {
                 String head = parts[1];
                 headDoc = Jsoup.parseBodyFragment(head);
                 if (headDoc == null) return author;
@@ -120,7 +125,7 @@ public class AuthorParser extends Parser {
                 }
             }
             // body - Partitions with Works
-            if (parts.length > 2 && !parts[2].isEmpty()) {
+            if (parts.length > 2 && parts[2] != null && !parts[2].isEmpty()) {
                 Scanner scanner = new Scanner(parts[2]);
                 Category newCategory = null;
                 while (scanner.hasNextLine()) {

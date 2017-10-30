@@ -1,7 +1,6 @@
 package ru.samlib.client.dialog;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -35,7 +34,7 @@ public class EditListPreferenceDialog extends BaseDialog {
     RecyclerView recyclerView;
     SettingsFragment.Preference preference;
     Object selected;
-    OnPreferenceCommit<EditListPreferenceDialog> onPreferenceCommit = (v, dialog) -> true;
+    OnCommit<Object, EditListPreferenceDialog> onCommit = (v, dialog) -> true;
     OnSetItemList setItemList = (textView, key, value) -> {
         textView.setText(key.toString());
     };
@@ -49,8 +48,8 @@ public class EditListPreferenceDialog extends BaseDialog {
         this.preference = preference;
     }
 
-    public void setOnPreferenceCommit(OnPreferenceCommit<EditListPreferenceDialog> onPreferenceCommit) {
-        this.onPreferenceCommit = onPreferenceCommit;
+    public void setOnCommit(OnCommit<Object, EditListPreferenceDialog> onCommit) {
+        this.onCommit = onCommit;
     }
 
     public void setSetItemList(OnSetItemList setItemList) {
@@ -139,8 +138,8 @@ public class EditListPreferenceDialog extends BaseDialog {
                         } else {
                             editor.putString(preference.key, value.toString());
                         }
-                        if (onPreferenceCommit != null) {
-                            if (onPreferenceCommit.onCommit(value, EditListPreferenceDialog.this)) {
+                        if (onCommit != null) {
+                            if (onCommit.onCommit(value, EditListPreferenceDialog.this)) {
                                 editor.commit();
                                 d.dismiss();
                             }

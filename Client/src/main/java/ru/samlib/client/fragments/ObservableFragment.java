@@ -230,6 +230,7 @@ public class ObservableFragment extends ListFragment<Author> {
                         if (!TextUtils.isEmpty(author.getShortName())) {
                             author.setParsed(true);
                             databaseService.insertObservableAuthor(author);
+                            return author;
                         } else {
                             author.setParsed(false);
                         }
@@ -300,7 +301,7 @@ public class ObservableFragment extends ListFragment<Author> {
     public void refreshData(boolean update) {
         swipeRefresh.setRefreshing(update);
         loading = update;
-        int size = adapter.getItemCount();
+        int size = update ? adapter.getItemCount() : pageSize;
         adapter.clear();
         adapter.getItems().addAll(databaseService.getObservableAuthors(0, size));
         adapter.notifyDataSetChanged();
