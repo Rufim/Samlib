@@ -82,7 +82,9 @@ public class AuthorParser extends Parser {
                 }
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
                 author.setFullName(titles[0]);
-                author.setAnnotation(titles[1].trim());
+                if(titles.length > 1) {
+                    author.setAnnotation(titles[1].trim());
+                }
             }
             // Author info
             if (parts.length > 1 && parts[0] != null) {

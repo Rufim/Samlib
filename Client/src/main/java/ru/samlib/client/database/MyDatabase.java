@@ -39,6 +39,7 @@ public class MyDatabase {
         }
     }
 
+    @Migration(version = 20, database = MyDatabase.class)
     public static class MigrationWork extends AlterTableMigration<Work>  {
 
         public MigrationWork() {

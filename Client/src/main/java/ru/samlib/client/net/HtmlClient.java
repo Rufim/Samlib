@@ -43,13 +43,15 @@ public class HtmlClient {
         List<SavedHtml> savedHtmls = databaseService.selectCachedEntities();
         for (SavedHtml savedHtml : savedHtmls) {
             String url = savedHtml.getUrl();
-            try {
-                Request request = new Request(url, true);
-                CachedResponse cachedResponse = new CachedResponse(savedHtml.getFilePath(), request);
-                cachedResponse.setEncoding("CP1251");
-                htmlfiles.put(url, cachedResponse);
-            } catch (Exception e) {
-                Log.e(TAG, "Unknown exception", e);
+            if(url != null) {
+                try {
+                    Request request = new Request(url, true);
+                    CachedResponse cachedResponse = new CachedResponse(savedHtml.getFilePath(), request);
+                    cachedResponse.setEncoding("CP1251");
+                    htmlfiles.put(url, cachedResponse);
+                } catch (Exception e) {
+                    Log.e(TAG, "Unknown exception", e);
+                }
             }
         }
     }

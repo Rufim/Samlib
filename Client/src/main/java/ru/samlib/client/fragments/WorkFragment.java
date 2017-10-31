@@ -741,7 +741,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 chooseDialog.setOnCommit(new OnCommit<Integer, ListChooseDialog>() {
                     @Override
                     public boolean onCommit(Integer value, ListChooseDialog dialog) {
-                        Response response = WorkParser.sendRate(work, value);
+                        WorkParser.sendRate(work, value);
                         return true;
                     }
                 });
