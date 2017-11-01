@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.annotation.IdRes;
-import android.support.annotation.Nullable;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
 import android.text.method.LinkMovementMethod;
@@ -15,17 +14,15 @@ import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import com.annimon.stream.Stream;
-import io.requery.util.ObservableList;
+
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import org.greenrobot.eventbus.Subscribe;
-import ru.kazantsev.template.adapter.LazyItemListAdapter;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
-import ru.kazantsev.template.util.AndroidSystemUtils;
-import ru.kazantsev.template.util.TextUtils;
+import ru.kazantsev.template.util.*;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
@@ -41,16 +38,13 @@ import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.service.DatabaseService;
-import ru.kazantsev.template.util.FragmentBuilder;
-import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.LinkHandler;
 import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.SamlibUtils;
 
 import javax.inject.Inject;
-import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -98,30 +92,42 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
             if (!author.isParsed()) {
                 new AuthorParser(author).parse();
-                if (!Parser.isCachedMode() && author.isObservable()) {
-                    databaseService.createOrUpdateAuthor(author.createEntity()).setParsed(true);
+                if (!Parser.isCachedMode() && author.isObservable() && author.isHasUpdates()) {
+                    databaseService.createOrUpdateAuthor(author).setParsed(true);
                     if (author.isHasUpdates()) {
                         postEvent(new AuthorUpdatedEvent(author));
                     }
                 }
                 author.setParsed(true);
+                postEvent(new AuthorParsedEvent(author));
             }
-            postEvent(new AuthorParsedEvent(author));
             if (author.isObservable()) {
                 categoryUpdate.setWorks(author.getUpdates());
             }
-            safeInvalidateOptionsMenu();
             return new ArrayList<>(author.getStaticCategory());
         });
     }
 
     @Override
     protected void onDataTaskException(Exception ex) {
-        if (ex instanceof IOException) {
-            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+        if(ex instanceof EOFException) {
+            ErrorFragment.show(this, R.string.author_parse_error, ex);
+            ACRA.getErrorReporter().handleException(ex, false);
+        } else if(ex instanceof  AuthorParser.AuthorNotExistException) {
+            if(author != null && author.isEntity()) {
+                author.setDeleted(true);
+                author.save();
+            }
+            ErrorFragment.show(this, R.string.author_not_exist, ex);
+        } else if (ex instanceof IOException) {
+            ErrorFragment.show(this, R.string.error_network, ex);
         } else {
-            ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
-            ACRA.getErrorReporter().handleException(ex);
+            ErrorFragment.show(this, R.string.error, ex);
+            if(author != null && author.getLink() != null) {
+                ACRA.getErrorReporter().handleException(new Exception("Unhandled exception occurred while parse author by url: " + author.getLink(), ex));
+            } else {
+                ACRA.getErrorReporter().handleException(ex);
+            }
         }
     }
 
@@ -156,20 +162,19 @@ public class AuthorFragment extends ListFragment<Linkable> {
             case R.id.action_author_observable:
                 if (item.isChecked()) {
                     author.setObservable(false);
-                    new Thread(() -> databaseService.createOrUpdateAuthor(author.createEntity())).start();
+                    new Thread(() -> databaseService.deleteAuthor(author)).start();
                     item.setChecked(false);
+                    item.setEnabled(false);
+                    author = new Author(author.getLink());
+                    refreshData(true);
                 } else {
-                    new Thread(() -> databaseService.insertObservableAuthor(author.createEntity())).start();
+                    new Thread(() -> databaseService.insertObservableAuthor(author)).start();
                     item.setChecked(true);
                 }
                 safeInvalidateOptionsMenu();
                 return true;
             case R.id.action_author_mode:
-                if (item.isChecked()) {
-                    item.setChecked(simpleView = false);
-                } else {
-                    item.setChecked(simpleView = true);
-                }
+                item.setChecked(simpleView = !item.isChecked());
                 SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
                 editor.putBoolean(getString(R.string.preferenceAuthorSimpleView), simpleView);
                 editor.apply();
@@ -193,7 +198,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             work.setSizeDiff(null);
                         });
                     }
-                    databaseService.createOrUpdateAuthor(author.createEntity());
+                    author.setHasUpdates(false);
+                    databaseService.createOrUpdateAuthor(author);
                 }
                 adapter.notifyChanged();
                 return true;
@@ -209,9 +215,24 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
+    public void onPostLoadItems() {
+        safeInvalidateOptionsMenu();
+        PreferenceMaster master = new PreferenceMaster(getContext());
+        boolean firstTime = master.getValue(R.string.preferenceNavigationAuthor, true);
+        if(firstTime) {
+            getBaseActivity().openDrawer();
+            master.putValue(R.string.preferenceNavigationAuthor, false);
+        }
+    }
+
+    @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
+        if(author.isHasUpdates() && !categoryUpdate.isHasUpdates()) {
+            author.setHasUpdates(false);
+            databaseService.doAction(DatabaseService.Action.UPDATE, author);
+        }
     }
 
     public Author getAuthor() {
@@ -229,7 +250,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             setDataSource((skip, size) -> {
                 if (skip != 0) return null;
                 if (category != null) {
-                    if (!category.isParsed() && !(category instanceof CategoryEntity)) {
+                    if (!category.isParsed()) {
                         try {
                             category = new CategoryParser(category).parse();
                         } catch (MalformedURLException e) {
@@ -249,8 +270,21 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     @Override
+    public boolean restoreLister() {
+        if (savedDataSource != null) {
+            dataSource = savedDataSource;
+            savedDataSource = null;
+            clearData();
+            loadItems(true);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public void refreshData(boolean showProgress) {
-        author.setParsed(savedDataSource != null);
+        author.setParsed(false);
         super.refreshData(showProgress);
     }
 
@@ -287,7 +321,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             intentAuthor = new Author(link);
         }
         if (intentAuthor != null) {
-            AuthorEntity entity;
+            Author entity;
             if ((entity = databaseService.getAuthor(intentAuthor.getLink())) != null) {
                 author = entity;
             } else {
@@ -299,9 +333,11 @@ public class AuthorFragment extends ListFragment<Linkable> {
             safeInvalidateOptionsMenu();
             EventBus.getDefault().post(new AuthorParsedEvent(author));
         }
-        categoryUpdate = new Category();
-        categoryUpdate.setTitle(getString(R.string.author_section_updates));
-        categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
+        if(categoryUpdate == null) {
+            categoryUpdate = new Category();
+            categoryUpdate.setTitle(getString(R.string.author_section_updates));
+            categoryUpdate.setAnnotation(getString(R.string.author_section_updates_annotation));
+        }
         simpleView = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceAuthorSimpleView, false);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -324,6 +360,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
         public ExpandableAuthorFragmentAdaptor() {
             super(false, R.layout.item_section_expandable_header, R.layout.item_section_expandable);
+            performSelectRoot = true;
+            bindOnlyRootViews = false;
         }
 
 
@@ -458,7 +496,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         }
 
         private void addLinkToRootItem(ViewGroup rootView, Link link) {
-            ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_subitem);
+            ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_work);
             String title;
             if (link.getAnnotation() != null) {
                 title = link.getTitle() + ": " + link.getAnnotation();
@@ -480,7 +518,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
     }
 
     private void addWorkToRootItem(ViewGroup rootView, Work work, ItemListAdapter adapter) {
-        ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_subitem);
+        ViewGroup subitem = GuiUtils.inflate(rootView, R.layout.item_section_extendale_work);
         initWorkView(subitem, work);
         Stream.of(GuiUtils.getAllChildren(subitem)).forEach(v -> {
             v.setOnClickListener(adapter);
@@ -505,7 +543,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         if (work.getRate() != null) {
             rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
         }
-        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibUtils.generateText(getContext(), work.getTitle(), rate_and_size, R.color.light_gold, 0.7f));
+        GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibUtils.generateText(work.getTitle(), rate_and_size, GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations), 0.7f));
         Button illustrationButton = (Button) workView.findViewById(R.id.illustration_button);
         if (work.isHasIllustration()) {
             illustrationButton.setVisibility(View.VISIBLE);
@@ -524,7 +562,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         } else {
             workView.findViewById(R.id.work_item_subtitle).setVisibility(GONE);
         }
-        if (workView.findViewById(R.id.work_annotation) != null) {
+        if (workView.findViewById(R.id.work_annotation_layout) != null) {
             if (!work.getAnnotationBlocks().isEmpty()) {
                 workView.findViewById(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
                 View annotation_view = workView.findViewById(R.id.work_annotation);
@@ -534,9 +572,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 spanner.registerHandler("a", new LinkHandler(textView));
                 spanner.setStripExtraWhiteSpace(true);
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
-                textView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+                textView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
             } else {
-                workView.findViewById(R.id.work_annotation).setVisibility(GONE);
+                workView.findViewById(R.id.work_annotation_layout).setVisibility(GONE);
             }
         }
         if (work.isChanged() && author.isObservable()) {
@@ -558,10 +596,19 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     Work work = (Work) linkable;
                     work.setSizeDiff(0);
                     work.setChanged(false);
-                    databaseService.doAction(DatabaseService.Action.UPDATE, linkable);
-                    view.setVisibility(GONE);
-                    if (!work.getCategory().isHasUpdates() && simpleView) {
-                        ((ViewGroup) view.getParent().getParent().getParent().getParent()).findViewById(R.id.section_update).setVisibility(GONE);
+                    databaseService.doAction(DatabaseService.Action.UPDATE, work);
+                    categoryUpdate.getWorks().remove(work);
+                    adapter.notifyItemChanged(0);
+                    if(adapter instanceof AuthorFragmentAdaptor) {
+                        adapter.notifyItemChanged(adapter.getItems().indexOf(work) + 1);
+                    } else {
+                        for (int i = adapter.getItems().size() - 1; i >= 0; i--) {
+                            Category category = (Category) adapter.getItems().get(i);
+                            if (category.getWorks().contains(work)) {
+                                adapter.notifyItemChanged(i + 1);
+                                break;
+                            }
+                        }
                     }
                     return true;
                 case R.id.work_item_layout:
@@ -589,7 +636,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
     private class AuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
         public AuthorFragmentAdaptor() {
-            super(R.layout.header_author_list, R.layout.item_section, R.layout.item_work);
+            super(R.layout.header_author_list, R.layout.item_section, R.layout.item_section_work);
+            performSelectRoot = true;
+            bindOnlyRootViews = false;
         }
 
         @Override
@@ -620,7 +669,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         holder.getView(R.id.section_annotation).setVisibility(GONE);
                     }
                     break;
-                case R.layout.item_work:
+                case R.layout.item_section_work:
                     Linkable linkable = getItem(position);
                     if (linkable instanceof Link) {
                         CharSequence link;
@@ -643,7 +692,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (item instanceof Category) {
                 return R.layout.item_section;
             } else {
-                return R.layout.item_work;
+                return R.layout.item_section_work;
             }
         }
 
@@ -676,7 +725,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 authorSuggestions.removeAllViews();
                 Stream.of(author.getRecommendations()).forEach(work -> {
                     LinearLayout work_row = (LinearLayout) getLayoutInflater(null)
-                            .inflate(R.layout.item_work, authorSuggestions, false);
+                            .inflate(R.layout.item_section_work, authorSuggestions, false);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_title), work.getTitle());
                     String rate_and_size = "";
                     if (work.getSize() != null) {
@@ -736,14 +785,40 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 GuiUtils.setText(root, R.id.section_annotation, new HtmlSpanner().fromHtml(categoryUpdate.processAnnotation(getResources().getColor(R.color.SeaGreen))));
                 root.removeViews(1, root.getChildCount() - 1);
                 for (Work work : categoryUpdate.getWorks()) {
-                    View view = GuiUtils.inflate(root, R.layout.item_work);
+                    View view = GuiUtils.inflate(root, R.layout.item_section_work);
                     root.addView(view);
                     view.setTag(work);
-                    view.setOnClickListener(v -> WorkFragment.show(AuthorFragment.this, ((Work) v.getTag()).getLink()));
+                    GuiUtils.removeView(view.findViewById(R.id.work_annotation_layout));
                     initWorkView(view, work);
+                    WorkClick click = new WorkClick(work);
+                    for (View children : GuiUtils.getAllChildren(view)) {
+                        children.setOnClickListener(click);
+                    }
                 }
             } else {
                 GuiUtils.setVisibility(GONE, (ViewGroup) holder.getItemView(), R.id.author_header_updates);
+            }
+        }
+
+        class WorkClick implements View.OnClickListener {
+
+            final Work work;
+
+            WorkClick(Work work) {
+                this.work = work;
+            }
+
+            @Override
+            public void onClick(View v) {
+                if(onClickLinkable(v, work)) {
+                    ((View) v.getParent()).setPressed(true);
+                    v.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            ((View) v.getParent()).setPressed(false);
+                        }
+                    }, 100);
+                }
             }
         }
 

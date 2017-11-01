@@ -36,6 +36,12 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
         return new NewestArrayAdapter();
     }
 
+    @Override
+    public void refreshData(boolean showProgress) {
+        setDataSource(null);
+        super.refreshData(showProgress);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,6 +63,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
 
         public NewestArrayAdapter() {
             super(R.layout.item_discussion);
+            performSelectRoot = true;
         }
 
         @Override

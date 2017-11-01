@@ -5,4 +5,15 @@
           android:icon="@drawable/ic_delete_white_24dp"
           android:orderInCategory="1"
           app:showAsAction="always"/>
+    <item android:id="@+id/action_history_lock"
+          android:title="@string/history_clean"
+          android:icon="@drawable/ic_lock_white_24dp"
+          android:orderInCategory="2"
+          app:showAsAction="always"/>
+    <item android:id="@+id/action_history_only_locked"
+          android:title="@string/history_only_locked"
+          android:checked="false"
+          android:checkable="true"
+          android:orderInCategory="3"
+          app:showAsAction="never"/>
 </menu>

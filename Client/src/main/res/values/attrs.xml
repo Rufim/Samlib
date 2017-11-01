@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="textColorAnnotations" format="color|reference"/>
+    <attr name="colorBorderComment" format="color|reference"/>
+    <attr name="actionBarNavigationColor" format="color|reference"/>
+    <attr name="colorPopupBackground" format="color|reference"/>
+
+
+    <!-- Гребанные костыли!!!! -->
+    <attr name="settingsColorBorder" format="reference"/>
+    <attr name="switchThumb" format="reference"/>
+    <attr name="switchTextColor" format="reference"/>
+</resources>

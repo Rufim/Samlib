@@ -39,11 +39,13 @@ import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 
 import org.greenrobot.eventbus.Subscribe;
+import ru.kazantsev.template.activity.BaseActivity;
 
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
+import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.*;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
@@ -51,6 +53,8 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
+import ru.samlib.client.dialog.ListChooseDialog;
+import ru.samlib.client.dialog.OnCommit;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.ChapterSelectedEvent;
@@ -66,10 +70,12 @@ import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
+import java.io.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +96,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private Integer lastIndent = 0;
     private int colorSpeakingText;
     private int colorFoundedText;
-    private PowerManager.WakeLock screenLock;
     private Mode mode = Mode.NORMAL;
     private boolean ownTTSService = false;
     private boolean isDownloaded = false;
@@ -99,6 +104,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private boolean isWaitingPlayerCallback = false;
     private boolean isFullscreen = false;
     private boolean isBack = false;
+    private boolean isStopped = true;
     private SeekBar autoScrollSpeed;
     private SeekBar pitch;
     private SeekBar speechRate;
@@ -128,6 +134,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return show(builder.putArg(Constants.ArgsName.FILE_PATH, link), container, WorkFragment.class);
     }
 
+    public static WorkFragment showContent(FragmentBuilder builder, @IdRes int container, Uri uri) {
+        return show(builder.putArg(Constants.ArgsName.CONTENT_URI, uri), container, WorkFragment.class);
+    }
+
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
         return show(builder.putArg(Constants.ArgsName.WORK, work), container, WorkFragment.class);
     }
@@ -151,37 +161,80 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
             if (!work.isParsed()) {
                 if (externalWork != null) {
+                    if(externalWork.getContentUri() != null) {
+                        FileDescriptor descriptor = getContext().getContentResolver().openFileDescriptor(externalWork.getContentUri(), "r").getFileDescriptor();
+                        File cachedFile = new File(externalWork.getFilePath());
+                        if(cachedFile.exists()) {
+                            cachedFile.delete();
+                        }
+                        if(cachedFile.getParentFile().mkdirs() || cachedFile.createNewFile()) {
+                            FileInputStream in = null;
+                            FileOutputStream out = null;
+                            try {
+                                in = new FileInputStream(descriptor);
+                                out = new FileOutputStream(cachedFile);
+                                SystemUtils.copy(in, out);
+                            } finally {
+                                SystemUtils.close(in);
+                                SystemUtils.close(out);
+                            }
+                            SavedHtml savedHtml = new SavedHtml();
+                            savedHtml.setFilePath(cachedFile.getAbsolutePath());
+                            savedHtml.setSize(cachedFile.length());
+                            savedHtml.setUpdated(new Date());
+                            databaseService.insertOrUpdateSavedHtml(savedHtml);
+                            externalWork.setContentUri(null);
+                        } else {
+                            throw new IOException("Cant create content file on path:" + cachedFile.getAbsolutePath());
+                        }
+                    }
+                    File externalFile = new File(externalWork.getFilePath());
+                    AtomicInteger gained = new AtomicInteger(-1);
+                    if(!externalFile.canRead()) {
+                        getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new BaseActivity.PermissionAction() {
+                            @Override
+                            public void doAction(boolean permissionGained) {
+                                gained.set(permissionGained ? 1 : 0);
+                            }
+                        });
+                    } else {
+                        gained.set(1);
+                    }
+                    while (gained.get() == -1) {
+                        SystemUtils.sleepQuietly(100);
+                    }
+                    if(gained.get() == 0 || !externalFile.exists()) {
+                        throw new IOException();
+                    }
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
-                    work.setParsed(true);
-                    isDownloaded = true;
-                    safeInvalidateOptionsMenu();
+                    if (work.getBookmark() == null) {
+                        setBookmark(work, "", 0);
+                    }
                 } else {
-                    work = new WorkParser(work).parse(true, Parser.isCachedMode());
-                    if (!Parser.isCachedMode()) {
-                        work.setCachedDate(new Date());
-                        if (work.getBookmark() == null) {
-                            setBookmark(work, "", 0);
-                        }
-                        databaseService.insertOrUpdateBookmark(work.getBookmark());
-                        Work workEntity = databaseService.getWork(work.getLink());
-                        if (workEntity != null) {
-                            workEntity.setSizeDiff(0);
-                            workEntity.setChanged(false);
-                            databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
-                        }
+                    work = new WorkParser(work).parse(true, false);
+                    work.setCachedDate(new Date());
+                    if (work.getBookmark() == null) {
+                        setBookmark(work, "", 0);
+                    }
+                    databaseService.insertOrUpdateBookmark(work.getBookmark());
+                    Work workEntity = databaseService.getWork(work.getLink());
+                    if (workEntity != null) {
+                        workEntity.setSizeDiff(0);
+                        workEntity.setChanged(false);
+                        databaseService.doAction(DatabaseService.Action.UPDATE, workEntity);
+                    }
+                    if (isAdded()) {
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
-                        isDownloaded = true;
-                        safeInvalidateOptionsMenu();
-                        WorkParser.processChapters(work);
+                        WorkParser.processChapters(work, false);
                         GuiUtils.runInUI(getContext(), (v) -> {
                             if (searchView != null) searchView.setEnabled(true);
                         });
+                    } else {
+                        return new ArrayList<>();
                     }
                 }
             }
             if (work.isParsed()) {
-                isDownloaded = true;
-                safeInvalidateOptionsMenu();
                 postEvent(new WorkParsedEvent(work));
                 return work.getIndents();
             } else {
@@ -193,10 +246,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void onDataTaskException(Exception ex) {
         if (ex instanceof IOException) {
-            ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+            if(Parser.isCachedMode() || externalWork != null) {
+                if(externalWork == null) {
+                    ErrorFragment.show(this, R.string.work_not_in_cache, 0, ex);
+                } else {
+                    ErrorFragment.show(this, R.string.work_cant_open, 0, ex);
+                }
+            } else {
+                ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
+            }
         } else {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
-            ACRA.getErrorReporter().handleException(ex);
+            if(work != null && work.getLink() != null) {
+                ACRA.getErrorReporter().handleException(new Exception("Unhandled exception occurred while parse author by url: " + work.getLink(), ex));
+            } else {
+                ACRA.getErrorReporter().handleException(ex);
+            }
         }
     }
 
@@ -216,9 +281,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     protected void firstLoad(boolean scroll) {
         try {
             Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
+            work.setBookmark(bookmark);
             if (dataSource != null && !isEnd && adapter.getItems().isEmpty()) {
                 loadMoreBar.setVisibility(View.GONE);
-                if (bookmark != null && scroll) {
+                if (bookmark != null && scroll && bookmark.getIndentIndex() != 0) {
                     scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
                 } else {
                     loadItems(false);
@@ -248,20 +314,36 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         bookmark.setAuthorShortName(work.getAuthor().getShortName());
         bookmark.setGenres(work.printGenres());
         bookmark.setWorkTitle(work.getTitle());
-        work.setBookmark(bookmark.createEntity());
+        work.setBookmark(bookmark);
     }
 
 
     @Override
     public void onStart() {
         super.onStart();
+        isStopped = false;
         EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onPostLoadItems() {
+        if (work != null) {
+            isDownloaded = work.isParsed();
+        }
+        safeInvalidateOptionsMenu();
+        PreferenceMaster master = new PreferenceMaster(getContext());
+        boolean firstTime = master.getValue(R.string.preferenceNavigationWork, true);
+        if (firstTime) {
+            getBaseActivity().openDrawer();
+            master.putValue(R.string.preferenceNavigationWork, false);
+        }
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
+        isStopped = true;
         if (work != null && work.isParsed()) {
             try {
                 int index = findFirstVisibleItemPosition(false);
@@ -275,16 +357,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         }
         // sanity check for null as this is a public method
-        if (screenLock != null) {
-            Log.v(TAG, "Releasing wakelock");
-            try {
-                screenLock.release();
-            } catch (Throwable th) {
-                // ignoring this exception, probably wakeLock was already released
-            }
-        } else {
-            // should never happen during normal workflow
-            Log.e(TAG, "Wakelock reference is null");
+        if (isAdded()) {
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
         editor.putInt(getString(R.string.preferenceWorkSpeechRate), speechRate.getProgress());
@@ -337,6 +411,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
+            if(!work.isHasRate()){
+                menu.removeItem(R.id.action_work_rate);
+            }
             if (work.isNotSamlib()) {
                 menu.removeItem(R.id.action_work_to_author);
                 menu.removeItem(R.id.action_work_share);
@@ -364,6 +441,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (TTSPlayer.getAvailableLanguages(getContext()).isEmpty()) {
                 menu.removeItem(R.id.action_work_speaking);
                 menu.removeItem(R.id.action_work_speaking_language);
+            }
+            if(work.getBookmark().isUserBookmark()) {
+                safeCheckMenuItem(R.id.action_work_lock_bookmark, true);
             }
         } else {
             menu.clear();
@@ -546,6 +626,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public void cancelAutoScroll() {
         pauseAutoScroll();
         speedLayout.setVisibility(GONE);
+        safeCheckMenuItem(R.id.action_work_auto_scroll, false);
     }
 
 
@@ -590,7 +671,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void clearSelection() {
-        selectText(lastIndent, null);
+        adapter.selectText(null, true, 0);
     }
 
 
@@ -610,9 +691,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 break;
             case END:
             case UNAVAILABLE:
-                if (isAdded()) {
-                    safeCheckMenuItem(R.id.action_work_speaking, false);
-                }
+                safeCheckMenuItem(R.id.action_work_speaking, false);
                 stopSpeak(false);
             case STOPPED:
             case PAUSE:
@@ -643,7 +722,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                         WorkFragment.this.selectText(speakIndex, phrase.start, phrase.end);
                         isWaitingForSkipStart = false;
-                    } else {
+                    } else if(isAdded() && !isStopped){
                         clearSelection();
                         WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
                         itemList.postDelayed(new Runnable() {
@@ -676,7 +755,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 if (item.isChecked()) {
                     mode = Mode.NORMAL;
                     cancelAutoScroll();
-                    item.setChecked(false);
                 } else {
                     if (Mode.SPEAK.equals(mode)) {
                         stopSpeak(true);
@@ -706,11 +784,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), R.string.preferenceVoiceLanguage, "ru");
                 preference.keyValue = TTSPlayer.getAvailableLanguages(getContext());
                 editListPreferenceDialog.setPreference(preference);
-                editListPreferenceDialog.setOnPreferenceCommit(value -> safeInvalidateOptionsMenu());
+                editListPreferenceDialog.setOnCommit((value, d) -> {safeInvalidateOptionsMenu(); return true;});
                 editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
                 return true;
             case R.id.action_work_to_author:
-                AuthorFragment.show(this, work.getAuthor());
+                AuthorFragment.show(new FragmentBuilder(getFragmentManager()), getBaseActivity().getContainer().getId(),  work.getAuthor());
+            case R.id.action_work_lock_bookmark:
+                boolean checked = !item.isChecked();
+                item.setChecked(checked);
+                work.getBookmark().setUserBookmark(checked);
+                work.getBookmark().save();
                 return true;
             case R.id.action_work_share:
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");
@@ -776,6 +859,24 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                         .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), work.getLink());
                 return true;
+            case R.id.action_work_rate:
+                ListChooseDialog<Integer> chooseDialog = new ListChooseDialog<>();
+                LinkedHashMap<Integer, String> map = new LinkedHashMap();
+                String[] ratingVals = getResources().getStringArray(R.array.work_rating);
+                for (int i = 0; i < ratingVals.length; i++) {
+                    map.put(i, ratingVals[i]);
+                }
+                chooseDialog.setSelected(0);
+                chooseDialog.setValues(map);
+                chooseDialog.setOnCommit(new OnCommit<Integer, ListChooseDialog>() {
+                    @Override
+                    public boolean onCommit(Integer value, ListChooseDialog dialog) {
+                        WorkParser.sendRate(work, value);
+                        return true;
+                    }
+                });
+                chooseDialog.show(getFragmentManager(), ListChooseDialog.class.getName());
+                return true;
             case R.id.action_work_fullscreen:
                 if (isAdded()) {
                     enableFullscreen();
@@ -834,23 +935,26 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean onQueryTextChange(String query) {
-        searched.clear();
-        adapter.selectText(query, true, colorFoundedText);
+        if(!TextUtils.isEmpty(query)) {
+            if (mode.equals(Mode.SPEAK)) {
+                safeCheckMenuItem(R.id.action_work_speaking, false);
+                stopSpeak(true);
+            }
+            if (mode.equals(Mode.AUTO_SCROLL)) {
+                safeCheckMenuItem(R.id.action_work_auto_scroll, false);
+                cancelAutoScroll();
+            }
+            mode = Mode.SEARCH;
+            searched.clear();
+            adapter.selectText(query, true, colorFoundedText);
+
+        }
         super.onQueryTextChange(query);
         return true;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (mode.equals(Mode.SPEAK)) {
-            safeCheckMenuItem(R.id.action_work_speaking, false);
-            stopSpeak(true);
-        }
-        if (mode.equals(Mode.AUTO_SCROLL)) {
-            safeCheckMenuItem(R.id.action_work_auto_scroll, false);
-            cancelAutoScroll();
-        }
-        mode = Mode.SEARCH;
         if (searched.isEmpty()) {
             searched.addAll(search(query));
         }
@@ -863,7 +967,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 Layout layout = textView.getLayout();
                 scrollToIndex(index.first, index.second);
                 isWaitingForSkipStart = false;
-            } else {
+            } else if (isAdded()) {
                 scrollToIndex(index.first, Integer.MIN_VALUE);
                 itemList.postDelayed(new Runnable() {
                     @Override
@@ -904,19 +1008,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
         String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
+        Uri contentUri = getArguments().getParcelable(Constants.ArgsName.CONTENT_URI);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        this.externalWork = null;
-        if (filePath != null) {
-            if(externalWork == null || !externalWork.getFilePath().equals(filePath)) {
+        if (filePath != null || contentUri != null) {
+            if (externalWork == null || (filePath != null && !filePath.equals(externalWork.getFilePath())) || (contentUri != null && !contentUri.equals(externalWork.getContentUri()))) {
+                if (contentUri != null) {
+                    filePath = HtmlClient.getCachedFile(getContext(), contentUri.getPath()).getAbsolutePath();
+                }
                 this.externalWork = databaseService.getExternalWork(filePath);
                 if (externalWork == null) {
                     externalWork = new ExternalWork();
                     externalWork.setFilePath(filePath);
                     externalWork.setWorkTitle(new File(filePath).getName());
                     externalWork.setGenres("");
-                    externalWork.setSavedDate(new Date());
-                    databaseService.insertOrUpdateExternalWork(externalWork);
                 }
+                externalWork.setContentUri(contentUri);
+                databaseService.insertOrUpdateExternalWork(externalWork);
                 work = new Work(externalWork.getWorkUrl());
                 File external = new File(externalWork.getFilePath());
                 work.setTitle(external.getName());
@@ -1005,9 +1112,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void onResume() {
         super.onResume();
-        screenLock = ((PowerManager) getActivity().getSystemService(Activity.POWER_SERVICE)).newWakeLock(
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG);
-        screenLock.acquire();
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (TTSService.isReady(work)) {
             TTSPlayer.State state = TTSService.getInstance().getState();
             syncState(state);
@@ -1024,7 +1129,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        if (!isWaitingPlayerCallback & mode.equals(Mode.SPEAK)) {
+        if ((!isWaitingPlayerCallback || v.getId() == R.id.btnStop) && mode.equals(Mode.SPEAK)) {
             switch (v.getId()) {
                 case R.id.btnPlay:
                     if (!TTSService.isReady(work) || !ownTTSService) {
@@ -1060,6 +1165,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         mode = Mode.NORMAL;
                         stopSpeak(true);
                         isWaitingPlayerCallback = true;
+                    } else {
+                        safeCheckMenuItem(R.id.action_work_speaking, false);
+                        stopSpeak(false);
                     }
                     break;
             }
@@ -1173,13 +1281,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         public WorkFragmentAdaptor() {
             super(false, R.layout.header_work_list, R.layout.item_indent);
+            bindOnlyRootViews = false;
             refreshSettings(getContext());
         }
 
         public void refreshSettings(Context context) {
             backgroundColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent));
             fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f);
-            fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, context.getResources().getColor(R.color.Snow));
+            fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, GuiUtils.getThemeColor(context, android.R.attr.textColor));
             font = Font.mapFonts(getContext().getAssets()).get(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Font.getDefFont().getName()));
             defaultType = Font.Type.valueOf(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontStyleReader, Font.Type.PLAIN.name()));
             fontResolver = new WorkFontResolver(getContext().getAssets(), font, defaultType);
@@ -1240,7 +1349,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.registerHandler("img", new PicassoImageHandler(annotationView));
                     spanner.registerHandler("a", new LinkHandler(annotationView));
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
-                    annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(getResources().getColor(R.color.light_gold))));
+                    annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
                     holder.getItemView().setBackgroundColor(backgroundColor);
                     break;
                 case R.layout.item_indent:
@@ -1296,8 +1405,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 }
                             }
                             if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                if(second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
-                                    if(isFullscreen) {
+                                if (second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
+                                    if (isFullscreen) {
                                         stopFullscreen();
                                     } else {
                                         enableFullscreen();

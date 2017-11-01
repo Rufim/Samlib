@@ -1,11 +1,15 @@
 package ru.samlib.client.parser;
 
 import android.util.Log;
-import io.requery.sql.MissingKeyException;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.kazantsev.template.net.HTTPExecutor;
+import ru.kazantsev.template.util.AndroidSystemUtils;
+import ru.samlib.client.App;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
@@ -13,14 +17,21 @@ import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.ParseException;
 import java.util.*;
 
 /**
  * Created by Rufim on 01.07.2015.
  */
 public class AuthorParser extends Parser {
+
+
+    public static class AuthorNotExistException extends Exception {
+
+    }
 
     private static final String TAG = AuthorParser.class.getSimpleName();
 
@@ -35,11 +46,18 @@ public class AuthorParser extends Parser {
         this(new Author(authorLink));
     }
 
-    public Author parse() throws IOException {
+    public Author parse() throws IOException, AuthorNotExistException {
         try {
             Document headDoc;
             Elements elements;
             CachedResponse rawFile;
+            if(!cached && AndroidSystemUtils.isNetworkAvailable(App.getInstance())) {
+                if(HTTPExecutor.pingHost(Constants.Net.BASE_HOST, 80, 2000)) {
+                   if(HTTPExecutor.pingURL(request.getUrl().toString(), 2000) == 404) {
+                        throw new AuthorNotExistException();
+                   }
+                }
+            }
             if (author.getCategories().isEmpty()) {
                 rawFile = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached);
             } else {
@@ -59,13 +77,17 @@ public class AuthorParser extends Parser {
                     new TextUtils.Splitter("Блок ссылок на произведения", "Подножие"));
             // head - Author Info
             if (parts.length > 0) {
-                String title = parts[0];
+                if(parts[0] == null) {
+                    throw new EOFException(author.getLink() == null ? "null" : author.getLink() + " invalid state of parsing");
+                }
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
                 author.setFullName(titles[0]);
-                author.setAnnotation(titles[1].trim());
+                if(titles.length > 1) {
+                    author.setAnnotation(titles[1].trim());
+                }
             }
             // Author info
-            if (parts.length > 1) {
+            if (parts.length > 1 && parts[0] != null) {
                 String head = parts[1];
                 headDoc = Jsoup.parseBodyFragment(head);
                 if (headDoc == null) return author;
@@ -105,7 +127,7 @@ public class AuthorParser extends Parser {
                 }
             }
             // body - Partitions with Works
-            if (parts.length > 2 && !parts[2].isEmpty()) {
+            if (parts.length > 2 && parts[2] != null && !parts[2].isEmpty()) {
                 Scanner scanner = new Scanner(parts[2]);
                 Category newCategory = null;
                 while (scanner.hasNextLine()) {
@@ -187,7 +209,7 @@ public class AuthorParser extends Parser {
                 }
             }
             if (author.isEntity() && author.isObservable()) {
-                merge((AuthorEntity) author, categories, rootWorks, rootLinks);
+                merge(author, categories, rootWorks, rootLinks);
                 Log.e(TAG, "Author " + author.getTitle() + " merged");
             } else {
                 for (Category category : categories) {
@@ -203,7 +225,7 @@ public class AuthorParser extends Parser {
             for (Work recommendation : recommendations) {
                 author.addRecommendation(recommendation);
             }
-        } catch (Exception | Error e) {
+        } catch (IOException | Error e) {
             Log.e(TAG, e.getMessage(), e);
             if (e instanceof IOException) {
                 throw e;
@@ -213,7 +235,7 @@ public class AuthorParser extends Parser {
     }
 
 
-    private void merge(AuthorEntity author, List<Category> newCategories, List<Work> newRootWorks, List<Link> newRootLinks) {
+    private void merge(Author author, List<Category> newCategories, List<Work> newRootWorks, List<Link> newRootLinks) {
         List<Category> oldCategories = author.getCategories();
         List<Work> oldRootWorks = author.getRootWorks();
         List<Link> oldRootLinks = author.getRootLinks();
@@ -222,35 +244,27 @@ public class AuthorParser extends Parser {
         while (ocit.hasNext()) {
             Category oldCategory = ocit.next();
             int newCategoryIndex = hasCategory(newCategories, oldCategory);
-            try {
-                oldCategory.getId();
-            } catch (MissingKeyException ex) {
-                newCategoryIndex = -1;
-            }
             if (newCategoryIndex >= 0) {
                 Category newCategory = newCategories.get(newCategoryIndex);
                 oldCategory.setTitle(newCategory.getTitle());
                 oldCategory.setType(newCategory.getType());
                 oldCategory.setLink(newCategory.getLink());
-                for (Work work : newCategory.getWorks()) {
-                    work.setCategory(oldCategory);
-                }
-                for (Link link : newCategory.getLinks()) {
-                    link.setCategory(oldCategory);
-                }
-                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks(), oldCategory.createEntity(author), author);
+                merge(newCategory.getWorks(), newCategory.getLinks(), oldCategory.getWorks(), oldCategory.getLinks(), oldCategory, author);
                 Log.e(TAG, "Category " + newCategory.getTitle() + " merged");
                 newCategories.remove(newCategoryIndex);
             } else {
+                oldCategory.delete();
                 ocit.remove();
             }
         }
         if (!newCategories.isEmpty()) {
-            for (Category newCategory : newCategories) {
-                Category category = newCategory.createEntity(author);
+            for (Category category : newCategories) {
+                oldCategories.add(category);
+                category.setAuthor(author);
                 boolean atLeastOne = false;
                 for (Work work : category.getWorks()) {
                     work.setChanged(true);
+                    work.setCategory(category);
                     work.setChangedDate(new Date());
                     atLeastOne = true;
                 }
@@ -261,7 +275,7 @@ public class AuthorParser extends Parser {
         }
     }
 
-    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks, CategoryEntity category, AuthorEntity author) {
+    private void merge(List<Work> newWorks, List<Link> newLinks, List<Work> oldWorks, List<Link> oldLinks, Category category, Author author) {
         Iterator<Work> owit = oldWorks.iterator();
         Iterator<Link> olit = oldLinks.iterator();
         while (olit.hasNext()) {
@@ -272,6 +286,7 @@ public class AuthorParser extends Parser {
                 oldLink.setTitle(newLink.getTitle());
                 newLinks.remove(newLinkIndex);
             } else {
+                oldLink.delete();
                 olit.remove();
                 if(author.getLinks() != oldLinks) {
                     author.getWorks().remove(oldLink);
@@ -280,7 +295,9 @@ public class AuthorParser extends Parser {
         }
         if (!newLinks.isEmpty()) {
             for (Link newLink : newLinks) {
-                newLink.createEntity(author, category);
+                newLink.setAuthor(author);
+                newLink.setCategory(category);
+                category.addLink(newLink);
             }
         }
         while (owit.hasNext()) {
@@ -308,6 +325,7 @@ public class AuthorParser extends Parser {
                 }
                 newWorks.remove(newWorkIndex);
             } else {
+                oldWork.delete();
                 owit.remove();
                 if(author.getWorks() != oldWorks) {
                     author.getWorks().remove(oldWork);
@@ -320,10 +338,13 @@ public class AuthorParser extends Parser {
                 newWork.setChangedDate(new Date());
                 newWork.setAuthor(author);
                 if (category != null) {
-                    newWork.createEntity(author, category);
+                    newWork.setAuthor(author);
+                    newWork.setCategory(category);
+                    category.addLink(newWork);
                     author.hasNewUpdates();
                 } else if (author != null) {
-                    newWork = newWork.createEntity(author, null);
+                    newWork.setAuthor(author);
+                    author.getWorks().add(newWork);
                     newWork.setRootWork(true);
                     newWork.setCategory(null);
                     author.hasNewUpdates();
@@ -371,7 +392,6 @@ public class AuthorParser extends Parser {
         into.setGenres(from.getGenres());
         into.setType(from.getType());
         into.setAnnotationBlocks(from.getAnnotationBlocks());
-        into.setCategory(from.getCategory());
         into.setState(from.getState());
         into.setHasIllustration(from.isHasIllustration());
         into.setHasComments(from.isHasComments());

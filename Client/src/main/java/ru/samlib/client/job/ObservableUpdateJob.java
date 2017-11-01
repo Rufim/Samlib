@@ -9,11 +9,11 @@ import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import org.greenrobot.eventbus.EventBus;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.AuthorEntity;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.kazantsev.template.domain.event.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
@@ -21,6 +21,7 @@ import ru.samlib.client.fragments.ObservableFragment;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.service.DatabaseService;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.samlib.client.util.MergeFromRequery;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ public class ObservableUpdateJob extends Job {
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
-        if (isCanceled()) {
+        Context context = getContext();
+        if (isCanceled() || context == null || !AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableAuto, true)) {
             return Result.SUCCESS;
         }
         try {
@@ -66,23 +68,28 @@ public class ObservableUpdateJob extends Job {
 
     public static void updateObservable(DatabaseService service, Context context) {
         List<CharSequence> notifyAuthors = new ArrayList<>();
+        MergeFromRequery.merge(context, service);
         Stream.of(service.getObservableAuthors()).forEach(author -> {
             try {
                 boolean wasUpdates = author.isHasUpdates();
                 AuthorParser parser = new AuthorParser(author);
-                author = service.createOrUpdateAuthor((AuthorEntity) parser.parse());
+                author.setDeleted(false);
+                author = service.createOrUpdateAuthor(parser.parse());
                 author.setParsed(true);
-                if(context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
+                if (context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
                     notifyAuthors.add(author.getShortName());
                     author.setNotNotified(false);
                 }
                 EventBus.getDefault().post(new AuthorUpdatedEvent(author));
-                Log.e(TAG, "Author " +  author.getShortName() + " updated");
+                Log.e(TAG, "Author " + author.getShortName() + " updated");
+            } catch (AuthorParser.AuthorNotExistException ex) {
+                author.setDeleted(true);
+                author.save();
             } catch (Exception e) {
                 Log.e(TAG, "Unknown exception while update", e);
             }
         });
-        if(!notifyAuthors.isEmpty()) {
+        if(!notifyAuthors.isEmpty() && AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableNotification, true)) {
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(Constants.ArgsName.FRAGMENT_CLASS, ObservableFragment.class.getSimpleName());
             GuiUtils.sendBigNotification(context, 1, R.drawable.ic_update_white, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);

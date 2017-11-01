@@ -39,4 +39,15 @@
           android:title="@string/work_comments"
           android:orderInCategory="9"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_work_rate"
+          android:title="@string/work_rate"
+          android:visible="false"
+          android:orderInCategory="9"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_work_lock_bookmark"
+          android:title="@string/history_lock"
+          android:orderInCategory="10"
+          android:checked="false"
+          android:checkable="true"
+          app:showAsAction="never"/>
 </menu>

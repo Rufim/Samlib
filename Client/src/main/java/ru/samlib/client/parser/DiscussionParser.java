@@ -14,6 +14,9 @@ import java.net.MalformedURLException;
  * Created by Dmitry on 20.11.2015.
  */
 public class DiscussionParser extends PageListParser<Discussion>{
+
+
+
     public DiscussionParser() throws MalformedURLException {
         super("/rating/comment/", 201,
                 new JsoupRowSelector() {
@@ -23,6 +26,7 @@ public class DiscussionParser extends PageListParser<Discussion>{
                     }
                 },
                 new DefaultPageLister());
+        setLazyLoad(true);
     }
 
     @Override

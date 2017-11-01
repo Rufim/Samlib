@@ -52,6 +52,20 @@
         <item>Friends:</item>
     </string-array>
 
+    <string-array name="work_rating">
+        <item>не читал</item>
+        <item>не читать</item>
+        <item>очень плохо</item>
+        <item>плохо</item>
+        <item>посредственно</item>
+        <item>терпимо</item>
+        <item>нормально</item>
+        <item>хорошая книга</item>
+        <item>отличная книга</item>
+        <item>великолепно</item>
+        <item>шедевр</item>
+    </string-array>
+
     <string name="crash_title_text">Ошибка</string>
     <string name="crash_text">\u000AПослать отчет разработчику, чтобы помочь ее исправить?</string>
 
@@ -85,6 +99,7 @@
     <string name="work_parse">Парсинг…</string>
     <string name="work_share">Поделиться</string>
     <string name="work_comments">Комментарии</string>
+    <string name="work_rate">Оценить</string>
     <string name="work_open_with">Открыть в…</string>
     <string name="work_auto_scroll">Автопрокрутка</string>
     <string name="work_fullscreen">Полный экран</string>
@@ -114,8 +129,8 @@
     </string>
     <string name="help">
         <![CDATA[
-           Это тестовая верия клиента для сайта Самиздат под Андройд, версии 0.5.+.
-            По вопросам и возникающим багам пишите на электронную почту <a href="caelum-rufim@ya.ru">caelum-rufim@ya.ru</a>
+           Это тестовая верия клиента для сайта Самиздат под Андройд.
+            По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a>
         ]]>
     </string>
     <string name="comments_goto">Перейти</string>
@@ -139,7 +154,13 @@
     <string name="author_observable">Подписка</string>
     <string name="author_make_all_visited">Отметить все, как прочитанное</string>
     <string name="author_mode">Компактный вид</string>
+    <string name="author_not_exist">Раздел не существует!</string>
+    <string name="author_deleted">Раздел удалён.</string>
+    <string name="author_parse_error">Ошибка во время парсига.</string>
     <string name="history_clean">Очистить историю</string>
+    <string name="history_only_locked">Только закреплённые</string>
+    <string name="history_lock">Закрепить/открепить в истории</string>
+    <string name="history_lock_dialog">Закрепить/открепить выбранные?</string>
     <string name="back_to_exit">Нажмите еще раз для выхода</string>
     <string name="network_not_available">Нет интернет соединения…</string>
     <string name="external_work_delete">Удалить</string>
@@ -152,6 +173,9 @@
     <string name="observable_import">Импорт</string>
     <string name="observable_export">Экспорт</string>
     <string name="observable_check_updates">Проверить обновления</string>
-    <string name="observable_link_or_author_hint">Введите имя автора или ссылку</string>
+    <string name="observable_link_or_author_hint">Введите имя автора или ссылку (на-р: /k/kazancew_d)</string>
     <string name="observable_link_or_author_title">Добавить</string>
+    <string name="page_not_supported">Страница не поддерживается!</string>
+    <string name="work_not_in_cache">Произведение не закешированно.</string>
+    <string name="work_cant_open">Не могу открыть файл. Возможно, он находится в недоступном программе месте.</string>
 </resources>

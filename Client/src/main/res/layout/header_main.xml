@@ -4,7 +4,7 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:gravity="center_horizontal"
-              android:background="@color/dark_grey"
+              android:background="?android:attr/windowBackground"
               android:layout_height="wrap_content">
     <android.support.v7.widget.SwitchCompat
             android:layout_width="wrap_content"
@@ -14,7 +14,7 @@
             android:textOn="@string/online"
             android:textOff="@string/offline"
             app:showText="true"
-            android:thumb="@drawable/switch_text_thumb_main"
+            android:thumb="?attr/switchThumb"
             android:id="@+id/header_main_status"
             android:textStyle="normal|bold"
             android:textAllCaps="false"

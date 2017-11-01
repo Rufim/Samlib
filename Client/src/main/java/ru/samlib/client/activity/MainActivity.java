@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
+import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,6 +49,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(AndroidSystemUtils.getStringResPreference(this, R.string.preferenceCurrentTheme, getApplicationInfo().theme));
         super.onCreate(savedInstanceState);
         singleInstance = this;
         View header = getLayoutInflater().inflate(R.layout.header_main, navigationView, false);
@@ -110,6 +113,10 @@ public class MainActivity extends BaseActivity {
     public boolean onNavigationItemSelected(MenuItem item) {
         // update the main content by replacing fragments
         Integer itemId = item.getItemId();
+        if(getIntent() != null && getIntent().getBooleanExtra(Constants.ArgsName.ON_CHANGE_THEME, false)) {
+            itemId = R.id.drawer_settings;
+            getIntent().putExtra(Constants.ArgsName.ON_CHANGE_THEME, false);
+        }
         switch (itemId) {
             case R.id.drawer_rate:
                 replaceFragment(RateFragment.class);

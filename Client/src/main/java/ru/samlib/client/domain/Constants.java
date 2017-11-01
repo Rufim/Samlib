@@ -37,7 +37,9 @@ public class Constants {
         public static final String TTS_LANGUAGE = "language";
         public static final String COMMENTS_PAGE = "comments_page";
         public static final String FILE_PATH = "file_path";
+        public static final String CONTENT_URI = "content";
         public static final String WORK_RESTORE = "from_notification";
+        public static final String ON_CHANGE_THEME = "onChangeTheme";
     }
 
 
@@ -59,8 +61,8 @@ public class Constants {
     public static class App {
         public static final int VERSION = BuildConfig.VERSION_CODE;
         public static final String VERSION_NAME = BuildConfig.VERSION_NAME;
-        public static final String DATABASE_NAME = BuildConfig.APPLICATION_ID + ".db";
-        public static final int DATABASE_VERSION = 2;
+        public static final String DATABASE_NAME = "Samlib";
+        public static final int DATABASE_VERSION = 20;
     }
 
     public static class Pattern {
@@ -68,6 +70,7 @@ public class Constants {
         public static final String DATA_PATTERN = "dd-MM-yyyy";
         public static final String DATA_TIME_PATTERN = "dd-MM-yyyy HH:mm";
         public static final String DATA_ISO_8601_24H_FULL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        public static final String DATA_ISO_8601_24H_FULL_FORMAT_WITHOUT_MC = "yyyy-MM-dd'T'HH:mm:ss'Z'";
         @RegExp
         public static final String WORK_URL_REGEXP = "/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml";
         @RegExp

@@ -1,7 +1,6 @@
 package ru.samlib.client.dialog;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,7 +34,7 @@ public class EditListPreferenceDialog extends BaseDialog {
     RecyclerView recyclerView;
     SettingsFragment.Preference preference;
     Object selected;
-    OnPreferenceCommit onPreferenceCommit;
+    OnCommit<Object, EditListPreferenceDialog> onCommit = (v, dialog) -> true;
     OnSetItemList setItemList = (textView, key, value) -> {
         textView.setText(key.toString());
     };
@@ -48,8 +48,8 @@ public class EditListPreferenceDialog extends BaseDialog {
         this.preference = preference;
     }
 
-    public void setOnPreferenceCommit(OnPreferenceCommit onPreferenceCommit) {
-        this.onPreferenceCommit = onPreferenceCommit;
+    public void setOnCommit(OnCommit<Object, EditListPreferenceDialog> onCommit) {
+        this.onCommit = onCommit;
     }
 
     public void setSetItemList(OnSetItemList setItemList) {
@@ -114,24 +114,39 @@ public class EditListPreferenceDialog extends BaseDialog {
     }
 
     @Override
-    public void onButtonPositive(DialogInterface dialog) {
-        Object value = preference.keyValue.get(selected);
-        if(value != null) {
-            SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
-            // add others of need
-            if (value instanceof Integer) {
-                editor.putInt(preference.key, (Integer) value);
-            } else if (value instanceof Float) {
-                editor.putFloat(preference.key, (Float) value);
-            } else if (value instanceof Enum) {
-                editor.putString(preference.key, ((Enum) value).name());
-            } else {
-                editor.putString(preference.key, value.toString());
-            }
-            editor.commit();
-            if (onPreferenceCommit != null) {
-                onPreferenceCommit.onCommit(value);
-            }
+    public void onResume() {
+        super.onResume();
+        final AlertDialog d = (AlertDialog)getDialog();
+        if(d != null)
+        {
+            Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
+            positiveButton.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Object value = preference.keyValue.get(selected);
+                    if(value != null) {
+                        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                        // add others of need
+                        if (value instanceof Integer) {
+                            editor.putInt(preference.key, (Integer) value);
+                        } else if (value instanceof Float) {
+                            editor.putFloat(preference.key, (Float) value);
+                        } else if (value instanceof Enum) {
+                            editor.putString(preference.key, ((Enum) value).name());
+                        } else {
+                            editor.putString(preference.key, value.toString());
+                        }
+                        if (onCommit != null) {
+                            if (onCommit.onCommit(value, EditListPreferenceDialog.this)) {
+                                editor.commit();
+                                d.dismiss();
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 

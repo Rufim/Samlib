@@ -24,6 +24,7 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.HtmlClient;
+import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.kazantsev.template.util.AndroidSystemUtils;
@@ -148,15 +149,18 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                     File cached;
                     if(work.isNotSamlib()) {
                         cached = new File(link);
+                        if (cached.exists()) {
+                            work.setRawContent(SystemUtils.readFile(cached, WorkParser.detectCharset(cached, "UTF-8")));
+                        }
                     } else {
                         cached = HtmlClient.getCachedFile(getBaseContext(), link);
-                    }
-                    if(cached.exists()) {
-                        work.setRawContent(SystemUtils.readFile(cached, "CP1251"));
+                        if (cached.exists()) {
+                            work.setRawContent(SystemUtils.readFile(cached, "CP1251"));
+                        }
                     }
                 }
                 if (!TextUtils.isEmpty(work.getRawContent())) {
-                    WorkParser.processChapters(work);
+                    WorkParser.processChapters(work, work.isNotSamlib() && !new File(link).getName().endsWith(".html"));
                 } else {
                     return START_STICKY_COMPATIBILITY;
                 }

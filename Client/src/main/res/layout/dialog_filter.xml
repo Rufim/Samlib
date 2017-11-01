@@ -4,7 +4,6 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-ingleLine="true"/>
     <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -41,6 +40,7 @@ ingleLine="true"/>
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
             android:id="@+id/scrollView" android:layout_gravity="center_horizontal">
         <android.support.v7.widget.GridLayout android:layout_width="wrap_content"
                                               android:layout_height="wrap_content"

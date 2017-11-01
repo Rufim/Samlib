@@ -1,10 +1,21 @@
 package ru.samlib.client.domain.entity;
 
-import io.requery.Entity;
-import io.requery.Key;
-import io.requery.ManyToOne;
+
+
+
+
+
+import android.net.Uri;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.ColumnIgnore;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.annotation.provider.ContentUri;
+import com.raizlabs.android.dbflow.structure.BaseModel;
+import lombok.Data;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 
 import java.io.File;
@@ -17,9 +28,10 @@ import java.util.List;
 /**
  * Created by 0shad on 17.05.2017.
  */
-@Entity
-public abstract class AbstractExternalWork implements Findable, Serializable {
-    @Key
+@Table(database = MyDatabase.class, allFields = true)
+@Data
+public class ExternalWork extends BaseModel implements Findable, Serializable {
+    @PrimaryKey
     String filePath;
     Date savedDate;
     String workUrl;
@@ -28,6 +40,10 @@ public abstract class AbstractExternalWork implements Findable, Serializable {
     String workTitle;
     String authorShortName;
 
+    @ColumnIgnore
+    Uri ContentUri;
+
+    public ExternalWork() {};
 
     public boolean isExist() {
         return new File(filePath == null ? "" : filePath).exists();
