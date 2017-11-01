@@ -21,12 +21,15 @@ import java.util.Locale;
  */
 public class NewestFragment extends FilterDialogListFragment {
 
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
-    public static NewestFragment newInstance() {
-        return newInstance(NewestFragment.class);
+
+    public NewestFragment() {
+        pageSize = 25;
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        setDataSource(null);
+        super.refreshData(showProgress);
     }
 
     @Override
@@ -52,6 +55,7 @@ public class NewestFragment extends FilterDialogListFragment {
 
         public NewestArrayAdapter() {
             super(R.layout.item_newest);
+            performSelectRoot = true;
         }
 
         @Override

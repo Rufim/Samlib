@@ -15,6 +15,10 @@ import ru.samlib.client.net.HtmlClient;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +42,8 @@ public abstract class Parser {
     protected Request request;
     protected CachedResponse htmlFile;
     protected Document document;
+    protected boolean lazyLoad = false;
+    protected Set<Request> loadedSet = new HashSet<>();
     protected static boolean cached = false;
     protected static String commentCookie = null;
 
@@ -60,12 +66,28 @@ public abstract class Parser {
     }
 
     public Document getDocument(Request request) throws IOException {
-        return getDocument(request, Long.MAX_VALUE);
+        return getDocument(request, Long.MAX_VALUE, false);
     }
 
     public Document getDocument(Request request, long minBodySize) throws IOException {
+        return getDocument(request, minBodySize, false);
+    };
 
-        htmlFile = HtmlClient.executeRequest(request, minBodySize, cached);
+    public void setLazyLoad(boolean lazyLoad) {
+        this.lazyLoad = lazyLoad;
+    }
+
+    public Document getDocument(Request request, long minBodySize, boolean cached) throws IOException {
+
+        if(lazyLoad && loadedSet.contains(request)){
+            if(parserCache.get(request) != null) {
+                return parserCache.get(request);
+            } else {
+                loadedSet.remove(request);
+            }
+        }
+
+        htmlFile = HtmlClient.executeRequest(request, minBodySize, cached || Parser.cached);
 
         document = null;
 
@@ -87,6 +109,9 @@ public abstract class Parser {
                 if (!htmlFile.isCached()) {
                     parserCache.put(request, document);
                     htmlFile.setCached(true);
+                    if(lazyLoad) {
+                        loadedSet.add(request);
+                    }
                 }
             } else {
                 executor.submit(new PendingParse(htmlFile));

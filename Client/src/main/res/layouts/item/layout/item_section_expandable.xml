@@ -47,7 +47,7 @@
     <View android:layout_width="match_parent"
           android:layout_height="3dp"
           android:id="@+id/section_down_shadow"
-          android:background="@drawable/shadow"/>
+          android:background="?attr/toolbarShadowDrawable"/>
     <LinearLayout android:id="@+id/section_layout_subitems"
                   android:layout_width="match_parent"
                   android:orientation="vertical"

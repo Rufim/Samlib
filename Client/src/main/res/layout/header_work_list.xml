@@ -7,7 +7,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/work_annotation_header"
-            android:textColor="@color/light_gold"
+            android:textColor="?attr/textColorAnnotations"
             android:layout_margin="@dimen/spacing_small"
             android:textSize="@dimen/text_medium"/>
 </LinearLayout>

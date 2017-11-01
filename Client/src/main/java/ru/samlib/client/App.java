@@ -8,6 +8,7 @@ import android.support.multidex.MultiDexApplication;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.util.JobApi;
 import com.raizlabs.android.dbflow.config.FlowConfig;
+import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
@@ -83,7 +84,7 @@ public class App extends MultiDexApplication {
         CleanCacheJob.startSchedule();
         Font.mapFonts(getAssets());
         FlowManager.init(new FlowConfig.Builder(this).build());
-    }
+   }
 
     @Override
     public void onLowMemory() {

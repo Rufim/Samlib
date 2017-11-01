@@ -20,7 +20,6 @@ import java.util.List;
  */
 public class NewestParser extends RowParser implements DataSource<Work> {
 
-
     public NewestParser() throws MalformedURLException {
         super("/long.shtml", new JsoupRowSelector() {
             @Override
@@ -28,6 +27,7 @@ public class NewestParser extends RowParser implements DataSource<Work> {
                 return "table tbody td[width=600] table tbody tr";
             }
         });
+        setLazyLoad(true);
     }
 
     public List<Work> getItems(int skip, int size) throws IOException {
@@ -37,7 +37,7 @@ public class NewestParser extends RowParser implements DataSource<Work> {
             Document doc = getDocument(request, MIN_BODY_SIZE);
             Elements tableRowElements = (Elements) selectRows(doc);
             if (2 + skip > tableRowElements.size()) {
-                Log.e(TAG, "Is over: skip is " + skip + " size is " + tableRowElements.size());
+                Log.w(TAG, "Is over: skip is " + skip + " size is " + tableRowElements.size());
                 return works;
             }
             parseElements(tableRowElements, 2 + skip, size, works);

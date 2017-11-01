@@ -6,10 +6,10 @@ ext {
     compileSdkProjectVersion = 25
     buildToolsProjectVersion = '25.0.2'
     supportLibraryVersion = '25.3.1'
-    versionProjectCode = 14
-    versionProjectName = "0.6.1"
+    versionProjectCode = 22
+    versionProjectName = "0.6.9"
     baseScheme = 'http'
-    baseHost = 'budclub.ru'
+    baseHost = 'samlib.ru'
     dbflowVersion = '4.1.1'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'
@@ -122,7 +122,7 @@ dependencies {
     compile "com.android.support:support-annotations:$supportLibraryVersion"
     compile 'com.jrummyapps:colorpicker:2.1.6'
     compile "org.jetbrains:annotations-java5:15.0"
-    compile "org.jsoup:jsoup:1.8.3"
+    compile "org.jsoup:jsoup:1.10.3"
     compile "com.annimon:stream:1.1.0"
     compile "com.jakewharton:butterknife:$butterknifeVersion"
     compile "org.greenrobot:eventbus:3.0.0"

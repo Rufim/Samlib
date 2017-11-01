@@ -2,10 +2,7 @@ package ru.samlib.client.util;
 
 import android.annotation.SuppressLint;
 import com.raizlabs.android.dbflow.config.FlowManager;
-import com.raizlabs.android.dbflow.sql.language.From;
-import com.raizlabs.android.dbflow.sql.language.Operator;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
-import com.raizlabs.android.dbflow.sql.language.Where;
+import com.raizlabs.android.dbflow.sql.language.*;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 import com.raizlabs.android.dbflow.structure.database.transaction.DefaultTransactionManager;
@@ -22,21 +19,21 @@ import java.util.List;
  */
 public class DBFlowUtils {
 
-    public static <C> List<C> dbFlowOneTwoManyUtilMethod(List<C> list, Class<C> clazz, Operator in) {
+    public static <C> List<C> dbFlowOneTwoManyUtilMethod(List<C> list, Class<C> clazz, Operator... in) {
         if (list == null || list.isEmpty()) {
             list = dbFlowQueryList(clazz, in);
         }
         return list;
     }
 
-    public static <C> C dbFlowFindFirst(Class<C> clazz, Operator in) {
+    public static <C> C dbFlowFindFirst(Class<C> clazz, Operator... in) {
         return SQLite.select()
                 .from(clazz)
                 .where(in)
                 .querySingle();
     }
 
-    public static long dbFlowDelete(Class clazz, Operator in) {
+    public static long dbFlowDelete(Class clazz, Operator... in) {
         From from = SQLite.delete()
                 .from(clazz);
         long affected = 0;
@@ -48,7 +45,7 @@ public class DBFlowUtils {
         return affected;
     }
 
-    public static <C> List<C> dbFlowQueryList(Class<C> clazz, Operator in, int skip, int limit) {
+    public static <C> List<C> dbFlowQueryList(Class<C> clazz, int skip, int limit, OrderBy orderBy, Operator... in) {
         From<C> from = SQLite.select()
                 .from(clazz);
         Where<C> where = null;
@@ -74,13 +71,21 @@ public class DBFlowUtils {
             }
         }
         if(where != null) {
-            return where.queryList();
+            if(orderBy == null) {
+                return where.queryList();
+            } else {
+                return where.orderBy(orderBy).queryList();
+            }
         } else {
-            return from.queryList();
+            if(orderBy == null) {
+                return from.queryList();
+            } else {
+                return from.orderBy(orderBy).queryList();
+            }
         }
     }
 
-    public static <C> List<C> dbFlowQueryList(Class<C> clazz, Operator in) {
-        return dbFlowQueryList(clazz, in, -1, -1);
+    public static <C> List<C> dbFlowQueryList(Class<C> clazz, Operator... in) {
+        return dbFlowQueryList(clazz, -1, -1, null, in);
     }
 }

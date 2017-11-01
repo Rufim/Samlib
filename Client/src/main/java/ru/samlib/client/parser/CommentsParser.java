@@ -115,7 +115,7 @@ public class CommentsParser extends PageParser<Comment> {
     }
 
 
-    private static String requestCookie(Work work) {
+    public static String requestCookie(Work work) {
         if (commentCookie != null) return commentCookie;
         try {
             Response response = new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())

@@ -9,6 +9,7 @@ import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import org.greenrobot.eventbus.EventBus;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
@@ -47,7 +48,8 @@ public class ObservableUpdateJob extends Job {
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
-        if (isCanceled()) {
+        Context context = getContext();
+        if (isCanceled() || context == null || !AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableAuto, true)) {
             return Result.SUCCESS;
         }
         try {
@@ -71,19 +73,23 @@ public class ObservableUpdateJob extends Job {
             try {
                 boolean wasUpdates = author.isHasUpdates();
                 AuthorParser parser = new AuthorParser(author);
+                author.setDeleted(false);
                 author = service.createOrUpdateAuthor(parser.parse());
                 author.setParsed(true);
-                if(context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
+                if (context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
                     notifyAuthors.add(author.getShortName());
                     author.setNotNotified(false);
                 }
                 EventBus.getDefault().post(new AuthorUpdatedEvent(author));
-                Log.e(TAG, "Author " +  author.getShortName() + " updated");
+                Log.e(TAG, "Author " + author.getShortName() + " updated");
+            } catch (AuthorParser.AuthorNotExistException ex) {
+                author.setDeleted(true);
+                author.save();
             } catch (Exception e) {
                 Log.e(TAG, "Unknown exception while update", e);
             }
         });
-        if(!notifyAuthors.isEmpty()) {
+        if(!notifyAuthors.isEmpty() && AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableNotification, true)) {
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(Constants.ArgsName.FRAGMENT_CLASS, ObservableFragment.class.getSimpleName());
             GuiUtils.sendBigNotification(context, 1, R.drawable.ic_update_white, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);

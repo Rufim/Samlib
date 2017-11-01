@@ -64,13 +64,11 @@ public class MergeFromRequery {
                             while (cursor.moveToNext()) {
                                 Author author = new Author(cursor.getString(0));
                                 if (!author.exists()) {
-
                                     databaseService.insertObservableAuthor(new AuthorParser(author).parse());
-
                                 }
                             }
                             authorsCopied = true;
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }

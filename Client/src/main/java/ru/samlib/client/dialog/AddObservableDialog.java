@@ -11,6 +11,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.dialog.BaseDialog;
+import ru.kazantsev.template.util.PreferenceMaster;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Linkable;
@@ -38,6 +39,7 @@ public class AddObservableDialog extends BaseDialog {
                 .setPositiveButton(android.R.string.ok, this)
                 .setNegativeButton(android.R.string.cancel, this)
                 .setView(rootView);
+        input.setText(new PreferenceMaster(getContext()).getValue(R.string.preferenceObservableAddLastAuthor));
         return adb.create();
     }
 
@@ -50,7 +52,9 @@ public class AddObservableDialog extends BaseDialog {
             if (!Linkable.isAuthorLink(link)) {
                 link = SamlibUtils.getLinkFromAuthorName(input);
             }
-            postEvent(new AuthorAddEvent(link.replaceAll("/+","/")));
+            link = link.replaceAll("/+","/");
+            new PreferenceMaster(getContext()).putValue(R.string.preferenceObservableAddLastAuthor, link);
+            postEvent(new AuthorAddEvent(link));
         } else {
             this.input.setError(getString(R.string.observable_add_link_or_author_error));
         }

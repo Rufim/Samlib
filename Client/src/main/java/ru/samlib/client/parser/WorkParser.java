@@ -3,6 +3,9 @@ package ru.samlib.client.parser;
 import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
+import ru.kazantsev.template.domain.Valuable;
+import ru.kazantsev.template.net.HTTPExecutor;
+import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.charset.CharsetDetector;
 import ru.kazantsev.template.util.charset.CharsetMatch;
 import org.jsoup.Jsoup;
@@ -62,8 +65,8 @@ public class WorkParser extends Parser {
         } else {
             rawContent = HtmlClient.executeRequest(request, cached);
         }
-        if (rawContent == null) {
-            return work;
+        if (rawContent == null || rawContent.length() == 0) {
+            throw new IOException("Закешированный файл не найден и отцутствует соединение с интернетом");
         }
         if (work == null) {
             work = new Work(rawContent.getRequest().getBaseUrl().getPath().replaceAll("/+", "/"));
@@ -74,18 +77,26 @@ public class WorkParser extends Parser {
         return parsedWork;
     }
 
+    public static String detectCharset(File file, String defaultCharset) {
+        CharsetDetector detector = new CharsetDetector();
+        BufferedInputStream stream = null;
+        try {
+            stream = new BufferedInputStream(new FileInputStream(file));
+            detector.setText(stream);
+            CharsetMatch charset = detector.detect();
+            return charset == null ? defaultCharset : charset.getName();
+        } catch (IOException e) {
+            return defaultCharset;
+        } finally {
+            SystemUtils.close(stream);
+        }
+    }
+
     public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
             if (work.isNotSamlib()) {
-                CharsetDetector detector = new CharsetDetector();
-                BufferedInputStream stream = new BufferedInputStream(new FileInputStream(rawContent));
-                try {
-                    detector.setText(stream);
-                    CharsetMatch charset = detector.detect();
-                    work.setRawContent(SystemUtils.readFile(rawContent, charset == null ? encoding : charset.getName()));
-                } finally {
-                    SystemUtils.close(stream);
-                }
+                String chrset = detectCharset(rawContent, encoding);
+                work.setRawContent(SystemUtils.readFile(rawContent, chrset.contains("UTF") ? chrset : encoding));
             } else {
                 work = parseWork(rawContent, encoding, work);
             }
@@ -96,7 +107,7 @@ public class WorkParser extends Parser {
             }
             work.setChanged(false);
             if (processChapters) {
-                processChapters(work);
+                processChapters(work, work.isNotSamlib() && !rawContent.getName().endsWith(".html"));
             }
             workCache.put(work.isNotSamlib() ? rawContent.getAbsolutePath() : work.getLink(), work);
         } catch (Exception ex) {
@@ -203,6 +214,10 @@ public class WorkParser extends Parser {
         } else if (parts.length == 4) {
             if (parts[2].contains("Аннотация")) {
                 work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
+
+            }
+            if (parts[2].contains("Оценка:")) {
+                work.setHasRate(true);
             }
             if (parts[3].contains("<!--Section Begins-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
@@ -219,33 +234,32 @@ public class WorkParser extends Parser {
         return work;
     }
 
-    public static void processChapters(Work work) {
-        List<String> indents = work.getIndents();
-        try {
-            indents.clear();
-        } catch (RuntimeException ex) {
-            // ignored
-        }
-        List<Bookmark> bookmarks = work.getAutoBookmarks();
-        Document document = Jsoup.parseBodyFragment(work.getRawContent());
-        document.setBaseUri(Constants.Net.BASE_DOMAIN);
-        document.outputSettings().prettyPrint(false);
-        List<Node> rootNodes = new ArrayList<>();
-        //Element body = replaceTables(document.body());
-        Elements rootElements = document.body().select("> *");
-        HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
-        if(rootElements == null || rootElements.size() == 0) {
+    public static void processChapters(Work work, boolean isTextFile) {
+        if (isTextFile && !work.getRawContent().startsWith("<html>")) {
             work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
         } else {
+            List<String> indents = work.getIndents();
+            try {
+                indents.clear();
+            } catch (RuntimeException ex) {
+                // ignored
+            }
+            List<Bookmark> bookmarks = work.getAutoBookmarks();
+            Document document = Jsoup.parseBodyFragment(work.getRawContent());
+            document.setBaseUri(Constants.Net.BASE_DOMAIN);
+            document.outputSettings().prettyPrint(false);
+            List<Node> rootNodes = new ArrayList<>();
+            //Element body = replaceTables(document.body());
+            Elements rootElements = document.body().select("> *");
+            HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
             work.setIndents(forSpanner.getIndents(rootElements));
-        }
-        if(rootElements != null) {
-            rootElements.clear();
-        }
-        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
-                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        bookmarks.clear();
-        bookmarks.addAll(forSpanner.getBookmarks());
+            if (rootElements != null) {
+                rootElements.clear();
+            }
+            Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            bookmarks.clear();
+            bookmarks.addAll(forSpanner.getBookmarks());
         /*if(bookmarks.size() == 0) {
             for (int i = 0; i < indents.size(); i++) {
                 String text = indents.get(i);
@@ -257,6 +271,7 @@ public class WorkParser extends Parser {
                 }
             }
         }*/
+        }
         work.setParsed(true);
     }
 
@@ -487,6 +502,39 @@ public class WorkParser extends Parser {
                 }
                 return null;
             }
+        }
+    }
+
+    private static final String WORK_SEND_RATE = "/cgi-bin/votecounter";
+
+    public enum RateParams {
+        FILE, DIR, BALL, OK;
+    }
+
+    public static boolean sendRate(Work work, int rate) {
+        try {
+            String link = Constants.Net.BASE_DOMAIN + WORK_SEND_RATE;
+            String wlink = work.getLinkWithoutSuffix();
+            String alink = work.getAuthor().getLink();
+            Request request = new Request(link)
+                    .setMethod(Request.Method.POST)
+                    .addHeader("Accept", ACCEPT_VALUE)
+                    .addHeader("User-Agent", USER_AGENT)
+                    .addHeader("Accept-Encoding", ACCEPT_ENCODING_VALUE)
+                    .addHeader("Host", Constants.Net.BASE_HOST)
+                    .addHeader("Referer", work.getFullLink())
+                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                    .addHeader("Upgrade-Insecure-Requests", "1")
+                    .setEncoding("CP1251")
+                    .addParam(RateParams.FILE, wlink.substring(wlink.lastIndexOf('/') + 1))
+                    .addParam(RateParams.DIR, alink.substring(1, alink.length() - 1))
+                    .addParam(RateParams.BALL, String.valueOf(rate))
+                    .addParam(RateParams.OK, "OK");
+            HTTPExecutor executor = new HTTPExecutor(request);
+            executor.execute();
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 }

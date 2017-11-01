@@ -37,7 +37,9 @@ public class Constants {
         public static final String TTS_LANGUAGE = "language";
         public static final String COMMENTS_PAGE = "comments_page";
         public static final String FILE_PATH = "file_path";
+        public static final String CONTENT_URI = "content";
         public static final String WORK_RESTORE = "from_notification";
+        public static final String ON_CHANGE_THEME = "onChangeTheme";
     }
 
 
@@ -60,7 +62,7 @@ public class Constants {
         public static final int VERSION = BuildConfig.VERSION_CODE;
         public static final String VERSION_NAME = BuildConfig.VERSION_NAME;
         public static final String DATABASE_NAME = "Samlib";
-        public static final int DATABASE_VERSION = 1;
+        public static final int DATABASE_VERSION = 20;
     }
 
     public static class Pattern {

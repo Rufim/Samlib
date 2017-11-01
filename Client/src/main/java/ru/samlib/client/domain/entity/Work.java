@@ -77,6 +77,7 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     String description;
     boolean hasIllustration = false;
     boolean hasComments = false;
+    boolean hasRate = false;
     boolean changed = false;
     boolean recommendation = false;
     boolean rootWork = false;
