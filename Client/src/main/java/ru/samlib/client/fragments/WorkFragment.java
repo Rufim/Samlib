@@ -408,41 +408,75 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         @Override
         public void run() {
-            int first = ((LinearLayoutManager) itemList.getLayoutManager()).findFirstVisibleItemPosition();
-            int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
-            len = 1;
-
-            TextView textView = null;
-            for (int i = first; i <= last; i++) {
-                textView = getTextViewIndent(i);
-                if (textView != null) break;
-            }
-            if (textView == null) return;
-            int width = textView.getWidth();
-            int height = itemList.getHeight();
-            if (tsize == 0) {
-                tsize = textView.getTextSize();
-            }
-            for (int i = first; i <= last; i++) {
-//                textSizes.putIfAbsent(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
-                if (textSizes.indexOfKey(i) < 0) {
-                    textSizes.put(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+            try {
+                int first = ((LinearLayoutManager) itemList.getLayoutManager()).findFirstVisibleItemPosition() - 1;
+                if (first < 0) {
+                    first = 0;
                 }
-                len += textSizes.get(i);
-            }
+                int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
+                System.out.println("run n" + System.currentTimeMillis());
+                len = 1;
+
+                TextView textView = null;
+                for (int i = first; i <= last; i++) {
+                    textView = getTextViewIndent(i);
+                    if (textView != null) break;
+                }
+                if (textView == null) return;
+                int width = textView.getWidth();
+                int height = itemList.getHeight();
+                if (tsize == 0) {
+                    tsize = textView.getTextSize();
+                }
+//            int difference = last - first;
+                try {
+                    if (first < last - 1 && getVisibleLines(WorkFragment.this.getTextViewIndent(first)) <= 0) {
+                        first++;
+                    }
+                    if (first < last - 1 && getVisibleLines(WorkFragment.this.getTextViewIndent(first)) <= 0) {
+                        first++;
+                    }
+                    if (last > first + 1 && getVisibleLines(WorkFragment.this.getTextViewIndent(last)) <= 0) {
+                        last--;
+                    }
+                } catch (NullPointerException ex) {
+                    //ignore
+                }
+                for (int i = first; i <= last; i++) {
+//                textSizes.putIfAbsent(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+                    if (textSizes.indexOfKey(i) < 0) {
+                        textSizes.put(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+                        adapter.getItems().set(i, adapter.getItems().get(i) + " _" + i);
+                    }
+                    if (textSizes.get(i) > 4) {
+                        TextView iTextView = getTextViewIndent(i);
+                        if (iTextView != null) {
+//                            if (textSizes.get(i) < 45) {
+                                len += textSizes.get(i);
+//                            }
+//                            else {
+//                                len += textSizes.get(i) - (textSizes.get(i) / 45f + 1 - getVisibleLines(textView1)) * 45 / 3;
+//                            }
+                        }
+                    }
+                }
 //            if (maxLen < 2 * len) {
 //                maxLen = (len + maxLen) / 2;
 //            }
-            float symbolsNumber = width * height / tsize / tsize;
-            if (maxLen < symbolsNumber) {
-                maxLen = symbolsNumber;
-            }
+                float symbolsNumber = width * height / tsize / tsize * 1.5f;
+                if (maxLen < symbolsNumber) {
+                    maxLen = symbolsNumber;
+                }
 
-            // multiplier consist of base and adapt speed
-            multiplier = (1 - userAdaptSpeed) + maxLen / len * userAdaptSpeed;
+                // multiplier consist of base and adapt speed
+                multiplier = (1 - userAdaptSpeed) + maxLen / len * userAdaptSpeed;
 
-            if (multiplier > 3f) {
-                multiplier = 3f;
+                if (multiplier > 3f) {
+                    multiplier = 3f;
+                }
+                System.out.println("multiplier " + multiplier + "\t(" + len + " / " + maxLen + " )");
+            } catch (Exception ex) {
+                System.out.println("run nex" + ex.getMessage());
             }
         }
     }
@@ -451,7 +485,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     private void startAutoScroll() {
         final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enough to infinity. if not enough you can restart timer in onFinish()
-        final float step = (getResources().getDisplayMetrics().density > 1)? getResources().getDisplayMetrics().density: 1;
+        final float step = (getResources().getDisplayMetrics().density > 1)? Math.round(getResources().getDisplayMetrics().density * 1): 1;
 
         final int scrollPeriod = 20; // every 20 ms scroll will happened. smaller values for smoother
         final int heightToScroll = (int) step; // will be scrolled to 20 px every time. smaller values for smoother scrolling
@@ -460,14 +494,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if(executorService != null)
         executorService.shutdown();
         executorService = Executors.newScheduledThreadPool(1);
-        executorService.scheduleWithFixedDelay(new MultiplierUpdate(), 0, scrollPeriod * 10, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(new MultiplierUpdate(), 0, scrollPeriod * 40, TimeUnit.MILLISECONDS);
+//        executorService.scheduleAtFixedRate(new MultiplierUpdate(), 0, scrollPeriod * 10, TimeUnit.MILLISECONDS);
 
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
                 lastValue += heightToScroll * getRate(autoScrollSpeed) * multiplier;
-                if (lastValue > step) {
+                if (lastValue > 1) {
                     moveBy = (int) lastValue;
                     itemList.scrollBy(0, moveBy);
+                    System.out.println("multiplier moveBy " + moveBy);
 
                     lastValue = lastValue - moveBy;
                     if (lastValue < minimalMove) {
