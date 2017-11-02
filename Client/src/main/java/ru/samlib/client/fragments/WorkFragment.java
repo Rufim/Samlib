@@ -745,13 +745,20 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 chooseDialog.setOnCommit(new OnCommit<Integer, ListChooseDialog>() {
                     @Override
                     public boolean onCommit(Integer value, ListChooseDialog dialog) {
-                        if(WorkParser.sendRate(work, value)) {
-                            PreferenceMaster master = new PreferenceMaster(getContext());
-                            String vote = master.getValue(R.string.preferenceVoteCoockie, "0");
-                            if (!vote.equals(Parser.getVoteCookie())) {
-                                master.putValue(R.string.preferenceVoteCoockie, Parser.getVoteCookie());
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(WorkParser.sendRate(work, value)) {
+                                    if(isAdded()) {
+                                        PreferenceMaster master = new PreferenceMaster(getContext());
+                                        String vote = master.getValue(R.string.preferenceVoteCoockie, "0");
+                                        if (!vote.equals(Parser.getVoteCookie())) {
+                                            master.putValue(R.string.preferenceVoteCoockie, Parser.getVoteCookie());
+                                        }
+                                    }
+                                }
                             }
-                        }
+                        }).start();
                         return true;
                     }
                 });
