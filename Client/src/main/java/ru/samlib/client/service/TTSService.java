@@ -14,6 +14,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -33,6 +35,8 @@ import ru.kazantsev.template.util.TextUtils;
 
 import javax.inject.Inject;
 import java.io.File;
+
+import static ru.samlib.client.receiver.TTSNotificationBroadcast.sendMessage;
 
 /**
  * Created by Dmitry on 01.09.2015.
@@ -57,6 +61,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     private ComponentName remoteComponentName;
     private RemoteControlClient remoteControlClient;
+    private PhoneStateListener phoneStateListener;
     private AudioManager audioManager;
     private static boolean currentVersionSupportBigNotification = false;
     private static boolean currentVersionSupportLockScreenControls = false;
@@ -135,6 +140,26 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVersionSupportBigNotification = AndroidSystemUtils.currentVersionSupportBigNotification();
         currentVersionSupportLockScreenControls = AndroidSystemUtils.currentVersionSupportLockScreenControls();
+        phoneStateListener = new PhoneStateListener() {
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                if (state == TelephonyManager.CALL_STATE_RINGING) {
+                    //Incoming call: Pause music
+                    if(ttsp.isSpeaking()) {
+                        sendMessage(TTSService.Action.PAUSE);
+                    }
+                } else if(state == TelephonyManager.CALL_STATE_IDLE) {
+                    //Not in call: Play music
+                } else if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                    //A call is dialing, active or on hold
+                }
+                super.onCallStateChanged(state, incomingNumber);
+            }
+        };
+        TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if(mgr != null) {
+            mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
         super.onCreate();
     }
 
@@ -233,7 +258,6 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                     return false;
                 }
             });
-
         } catch (Exception e) {
             Log.e(TAG, "Unexpeted error in TTS service", e);
         }
@@ -308,6 +332,10 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         if (ttsp != null) {
             ttsp.onStop();
             ttsp = null;
+        }
+        TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if(mgr != null) {
+            mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         }
         super.onDestroy();
     }

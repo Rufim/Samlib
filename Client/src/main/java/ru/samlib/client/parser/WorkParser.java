@@ -4,8 +4,7 @@ import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
 import ru.kazantsev.template.domain.Valuable;
-import ru.kazantsev.template.net.HTTPExecutor;
-import ru.kazantsev.template.net.Response;
+import ru.kazantsev.template.net.*;
 import ru.kazantsev.template.util.charset.CharsetDetector;
 import ru.kazantsev.template.util.charset.CharsetMatch;
 import org.jsoup.Jsoup;
@@ -17,8 +16,6 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
-import ru.kazantsev.template.net.CachedResponse;
-import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
@@ -508,7 +505,7 @@ public class WorkParser extends Parser {
     private static final String WORK_SEND_RATE = "/cgi-bin/votecounter";
 
     public enum RateParams {
-        FILE, DIR, BALL, OK;
+        FILE, DIR, BALL, COOK, VOTE, COOK_CHECK, OK;
     }
 
     public static boolean sendRate(Work work, int rate) {
@@ -516,25 +513,48 @@ public class WorkParser extends Parser {
             String link = Constants.Net.BASE_DOMAIN + WORK_SEND_RATE;
             String wlink = work.getLinkWithoutSuffix();
             String alink = work.getAuthor().getLink();
+            String voteCookie = getVoteCookie();
             Request request = new Request(link)
                     .setMethod(Request.Method.POST)
-                    .addHeader("Accept", ACCEPT_VALUE)
-                    .addHeader("User-Agent", USER_AGENT)
-                    .addHeader("Accept-Encoding", ACCEPT_ENCODING_VALUE)
-                    .addHeader("Host", Constants.Net.BASE_HOST)
-                    .addHeader("Referer", work.getFullLink())
-                    .addHeader("Content-Type", "application/x-www-form-urlencoded")
-                    .addHeader("Upgrade-Insecure-Requests", "1")
+                    .addHeader(Header.ACCEPT, ACCEPT_VALUE)
+                    .addHeader(Header.USER_AGENT, USER_AGENT)
+                    .addHeader(Header.ACCEPT_ENCODING, ACCEPT_ENCODING_VALUE)
+                    .addHeader(Header.HOST, Constants.Net.BASE_HOST)
+                    .addHeader(Header.REFERER, work.getFullLink())
+                    .addHeader(Header.CONTENT_TYPE, "application/x-www-form-urlencoded")
+                    .addHeader(Header.UPGRADE_INSECURE_REQUESTS, "1")
                     .setEncoding("CP1251")
                     .addParam(RateParams.FILE, wlink.substring(wlink.lastIndexOf('/') + 1))
                     .addParam(RateParams.DIR, alink.substring(1, alink.length() - 1))
                     .addParam(RateParams.BALL, String.valueOf(rate))
                     .addParam(RateParams.OK, "OK");
-            HTTPExecutor executor = new HTTPExecutor(request);
-            executor.execute();
-            return true;
+            if(voteCookie != null) {
+                request.addCookie(RateParams.VOTE, voteCookie);
+            }
+            Response response = request.execute();
+            if(voteCookie == null) {
+                if (response.getHeaders().containsKey(Header.SET_COOKIE)) {
+                    voteCookie = HTTPExecutor.parseParamFromHeader(response.getHeaders().get(Header.SET_COOKIE).get(0), RateParams.VOTE);
+                    setVoteCookie(voteCookie);
+                }
+                Element element = Jsoup.parse(response.getRawContent()).head().select("meta[http-equiv=refresh]").first();
+                if (element != null) {
+                    String content = element.attr("content");
+                    Request redirectedRequest = new Request(Constants.Net.BASE_DOMAIN + content.substring(content.indexOf("=") + 1), true);
+                    redirectedRequest.getHeaders().putAll(request.getHeaders());
+                    redirectedRequest.setFollowRedirect(true);
+                    if (voteCookie != null) {
+                        redirectedRequest.addCookie(RateParams.VOTE, voteCookie);
+                    } else {
+                        setVoteCookie(request.getParam(RateParams.COOK));
+                        redirectedRequest.addCookie(RateParams.VOTE, getVoteCookie());
+                    }
+                    redirectedRequest.execute();
+                }
+            }
         } catch (Exception e) {
             return false;
         }
+        return true;
     }
 }
