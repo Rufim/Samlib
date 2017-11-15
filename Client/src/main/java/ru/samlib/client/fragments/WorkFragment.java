@@ -522,6 +522,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     System.out.println("mu startRation " + startRatio + " (" + first + ")");
                 }
 
+                // ----------------------- LAST VISIBLE -------------------------------------------
                 // index of last displayed view
                 int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
                 len = 1;
