@@ -78,6 +78,9 @@ public class SectionActivity extends NavigationActivity<String> {
         if(!Parser.hasCoockieComment()) {
             Parser.setCommentCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceCommentCoockie), null));
         }
+        if(!Parser.hasCoockieVote()) {
+            Parser.setVoteCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceVoteCoockie), null));
+        }
     }
 
     @Override

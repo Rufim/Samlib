@@ -46,7 +46,7 @@ public abstract class Parser {
     protected Set<Request> loadedSet = new HashSet<>();
     protected static boolean cached = false;
     protected static String commentCookie = null;
-
+    protected static String voteCookie = null;
 
     public void setPath(String path) throws MalformedURLException {
         if (path == null) {
@@ -130,6 +130,14 @@ public abstract class Parser {
         return commentCookie;
     }
 
+    public static String getVoteCookie() {
+        return voteCookie;
+    }
+
+    public static void setVoteCookie(String voteCookie) {
+        Parser.voteCookie = voteCookie;
+    }
+
     public static void dropCache() {
         parserCache.evictAll();
     }
@@ -159,6 +167,10 @@ public abstract class Parser {
 
     public static boolean hasCoockieComment() {
         return commentCookie != null;
+    }
+
+    public static boolean hasCoockieVote() {
+        return voteCookie != null;
     }
 
     public static boolean isCachedMode() {

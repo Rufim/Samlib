@@ -16,6 +16,7 @@
     <string name="preferenceObservableAuto">ObservableAuto</string>
     <string name="preferenceObservableAddLastAuthor">ObservableAddLastAuthor</string>
 
+    <string name="preferenceVoteCoockie">VoteCoockie</string>
     <string name="preferenceCommentCoockie">CommentCoockie</string>
     <string name="preferenceCommentName">CommentName</string>
     <string name="preferenceCommentEmail">CommentEmail</string>

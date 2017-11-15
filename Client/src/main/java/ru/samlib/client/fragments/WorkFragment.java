@@ -339,14 +339,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
     }
 
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-        isStopped = true;
+    private void saveCurrentPosition(int index) {
         if (work != null && work.isParsed()) {
             try {
-                int index = findFirstVisibleItemPosition(false);
                 int size = adapter.getItems().size();
                 if (size > index) {
                     setBookmark(work, adapter.getItems().get(index), index);
@@ -356,6 +351,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 Log.e(TAG, "Unknown exception", e);
             }
         }
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+        isStopped = true;
+        saveCurrentPosition(findFirstVisibleItemPosition(false));
         // sanity check for null as this is a public method
         if (isAdded()) {
             getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -726,6 +729,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             case PAUSE:
                 GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
                 GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
+                saveCurrentPosition(lastIndent);
                 break;
         }
     }
@@ -900,7 +904,20 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 chooseDialog.setOnCommit(new OnCommit<Integer, ListChooseDialog>() {
                     @Override
                     public boolean onCommit(Integer value, ListChooseDialog dialog) {
-                        WorkParser.sendRate(work, value);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(WorkParser.sendRate(work, value)) {
+                                    if(isAdded()) {
+                                        PreferenceMaster master = new PreferenceMaster(getContext());
+                                        String vote = master.getValue(R.string.preferenceVoteCoockie, "0");
+                                        if (!vote.equals(Parser.getVoteCookie())) {
+                                            master.putValue(R.string.preferenceVoteCoockie, Parser.getVoteCookie());
+                                        }
+                                    }
+                                }
+                            }
+                        }).start();
                         return true;
                     }
                 });

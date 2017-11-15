@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.kazantsev.template.domain.Valuable;
 import ru.kazantsev.template.net.HTTPExecutor;
+import ru.kazantsev.template.net.Header;
 import ru.kazantsev.template.net.Response;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Comment;
@@ -119,9 +120,9 @@ public class CommentsParser extends PageParser<Comment> {
         if (commentCookie != null) return commentCookie;
         try {
             Response response = new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())
-                    .addHeader("Accept", ACCEPT_VALUE)
-                    .addHeader("User-Agent", USER_AGENT)).execute();
-            String coockie = response.getHeaders().get("Set-Cookie").get(0);
+                    .addHeader(Header.ACCEPT, ACCEPT_VALUE)
+                    .addHeader(Header.USER_AGENT, USER_AGENT)).execute();
+            String coockie = response.getHeaders().get(Header.SET_COOKIE).get(0);
             return commentCookie = HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
         } catch (Exception e) {
             return null;
