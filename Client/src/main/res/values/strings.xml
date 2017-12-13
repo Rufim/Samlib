@@ -121,16 +121,17 @@
     <string name="example_comment">
         <![CDATA[
             &nbsp;&nbsp;&gt;<b> </b>&gt;<b> <b><i><font color="6060b0">963.Rufim</font></i></b></b><br>
-            &nbsp;&nbsp;&gt;<b>Фу ***. ГГ какой-то очередной моральный уродец. С каких пор это стало круто хз. Ладно, урод, а еще паинькой притворяется. Таких тварей давить надо в зародыше. </b><br>
-            &nbsp;&nbsp;А точно не вас давить, тупых моралефагов? Люди они разные, а не как в сказках<br>
+            &nbsp;&nbsp;&gt;<b>Фу ***. ssdgmsdklndlnsdjkngksd g;sdjkng;sdjnfg;sdk fgs d jfgnsd;lfgn;dlgsd флвждфтажвтажпт дж вжапыв </b><br>
+            &nbsp;&nbsp;Дапвапвыапвы апываплдваоыждлпоывждыоап вапвыпджл вапывпывапв<br>
             &nbsp;&nbsp;<br>
             &nbsp;&nbsp;
         ]]>
     </string>
     <string name="help">
         <![CDATA[
-           Это тестовая верия клиента для сайта Самиздат под Андройд.
-            По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a>
+           Это тестовая верия клиента для сайта Самиздат под Андройд.</br>
+           По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a></br>
+           <a href="https://htmlpreview.github.io/?https://github.com/Rufim/Samlib/blob/bugfix/privacy_policy.html">Политика приватности. Для гугла.</a>
         ]]>
     </string>
     <string name="comments_goto">Перейти</string>
