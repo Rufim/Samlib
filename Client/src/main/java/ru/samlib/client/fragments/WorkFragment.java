@@ -678,15 +678,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         releaseOrientation();
     }
 
-    private void safeCheckMenuItem(@IdRes int id, boolean state) {
-        if (getBaseActivity() != null && getBaseActivity().getToolbar() != null) {
-            MenuItem item = getBaseActivity().getToolbar().getMenu().findItem(id);
-            if (item != null) {
-                item.setChecked(state);
-            }
-        }
-    }
-
     public void startSpeak(int position, int offset) {
         ownTTSService = true;
         WorkFragment.this.selectText(lastIndent, null);

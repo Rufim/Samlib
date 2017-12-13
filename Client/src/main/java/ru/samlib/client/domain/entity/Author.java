@@ -80,7 +80,7 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     boolean parsed = false;
 
     @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "works")
-    public List<Work> loadWorks() {
+    public synchronized List<Work> loadWorks() {
         if (works == null || works.isEmpty()) {
             works =  SQLite.select()
                     .from(Work.class)
@@ -92,12 +92,12 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     }
 
     @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "links")
-    public List<Link> loadLinks() {
+    public synchronized List<Link> loadLinks() {
         return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
     }
 
     @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "categories")
-    public List<Category> loadCategories() {
+    public synchronized List<Category> loadCategories() {
         return categories = dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
     }
 

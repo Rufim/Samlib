@@ -3,6 +3,7 @@ package ru.samlib.client.fragments;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
@@ -15,6 +16,7 @@ import android.view.*;
 import android.widget.*;
 import com.annimon.stream.Stream;
 
+import net.vrallev.android.cat.Cat;
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -87,8 +89,14 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public AuthorFragment() {
         setDataSource((skip, size) -> {
             if (skip != 0) return null;
-            while (author == null) {
+            long startTime = System.currentTimeMillis();
+            long time = startTime;
+            while (author == null || author.getLink() == null) {
                 SystemClock.sleep(100);
+                time += 100;
+                if(time - startTime > 15000) {
+                    return new ArrayList<>();
+                }
             }
             if (!author.isParsed()) {
                 new AuthorParser(author).parse();
@@ -112,7 +120,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
     protected void onDataTaskException(Exception ex) {
         if(ex instanceof EOFException) {
             ErrorFragment.show(this, R.string.author_parse_error, ex);
-            ACRA.getErrorReporter().handleException(ex, false);
         } else if(ex instanceof  AuthorParser.AuthorNotExistException) {
             if(author != null && author.isEntity()) {
                 author.setDeleted(true);
@@ -142,6 +149,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         inflater.inflate(R.menu.author, menu);
         if (author.isParsed()) {
             MenuItem item = menu.findItem(R.id.action_author_observable);
+            item.setEnabled(true);
             if (author.isObservable()) {
                 item.setChecked(true);
             } else {
@@ -160,18 +168,60 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_author_observable:
+                item.setEnabled(false);
                 if (item.isChecked()) {
-                    author.setObservable(false);
-                    new Thread(() -> databaseService.deleteAuthor(author)).start();
-                    item.setChecked(false);
-                    item.setEnabled(false);
-                    author = new Author(author.getLink());
-                    refreshData(true);
+                    new AsyncTask<Void,Void,Boolean>(){
+
+                        @Override
+                        protected Boolean doInBackground(Void... voids) {
+                            try {
+                                author.setObservable(false);
+                                databaseService.deleteAuthor(author);
+                                return true;
+                            } catch (Throwable ignored) {
+                                Cat.e(ignored);
+                            }
+                            return false;
+                        }
+
+                        @Override
+                        protected void onPostExecute(Boolean result) {
+                            if(result) {
+                                safeCheckMenuItem(R.id.action_author_observable, false);
+                                author = new Author(author.getLink());
+                                refreshData(true);
+                            } else if(isAdded()){
+                                GuiUtils.toast(getContext(), R.string.author_invalid_intent);
+                            }
+                            safeInvalidateOptionsMenu();
+                        }
+                    }.execute();
                 } else {
-                    new Thread(() -> databaseService.insertObservableAuthor(author)).start();
-                    item.setChecked(true);
+                    new AsyncTask<Void,Void,Boolean>(){
+
+                        @Override
+                        protected Boolean doInBackground(Void... voids) {
+                            try {
+                                databaseService.insertObservableAuthor(author);
+                                return true;
+                            } catch (Throwable ignored) {
+                                Cat.e(ignored);
+                            }
+                            return false;
+                        }
+
+                        @Override
+                        protected void onPostExecute(Boolean result) {
+                            if(result) {
+                                safeCheckMenuItem(R.id.action_author_observable, true);
+                                safeEnableMenuItem(R.id.action_author_observable, true);
+                            } else if(isAdded()){
+                                GuiUtils.toast(getContext(), R.string.author_insert_action);
+                            }
+                            safeInvalidateOptionsMenu();
+                        }
+                    }.execute();
                 }
-                safeInvalidateOptionsMenu();
                 return true;
             case R.id.action_author_mode:
                 item.setChecked(simpleView = !item.isChecked());
@@ -229,9 +279,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
     public void onStop() {
         EventBus.getDefault().unregister(this);
         super.onStop();
-        if(author.isHasUpdates() && !categoryUpdate.isHasUpdates()) {
-            author.setHasUpdates(false);
-            databaseService.doAction(DatabaseService.Action.UPDATE, author);
+        try {
+            if(author.isHasUpdates() && !categoryUpdate.isHasUpdates()) {
+                author.setHasUpdates(false);
+                databaseService.doAction(DatabaseService.Action.UPDATE, author);
+            }
+        } catch (Exception ex) {
         }
     }
 
@@ -320,7 +373,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
         } else if (link != null && (author == null || !author.getLink().equals(link))) {
             intentAuthor = new Author(link);
         }
-        if (intentAuthor != null) {
+        if (intentAuthor != null && intentAuthor.getLink() != null) {
             Author entity;
             if ((entity = databaseService.getAuthor(intentAuthor.getLink())) != null) {
                 author = entity;
@@ -329,9 +382,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
             clearData();
         }
-        if (author.isParsed()) {
-            safeInvalidateOptionsMenu();
-            EventBus.getDefault().post(new AuthorParsedEvent(author));
+        if(author == null || author.getLink() == null) {
+            ErrorFragment.show(this, R.string.author_invalid_intent);
+        } else {
+            if (author.isParsed()) {
+                safeInvalidateOptionsMenu();
+                EventBus.getDefault().post(new AuthorParsedEvent(author));
+            }
         }
         if(categoryUpdate == null) {
             categoryUpdate = new Category();
