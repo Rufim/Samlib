@@ -129,9 +129,9 @@
     </string>
     <string name="help">
         <![CDATA[
-           Это тестовая верия клиента для сайта Самиздат под Андройд.</br>
-           По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a></br>
-           <a href="https://htmlpreview.github.io/?https://github.com/Rufim/Samlib/blob/bugfix/privacy_policy.html">Политика приватности. Для гугла.</a>
+           Это тестовая верия клиента для сайта Самиздат под Андройд.<br/>
+           По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a><br/>
+            <a href="https://htmlpreview.github.io/?https://github.com/Rufim/Samlib/blob/bugfix/privacy_policy.html"> Политика приватности.</a> Для гугла.
         ]]>
     </string>
     <string name="comments_goto">Перейти</string>

@@ -155,13 +155,14 @@ public class AuthorFragment extends ListFragment<Linkable> {
             } else {
                 item.setChecked(false);
             }
+            menu.findItem(R.id.action_author_mode).setChecked(simpleView);
         } else {
             menu.removeItem(R.id.action_author_observable);
+            menu.removeItem(R.id.action_author_mode);
         }
         if (!author.isObservable() || !author.isParsed()) {
             menu.removeItem(R.id.action_author_make_all_visited);
         }
-        menu.findItem(R.id.action_author_mode).setChecked(simpleView);
     }
 
     @Override
