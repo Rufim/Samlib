@@ -157,6 +157,9 @@
     <string name="author_not_exist">Раздел не существует!</string>
     <string name="author_deleted">Раздел удалён.</string>
     <string name="author_parse_error">Ошибка во время парсига.</string>
+    <string name="author_invalid_intent">Ошибка! Не могу прочитать url автора.</string>
+    <string name="author_delete_action">Ошибка при удалении.</string>
+    <string name="author_insert_action">Ошибка при удалении.</string>
     <string name="history_clean">Очистить историю</string>
     <string name="history_only_locked">Только закреплённые</string>
     <string name="history_lock">Закрепить/открепить в истории</string>

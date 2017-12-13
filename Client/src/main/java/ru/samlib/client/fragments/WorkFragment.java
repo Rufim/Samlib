@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
 import android.support.v4.content.FileProvider;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -22,18 +23,24 @@ import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import net.nightwhistler.htmlspanner.FontFamily;
 import net.nightwhistler.htmlspanner.FontResolver;
 import net.nightwhistler.htmlspanner.SystemFontResolver;
+
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
+
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+
 import org.greenrobot.eventbus.Subscribe;
 import ru.kazantsev.template.activity.BaseActivity;
+
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
@@ -64,8 +71,14 @@ import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
 import java.io.*;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -456,14 +469,160 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return ((float) seekBar.getProgress() / 100f);
     }
 
+    float multiplier = 1;
+    double lastValue = 0;
+    int moveBy = 0;
+    float userAdaptSpeed = 0.9f; // 0 - 1 range part of multiplier will be used
+    float maxLen = 0;
+    int len = 1;
+    float tsize = 0;
+    HtmlSpanner spanner = new HtmlSpanner();
+
+
+//    HashMap<Integer, Integer> textSizes = new HashMap<>();
+    SparseIntArray textSizes = new SparseIntArray();
+
+    final float minimalMove = 0.01f;
+
+    /**
+     * Class updates the scroll speed multiplier by approximate text visible on the screen
+     */
+    private class MultiplierUpdate implements Runnable {
+
+        @Override
+        public void run() {
+            if(isStopped) {
+                executorService.shutdown();
+                executorService = null;
+                return;
+            }
+            try {
+                final int[] elementCoords = new int[2];
+                // index of first displayed view
+                int first, testFirst = 0;
+                //-------------------------------------------- FIRST VISIBLE --------------------
+                // method do not return first visible if part already scrolled up from screen
+                first = ((LinearLayoutManager) itemList.getLayoutManager()).findFirstVisibleItemPosition();
+                TextView firstTextView, checkTextView;
+                // what part of textView is visible
+                double startRatio = 0;
+                double endRatio = 0;
+
+                // check if previous textView still partly visible
+                if (first > 0) {
+                    testFirst = first - 1;
+                    checkTextView = WorkFragment.this.getTextViewIndent(testFirst);
+                    if (checkTextView != null) {
+                        checkTextView.getLocationInWindow(elementCoords);
+                        if (elementCoords[1] < GuiUtils.getScreenSize(itemList.getContext()).y - 100 && checkTextView.getBottom() + elementCoords[1] > 0) {
+                            first--;
+                        }
+                    }
+                }
+                firstTextView = WorkFragment.this.getTextViewIndent(first);
+                if (firstTextView != null) {
+                    startRatio = getNotHiddenLines(firstTextView) / firstTextView.getLineCount();
+                    System.out.println("mu startRation " + startRatio + " (" + first + ")");
+                }
+
+                // ----------------------- LAST VISIBLE -------------------------------------------
+                // index of last displayed view
+                int last = ((LinearLayoutManager) itemList.getLayoutManager()).findLastVisibleItemPosition();
+                len = 1;
+
+                TextView textView = null;
+                for (int i = first; i <= last; i++) {
+                    textView = getTextViewIndent(i);
+                    if (textView != null) break;
+                }
+                if (textView == null) return;
+                int width = textView.getWidth();
+                int height = itemList.getHeight();
+                if (tsize == 0) {
+                    tsize = textView.getTextSize();
+                }
+
+                checkTextView = WorkFragment.this.getTextViewIndent(last);
+                if (checkTextView == null || checkTextView.getWindowToken() == null
+                        || (last > first + 1 && getNotHiddenLines(checkTextView) <= 0)) {
+                    last--;
+                }
+                checkTextView = WorkFragment.this.getTextViewIndent(last);
+                if (checkTextView != null) {
+                    endRatio = getNotHiddenLines(checkTextView) / checkTextView.getLineCount();
+                    System.out.println("mu end" + last + " top bottom Y " + checkTextView.getTop() + "/" + checkTextView.getBottom() + " koef" + endRatio);
+                }
+
+
+                for (int i = first; i <= last; i++) {
+//                textSizes.putIfAbsent(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+                    if (textSizes.indexOfKey(i) < 0) {
+                        textSizes.put(i, spanner.fromHtml(adapter.getItems().get(i)).toString().length());
+//                        adapter.getItems().set(i, adapter.getItems().get(i) + " _" + i);
+                    }
+                    if (textSizes.get(i) > 4) {
+                        TextView iTextView = getTextViewIndent(i);
+                        if (iTextView != null) {
+                            if (i == first) {
+                                len += startRatio * textSizes.get(i);
+                            } else if (i == last) {
+                                len += endRatio * textSizes.get(i);
+                            } else {
+                                len += textSizes.get(i);
+                            }
+                        }
+                    }
+                }
+
+                float symbolsNumber = width * height / tsize / tsize * 1.5f;
+                if (maxLen < symbolsNumber) {
+                    maxLen = symbolsNumber;
+                }
+
+                // multiplier consist of base and adapt speed
+                multiplier = (1 - userAdaptSpeed) + maxLen / len * userAdaptSpeed;
+
+                if (multiplier > 4f) {
+                    multiplier = 4f;
+                }
+                System.out.println("multiplier " + multiplier + "\t(" + len + " / " + first + "-" + last + ")");
+            } catch (Exception ex) {
+                System.out.println("run nex" + ex.getMessage());
+            }
+        }
+    }
+
+    ScheduledExecutorService executorService;
+
     private void startAutoScroll() {
-        final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enouth to infinity. if not enought you can restart timer in onFinish()
-        final int scrollPeriod = 20; // every 20 ms scoll will happened. smaller values for smoother
-        final int heightToScroll = 20; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        final long totalScrollTime = Long.MAX_VALUE; //total scroll time. I think that 300 000 000 years is close enough to infinity. if not enough you can restart timer in onFinish()
+        final float step = (getResources().getDisplayMetrics().density > 1)? Math.round(getResources().getDisplayMetrics().density * 1): 1;
+
+        final int scrollPeriod = 20; // every 20 ms scroll will happened. smaller values for smoother
+        final int heightToScroll = (int) step; // will be scrolled to 20 px every time. smaller values for smoother scrolling
+        // formula 1000/25*2 = 80px in sec
         if (autoScroller != null) autoScroller.cancel();
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+        executorService = Executors.newScheduledThreadPool(1);
+        executorService.scheduleWithFixedDelay(new MultiplierUpdate(), 0, scrollPeriod * 20, TimeUnit.MILLISECONDS);
+//        executorService.scheduleAtFixedRate(new MultiplierUpdate(), 0, scrollPeriod * 10, TimeUnit.MILLISECONDS);
+
         autoScroller = new CountDownTimer(totalScrollTime, scrollPeriod) {
             public void onTick(long millisUntilFinished) {
-                itemList.scrollBy(0, (int) (heightToScroll * (getRate(autoScrollSpeed) * 0.27)));
+                lastValue += heightToScroll * getRate(autoScrollSpeed) * multiplier;
+                if (lastValue > 1) {
+                    moveBy = (int) lastValue;
+                    itemList.scrollBy(0, moveBy);
+//                    System.out.println("multiplier moveBy " + moveBy);
+
+                    lastValue = lastValue - moveBy;
+                    if (lastValue < minimalMove) {
+                        lastValue = 0;
+                    }
+                }
+
             }
 
             public void onFinish() {
@@ -517,15 +676,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         GuiUtils.setVisibility(VISIBLE, speakLayout, R.id.btnPlay);
         GuiUtils.setVisibility(GONE, speakLayout, R.id.btnPause);
         releaseOrientation();
-    }
-
-    private void safeCheckMenuItem(@IdRes int id, boolean state) {
-        if (getBaseActivity() != null && getBaseActivity().getToolbar() != null) {
-            MenuItem item = getBaseActivity().getToolbar().getMenu().findItem(id);
-            if (item != null) {
-                item.setChecked(state);
-            }
-        }
     }
 
     public void startSpeak(int position, int offset) {
@@ -1098,6 +1248,43 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             visibleLines = textView.getLineCount();
         } else {
             visibleLines = (height + difY) / lineHeight;
+        }
+        return visibleLines;
+    }
+
+    private double getNotHiddenLines(TextView textView) {
+        if (textView == null) {
+            return 0;
+        }
+        int screenHeight = GuiUtils.getScreenSize(itemList.getContext()).y;
+        int scrolled = itemList.getScrollY();
+        int totalHeight = screenHeight + scrolled;
+        int visibleLines;
+
+        int[] location = new int[2];
+        textView.getLocationInWindow(location);
+//
+        if (textView.getTop() > totalHeight) {
+            return 0;
+        }
+        if (textView.getBottom() < 0) {
+            return 0;
+        }
+        int beforeHeight = 0, afterHeight = 0;
+        if (location[1] >= 0) {
+            if (totalHeight < textView.getBottom() + location[1]) {
+                afterHeight = Math.abs(screenHeight - location[1] - textView.getBottom());
+            }
+        } else if (screenHeight - location[1] < textView.getBottom()){
+            afterHeight = Math.abs(screenHeight - location[1] - textView.getBottom());
+        }
+        if (location[1] < 0) {
+            beforeHeight = Math.abs(location[1]);
+        }
+        if (beforeHeight == 0 && afterHeight == 0) {
+            visibleLines = textView.getLineCount();
+        } else {
+            visibleLines = textView.getLineCount() * (textView.getHeight() - beforeHeight - afterHeight) / textView.getHeight();
         }
         return visibleLines;
     }
