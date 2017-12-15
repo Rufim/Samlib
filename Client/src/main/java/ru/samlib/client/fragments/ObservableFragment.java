@@ -106,10 +106,10 @@ public class ObservableFragment extends ListFragment<Author> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), true, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.NONE, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
                             chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
                             chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
-                            chooserDialogImport.setAllowRootDir(true);
+                            chooserDialogImport.setAllowRootDir(false);
                             chooserDialogImport.setFileTypes("txt");
                             chooserDialogImport.setOnChooseFileListener(chosenFile -> {
                                 if (chosenFile != null) {
@@ -172,7 +172,7 @@ public class ObservableFragment extends ListFragment<Author> {
                             DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
                             chooserDialogExport.setTitle(getString(R.string.observable_export) + "...");
                             chooserDialogExport.setIcon(android.R.drawable.ic_menu_save);
-                            chooserDialogExport.setAllowRootDir(true);
+                            chooserDialogExport.setAllowRootDir(false);
                             chooserDialogExport.setFileTypes("txt");
                             chooserDialogExport.setOnChooseFileListener(chosenFile -> {
                                 if (chosenFile != null) {

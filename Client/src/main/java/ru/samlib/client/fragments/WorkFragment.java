@@ -382,7 +382,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public List<Pair<Integer, Integer>> search(String query) {
         query = query.toLowerCase();
         List<Pair<Integer, Integer>> indexes = new ArrayList<>();
-        for (int i = 0; i < adapter.getItems().size(); i++) {
+        for (int i = findFirstVisibleItemPosition(false); i < adapter.getItems().size(); i++) {
             final String text = adapter.getItems().get(i).toLowerCase();
             if (text.contains(query)) {
                 for (TextUtils.Piece piece : TextUtils.searchAll(text, query)) {

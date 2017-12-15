@@ -174,8 +174,8 @@
     <string name="observable_add_link_or_author_added">Автор успешно добавлен</string>
     <string name="observable_add_link_or_author_error">Вы ничего не ввели</string>
     <string name="observable_add_link_or_author_error_link">Не могу найти автора по ссылке:</string>
-    <string name="observable_import">Импорт</string>
-    <string name="observable_export">Экспорт</string>
+    <string name="observable_import">Импорт в</string>
+    <string name="observable_export">Экспорт из</string>
     <string name="observable_check_updates">Проверить обновления</string>
     <string name="observable_link_or_author_hint">Введите имя автора или ссылку (на-р: /k/kazancew_d)</string>
     <string name="observable_link_or_author_title">Добавить</string>
