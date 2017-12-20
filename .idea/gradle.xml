@@ -8,7 +8,7 @@
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/../AndroidTemplate/app" />
+            <option value="C:/AndroidTemplate/app" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Client" />
           </set>

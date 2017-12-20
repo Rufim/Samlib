@@ -4,9 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/Samlib.iml" filepath="$PROJECT_DIR$/Samlib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../AndroidTemplate/app/template.iml" filepath="$PROJECT_DIR$/../AndroidTemplate/app/template.iml" />
-      <module fileurl="file://E:/AndroidTemplate/app/template.iml" filepath="E:/AndroidTemplate/app/template.iml" />
       <module fileurl="file://C:/AndroidTemplate/app/template.iml" filepath="C:/AndroidTemplate/app/template.iml" />
+      <module fileurl="file://E:/AndroidTemplate/app/template.iml" filepath="E:/AndroidTemplate/app/template.iml" />
     </modules>
   </component>
 </project>

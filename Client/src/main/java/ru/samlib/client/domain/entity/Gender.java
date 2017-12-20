@@ -11,7 +11,7 @@ public enum Gender implements Serializable {
 
     MALE, FEMALE, UNDEFINED;
 
-    public static final String MALE_REGEX = "(ов)|(ев)|(ин)|(ын)|(ой)|(цкий)|(ский)|(цкой)|(ской)";
+    public static final String MALE_REGEX = "(ик)|(ов)|(ев)|(ин)|(ын)|(ой)|(цкий)|(ский)|(цкой)|(ской)";
     public static final String FEMALE_REGEX = "(ова)|(ева)|(ина)|(ая)|(ия)|(яя)|(екая)|(цкая)|(ская)";
     public static final Pattern male_pattern = Pattern.compile(".*(" + MALE_REGEX + ")",
             Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);

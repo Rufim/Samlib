@@ -185,11 +185,11 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     public Gender getGender() {
         if (gender != null) return gender;
         String lastName = null;
-        if (shortName == null && fullName != null) {
+        if (fullName != null) {
             String names[] = fullName.split(" ");
             lastName = names[0];
         }
-        if (shortName != null && fullName == null) {
+        if (shortName != null && lastName == null) {
             String names[] = shortName.split(" ");
             lastName = names[0];
         }
