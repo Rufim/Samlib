@@ -92,7 +92,7 @@ public class RateFragment extends ListFragment<Work> {
             expertRateTextView.setText(work.getExpertRate().toString());
             String rate = "";
             if (work.getRate() != null) {
-                rate += work.getRate() + "*" + work.getKudoed();
+                rate += work.getRate() + "*" + work.getVotes();
             }
             peopleRateTextView.setText(rate);
             List<String> subtitle = new ArrayList<>();

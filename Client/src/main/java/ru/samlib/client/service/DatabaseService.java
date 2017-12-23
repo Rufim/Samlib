@@ -237,7 +237,7 @@ public class DatabaseService {
         updateField(into::setShortName, from.getShortName());
         updateField(into::setLink, from.getLink());
         updateField(into::setRate, from.getRate());
-        updateField(into::setKudoed, from.getKudoed());
+        updateField(into::setVotes, from.getVotes());
         updateField(into::setAbout, from.getAbout());
         updateField(into::setDateBirth, from.getDateBirth());
         updateField(into::setAnnotation, from.getAnnotation());

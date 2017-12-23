@@ -67,7 +67,7 @@ public class ParserUtils {
             if (rate != null) {
                 String[] rates = rate.split("\\*");
                 work.setRate(new BigDecimal(rates[0]));
-                work.setKudoed(Integer.parseInt(rates[1]));
+                work.setVotes(Integer.parseInt(rates[1]));
             }
         }
         String ownText = TextUtils.trim(el.ownText().replace("Оценка:", ""));
@@ -171,7 +171,7 @@ public class ParserUtils {
             case "Рейтинг:":
                 split = content.split("\\*");
                 author.setRate(new BigDecimal(split[0]));
-                author.setKudoed(Integer.parseInt(split[1]));
+                author.setVotes(Integer.parseInt(split[1]));
                 break;
             case "Посетителей за год:":
                 author.setViews(Integer.parseInt(content));

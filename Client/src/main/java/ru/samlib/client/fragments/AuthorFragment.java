@@ -599,7 +599,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             }
         }
         if (work.getRate() != null) {
-            rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
+            rate_and_size += " " + work.getRate() + "*" + work.getVotes();
         }
         GuiUtils.setText(workView.findViewById(R.id.work_item_title), SamlibUtils.generateText(work.getTitle(), rate_and_size, GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations), 0.7f));
         Button illustrationButton = (Button) workView.findViewById(R.id.illustration_button);
@@ -790,7 +790,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         rate_and_size += work.getSize() + "k";
                     }
                     if (work.getRate() != null) {
-                        rate_and_size += " " + work.getRate() + "*" + work.getKudoed();
+                        rate_and_size += " " + work.getRate() + "*" + work.getVotes();
                     }
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_rate_and_size), rate_and_size);
                     GuiUtils.setTextOrHide(work_row.findViewById(R.id.work_item_subtitle), work.getTypeName());

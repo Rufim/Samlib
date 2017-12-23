@@ -60,10 +60,12 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     Integer sizeDiff;
     @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal rate;
-    Integer kudoed;
+    @Column(name = "kudoed")
+    Integer votes;
     @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal expertRate;
-    Integer expertKudoed;
+    @Column(name = "expertKudoed")
+    Integer expertVotes;
     @Column(typeConverter = ListGenreConverter.class)
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;

@@ -388,7 +388,7 @@ public class AuthorParser extends Parser {
         into.setTitle(from.getTitle());
         into.setLink(from.getLink());
         into.setRate(from.getRate());
-        into.setKudoed(from.getKudoed());
+        into.setVotes(from.getVotes());
         into.setGenres(from.getGenres());
         into.setType(from.getType());
         into.setAnnotationBlocks(from.getAnnotationBlocks());

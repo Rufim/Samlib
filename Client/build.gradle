@@ -6,8 +6,8 @@ ext {
     compileSdkProjectVersion = 27
     buildToolsProjectVersion = '27.0.2'
     supportLibraryVersion = '27.0.2'
-    versionProjectCode = 23
-    versionProjectName = "0.6.9.1"
+    versionProjectCode = 24
+    versionProjectName = "0.6.9.2"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     dbflowVersion = '4.1.1'

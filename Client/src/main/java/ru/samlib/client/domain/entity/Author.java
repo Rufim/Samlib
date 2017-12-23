@@ -58,7 +58,8 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     Integer workCount;
     @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal rate;
-    Integer kudoed;
+    @Column(name = "kudoed")
+    Integer votes;
     Integer views;
     String about;
     String sectionAnnotation;
@@ -135,7 +136,7 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
         this.size = other.getSize();
         this.workCount = other.getWorkCount();
         this.rate = other.getRate();
-        this.kudoed = other.getKudoed();
+        this.votes = other.getVotes();
         this.views = other.getViews();
         this.about = other.getAbout();
         this.sectionAnnotation = other.sectionAnnotation;
