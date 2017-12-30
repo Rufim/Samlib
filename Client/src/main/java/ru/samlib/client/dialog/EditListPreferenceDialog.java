@@ -16,6 +16,7 @@ import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.dialog.BaseDialog;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.kazantsev.template.view.helper.DividerItemDecoration;
 import ru.samlib.client.R;
 import ru.samlib.client.fragments.SettingsFragment;
@@ -62,7 +63,7 @@ public class EditListPreferenceDialog extends BaseDialog {
         rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_list_preferemce, null);
         ButterKnife.bind(this, rootView);
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
-        if (preferences.contains(preference.key)) {
+        if (TextUtils.notEmpty(preference.key) &&  preferences.contains(preference.key)) {
             selected = getValueKey(preference, preferences.getAll().get(preference.key));
         } else {
             selected = getValueKey(preference, preference.defValue);
@@ -127,20 +128,23 @@ public class EditListPreferenceDialog extends BaseDialog {
                 {
                     Object value = preference.keyValue.get(selected);
                     if(value != null) {
-                        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
-                        // add others of need
-                        if (value instanceof Integer) {
-                            editor.putInt(preference.key, (Integer) value);
-                        } else if (value instanceof Float) {
-                            editor.putFloat(preference.key, (Float) value);
-                        } else if (value instanceof Enum) {
-                            editor.putString(preference.key, ((Enum) value).name());
-                        } else {
-                            editor.putString(preference.key, value.toString());
+                        SharedPreferences.Editor editor = null;
+                        if(TextUtils.notEmpty(preference.key)) {
+                            editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                            // add others of need
+                            if (value instanceof Integer) {
+                                editor.putInt(preference.key, (Integer) value);
+                            } else if (value instanceof Float) {
+                                editor.putFloat(preference.key, (Float) value);
+                            } else if (value instanceof Enum) {
+                                editor.putString(preference.key, ((Enum) value).name());
+                            } else {
+                                editor.putString(preference.key, value.toString());
+                            }
                         }
                         if (onCommit != null) {
                             if (onCommit.onCommit(value, EditListPreferenceDialog.this)) {
-                                editor.commit();
+                                if (TextUtils.notEmpty(preference.key)) {editor.commit();}
                                 d.dismiss();
                             }
                         }

@@ -4,6 +4,11 @@
     <item android:id="@+id/action_comments_add_new"
           android:title="@string/comments_add_new"
           android:icon="@drawable/ic_send_white_24dp"
+          android:orderInCategory="2"
+          app:showAsAction="always"/>
+    <item android:id="@+id/action_comments_choose_archive"
+          android:title="@string/comments_choose_archive"
+          android:icon="@drawable/ic_action_archive"
           android:orderInCategory="1"
           app:showAsAction="always"/>
 </menu>

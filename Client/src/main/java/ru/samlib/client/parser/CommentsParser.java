@@ -30,6 +30,7 @@ public class CommentsParser extends PageParser<Comment> {
 
     private Work work;
     private int archiveCount = -1;
+    private int currentArchive = 0;
 
     public enum CommentParams implements Valuable {
         FILE(""), MSGID(""), OPERATION(""), NAME(""), EMAIL(""), URL(""), TEXT(""), add("Добавить!");
@@ -50,13 +51,13 @@ public class CommentsParser extends PageParser<Comment> {
         store_new, store_edit, store_reply, edit, delete, reply;
     }
 
-    public int getArchiveCount() throws IOException {
-        if(archiveCount < 0) {
+    public int getArchiveCount() {
+        if (archiveCount < 0) {
             archiveCount = 0;
-            lister.setPage(request, index);
-            Document doc = getDocument(request);
-            Elements arch = doc.select("b:contains(Архивы)");
             try {
+                lister.setPage(request, index);
+                Document doc = getDocument(request);
+                Elements arch = doc.select("b:contains(Архивы)");
                 if (arch.size() > 0) {
                     String count = arch.text();
                     archiveCount = TextUtils.extractInt(count, 0);
@@ -66,6 +67,22 @@ public class CommentsParser extends PageParser<Comment> {
             }
         }
         return archiveCount;
+    }
+
+    public void setArchive(int page) {
+        if (page >= 0 && archiveCount >= page) {
+            if(page == 0) {
+                request.setSuffix("");
+            } else {
+                request.setSuffix("." + page);
+            }
+            pageCount = -1;
+            currentArchive = page;
+        }
+    }
+
+    public int getCurrentArchive() {
+        return currentArchive;
     }
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
@@ -167,7 +184,7 @@ public class CommentsParser extends PageParser<Comment> {
                     .addHeader("Upgrade-Insecure-Requests", "1")
                     .addParam(CommentParams.OPERATION, operation)
                     .addParam(CommentParams.MSGID, comment.getMsgid());
-            if(comment.isDeleted() && operation.equals(Operation.delete)) {
+            if (comment.isDeleted() && operation.equals(Operation.delete)) {
                 request.addParam("SUBOP", "rev");
             }
             return new HTTPExecutor(request).execute();

@@ -45,6 +45,7 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     private Work work;
     private int showPage = -1;
+    private int archive = 0;
     private Document document;
 
     public static CommentsFragment show(FragmentBuilder builder, @IdRes int container, String link) {
@@ -72,14 +73,16 @@ public class CommentsFragment extends ListFragment<Comment> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         boolean newWork = false;
         Integer page = getArguments().getInt(Constants.ArgsName.COMMENTS_PAGE);
+        Integer archive = getArguments().getInt(Constants.ArgsName.COMMENTS_ARCHIVE, 0);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         if (incomingWork != null && !incomingWork.equals(work)) {
             work = incomingWork;
             newWork = true;
         }
         pageSize = 10;
-        if (newWork && showPage != page) {
+        if (newWork && (showPage != page || this.archive != archive)) {
             showPage = page;
+            this.archive = archive;
             clearData();
         }
         return super.onCreateView(inflater, container, savedInstanceState);
@@ -237,7 +240,7 @@ public class CommentsFragment extends ListFragment<Comment> {
             } else {
                 GuiUtils.setTextOrHide(author, comment.getNickName());
             }
-            if (comment.getMsgid() == null) {
+            if (comment.getMsgid() == null || archive > 0) {
                 GuiUtils.setVisibility(GONE, reply, edit, delete);
             } else {
                 reply.setVisibility(VISIBLE);

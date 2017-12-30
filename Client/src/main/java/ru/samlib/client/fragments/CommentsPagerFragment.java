@@ -22,6 +22,7 @@ import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
+import ru.samlib.client.dialog.EditListPreferenceDialog;
 import ru.samlib.client.dialog.NewCommentDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
@@ -35,7 +36,9 @@ import ru.samlib.client.parser.Parser;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 0shad on 05.11.2015.
@@ -76,6 +79,24 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                     dialog = new NewCommentDialog();
                     dialog.show(getFragmentManager(), NewCommentDialog.class.getSimpleName());
                 }
+                return true;
+            case R.id.action_comments_choose_archive:
+                Map<Integer, String> keyVal = new LinkedHashMap<>();
+                keyVal.put(0,"0");
+                for (int i = 0; i <= parser.getArchiveCount(); i++) {
+                    keyVal.put(i, i + "");
+                }
+                EditListPreferenceDialog editListPreferenceDialog = new EditListPreferenceDialog();
+                SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), -1, "" + parser.getCurrentArchive());
+                preference.keyValue = keyVal;
+                editListPreferenceDialog.setPreference(preference);
+                editListPreferenceDialog.setOnCommit((value, d) -> {
+                    parser.setArchive(Integer.valueOf(value.toString()));
+                    safeInvalidateOptionsMenu();
+                    refreshData(true);
+                    return true;
+                });
+                editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -227,6 +248,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
             public Fragment getItem(int position) {
                 return new FragmentBuilder(null)
                         .putArg(Constants.ArgsName.COMMENTS_PAGE, position)
+                        .putArg(Constants.ArgsName.COMMENTS_ARCHIVE, parser.getCurrentArchive())
                         .putArg(Constants.ArgsName.WORK, work)
                         .newFragment(CommentsFragment.class);
             }

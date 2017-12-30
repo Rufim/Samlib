@@ -140,6 +140,7 @@
     <string name="comments_dialog_title">Напишите комментарий</string>
     <string name="comments_add_new">Оставить комментарий</string>
     <string name="comments_new_send">Отправить</string>
+    <string name="comments_choose_archive">Выберите архив</string>
     <string name="comments_new_name">Ваше имя</string>
     <string name="comments_new_email">Ваш e-mail</string>
     <string name="comments_new_link">Адрес странички</string>

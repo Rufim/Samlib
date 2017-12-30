@@ -36,6 +36,7 @@ public class Constants {
         public static final String TTS_PITCH = "pitch";
         public static final String TTS_LANGUAGE = "language";
         public static final String COMMENTS_PAGE = "comments_page";
+        public static final String COMMENTS_ARCHIVE = "comments_archive";
         public static final String FILE_PATH = "file_path";
         public static final String CONTENT_URI = "content";
         public static final String WORK_RESTORE = "from_notification";

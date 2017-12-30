@@ -406,7 +406,11 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             this.idKey = idKey;
             this.layout = layout;
             this.titleId = title;
-            this.key = context.getString(idKey);
+            if (idKey > 0)  {
+                this.key = context.getString(idKey);
+            } else {
+                this.key = "";
+            }
             this.defValue = defValue;
             this.dialogType = dialogType;
             if (title > 0)
