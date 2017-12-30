@@ -1,6 +1,8 @@
 package ru.samlib.client.parser;
 
+import net.vrallev.android.cat.Cat;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.kazantsev.template.domain.Valuable;
@@ -16,6 +18,7 @@ import ru.samlib.client.lister.RawRowSelector;
 import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 /**
@@ -26,6 +29,7 @@ public class CommentsParser extends PageParser<Comment> {
     public static final String COMMENT_NEW_PREFIX = "/cgi-bin/comment";
 
     private Work work;
+    private int archiveCount = -1;
 
     public enum CommentParams implements Valuable {
         FILE(""), MSGID(""), OPERATION(""), NAME(""), EMAIL(""), URL(""), TEXT(""), add("Добавить!");
@@ -44,6 +48,24 @@ public class CommentsParser extends PageParser<Comment> {
 
     public enum Operation {
         store_new, store_edit, store_reply, edit, delete, reply;
+    }
+
+    public int getArchiveCount() throws IOException {
+        if(archiveCount < 0) {
+            archiveCount = 0;
+            lister.setPage(request, index);
+            Document doc = getDocument(request);
+            Elements arch = doc.select("b:contains(Архивы)");
+            try {
+                if (arch.size() > 0) {
+                    String count = arch.text();
+                    archiveCount = TextUtils.extractInt(count, 0);
+                }
+            } catch (Throwable ex) {
+                Cat.e(ex);
+            }
+        }
+        return archiveCount;
     }
 
     public CommentsParser(Work work, boolean reverse) throws MalformedURLException {
