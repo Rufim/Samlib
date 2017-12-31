@@ -10,7 +10,7 @@ ext {
     versionProjectName = "0.6.9.2"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
-    statServer = 'sistat.mj.milesweb.cloud'
+    statServer = '192.168.1.34'
     dbflowVersion = '4.1.1'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'

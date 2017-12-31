@@ -87,7 +87,7 @@ public class ObservableUpdateJob extends Job {
         List<CharSequence> notifyAuthors = new ArrayList<>();
         MergeFromRequery.merge(context, service);
         boolean statServerReachable = false;
-        if(HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 80, 10000)) {
+        if(HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 8080, 10000)) {
             statServerReachable = true;
         }
         Calendar yesterday = Calendar.getInstance();
@@ -96,50 +96,60 @@ public class ObservableUpdateJob extends Job {
         yesterday.set(Calendar.SECOND, 59);
         yesterday.set(Calendar.MINUTE, 59);
         yesterday.set(Calendar.MILLISECOND, 999);
-        List<DataCommand> commands = getChangesInTodayLog();
-        for (Author author : service.getObservableAuthors()) {
-            try {
-                boolean wasUpdates = author.isHasUpdates();
-                AuthorParser parser = new AuthorParser(author);
-                author.setDeleted(false);
-                if (author.getLastCheckedDate() == null || yesterday.getTime().after(author.getLastCheckedDate())) {
-                    if(statServerReachable) {
-                       //use server api
-                        try {
-                            checkUpdateDateOnStatServer(author);
-                        } catch (Throwable ex) {
-                            Cat.e(ex);
+        if(HTTPExecutor.pingHost(Constants.Net.BASE_HOST, 80, 10000)) {
+            List<DataCommand> commands = getChangesInTodayLog();
+            for (Author author : service.getObservableAuthors()) {
+                try {
+                    boolean wasUpdates = author.isHasUpdates();
+                    AuthorParser parser = new AuthorParser(author);
+                    author.setDeleted(false);
+                    boolean parsed = false;
+                    if (author.getLastCheckedDate() == null || yesterday.getTime().after(author.getLastCheckedDate())) {
+                        if (statServerReachable && author.getLastUpdateDate() != null) {
+                            //use server api
+                            try {
+                                checkUpdateDateOnStatServer(author);
+                            } catch (Throwable ex) {
+                                Cat.e(ex);
+                                author = parser.parse();
+                                parsed = true;
+                            }
+                        } else {
                             author = parser.parse();
-                        }
-                    } else {
-                        author = parser.parse();
-                    }
-                } else if(commands != null) {
-                    //parse last day log
-                    for (DataCommand command : commands) {
-                        if(command.getLink().contains(author.getLink())
-                                && (Command.NEW.equals(command.getCommand()) || Command.TXT.equals(command.getCommand()))
-                                && command.getCommandDate().after(author.getLastCheckedDate())) {
-                            author.hasNewUpdates();
+                            parsed = true;
                         }
                     }
-                } else {
-                    author = parser.parse();
+                    if (!author.isHasUpdates() && !parsed) {
+                        if (commands != null) {
+                            //parse last day log
+                            for (DataCommand command : commands) {
+                                if (command.getLink().contains(author.getLink())
+                                        && (Command.NEW.equals(command.getCommand()) || Command.TXT.equals(command.getCommand()))
+                                        && command.getCommandDate().after(author.getLastUpdateDate())) {
+                                    author.hasNewUpdates();
+                                    author.setLastUpdateDate(command.getCommandDate());
+                                }
+                            }
+                        } else {
+                            author = parser.parse();
+                            parsed = true;
+                        }
+                    }
+                    author.setLastCheckedDate(new Date());
+                    author = service.createOrUpdateAuthor(author);
+                    author.setParsed(parsed);
+                    if (context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
+                        notifyAuthors.add(author.getShortName());
+                        author.setNotNotified(false);
+                    }
+                    EventBus.getDefault().post(new AuthorUpdatedEvent(author));
+                    Log.e(TAG, "Author " + author.getShortName() + " updated");
+                } catch (AuthorParser.AuthorNotExistException ex) {
+                    author.setDeleted(true);
+                    author.save();
+                } catch (Exception e) {
+                    Log.e(TAG, "Unknown exception while update", e);
                 }
-                author.setLastCheckedDate(new Date());
-                author = service.createOrUpdateAuthor(author);
-                author.setParsed(true);
-                if (context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
-                    notifyAuthors.add(author.getShortName());
-                    author.setNotNotified(false);
-                }
-                EventBus.getDefault().post(new AuthorUpdatedEvent(author));
-                Log.e(TAG, "Author " + author.getShortName() + " updated");
-            } catch (AuthorParser.AuthorNotExistException ex) {
-                author.setDeleted(true);
-                author.save();
-            } catch (Exception e) {
-                Log.e(TAG, "Unknown exception while update", e);
             }
         }
         if(!notifyAuthors.isEmpty() && AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableNotification, true)) {
@@ -175,14 +185,26 @@ public class ObservableUpdateJob extends Job {
 
 
     public static void checkUpdateDateOnStatServer(Author author) throws Exception {
-        Request update = new Request(Constants.Net.STAT_SERVER_DOMAIN);
+        Request update = new Request(Constants.Net.STAT_SERVER_UPDATE);
         update.addParam("link", author.getLink());
         Response response = update.execute();
-        Type type = new TypeToken<Map<String, String>>(){}.getType();
-        Map<String, String> content =  new Gson().fromJson(response.getRawContent(),type);
-        Date lastUpdateDate = new Date(Long.parseLong(content.get("lastUpdateDate")));
-        if(lastUpdateDate.after(author.getLastCheckedDate())) {
-            author.hasNewUpdates();
+        Long date = Long.parseLong(response.getRawContent());
+        if(date > 0) {
+            Date lastUpdateDate = new Date(date);
+            Calendar lastUpdate = Calendar.getInstance();
+            lastUpdate.setTime(author.getLastUpdateDate());
+            if(author.getLastCheckedDate() == null || (lastUpdate.get(Calendar.HOUR_OF_DAY) == 0 && lastUpdate.get(Calendar.MINUTE) == 0 && lastUpdate.get(Calendar.SECOND) == 0)) {
+                lastUpdate.set(Calendar.HOUR_OF_DAY, 23);
+                lastUpdate.set(Calendar.SECOND, 59);
+                lastUpdate.set(Calendar.MINUTE, 59);
+                lastUpdate.set(Calendar.MILLISECOND, 999);
+            }
+            if (lastUpdateDate.after(lastUpdate.getTime())) {
+                author.hasNewUpdates();
+                author.setLastUpdateDate(lastUpdateDate);
+            }
+        } else {
+            throw new Exception("Author not found!");
         }
     }
 

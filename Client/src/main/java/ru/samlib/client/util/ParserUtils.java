@@ -161,7 +161,10 @@ public class ParserUtils {
                 author.setAddress(content);
                 break;
             case "Обновлялось:":
-                author.setLastUpdateDate(parseData(content));
+                Date date = parseData(content);
+                if(author.getLastUpdateDate() == null || (date != null && author.getLastUpdateDate().before(date))) {
+                    author.setLastUpdateDate(date);
+                }
                 break;
             case "Объем:":
                 split = content.split("/");

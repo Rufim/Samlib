@@ -2,6 +2,7 @@ package ru.samlib.client.service;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import android.text.format.DateUtils;
 import com.annimon.stream.Stream;
 
 
@@ -21,7 +22,10 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.util.DBFlowUtils;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static ru.samlib.client.util.DBFlowUtils.*;
 
@@ -49,7 +53,25 @@ public class DatabaseService {
     }
 
     public synchronized Author insertObservableAuthor(Author author) {
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY,0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
         author.setObservable(true);
+        if(author.getLastUpdateDate() == null) {
+            author.setLastUpdateDate(new Date());
+        } else if(TimeUnit.MILLISECONDS.toDays(today.getTime().getTime()) == TimeUnit.MILLISECONDS.toDays(author.getLastUpdateDate().getTime())) {
+            Calendar calendar = Calendar.getInstance();
+            Calendar now = Calendar.getInstance();
+            calendar.setTime(author.getLastUpdateDate());
+            calendar.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
+            calendar.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
+            calendar.set(Calendar.SECOND, now.get(Calendar.SECOND));
+            calendar.set(Calendar.MILLISECOND, now.get(Calendar.MILLISECOND));
+            author.setLastUpdateDate(calendar.getTime());
+        }
+        author.setLastCheckedDate(new Date());
         doAction(Action.INSERT, author);
         doAction(Action.UPSERT, author.getCategories());
         return getAuthor(author.getLink());

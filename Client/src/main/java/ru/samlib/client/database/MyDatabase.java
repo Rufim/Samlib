@@ -64,7 +64,7 @@ public class MyDatabase {
 
         @Override
         public void onPreMigrate() {
-            addColumn(SQLiteType.get(Date.class.getName()), Author_Table.lastCheckedDate.getNameAlias().nameRaw());
+            addColumn(SQLiteType.INTEGER, Author_Table.lastCheckedDate.getNameAlias().nameRaw());
         }
     }
     
