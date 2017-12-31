@@ -9,6 +9,8 @@ import com.raizlabs.android.dbflow.sql.migration.AlterTableMigration;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 
+import java.util.Date;
+
 @Database(name = Constants.App.DATABASE_NAME, version = Constants.App.DATABASE_VERSION, insertConflict = ConflictAction.REPLACE, updateConflict = ConflictAction.REPLACE)
 public class MyDatabase {
     @Migration(version = 17, database = MyDatabase.class)
@@ -51,4 +53,19 @@ public class MyDatabase {
             addColumn(SQLiteType.get(Boolean.class.getName()), Work_Table.hasRate.getNameAlias().nameRaw());
         }
     }
+
+    @Migration(version = 21, database = MyDatabase.class)
+    public static class MigrationAuthor21 extends AlterTableMigration<Author> {
+
+
+        public MigrationAuthor21() {
+            super(Author.class);
+        }
+
+        @Override
+        public void onPreMigrate() {
+            addColumn(SQLiteType.get(Date.class.getName()), Author_Table.lastCheckedDate.getNameAlias().nameRaw());
+        }
+    }
+    
 }

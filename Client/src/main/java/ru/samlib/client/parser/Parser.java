@@ -142,8 +142,6 @@ public abstract class Parser {
         parserCache.evictAll();
     }
 
-
-
     private class PendingParse implements Callable<Boolean> {
 
         private CachedResponse htmlFile;

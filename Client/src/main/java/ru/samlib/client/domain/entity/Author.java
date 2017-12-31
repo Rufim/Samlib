@@ -54,6 +54,7 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     boolean observable = false;
     boolean deleted = false;
     Date lastUpdateDate;
+    Date lastCheckedDate;
     Integer size;
     Integer workCount;
     @Column(typeConverter = BigDecimalConverter.class)
