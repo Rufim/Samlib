@@ -8,6 +8,8 @@ import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import net.vrallev.android.cat.Cat;
 import org.greenrobot.eventbus.EventBus;
 import ru.kazantsev.template.net.HTTPExecutor;
@@ -32,11 +34,13 @@ import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.MergeFromRequery;
 
 import javax.inject.Inject;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 ;
 
@@ -170,8 +174,16 @@ public class ObservableUpdateJob extends Job {
     }
 
 
-    public static boolean checkUpdateDateOnStatServer(Author author) {
-        throw new UnsupportedOperationException("TBD");
+    public static void checkUpdateDateOnStatServer(Author author) throws Exception {
+        Request update = new Request(Constants.Net.STAT_SERVER_DOMAIN);
+        update.addParam("link", author.getLink());
+        Response response = update.execute();
+        Type type = new TypeToken<Map<String, String>>(){}.getType();
+        Map<String, String> content =  new Gson().fromJson(response.getRawContent(),type);
+        Date lastUpdateDate = new Date(Long.parseLong(content.get("lastUpdateDate")));
+        if(lastUpdateDate.after(author.getLastCheckedDate())) {
+            author.hasNewUpdates();
+        }
     }
 
 
