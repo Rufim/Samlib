@@ -106,7 +106,8 @@ public class ObservableFragment extends ListFragment<Author> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.NONE, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.NONE, false, false,true);
+                            chooserDialogImport.setSourceDirectory(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
                             chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
                             chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
                             chooserDialogImport.setAllowRootDir(false);
@@ -169,7 +170,8 @@ public class ObservableFragment extends ListFragment<Author> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.CREATE_DIR,false);
+                            chooserDialogExport.setSourceDirectory(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
                             chooserDialogExport.setTitle(getString(R.string.observable_export) + "...");
                             chooserDialogExport.setIcon(android.R.drawable.ic_menu_save);
                             chooserDialogExport.setAllowRootDir(false);

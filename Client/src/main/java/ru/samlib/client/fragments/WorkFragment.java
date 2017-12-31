@@ -668,7 +668,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
                             String path = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath());
-                            DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity(), path, false);
+                            DirectoryChooserDialog chooserDialog = new DirectoryChooserDialog(getActivity());
+                            chooserDialog.setSourceDirectory(path);
                             chooserDialog.setTitle("Сохранить в...");
                             chooserDialog.setIcon(android.R.drawable.ic_menu_save);
                             chooserDialog.setAllowRootDir(true);
