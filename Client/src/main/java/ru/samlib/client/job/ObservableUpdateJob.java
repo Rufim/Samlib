@@ -87,9 +87,9 @@ public class ObservableUpdateJob extends Job {
         List<CharSequence> notifyAuthors = new ArrayList<>();
         MergeFromRequery.merge(context, service);
         boolean statServerReachable = false;
-        if(HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 8080, 10000)) {
-            statServerReachable = true;
-        }
+        //if(HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 8080, 10000)) {
+        //    statServerReachable = true;
+        //}
         Calendar yesterday = Calendar.getInstance();
         yesterday.add(Calendar.DAY_OF_YEAR, -1);
         yesterday.set(Calendar.HOUR_OF_DAY, 23);
