@@ -120,7 +120,7 @@ public class WorkParser extends Parser {
 
     public static Work parseWork(File file, String encoding, Work work) {
         String[] parts;
-        if (!work.getLink().matches(work.getAuthor().getLink() + "rating\\d.shtml")) {
+        if (!work.getLink().matches(work.getAuthor().getLink() + "rating\\d.shtml") && !work.getLink().endsWith("publish.shtml")) {
             parts = TextUtils.Splitter.extractLines(file, encoding, true,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
@@ -365,9 +365,9 @@ public class WorkParser extends Parser {
                                 bookmarks.add(bookmark);
                             } else {
                                 if (href.startsWith("/")) {
-                                    append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "");
+                                    append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "</a>");
                                 } else {
-                                    append("<a href=\"" + href + "\">" + getNodeHtml(node) + "");
+                                    append("<a href=\"" + href + "\">" + getNodeHtml(node) + "</a>");
                                 }
                             }
                         } else if (parent.hasAttr("name")) {

@@ -1265,7 +1265,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 Spanned spannableString = (Spanned) textView.getText();
                                 URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
                                 if (url.length > 0) {
-                                    url[0].onClick(textView);
+                                    String surl = url[url.length - 1].getURL();
+                                    if(!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
+                                        SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
+                                    } else {
+                                        url[url.length - 1].onClick(textView);
+                                    }
                                     return true;
                                 }
                             }

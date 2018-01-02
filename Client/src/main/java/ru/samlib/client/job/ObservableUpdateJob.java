@@ -128,7 +128,18 @@ public class ObservableUpdateJob extends Job {
                                 if (command.getLink().contains(author.getLink())
                                         && (Command.NEW.equals(command.getCommand()) || Command.TXT.equals(command.getCommand()))
                                         && command.getCommandDate().after(author.getLastUpdateDate())) {
-                                    author.hasNewUpdates();
+                                    boolean found = false;
+                                    for (Work work : author.getWorks()) {
+                                        if(work.getLink().contains(command.getLink())) {
+                                            found = true;
+                                            if(work.getSize() == null || !work.getSize().equals(command.getSize())) {
+                                                author.hasNewUpdates();
+                                            }
+                                        }
+                                    }
+                                    if(!found) {
+                                        author.hasNewUpdates();
+                                    }
                                     author.setLastUpdateDate(command.getCommandDate());
                                 }
                             }
