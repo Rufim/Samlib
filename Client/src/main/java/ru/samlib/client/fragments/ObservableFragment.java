@@ -85,7 +85,7 @@ public class ObservableFragment extends ListFragment<Author> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.observable, menu);
-        if(Parser.isCachedMode()) {
+        if (Parser.isCachedMode()) {
             menu.removeItem(R.id.action_observable_import);
             menu.removeItem(R.id.action_observable_add_link_or_author);
             menu.removeItem(R.id.action_observable_check_updates);
@@ -106,7 +106,7 @@ public class ObservableFragment extends ListFragment<Author> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.NONE, false, false,true);
+                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.NONE, false, false, true);
                             chooserDialogImport.setSourceDirectory(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
                             chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
                             chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
@@ -170,7 +170,7 @@ public class ObservableFragment extends ListFragment<Author> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.CREATE_DIR,false);
+                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.CREATE_DIR, false);
                             chooserDialogExport.setSourceDirectory(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
                             chooserDialogExport.setTitle(getString(R.string.observable_export) + "...");
                             chooserDialogExport.setIcon(android.R.drawable.ic_menu_save);
@@ -320,16 +320,14 @@ public class ObservableFragment extends ListFragment<Author> {
     }
 
     private void initializeAuthor(Author author) {
-        if (author.isHasUpdates()) {
-            final int index;
-            for (int i = 0; i < adapter.getItems().size(); i++) {
-                if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
-                    index = i;
-                    adapter.getItems().set(i, author);
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.post(() -> adapter.notifyItemChanged(index));
-                    break;
-                }
+        final int index;
+        for (int i = 0; i < adapter.getItems().size(); i++) {
+            if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
+                index = i;
+                adapter.getItems().set(i, author);
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> adapter.notifyItemChanged(index));
+                break;
             }
         }
     }
@@ -351,7 +349,7 @@ public class ObservableFragment extends ListFragment<Author> {
         public boolean onClick(View view, int position) {
             if (!loading) {
                 Author authorEntity = getItems().get(position);
-                if(!authorEntity.isDeleted()) {
+                if (!authorEntity.isDeleted()) {
                     Intent i = new Intent(getActivity(), SectionActivity.class);
                     Author author = new Author(authorEntity.getLink());
                     i.putExtra(Constants.ArgsName.AUTHOR, author);

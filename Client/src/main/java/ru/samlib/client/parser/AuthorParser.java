@@ -121,7 +121,7 @@ public class AuthorParser extends Parser {
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);
                         work.setAuthor(author);
-                        work.setLink(work.getLink());
+                        work.setLink(work.getSmartLink());
                         recommendations.add(work);
                     }
                 }
@@ -182,7 +182,7 @@ public class AuthorParser extends Parser {
                                 }
                                 Work work = ParserUtils.parseWork(dl.first());
                                 work.setAuthor(author);
-                                work.setLink(work.getLink());
+                                work.setLink(work.getSmartLink());
                                 work.setCategory(newCategory);
                                 if (work.validate()) {
                                     if (newCategory == null) {

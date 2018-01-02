@@ -250,6 +250,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             work.setSizeDiff(null);
                         });
                     }
+                    categoryUpdate.getWorks().clear();
                     author.setHasUpdates(false);
                     databaseService.createOrUpdateAuthor(author);
                 }
@@ -285,6 +286,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if(author.isHasUpdates() && !categoryUpdate.isHasUpdates()) {
                 author.setHasUpdates(false);
                 databaseService.doAction(DatabaseService.Action.UPDATE, author);
+                postEvent(new AuthorUpdatedEvent(author));
             }
         } catch (Exception ex) {
         }

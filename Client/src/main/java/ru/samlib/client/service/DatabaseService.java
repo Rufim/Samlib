@@ -284,7 +284,7 @@ public class DatabaseService {
     public void updateAuthor(Author into, Author from) {
         updateField(into::setFullName, from.getFullName());
         updateField(into::setShortName, from.getShortName());
-        updateField(into::setLink, from.getLink());
+        updateField(into::setSmartLink, from.getLink());
         updateField(into::setRate, from.getRate());
         updateField(into::setVotes, from.getVotes());
         updateField(into::setAbout, from.getAbout());

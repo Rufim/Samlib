@@ -77,7 +77,7 @@ public class NewestParser extends RowParser implements DataSource<Work> {
                     break;
                 case 1:
                     Author author = new Author();
-                    author.setLink(rowItems.get(j).select("a[href]").attr("href").replace("indexdate.shtml", ""));
+                    author.setSmartLink(rowItems.get(j).select("a[href]").attr("href").replace("indexdate.shtml", ""));
                     author.setShortName(text);
                     work.setAuthor(author);
                     break;

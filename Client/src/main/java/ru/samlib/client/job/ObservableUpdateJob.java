@@ -21,6 +21,7 @@ import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Author;
+import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.kazantsev.template.domain.event.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;

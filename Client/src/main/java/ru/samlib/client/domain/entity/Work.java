@@ -119,11 +119,11 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
         }
         this.link = this.link.replaceAll("/+", "/");
         if(getAuthor() != null) {
-            this.link = getLink();
+            this.link = getSmartLink();
         }
     }
 
-    public String getLink() {
+    public String getSmartLink() {
         if (link != null && !link.contains(getAuthor().getLink())) {
             link = (author.getLink() + link).replaceAll("/+", "/");
         }

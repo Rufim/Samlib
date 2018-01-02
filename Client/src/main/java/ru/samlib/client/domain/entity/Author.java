@@ -155,14 +155,14 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
 
     public Author(String link) {
         this();
-        setLink(link);
+        setSmartLink(link);
     }
 
     public boolean isEntity() {
         return exists();
     }
 
-    public void setLink(String link) {
+    public void setSmartLink(String link) {
         if (link == null) return;
         link = TextUtils.eraseHost(link);
         if (link.contains("/")) {

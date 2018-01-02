@@ -34,7 +34,7 @@ public class RateParser extends PageListParser<Work> {
                     break;
                 case 1:
                     Author author = new Author();
-                    author.setLink(item.select("a[href]").attr("href"));
+                    author.setSmartLink(item.select("a[href]").attr("href"));
                     author.setFullName(item.text());
                     work.setAuthor(author);
                     break;

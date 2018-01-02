@@ -29,7 +29,7 @@ public class TopAuthorsParser extends PageListParser {
         String peopleViews = rowItems.get(j++).select("b").text();
         author.setViews(Integer.parseInt(peopleViews));
         Element item = rowItems.get(j++);
-        author.setLink(item.select("a[href]").attr("href"));
+        author.setSmartLink(item.select("a[href]").attr("href"));
         author.setFullName(item.text());
         author.setAnnotation(row.ownText());
         if (rowItems.size() > j) {
