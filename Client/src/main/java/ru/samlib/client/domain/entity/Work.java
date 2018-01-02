@@ -8,14 +8,12 @@ import ru.kazantsev.template.util.TextUtils;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
-import ru.samlib.client.database.ListConverter;
 import ru.samlib.client.database.ListGenreConverter;
 import ru.samlib.client.database.ListStringConverter;
 import ru.samlib.client.database.MyDatabase;
@@ -105,10 +103,10 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     public Work(){}
 
     public Work(String link) {
-        setLink(link);
+        setSmartLink(link);
     }
 
-    public void setLink(String link) {
+    public void setSmartLink(String link) {
         if (link == null) return;
         link = ru.kazantsev.template.util.TextUtils.eraseHost(link);
         if (link.contains("/")) {
@@ -120,6 +118,9 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
             this.link = "/" + link;
         }
         this.link = this.link.replaceAll("/+", "/");
+        if(getAuthor() != null) {
+            this.link = getLink();
+        }
     }
 
     public String getLink() {
@@ -245,9 +246,9 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
 
         Work work = (Work) o;
 
-        if (work.getLink() == null && getLink() == null) return true;
-        if (work.getLink() == null || getLink() == null) return false;
-        return TextUtils.trim(getLink()).equalsIgnoreCase(TextUtils.trim(work.getLink()));
+        if (work.link == null && link == null) return true;
+        if (work.link == null || link == null) return false;
+        return TextUtils.trim(link).equalsIgnoreCase(TextUtils.trim(work.link));
     }
 
     public void setChanged(boolean changed) {

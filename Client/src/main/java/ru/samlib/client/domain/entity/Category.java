@@ -60,10 +60,10 @@ public class Category extends BaseModel implements Linkable, Serializable, Parsa
         return links;
     }
 
-    @OneToMany(methods = OneToMany.Method.ALL, variableName = "works")
+    @OneToMany(methods = {OneToMany.Method.DELETE , OneToMany.Method.LOAD}, variableName = "works")
     public List<Work> loadWorks() {
         if (works == null || works.isEmpty()) {
-            works = SQLite.select()
+            works = SQLite.select().distinct()
                     .from(Work.class)
                     .where(Work_Table.category_id.eq(id))
                     .orderBy(Work_Table.changedDate, false)
@@ -72,7 +72,7 @@ public class Category extends BaseModel implements Linkable, Serializable, Parsa
         return works;
     }
 
-    @OneToMany(methods = OneToMany.Method.ALL, variableName = "links")
+    @OneToMany(methods = {OneToMany.Method.DELETE, OneToMany.Method.LOAD}, variableName = "links")
     public List<Link> loadLinks() {
         return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.category_id.eq(id));
     }

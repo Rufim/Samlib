@@ -54,7 +54,7 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     boolean observable = false;
     boolean deleted = false;
     Date lastUpdateDate;
-    Date lastCheckedDate;
+    Integer lastCheckedDate;
     Integer size;
     Integer workCount;
     @Column(typeConverter = BigDecimalConverter.class)
@@ -81,10 +81,10 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     @ColumnIgnore
     boolean parsed = false;
 
-    @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "works")
+    @OneToMany(methods = {OneToMany.Method.DELETE}, variableName = "works")
     public synchronized List<Work> loadWorks() {
         if (works == null || works.isEmpty()) {
-            works =  SQLite.select()
+            works =  SQLite.select().distinct()
                     .from(Work.class)
                     .where(Work_Table.author_link.eq(link))
                     .orderBy(Work_Table.changedDate, false)
@@ -93,12 +93,12 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
         return works;
     }
 
-    @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "links")
+    @OneToMany(methods = {OneToMany.Method.DELETE}, variableName = "links")
     public synchronized List<Link> loadLinks() {
         return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
     }
 
-    @OneToMany(methods = {OneToMany.Method.SAVE, OneToMany.Method.DELETE}, variableName = "categories")
+    @OneToMany(methods = {OneToMany.Method.DELETE}, variableName = "categories")
     public synchronized List<Category> loadCategories() {
         return categories = dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
     }
@@ -392,5 +392,14 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
 
     public List<Work> getRecommendations() {
         return Stream.of(getAllWorks().entrySet()).map(Map.Entry::getValue).filter(Work::isRecommendation).collect(Collectors.toList());
+    }
+
+    public Date getLastCheckedTime() {
+        if(lastCheckedDate == null) return null;
+        return new Date(((long) lastCheckedDate) * 1000);
+    }
+
+    public void setLastCheckedTime(Date lastCheckedDate) {
+        this.lastCheckedDate = (int) (lastCheckedDate.getTime() / 1000);
     }
 }

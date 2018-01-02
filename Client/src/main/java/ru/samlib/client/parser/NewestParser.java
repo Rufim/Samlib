@@ -73,7 +73,7 @@ public class NewestParser extends RowParser implements DataSource<Work> {
                     String workSize = info.select("b").first().ownText();
                     work.setSize(Integer.parseInt(workSize.substring(0, workSize.lastIndexOf("k"))));
                     work.setGenresAsString(info.ownText());
-                    work.setLink(rowItems.get(j).select("a[href]").attr("href"));
+                    work.setSmartLink(rowItems.get(j).select("a[href]").attr("href"));
                     break;
                 case 1:
                     Author author = new Author();

@@ -113,6 +113,7 @@ public class CategoryParser extends Parser{
                                 Elements dl = lineDoc.select("DL");
                                 Work work = ParserUtils.parseWork(dl.first());
                                 work.setAuthor(author);
+                                work.setLink(work.getLink());
                                 work.setCategory(category);
                                 if (work.validate()) {
                                     category.addLink(work);

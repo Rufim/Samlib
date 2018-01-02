@@ -40,7 +40,7 @@ public class RateParser extends PageListParser<Work> {
                     break;
                 case 2:
                     work.setTitle(item.text());
-                    work.setLink(item.select("a[href]").attr("href"));
+                    work.setSmartLink(item.select("a[href]").attr("href"));
                     break;
                 case 3:
                     Elements info = item.select("b");

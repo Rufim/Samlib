@@ -46,7 +46,7 @@ public class DBFlowUtils {
     }
 
     public static <C> List<C> dbFlowQueryList(Class<C> clazz, int skip, int limit, OrderBy orderBy, Operator... in) {
-        From<C> from = SQLite.select()
+        From<C> from = SQLite.select().distinct()
                 .from(clazz);
         Where<C> where = null;
         if(in != null) {

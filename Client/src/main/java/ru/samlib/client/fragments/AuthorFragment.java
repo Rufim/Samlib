@@ -101,7 +101,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
             if (!author.isParsed()) {
                 new AuthorParser(author).parse();
                 if (!Parser.isCachedMode() && author.isObservable() && author.isHasUpdates()) {
-                    databaseService.createOrUpdateAuthor(author).setParsed(true);
+                    author = databaseService.createOrUpdateAuthor(author);
+                    author.setParsed(true);
                     if (author.isHasUpdates()) {
                         postEvent(new AuthorUpdatedEvent(author));
                     }

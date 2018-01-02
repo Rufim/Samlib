@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -122,6 +121,7 @@ public class AuthorParser extends Parser {
                     for (Element workEl : recDoc.select("li")) {
                         Work work = ParserUtils.parseWork(workEl);
                         work.setAuthor(author);
+                        work.setLink(work.getLink());
                         recommendations.add(work);
                     }
                 }
@@ -182,6 +182,7 @@ public class AuthorParser extends Parser {
                                 }
                                 Work work = ParserUtils.parseWork(dl.first());
                                 work.setAuthor(author);
+                                work.setLink(work.getLink());
                                 work.setCategory(newCategory);
                                 if (work.validate()) {
                                     if (newCategory == null) {
@@ -386,7 +387,6 @@ public class AuthorParser extends Parser {
 
     private void updateWork(Work into, Work from) {
         into.setTitle(from.getTitle());
-        into.setLink(from.getLink());
         into.setRate(from.getRate());
         into.setVotes(from.getVotes());
         into.setGenres(from.getGenres());

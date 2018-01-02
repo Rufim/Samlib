@@ -1,14 +1,11 @@
 package ru.samlib.client.service;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
-import android.text.format.DateUtils;
 import com.annimon.stream.Stream;
 
 
 import com.raizlabs.android.dbflow.config.DatabaseDefinition;
 import com.raizlabs.android.dbflow.config.FlowManager;
-import com.raizlabs.android.dbflow.sql.language.Operator;
 import com.raizlabs.android.dbflow.sql.language.OrderBy;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
@@ -20,10 +17,7 @@ import net.vrallev.android.cat.Cat;
 import ru.samlib.client.App;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
-import ru.samlib.client.util.DBFlowUtils;
 
-import java.time.Duration;
-import java.time.Period;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -71,16 +65,49 @@ public class DatabaseService {
             calendar.set(Calendar.MILLISECOND, now.get(Calendar.MILLISECOND));
             author.setLastUpdateDate(calendar.getTime());
         }
-        author.setLastCheckedDate(new Date());
-        doAction(Action.INSERT, author);
-        doAction(Action.UPSERT, author.getCategories());
-        return getAuthor(author.getLink());
+        author.setLastCheckedTime(new Date());
+        return createOrUpdateAuthor(author);
     }
 
     public synchronized Author createOrUpdateAuthor(Author author) {
-        doAction(Action.UPSERT, author);
-        doAction(Action.UPSERT, author.getCategories());
+        if(author.exists()) {
+            author.update();
+        } else {
+            author.insert();
+        }
+        for (Category category : author.getCategories()) {
+            if (category.exists()) {
+                category.update();
+            } else {
+                category.insert();
+            }
+            for (Work work : category.getWorks()) {
+                work.setLink(work.getLink());
+                if (work.exists()) {
+                    work.update();
+                } else {
+                    work.insert();
+                }
+            }
+            for (Link link : category.getLinks()) {
+                if (link.exists()) {
+                    link.update();
+                } else {
+                    link.insert();
+                }
+            }
+        }
         author = getAuthor(author.getLink());
+        for (Category category : author.getCategories()) {
+            Iterator<Work> workIterator = category.getWorks().iterator();
+            while (workIterator.hasNext()) {
+                Work nextWork = workIterator.next();
+                if(Stream.of(category.getWorks()).anyMatch(w -> nextWork != w && nextWork.getLink().equals(w.getLink()))) {
+                    nextWork.delete();
+                    workIterator.remove();
+                }
+            }
+        }
         return author;
     }
 

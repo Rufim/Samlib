@@ -39,6 +39,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
+import java.time.Period;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -104,7 +105,7 @@ public class ObservableUpdateJob extends Job {
                     AuthorParser parser = new AuthorParser(author);
                     author.setDeleted(false);
                     boolean parsed = false;
-                    if (author.getLastCheckedDate() == null || yesterday.getTime().after(author.getLastCheckedDate())) {
+                    if (author.getLastCheckedDate() == null || yesterday.getTime().after(author.getLastCheckedTime())) {
                         if (statServerReachable && author.getLastUpdateDate() != null) {
                             //use server api
                             try {
@@ -135,8 +136,12 @@ public class ObservableUpdateJob extends Job {
                             parsed = true;
                         }
                     }
-                    author.setLastCheckedDate(new Date());
-                    author = service.createOrUpdateAuthor(author);
+                    author.setLastCheckedTime(new Date());
+                    if(parsed) {
+                        author = service.createOrUpdateAuthor(author);
+                    } else {
+                        author.save();
+                    }
                     author.setParsed(parsed);
                     if (context != null && author.isHasUpdates() && !wasUpdates && author.isNotNotified()) {
                         notifyAuthors.add(author.getShortName());

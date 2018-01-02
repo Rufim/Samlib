@@ -110,7 +110,7 @@ public class ParserUtils {
                 case "a":
                     String link = el.attr("href");
                     if (link.contains(".shtml")) {
-                        work.setLink(link);
+                        work.setSmartLink(link);
                         work.setTitle(el.text());
                     } else if(work.getAuthor() == null) {
                         work.setAuthor(new Author(link));
