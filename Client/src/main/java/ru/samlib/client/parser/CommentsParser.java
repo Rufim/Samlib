@@ -205,7 +205,6 @@ public class CommentsParser extends PageParser<Comment> {
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT)
                     .addHeader("Cookie", "COMMENT=" + commentCookie)
-                    .addHeader("Accept-Encoding", ACCEPT_ENCODING_VALUE)
                     .addHeader("Host", Constants.Net.BASE_HOST)
                     .addHeader("Referer", link)
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")

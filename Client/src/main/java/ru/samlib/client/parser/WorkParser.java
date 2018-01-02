@@ -518,7 +518,6 @@ public class WorkParser extends Parser {
                     .setMethod(Request.Method.POST)
                     .addHeader(Header.ACCEPT, ACCEPT_VALUE)
                     .addHeader(Header.USER_AGENT, USER_AGENT)
-                    .addHeader(Header.ACCEPT_ENCODING, ACCEPT_ENCODING_VALUE)
                     .addHeader(Header.HOST, Constants.Net.BASE_HOST)
                     .addHeader(Header.REFERER, work.getFullLink())
                     .addHeader(Header.CONTENT_TYPE, "application/x-www-form-urlencoded")
