@@ -1,10 +1,8 @@
 package ru.samlib.client.fragments;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.text.Html;
+
+
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +19,10 @@ import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.domain.entity.Work;
 import ru.kazantsev.template.lister.DataSource;
-import ru.samlib.client.parser.SearchParser;
-import ru.kazantsev.template.util.GuiUtils;
+
+import ru.samlib.client.parser.SearchStatParser;
+import ru.samlib.client.util.LinkHandler;
+import ru.samlib.client.util.PicassoImageHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +30,11 @@ import java.util.List;
 /**
  * Created by Dmitry on 23.06.2015.
  */
-public class SearchFragment extends ListFragment<Linkable> {
+public class SearchFragment extends ListFragment<Work> {
 
     private String query;
+
+    SearchStatParser statParser;
 
     public static SearchFragment newInstance(String query) {
         Bundle args = new Bundle();
@@ -45,11 +47,20 @@ public class SearchFragment extends ListFragment<Linkable> {
     }
 
     public SearchFragment() {
-        enableFiltering = true;
+        enableSearch = true;
     }
 
     @Override
-    protected ItemListAdapter<Linkable> newAdapter() {
+    public boolean onQueryTextSubmit(String query) {
+        if(ru.kazantsev.template.util.TextUtils.notEmpty(query)) {
+            statParser.setQuery(query);  
+            refreshData(true);
+        }
+        return true;
+    }
+
+    @Override
+    protected ItemListAdapter<Work> newAdapter() {
         return new SearchArrayAdapter();
     }
 
@@ -60,35 +71,35 @@ public class SearchFragment extends ListFragment<Linkable> {
     }
 
     @Override
-    protected DataSource<Linkable> newDataSource() throws Exception {
+    protected DataSource<Work> newDataSource() throws Exception {
         query = getArguments().getString(Constants.ArgsName.SEARCH_QUERY);
-        return new SearchParser(query);
+        statParser = new SearchStatParser();
+        pageSize = 10;
+        return new DataSource<Work>() {
+            @Override
+            public List<Work> getItems(int skip, int size) throws Exception {
+                return statParser.getPage(skip/pageSize + 1);
+            }
+        };
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-         getActivity().setTitle(R.string.search);
+        getActivity().setTitle(R.string.search);
     }
 
-    protected class SearchArrayAdapter extends ItemListAdapter<Linkable> {
+    protected class SearchArrayAdapter extends ItemListAdapter<Work> {
 
 
         public SearchArrayAdapter() {
             super(R.layout.item_search);
-            enterFilteringMode();
-            setLastQuery(newFilterEvent(query));
         }
 
         @Override
         public boolean onClick(View view, int position) {
             Linkable linkable = getItems().get(position);
-            String link;
-            if (linkable instanceof Work) {
-                link = linkable.getFullLink();
-            } else {
-                link = linkable.getLink();
-            }
-            SectionActivity.launchActivity(getContext(), link);
+            String link = linkable.getFullLink();
+            SectionActivity.launchActivity(getContext(), link + ".shtml");
             return true;
         }
 
@@ -97,28 +108,23 @@ public class SearchFragment extends ListFragment<Linkable> {
             TextView authorTextView = holder.getView(R.id.search_item_autor);
             TextView titleTextView = holder.getView(R.id.search_item_title);
             TextView subtitleTextView = holder.getView(R.id.search_item_subtitle);
-            Linkable linkable = getItems().get(position);
-            if(linkable instanceof Work) {
-                Work work = (Work) linkable;
-                authorTextView.setText(work.getAuthor().getFullName());
-                titleTextView.setText("«" + work.getTitle() + "»");
-                List<String> subtitle = new ArrayList<>();
-                if (work.getType() != Type.OTHER) {
-                    subtitle.add(getString(R.string.item_form_label));
-                    subtitle.add(work.getType().getTitle());
-                }
-                if (work.getGenres() != null) {
-                    subtitle.add(getString(R.string.item_genres_label));
-                    subtitle.add(work.printGenres());
-                }
-                subtitle.add(work.getSize().toString() + "k");
-                HtmlSpanner spanner = new HtmlSpanner();
-                subtitleTextView.setText(spanner.fromHtml(TextUtils.join(" ", subtitle) + "\n\"" + work.getDescription() + "\""));
-            } else {
-                GuiUtils.setText(authorTextView, Html.fromHtml(linkable.getTitle()));
-                GuiUtils.setText(titleTextView, Html.fromHtml(linkable.getAnnotation()));
-                subtitleTextView.setVisibility(View.GONE);
+            Work work = getItems().get(position);
+            authorTextView.setText(work.getWorkAuthorName());
+            titleTextView.setText("«" + work.getTitle() + "»");
+            List<String> subtitle = new ArrayList<>();
+            if (work.getType() != Type.OTHER) {
+                subtitle.add(getString(R.string.item_form_label));
+                subtitle.add(work.getType().getTitle());
             }
+            if (work.getGenres() != null && work.getGenres().size() > 0) {
+                subtitle.add(getString(R.string.item_genres_label));
+                subtitle.add(work.printGenres());
+            }
+            subtitle.add(work.getSize().toString() + "k");
+            HtmlSpanner spanner = new HtmlSpanner();
+            spanner.registerHandler("img", new PicassoImageHandler(subtitleTextView));
+            spanner.registerHandler("a", new LinkHandler(subtitleTextView));
+            subtitleTextView.setText(TextUtils.join(" ", subtitle));
         }
     }
 }

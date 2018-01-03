@@ -19,6 +19,7 @@
 
 
     <!-- Dreawer -->
+    <string name="drawer_search">Поиск</string>
     <string name="drawer_new">Новинки</string>
     <string name="drawer_top">Топ Авторов</string>
     <string name="drawer_favorite">Избранное</string>

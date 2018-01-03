@@ -50,7 +50,7 @@ public class Constants {
         public static final String BASE_DOMAIN = BASE_SCHEME + "://" + BASE_HOST;
         public static final String USER_AGENT = "Mozilla";
         public static final String STAT_SERVER = BuildConfig.STAT_SERVER;
-        public static final String STAT_SERVER_DOMAIN = BASE_SCHEME + "://" + BuildConfig.STAT_SERVER + ":8080";
+        public static final String STAT_SERVER_DOMAIN = BASE_SCHEME + "://" + BuildConfig.STAT_SERVER;
         public static final String STAT_SERVER_UPDATE = STAT_SERVER_DOMAIN + "/update_date";
         public static final String LOG_PATH = BASE_DOMAIN + "/logs";
     }

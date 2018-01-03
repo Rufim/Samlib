@@ -148,6 +148,9 @@ public class MainActivity extends BaseActivity {
             case R.id.drawer_help:
                 replaceFragment(HelpFragment.class);
                 break;
+            case R.id.drawer_search:
+                replaceFragment(SearchFragment.class);
+                break;
             default:
                 replaceFragment(BaseFragment.class);
                 break;

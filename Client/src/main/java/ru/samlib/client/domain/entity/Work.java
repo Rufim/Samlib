@@ -75,6 +75,10 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     Date changedDate;
     New state = New.EMPTY;
     String description;
+    @ColumnIgnore
+    String workAuthorName; // for json
+    @ColumnIgnore
+    String annotation; // for json
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean hasRate = false;
@@ -218,6 +222,14 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
 
     public String getAnnotation() {
         return android.text.TextUtils.join("", annotationBlocks);
+    }
+
+    public void setAnnotation(String annotation) {
+        addAnnotation(annotation);
+    }
+
+    public String getAnnotationJson() {
+        return annotation;
     }
 
     public String processAnnotationBloks(int color) {
