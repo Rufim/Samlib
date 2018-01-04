@@ -107,7 +107,7 @@ public class SearchFilterDialog extends BaseDialog {
             } else {
                 this.genreList = new ArrayList<>();
             }
-            if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.genre))) {
+            if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.type))) {
                 this.type = Type.valueOf(request.getParam(SearchStatParser.SearchParams.type));
             } else {
                 this.type = null;
