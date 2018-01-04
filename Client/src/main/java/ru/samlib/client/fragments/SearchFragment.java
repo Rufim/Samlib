@@ -4,16 +4,19 @@ import android.os.Bundle;
 
 
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.util.Log;
+import android.view.*;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.fragments.BaseFragment;
+import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.activity.SectionActivity;
+import ru.samlib.client.dialog.FilterDialog;
+import ru.samlib.client.dialog.SearchFilterDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Type;
@@ -42,20 +45,40 @@ public class SearchFragment extends ListFragment<Work> {
         return newInstance(SearchFragment.class, args);
     }
 
-    public static SearchFragment show(BaseFragment fragment, String quaery) {
-        return show(fragment, SearchFragment.class, Constants.ArgsName.SEARCH_QUERY, quaery);
+    public static SearchFragment show(BaseFragment fragment, String query) {
+        return show(fragment, SearchFragment.class, Constants.ArgsName.SEARCH_QUERY, query);
     }
 
     public SearchFragment() {
         enableSearch = true;
     }
 
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.search_filter, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_search_filter:
+                SearchFilterDialog dialog = (SearchFilterDialog) getFragmentManager().findFragmentByTag(SearchFilterDialog.class.getSimpleName());
+                if (dialog == null) {
+                    dialog = new SearchFilterDialog();
+                    dialog.setState(statParser);
+                    dialog.show(getFragmentManager(), SearchFilterDialog.class.getSimpleName());
+                }
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if(ru.kazantsev.template.util.TextUtils.notEmpty(query)) {
-            statParser.setQuery(query);  
-            refreshData(true);
-        }
+        statParser.setQuery(query);
+        refreshData(true);
         return true;
     }
 
@@ -74,6 +97,9 @@ public class SearchFragment extends ListFragment<Work> {
     protected DataSource<Work> newDataSource() throws Exception {
         query = getArguments().getString(Constants.ArgsName.SEARCH_QUERY);
         statParser = new SearchStatParser();
+        if(query != null) {
+            statParser.setQuery(query);
+        }
         pageSize = 10;
         return new DataSource<Work>() {
             @Override
@@ -84,8 +110,18 @@ public class SearchFragment extends ListFragment<Work> {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        getActivity().setTitle(R.string.search);
+    protected void onDataTaskException(Exception ex) {
+        Cat.e(ex);
+        ErrorFragment.show(this, R.string.stat_server_not_available);
+    }
+
+    @Override
+    protected void firstLoad(boolean scroll) {
+        if(query != null) {
+            super.firstLoad(scroll);
+        } else {
+            stopLoading();
+        }
     }
 
     protected class SearchArrayAdapter extends ItemListAdapter<Work> {

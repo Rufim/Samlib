@@ -81,7 +81,7 @@ public class MainActivity extends BaseActivity {
     protected void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+            /*SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
             if (Linkable.isSamlibLink(TextUtils.eraseHost(query))) {
@@ -94,9 +94,14 @@ public class MainActivity extends BaseActivity {
                     searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
                     startActivity(searchIntent);
                 } catch (ActivityNotFoundException ex) {}
+            } */
+            BaseFragment baseFragment = (BaseFragment) getCurrentFragment();
+            if(baseFragment instanceof SearchFragment) {
+                ((SearchFragment) baseFragment).onQueryTextSubmit(query);
+            } else {
+                SearchFragment.show(baseFragment, query);
             }
             return;
-            //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
         if (intent.getAction() == null && ObservableFragment.class.getSimpleName().equals(intent.getStringExtra(Constants.ArgsName.FRAGMENT_CLASS))) {
             replaceFragment(ObservableFragment.class);

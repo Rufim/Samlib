@@ -57,6 +57,10 @@ public class SearchStatParser implements PageDataSource<Work> {
         }
     }
 
+    public Request getRequest() {
+        return request;
+    }
+
     public SearchStatParser() throws MalformedURLException {
         try {
             this.request = new Request(Constants.Net.STAT_SERVER_DOMAIN + "/search-works")
