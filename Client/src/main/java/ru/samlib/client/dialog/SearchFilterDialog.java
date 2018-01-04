@@ -91,9 +91,9 @@ public class SearchFilterDialog extends BaseDialog {
         invalidateViews();
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.search_filter)
-                .setPositiveButton(android.R.string.ok, this)
+                .setPositiveButton(R.string.dialog_filter_find, this)
+                .setNegativeButton(R.string.dialog_filter_apply, this)
                 .setNeutralButton(R.string.dialog_filter_clear, this)
-                .setNegativeButton(android.R.string.cancel, this)
                 .setView(rootView);
         return adb.create();
     }
@@ -123,7 +123,6 @@ public class SearchFilterDialog extends BaseDialog {
 
     @Override
     public void onButtonPositive(DialogInterface dialog) {
-        super.onButtonPositive(dialog);
         saveState();
         parser.setFilters(query, genreList.size() > 0 ? genreList.get(0) : null, type, sortWorksBy);
         Activity activity = getActivity();
@@ -133,6 +132,21 @@ public class SearchFilterDialog extends BaseDialog {
                 ((SearchFragment) fragment).refreshData(true);
             }
         }
+    }
+
+    @Override
+    public void onButtonNeutral(DialogInterface dialog) {
+        parser.getRequest().clearParams();
+        parser.getRequest().initParams(SearchStatParser.SearchParams.values());
+        parser.setQuery(query);
+        setState(parser);
+        invalidateViews();
+    }
+
+    @Override
+    public void onButtonNegative(DialogInterface dialog) {
+        saveState();
+        parser.setFilters(query, genreList.size() > 0 ? genreList.get(0) : null, type, sortWorksBy);
     }
 
     private void saveState() {
@@ -167,15 +181,6 @@ public class SearchFilterDialog extends BaseDialog {
 
         if (!dialogFilterUndefined.isChecked()) genderSet.remove(Gender.UNDEFINED);
         else genderSet.add(Gender.UNDEFINED);
-    }
-
-    @Override
-    public void onButtonNeutral(DialogInterface dialog) {
-        parser.getRequest().clearParams();
-        parser.getRequest().initParams(SearchStatParser.SearchParams.values());
-        parser.setQuery(query);
-        setState(parser);
-        invalidateViews();
     }
 
     @Override

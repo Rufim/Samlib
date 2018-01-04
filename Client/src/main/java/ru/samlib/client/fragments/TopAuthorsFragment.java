@@ -29,9 +29,6 @@ public class TopAuthorsFragment extends ListFragment<Author> {
         return newInstance(TopAuthorsFragment.class);
     }
 
-    public TopAuthorsFragment() {
-        enableSearch = true;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

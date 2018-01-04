@@ -13,7 +13,6 @@
         <item name="android:textColor">@color/Snow</item>
         <item name="android:navigationBarColor">@color/primaryDark</item>
         <item name="android:windowBackground">@color/dark_grey</item>
-        <item name="android:popupBackground">@color/dark_grey</item>
         <item name="android:textColorLink">@color/light_blue</item>
         <item name="colorControlNormal">@color/light_grey</item>
         <item name="colorControlActivated">@color/light_blue</item>
@@ -42,7 +41,6 @@
         <item name="android:textColor">@color/light_black</item>
         <item name="android:navigationBarColor">@color/Wheat</item>
         <item name="android:windowBackground">@color/PapayaWhip</item>
-        <item name="android:popupBackground">@color/PapayaWhip</item>
         <item name="android:textColorLink">@color/light_blue</item>
         <item name="colorControlNormal">@color/WhiteSmoke</item>
         <item name="colorControlActivated">@color/material_deep_teal_500</item>

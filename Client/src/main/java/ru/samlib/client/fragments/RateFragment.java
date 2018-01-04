@@ -31,9 +31,6 @@ public class RateFragment extends ListFragment<Work> {
         return newInstance(RateFragment.class);
     }
 
-    public RateFragment() {
-        enableSearch = true;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

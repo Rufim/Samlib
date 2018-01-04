@@ -68,7 +68,6 @@ public class MainActivity extends BaseActivity {
             online = savedInstanceState.getBoolean(ONLINE);
             switchStatus(online, savedInstanceState.getInt(SELECTED));
         }
-
     }
 
     @Override

@@ -109,6 +109,8 @@
     <string name="newest_filter">Фильтр по категориям</string>
     <string name="dialog_filter_text">Текст:</string>
     <string name="dialog_filter_switch_mode">Исключающий фильтр</string>
+    <string name="dialog_filter_find">Найти</string>
+    <string name="dialog_filter_apply">Применть фильтр</string>
     <string name="dialog_filter_clear">Сбросить фильтр</string>
     <string name="dialog_filter_gender">Пол автора</string>
     <string name="dialog_filter_male">Мужской</string>

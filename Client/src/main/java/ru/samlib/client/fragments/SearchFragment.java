@@ -100,7 +100,7 @@ public class SearchFragment extends ListFragment<Work> {
         if(query != null) {
             statParser.setQuery(query);
         }
-        pageSize = 10;
+        pageSize = 20;
         return new DataSource<Work>() {
             @Override
             public List<Work> getItems(int skip, int size) throws Exception {
@@ -138,6 +138,7 @@ public class SearchFragment extends ListFragment<Work> {
 
         public SearchArrayAdapter() {
             super(R.layout.item_search);
+            bindRoot = true;
         }
 
         @Override
