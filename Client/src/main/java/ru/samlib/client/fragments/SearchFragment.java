@@ -104,7 +104,11 @@ public class SearchFragment extends ListFragment<Work> {
         return new DataSource<Work>() {
             @Override
             public List<Work> getItems(int skip, int size) throws Exception {
-                return statParser.getPage(skip/pageSize + 1);
+                List<Work> works =  statParser.getPage((skip/pageSize) + 1);
+                if(works.size() < pageSize) {
+                    isEnd = true;
+                }
+                return works;
             }
         };
     }
@@ -122,6 +126,11 @@ public class SearchFragment extends ListFragment<Work> {
         } else {
             stopLoading();
         }
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        super.refreshData(showProgress);
     }
 
     protected class SearchArrayAdapter extends ItemListAdapter<Work> {
