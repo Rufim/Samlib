@@ -183,7 +183,7 @@ public class SearchFragment extends ListFragment<Work> {
             if(work.getVotes() != null && work.getVotes() > 0 && work.getRate() != null) {
                 subtitle.add(work.getRate() + "/" + work.getVotes());
             }
-            subtitle.add(work.getSize().toString() + "k");
+            if(work.getSize() != null) subtitle.add(work.getSize().toString() + "k");
             HtmlSpanner spanner = new HtmlSpanner();
             spanner.registerHandler("img", new PicassoImageHandler(subtitleTextView));
             spanner.registerHandler("a", new LinkHandler(subtitleTextView));
