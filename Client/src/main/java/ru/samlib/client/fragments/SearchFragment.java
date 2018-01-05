@@ -180,7 +180,7 @@ public class SearchFragment extends ListFragment<Work> {
                 subtitle.add(getString(R.string.item_genres_label));
                 subtitle.add(work.printGenres());
             }
-            if(work.getVotes() != null && work.getVotes() > 0) {
+            if(work.getVotes() != null && work.getVotes() > 0 && work.getRate() != null) {
                 subtitle.add(work.getRate() + "/" + work.getVotes());
             }
             subtitle.add(work.getSize().toString() + "k");
