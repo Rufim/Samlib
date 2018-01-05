@@ -2,9 +2,11 @@ package ru.samlib.client.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayout;
@@ -12,9 +14,9 @@ import android.view.View;
 import android.widget.*;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import lombok.Getter;
 import ru.kazantsev.template.dialog.BaseDialog;
 import ru.kazantsev.template.net.Request;
-import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.SystemUtils;
 import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.R;
@@ -26,24 +28,70 @@ import ru.samlib.client.domain.entity.Type;
 import ru.samlib.client.fragments.SearchFragment;
 import ru.samlib.client.parser.SearchStatParser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by 0shad on 25.10.2015.
  */
 public class SearchFilterDialog extends BaseDialog {
 
+
+    public static class ItemAdapter {
+        private Linkable value;
+        private String def = "Любой";
+
+        ItemAdapter(Linkable value) {
+            this.value = value;
+        }
+
+        public ItemAdapter(String def) {
+            this.value = null;
+            this.def = def;
+        }
+
+        @Override
+        public String toString() {
+            return value == null ? def : value.getTitle();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this || (obj instanceof ItemAdapter && ((ItemAdapter) obj).value != null && ((ItemAdapter) obj).value.equals(this.value));
+        }
+
+        private static  <T extends Linkable> List<ItemAdapter> createList(String def, T... array) {
+            List<ItemAdapter> arrayList = new ArrayList<>();
+            arrayList.add(new ItemAdapter(def));
+            for (T t : array) {
+                if (TextUtils.notEmpty(t.getLink())) {
+                    arrayList.add(new ItemAdapter(t));
+                }
+            }
+            return arrayList;
+        }
+
+        public static <T extends Linkable> int indexOf(Linkable value, T... array) {
+            List<ItemAdapter> list = createList(null , array);
+            for (int i = 0; i < list.size(); i++) {
+                ItemAdapter it = list.get(i);
+                if(it.value == value) return i;
+            }
+            return 0;
+        }
+
+        public static <T extends Linkable> ArrayAdapter<ItemAdapter> createAdapter(Context context, @StringRes int id, T ... array) {
+            return new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, createList(context.getString(id),array));
+        }
+
+    }
+
+
     @BindView(R.id.dialog_filter_switch_mode)
     Switch dialogFilterSwitchMode;
-    @BindView(R.id.dialog_filter_grid_genre)
-    GridLayout dialogFilterGridGenre;
-    @BindView(R.id.dialog_filter_grid_type)
-    GridLayout dialogFilterGridType;
-    @BindView(R.id.scrollViewGenre)
-    ScrollView scrollViewGenre;
+    @BindView(R.id.dialog_filter_genre)
+    Spinner dialogFilterGenre;
+    @BindView(R.id.dialog_filter_type)
+    Spinner dialogFilterType;
     @BindView(R.id.dialog_filter_male)
     CheckBox dialogFilterMale;
     @BindView(R.id.dialog_filter_female)
@@ -57,7 +105,7 @@ public class SearchFilterDialog extends BaseDialog {
     @BindView(R.id.dialog_filter_sort_views)
     RadioButton dialogSortViews;
     View rootView;
-    List<Genre> genreList;
+    Genre genre;
     EnumSet<Gender> genderSet;
     Type type;
     SearchStatParser.SortWorksBy sortWorksBy;
@@ -70,13 +118,8 @@ public class SearchFilterDialog extends BaseDialog {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         rootView = getActivity().getLayoutInflater().inflate(R.layout.search_dialog_filter, null);
         ButterKnife.bind(this, rootView);
-        for (Genre genre : Genre.values()) {
-            addToGrid(dialogFilterGridGenre, genre, false);
-        }
-        for (Type type : Type.values()) {
-            if(!type.equals(Type.OTHER))
-            addToGrid(dialogFilterGridType, type, false);
-        }
+        dialogFilterGenre.setAdapter(ItemAdapter.createAdapter(getContext(), R.string.dialog_filter_an, Genre.values()));
+        dialogFilterType.setAdapter(ItemAdapter.createAdapter(getContext(), R.string.dialog_filter_any, Type.values()));
         SystemUtils.forEach((button) -> {
             button.setOnCheckedChangeListener((cb, checked) -> {
                 if (checked) {
@@ -90,7 +133,6 @@ public class SearchFilterDialog extends BaseDialog {
         }, dialogSortActivity, dialogSortRating, dialogSortViews);
         invalidateViews();
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.search_filter)
                 .setPositiveButton(R.string.dialog_filter_find, this)
                 .setNegativeButton(R.string.dialog_filter_apply, this)
                 .setNeutralButton(R.string.dialog_filter_clear, this)
@@ -98,14 +140,16 @@ public class SearchFilterDialog extends BaseDialog {
         return adb.create();
     }
 
+
+
     public void setState(SearchStatParser parser) {
         if (parser != null) {
             this.parser = parser;
             Request request = parser.getRequest();
             if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.genre))) {
-                this.genreList = Arrays.asList(Genre.valueOf(request.getParam(SearchStatParser.SearchParams.genre)));
+                this.genre = Genre.valueOf(request.getParam(SearchStatParser.SearchParams.genre));
             } else {
-                this.genreList = new ArrayList<>();
+                this.genre = null;
             }
             if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.type))) {
                 this.type = Type.valueOf(request.getParam(SearchStatParser.SearchParams.type));
@@ -124,7 +168,7 @@ public class SearchFilterDialog extends BaseDialog {
     @Override
     public void onButtonPositive(DialogInterface dialog) {
         saveState();
-        parser.setFilters(query, genreList.size() > 0 ? genreList.get(0) : null, type, sortWorksBy);
+        parser.setFilters(query, genre, type, sortWorksBy);
         Activity activity = getActivity();
         if(activity != null && activity instanceof MainActivity) {
             Fragment fragment = ((MainActivity) activity).getCurrentFragment();
@@ -146,27 +190,12 @@ public class SearchFilterDialog extends BaseDialog {
     @Override
     public void onButtonNegative(DialogInterface dialog) {
         saveState();
-        parser.setFilters(query, genreList.size() > 0 ? genreList.get(0) : null, type, sortWorksBy);
+        parser.setFilters(query, genre, type, sortWorksBy);
     }
 
     private void saveState() {
-        ArrayList<Genre> genres = new ArrayList<>();
-        for (int i = 0; i < dialogFilterGridGenre.getChildCount(); i++) {
-            RadioButton radioButton = (RadioButton) dialogFilterGridGenre.getChildAt(i);
-            if (radioButton.isChecked()) {
-                genres.add((Genre) radioButton.getTag());
-            }
-        }
-        genreList = genres;
-        type = null;
-        for (int i = 0; i < dialogFilterGridType.getChildCount(); i++) {
-            RadioButton radioButton = (RadioButton) dialogFilterGridType.getChildAt(i);
-            if (radioButton.isChecked()) {
-                type = (Type) radioButton.getTag();
-                break;
-            }
-        }
-
+        genre = (Genre) ((ItemAdapter) dialogFilterGenre.getSelectedItem()).value;
+        type = (Type) ((ItemAdapter) dialogFilterType.getSelectedItem()).value;
         if (dialogSortActivity.isChecked()) sortWorksBy = SearchStatParser.SortWorksBy.ACTIVITY;
         else if (dialogSortRating.isChecked()) sortWorksBy = SearchStatParser.SortWorksBy.RATING;
         else if (dialogSortViews.isChecked()) sortWorksBy = SearchStatParser.SortWorksBy.VIEWS;
@@ -204,22 +233,8 @@ public class SearchFilterDialog extends BaseDialog {
             genderSet = EnumSet.allOf(Gender.class);
         }
         dialogFilterSwitchMode.setChecked(excluding);
-        for (int i = 0; i < dialogFilterGridGenre.getChildCount(); i++) {
-            RadioButton radioButton = (RadioButton) dialogFilterGridGenre.getChildAt(i);
-            if (genreList == null) {
-                radioButton.setChecked(false);
-            } else {
-                radioButton.setChecked(genreList.contains(radioButton.getTag()));
-            }
-        }
-        for (int i = 0; i < dialogFilterGridType.getChildCount(); i++) {
-            RadioButton radioButton = (RadioButton) dialogFilterGridType.getChildAt(i);
-            if (type == null) {
-                radioButton.setChecked(false);
-            } else {
-                radioButton.setChecked(type.equals(radioButton.getTag()));
-            }
-        }
+        if(genre != null) dialogFilterGenre.setSelection(ItemAdapter.indexOf(genre, Genre.values()));
+        if(type != null) dialogFilterType.setSelection(ItemAdapter.indexOf(type, Type.values()));
         for (Gender gender : genderSet) {
             switch (gender) {
                 case MALE:

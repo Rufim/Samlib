@@ -19,6 +19,8 @@
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
+                  android:paddingTop="2dp"
+                  android:paddingBottom="2dp"
                   android:gravity="center_horizontal">
         <CheckBox
                 android:layout_width="wrap_content"
@@ -36,7 +38,13 @@
                 android:text="@string/dialog_filter_undefined"
                 android:id="@+id/dialog_filter_undefined"/>
     </LinearLayout>
-    <ScrollView
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/dialog_filter_genres"
+              android:textSize="@dimen/text_large"
+              android:padding="4dp"
+              android:layout_gravity="center_horizontal"/>
+    <ru.samlib.client.view.MaxHeightScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
@@ -48,5 +56,5 @@
                                               app:columnCount="@integer/newest_filter_grid_count"
                                               app:useDefaultMargins="true"
                                               app:orientation="horizontal"/>
-    </ScrollView>
+    </ru.samlib.client.view.MaxHeightScrollView>
 </LinearLayout>

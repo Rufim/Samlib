@@ -3,7 +3,7 @@
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="wrap_content">
     <Switch android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -47,6 +47,8 @@
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
+                  android:paddingTop="2dp"
+                  android:paddingBottom="2dp"
                   android:gravity="center_horizontal">
         <RadioButton
                 android:layout_width="wrap_content"
@@ -70,38 +72,22 @@
               android:textSize="@dimen/text_large"
               android:padding="4dp"
               android:layout_gravity="center_horizontal"/>
-    <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.5"
-            android:gravity="center_horizontal"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:id="@+id/scrollViewGenre" android:layout_gravity="center_horizontal">
-        <android.support.v7.widget.GridLayout android:layout_width="wrap_content"
-                                              android:layout_height="wrap_content"
-                                              android:id="@+id/dialog_filter_grid_genre"
-                                              app:columnCount="@integer/newest_filter_grid_count"
-                                              app:useDefaultMargins="true"
-                                              app:orientation="horizontal"/>
-    </ScrollView>
+    <Spinner
+            android:id="@+id/dialog_filter_genre"
+            android:layout_width="fill_parent"
+            android:layout_margin="5dp"
+            android:backgroundTint="?android:attr/colorControlActivated"
+            android:layout_height="wrap_content"/>
     <TextView android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="@string/dialog_filter_type"
               android:textSize="@dimen/text_large"
               android:padding="4dp"
               android:layout_gravity="center_horizontal"/>
-    <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.5"
-            android:gravity="center_horizontal"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:id="@+id/scrollViewType" android:layout_gravity="center_horizontal">
-        <android.support.v7.widget.GridLayout android:layout_width="wrap_content"
-                                              android:layout_height="wrap_content"
-                                              android:id="@+id/dialog_filter_grid_type"
-                                              app:columnCount="@integer/newest_filter_grid_count"
-                                              app:useDefaultMargins="true"
-                                              app:orientation="horizontal"/>
-    </ScrollView>
+    <Spinner
+            android:id="@+id/dialog_filter_type"
+            android:layout_width="fill_parent"
+            android:layout_margin="5dp"
+            android:backgroundTint="?android:attr/colorControlActivated"
+            android:layout_height="wrap_content"/>
 </LinearLayout>

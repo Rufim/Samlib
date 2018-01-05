@@ -3,6 +3,7 @@ package ru.samlib.client.fragments;
 import android.os.Bundle;
 
 
+import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.*;
@@ -15,6 +16,7 @@ import ru.kazantsev.template.fragments.ListFragment;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.activity.SectionActivity;
+import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.dialog.SearchFilterDialog;
 import ru.samlib.client.domain.Constants;
@@ -76,8 +78,20 @@ public class SearchFragment extends ListFragment<Work> {
     }
 
     @Override
+    public boolean onQueryTextChange(String query) {
+        statParser.setQuery(query);
+        return super.onQueryTextChange(query);
+    }
+
+    @Override
     public boolean onQueryTextSubmit(String query) {
         statParser.setQuery(query);
+        if(!TextUtils.isEmpty(query)) {
+                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
+                    SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
+            suggestions.saveRecentQuery(query, null);
+        }
+        if(!searchView.getQuery().equals(query)) searchView.setQuery(query, false);
         refreshData(true);
         return true;
     }
@@ -165,6 +179,9 @@ public class SearchFragment extends ListFragment<Work> {
             if (work.getGenres() != null && work.getGenres().size() > 0) {
                 subtitle.add(getString(R.string.item_genres_label));
                 subtitle.add(work.printGenres());
+            }
+            if(work.getVotes() != null & work.getVotes() > 0) {
+                subtitle.add(work.getRate() + "/" + work.getVotes());
             }
             subtitle.add(work.getSize().toString() + "k");
             HtmlSpanner spanner = new HtmlSpanner();
