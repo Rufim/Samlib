@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:paddingTop="2dp"
+              android:paddingBottom="2dp"
+              android:gravity="center_horizontal" >
+    <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_filter_sort_activity"
+            android:id="@+id/dialog_filter_sort_activity"/>
+    <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_filter_sort_rating"
+            android:id="@+id/dialog_filter_sort_rating"/>
+    <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dialog_filter_sort_views"
+            android:id="@+id/dialog_filter_sort_views"/>
+</LinearLayout>
