@@ -168,6 +168,8 @@ public class SearchFilterDialog extends BaseDialog {
             }
             if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.work_size))) {
                 this.size = TextUtils.parseInt(request.getParam(SearchStatParser.SearchParams.work_size));
+            } else {
+                this.size = null;
             }
             this.query = request.getParam(SearchStatParser.SearchParams.query);
         }
@@ -242,9 +244,9 @@ public class SearchFilterDialog extends BaseDialog {
             genderSet = EnumSet.allOf(Gender.class);
         }
         dialogFilterSwitchMode.setChecked(excluding);
-        if(genre != null) dialogFilterGenre.setSelection(ItemAdapter.indexOf(genre, Genre.values()));
-        if(type != null) dialogFilterType.setSelection(ItemAdapter.indexOf(type, Type.values()));
-        if(size != null && size > 0) dialogSize.setText((CharSequence) size.toString());
+        if(genre != null) dialogFilterGenre.setSelection(ItemAdapter.indexOf(genre, Genre.values())); else dialogFilterGenre.setSelection(0);
+        if(type != null) dialogFilterType.setSelection(ItemAdapter.indexOf(type, Type.values())); else dialogFilterType.setSelection(0);
+        if(size != null && size > 0) dialogSize.setText((CharSequence) size.toString()); else dialogSize.setText("");
         for (Gender gender : genderSet) {
             switch (gender) {
                 case MALE:
@@ -273,29 +275,6 @@ public class SearchFilterDialog extends BaseDialog {
                     dialogSortViews.setChecked(true);
                     break;
             }
-        }
-    }
-
-    private void addToGrid(GridLayout gridLayout, Linkable linkable, boolean checked) {
-        if (linkable != null) {
-            RadioButton radioButton = new RadioButton(getActivity());
-            radioButton.setText(linkable.getTitle());
-            radioButton.setTag(linkable);
-            radioButton.setChecked(checked);
-            radioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                    if (checked) {
-                        for (int i = 0; i < gridLayout.getChildCount(); i++) {
-                            RadioButton radioButton = (RadioButton) gridLayout.getChildAt(i);
-                            if (compoundButton != radioButton && radioButton.isChecked()) {
-                                radioButton.setChecked(false);
-                            }
-                        }
-                    }
-                }
-            });
-            gridLayout.addView(radioButton);
         }
     }
 
