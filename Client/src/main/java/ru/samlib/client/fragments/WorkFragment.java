@@ -265,6 +265,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     @Override
+    public void onDestroyView() {
+        if(work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext())  / Math.pow(1024 , 2)) - 100 < 100) {
+            work.setParsed(false);
+            work.getIndents().clear();
+            work.setRawContent(null);
+        }
+        super.onDestroyView();
+    }
+
+    @Override
     protected void firstLoad(boolean scroll) {
         try {
             Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
