@@ -9,6 +9,7 @@ import ru.kazantsev.template.domain.Valuable;
 import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.net.Response;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.lister.PageDataSource;
@@ -43,7 +44,7 @@ public class SearchStatParser implements PageDataSource<Work> {
     }
 
     public enum SearchParams implements Valuable {
-        query(""), genre(""), type(""), sort(""), page(""), page_size("20");
+        query(""), genre(""), type(""), sort(""), page(""), page_size("20"), work_size("");
 
         private final String defaultValue;
 
@@ -98,16 +99,17 @@ public class SearchStatParser implements PageDataSource<Work> {
         request.addParam(SearchParams.query, query);
     }
 
-    public void setFilters(String string, Genre genre, Type type, SortWorksBy sort) {
+    public void setFilters(String string, Genre genre, Type type, Integer size, SortWorksBy sort) {
         if (string != null) request.addParam(SearchParams.query, string);
         if (type != null) request.addParam(SearchParams.type, type.name());
         if (genre != null) request.addParam(SearchParams.genre, genre.name());
         if (sort != null) request.addParam(SearchParams.sort, sort.name());
+        if (size != null && size > 0) request.addParam(SearchParams.work_size, size);
     }
 
     @Override
     public List<Work> getPage(int page) throws IOException  {
-        if (HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 80, 10000)) {
+       // if (HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 80, 10000)) {
             try {
                 request.addParam(SearchParams.page, page);
                 Response response = request.execute();
@@ -116,9 +118,9 @@ public class SearchStatParser implements PageDataSource<Work> {
             } catch (Throwable ex) {
                 throw new IOException(ex);
             }
-        } else {
-            throw new ConnectException("Server unreachable");
-        }
+       // } else {
+       //     throw new ConnectException("Server unreachable");
+       // }
     }
 
 

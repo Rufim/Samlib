@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.*;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import lombok.Getter;
 import ru.kazantsev.template.dialog.BaseDialog;
 import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.SystemUtils;
@@ -51,6 +50,9 @@ public class SearchFilterDialog extends BaseDialog {
 
         @Override
         public String toString() {
+            if(value != null && value.equals(Type.ARTICLE)) {
+                return "Авторские группы/Статьи";
+            }
             return value == null ? def : value.getTitle();
         }
 
@@ -80,7 +82,7 @@ public class SearchFilterDialog extends BaseDialog {
         }
 
         public static <T extends Linkable> ArrayAdapter<ItemAdapter> createAdapter(Context context, @StringRes int id, T ... array) {
-            return new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, createList(context.getString(id),array));
+            return new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item, createList(context.getString(id),array));
         }
 
     }
@@ -104,10 +106,13 @@ public class SearchFilterDialog extends BaseDialog {
     RadioButton dialogSortRating;
     @BindView(R.id.dialog_filter_sort_views)
     RadioButton dialogSortViews;
+    @BindView(R.id.dialog_filter_size)
+    EditText dialogSize;
     View rootView;
     Genre genre;
     EnumSet<Gender> genderSet;
     Type type;
+    Integer size;
     SearchStatParser.SortWorksBy sortWorksBy;
     boolean excluding = false;
     String query;
@@ -116,7 +121,7 @@ public class SearchFilterDialog extends BaseDialog {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        rootView = getActivity().getLayoutInflater().inflate(R.layout.search_dialog_filter, null);
+        rootView = getActivity().getLayoutInflater().inflate(R.layout.dialog_search_filter, null);
         ButterKnife.bind(this, rootView);
         dialogFilterGenre.setAdapter(ItemAdapter.createAdapter(getContext(), R.string.dialog_filter_an, Genre.values()));
         dialogFilterType.setAdapter(ItemAdapter.createAdapter(getContext(), R.string.dialog_filter_any, Type.values()));
@@ -161,6 +166,9 @@ public class SearchFilterDialog extends BaseDialog {
             } else {
                 this.sortWorksBy = SearchStatParser.SortWorksBy.ACTIVITY;
             }
+            if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.work_size))) {
+                this.dialogSize.setText(request.getParam(SearchStatParser.SearchParams.work_size));
+            }
             this.query = request.getParam(SearchStatParser.SearchParams.query);
         }
     }
@@ -168,7 +176,7 @@ public class SearchFilterDialog extends BaseDialog {
     @Override
     public void onButtonPositive(DialogInterface dialog) {
         saveState();
-        parser.setFilters(query, genre, type, sortWorksBy);
+        parser.setFilters(query, genre, type, size, sortWorksBy);
         Activity activity = getActivity();
         if(activity != null && activity instanceof MainActivity) {
             Fragment fragment = ((MainActivity) activity).getCurrentFragment();
@@ -190,12 +198,13 @@ public class SearchFilterDialog extends BaseDialog {
     @Override
     public void onButtonNegative(DialogInterface dialog) {
         saveState();
-        parser.setFilters(query, genre, type, sortWorksBy);
+        parser.setFilters(query, genre, type, size, sortWorksBy);
     }
 
     private void saveState() {
         genre = (Genre) ((ItemAdapter) dialogFilterGenre.getSelectedItem()).value;
         type = (Type) ((ItemAdapter) dialogFilterType.getSelectedItem()).value;
+        size = TextUtils.parseInt(dialogSize.getText().toString());
         if (dialogSortActivity.isChecked()) sortWorksBy = SearchStatParser.SortWorksBy.ACTIVITY;
         else if (dialogSortRating.isChecked()) sortWorksBy = SearchStatParser.SortWorksBy.RATING;
         else if (dialogSortViews.isChecked()) sortWorksBy = SearchStatParser.SortWorksBy.VIEWS;
@@ -235,6 +244,7 @@ public class SearchFilterDialog extends BaseDialog {
         dialogFilterSwitchMode.setChecked(excluding);
         if(genre != null) dialogFilterGenre.setSelection(ItemAdapter.indexOf(genre, Genre.values()));
         if(type != null) dialogFilterType.setSelection(ItemAdapter.indexOf(type, Type.values()));
+        if(size != null && size > 0) dialogSize.setText((CharSequence) size.toString());
         for (Gender gender : genderSet) {
             switch (gender) {
                 case MALE:

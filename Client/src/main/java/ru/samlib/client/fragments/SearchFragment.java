@@ -110,7 +110,7 @@ public class SearchFragment extends ListFragment<Work> {
     @Override
     protected DataSource<Work> newDataSource() throws Exception {
         query = getArguments().getString(Constants.ArgsName.SEARCH_QUERY);
-        statParser = new SearchStatParser();
+        if(statParser == null) statParser = new SearchStatParser();
         if(query != null) {
             statParser.setQuery(query);
         }
