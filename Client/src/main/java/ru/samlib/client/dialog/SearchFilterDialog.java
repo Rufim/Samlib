@@ -167,7 +167,7 @@ public class SearchFilterDialog extends BaseDialog {
                 this.sortWorksBy = SearchStatParser.SortWorksBy.ACTIVITY;
             }
             if (TextUtils.notEmpty(request.getParam(SearchStatParser.SearchParams.work_size))) {
-                this.dialogSize.setText(request.getParam(SearchStatParser.SearchParams.work_size));
+                this.size = TextUtils.parseInt(request.getParam(SearchStatParser.SearchParams.work_size));
             }
             this.query = request.getParam(SearchStatParser.SearchParams.query);
         }
