@@ -100,11 +100,11 @@ public class SearchStatParser implements PageDataSource<Work> {
     }
 
     public void setFilters(String string, Genre genre, Type type, Integer size, SortWorksBy sort) {
-        if (string != null) request.addParam(SearchParams.query, string);
-        if (type != null) request.addParam(SearchParams.type, type.name());
-        if (genre != null) request.addParam(SearchParams.genre, genre.name());
-        if (sort != null) request.addParam(SearchParams.sort, sort.name());
-        if (size != null && size > 0) request.addParam(SearchParams.work_size, size);
+        if (string != null) request.addParam(SearchParams.query, string); else request.addParam(SearchParams.query, "");
+        if (type != null) request.addParam(SearchParams.type, type.name()); else request.addParam(SearchParams.type, "");
+        if (genre != null) request.addParam(SearchParams.genre, genre.name()); else request.addParam(SearchParams.genre, "");
+        if (sort != null) request.addParam(SearchParams.sort, sort.name()); else request.addParam(SearchParams.sort, "");
+        if (size != null && size > 0) request.addParam(SearchParams.work_size, size); else request.addParam(SearchParams.work_size, "");
     }
 
     @Override
