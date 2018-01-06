@@ -139,9 +139,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-v4'
     }
     compile "com.snappydb:snappydb-lib:0.5.2"
-    compile "com.evernote:android-job:1.1.11-SNAPSHOT"
+    compile "com.evernote:android-job:1.2.1"
     compile "net.vrallev.android:cat:1.0.4"
-    compile 'com.google.android.gms:play-services-location:11.8.0'
+
+    compile "com.google.android.gms:play-services-gcm:11.8.0"
 
     compile "com.github.Raizlabs.DBFlow:dbflow-core:$dbflowVersion"
     compile "com.github.Raizlabs.DBFlow:dbflow:$dbflowVersion"

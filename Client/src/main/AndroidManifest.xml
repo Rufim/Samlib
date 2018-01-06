@@ -90,6 +90,10 @@
             android:exported="true"
             android:enabled="true"/>
 
+        <service
+                android:name="com.evernote.android.job.gcm.PlatformGcmService"
+                tools:node="remove"/>
+
         <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity"/>

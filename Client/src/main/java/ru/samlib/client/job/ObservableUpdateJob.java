@@ -89,9 +89,9 @@ public class ObservableUpdateJob extends Job {
         List<CharSequence> notifyAuthors = new ArrayList<>();
         MergeFromRequery.merge(context, service);
         boolean statServerReachable = false;
-        //if(HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 8080, 10000)) {
-        //    statServerReachable = true;
-        //}
+        if(HTTPExecutor.pingHost(Constants.Net.STAT_SERVER, 80, 10000)) {
+            statServerReachable = true;
+        }
         Calendar yesterday = Calendar.getInstance();
         yesterday.add(Calendar.DAY_OF_YEAR, -1);
         yesterday.set(Calendar.HOUR_OF_DAY, 23);
@@ -110,7 +110,10 @@ public class ObservableUpdateJob extends Job {
                         if (statServerReachable && author.getLastUpdateDate() != null) {
                             //use server api
                             try {
-                                checkUpdateDateOnStatServer(author);
+                                if(checkUpdateDateOnStatServer(author)) {
+                                    author = parser.parse();
+                                    parsed = true;
+                                }
                             } catch (Throwable ex) {
                                 Cat.e(ex);
                                 author = parser.parse();
@@ -186,8 +189,9 @@ public class ObservableUpdateJob extends Job {
     public static void startSchedule() {
         jobId = AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
                 .setPeriodic(10800000)
-                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                .setRequiredNetworkType(JobRequest.NetworkType.UNMETERED)
                 .setUpdateCurrent(true)
+                .setRequirementsEnforced(true)
                 .build()
                 .schedule();
     }
@@ -195,13 +199,13 @@ public class ObservableUpdateJob extends Job {
     public static void start() {
         AppJobCreator.request(JobType.UPDATE_OBSERVABLE)
                 .setExecutionWindow(1L, 2000L)
-                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                .setRequiredNetworkType(JobRequest.NetworkType.UNMETERED)
                 .build()
                 .schedule();
     }
 
 
-    public static void checkUpdateDateOnStatServer(Author author) throws Exception {
+    public static boolean checkUpdateDateOnStatServer(Author author) throws Exception {
         Request update = new Request(Constants.Net.STAT_SERVER_UPDATE);
         update.addParam("link", author.getLink());
         Response response = update.execute();
@@ -217,12 +221,13 @@ public class ObservableUpdateJob extends Job {
                 lastUpdate.set(Calendar.MILLISECOND, 999);
             }
             if (lastUpdateDate.after(lastUpdate.getTime())) {
-                author.hasNewUpdates();
                 author.setLastUpdateDate(lastUpdateDate);
+                return true;
             }
         } else {
             throw new Exception("Author not found!");
         }
+        return false;
     }
 
 

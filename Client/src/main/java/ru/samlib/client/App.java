@@ -1,17 +1,10 @@
 package ru.samlib.client;
 
-import android.app.Application;
 import android.content.Context;
-import android.content.res.Configuration;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.multidex.MultiDexApplication;
 import com.evernote.android.job.JobManager;
-import com.evernote.android.job.util.JobApi;
 import com.raizlabs.android.dbflow.config.FlowConfig;
-import com.raizlabs.android.dbflow.config.FlowLog;
 import com.raizlabs.android.dbflow.config.FlowManager;
-import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
 import dagger.Module;
 
 

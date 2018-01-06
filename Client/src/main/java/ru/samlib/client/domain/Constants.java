@@ -73,6 +73,7 @@ public class Constants {
     public static class Pattern {
         public static final String TIME_PATTERN = "HH:mm";
         public static final String DATA_PATTERN = "dd-MM-yyyy";
+        public static final String DATA_PATTERN_LOG = "dd/MM/yyyy";
         public static final String DATA_TIME_PATTERN = "dd-MM-yyyy HH:mm";
         public static final String DATA_ISO_8601_24H = "yyyy-MM-dd HH:mm:ss";
         public static final String DATA_PATTERN_DIFF = "dd.MM.yyyy";

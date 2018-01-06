@@ -23,7 +23,7 @@ public class ApiParser {
     private static final String TAG = "Parser";
 
     private final static SimpleDateFormat dateTimeFormat = new SimpleDateFormat(Constants.Pattern.DATA_ISO_8601_24H);
-    private final static SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
+    private final static SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN_LOG);
     private final static SimpleDateFormat dateFormatDiff = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN_DIFF);
 
     private final static Pattern title = Pattern.compile("\\s*<title>Журнал &quot;Самиздат&quot;: Статистика: (.+), (.+)</title>\\s*");
