@@ -1230,7 +1230,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         break;
                 }
             }
-            return true;
+            return false;
         }
 
         @Override
