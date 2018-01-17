@@ -67,10 +67,11 @@
                       android:id="@+id/author_annotation"
                       style="@style/author_info"
                       android:text="@string/author_annotation"/>
-            <TextView android:layout_width="wrap_content"
+            <ru.kazantsev.template.view.HackyTextView android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
                       android:id="@+id/author_section_annotation_text"
                       style="@style/author_info_content"
+                      android:textIsSelectable="true"
                       android:text="Пишу на Самиздате с 21.05.2014
 Копирование и размещение текстов на сторонних ресурсах без разрешения автора запрещается!!!
 Для желающих угостить автора и Муза шоколадкой: Яндекс.Деньги 410011573041491"/>

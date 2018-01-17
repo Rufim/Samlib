@@ -16,11 +16,12 @@
                   android:text="Глава"
                   android:padding="7dp"
                   style="@style/item_text"/>
-        <TextView
+        <ru.kazantsev.template.view.HackyTextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/section_annotation"
                 android:textColor="?attr/textColorAnnotations"
+                android:textIsSelectable="true"
                 android:layout_marginLeft="@dimen/spacing_medium"
                 android:layout_marginRight="@dimen/spacing_medium"
                 android:layout_marginBottom="@dimen/spacing_small"

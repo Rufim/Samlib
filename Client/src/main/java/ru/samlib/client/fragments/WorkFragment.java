@@ -102,6 +102,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private View decorView;
 
     private long timer = 0;
+    private long pressed = 0;
     private boolean second = false;
 
     private int lastOffset = 0;
@@ -148,13 +149,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
             if (!work.isParsed()) {
                 if (externalWork != null) {
-                    if(externalWork.getContentUri() != null) {
+                    if (externalWork.getContentUri() != null) {
                         FileDescriptor descriptor = getContext().getContentResolver().openFileDescriptor(externalWork.getContentUri(), "r").getFileDescriptor();
                         File cachedFile = new File(externalWork.getFilePath());
-                        if(cachedFile.exists()) {
+                        if (cachedFile.exists()) {
                             cachedFile.delete();
                         }
-                        if(cachedFile.getParentFile().mkdirs() || cachedFile.createNewFile()) {
+                        if (cachedFile.getParentFile().mkdirs() || cachedFile.createNewFile()) {
                             FileInputStream in = null;
                             FileOutputStream out = null;
                             try {
@@ -177,7 +178,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     }
                     File externalFile = new File(externalWork.getFilePath());
                     AtomicInteger gained = new AtomicInteger(-1);
-                    if(!externalFile.canRead()) {
+                    if (!externalFile.canRead()) {
                         getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new BaseActivity.PermissionAction() {
                             @Override
                             public void doAction(boolean permissionGained) {
@@ -190,7 +191,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     while (gained.get() == -1) {
                         SystemUtils.sleepQuietly(100);
                     }
-                    if(gained.get() == 0 || !externalFile.exists()) {
+                    if (gained.get() == 0 || !externalFile.exists()) {
                         throw new IOException();
                     }
                     work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
@@ -233,8 +234,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     protected void onDataTaskException(Exception ex) {
         if (ex instanceof IOException) {
-            if(Parser.isCachedMode() || externalWork != null) {
-                if(externalWork == null) {
+            if (Parser.isCachedMode() || externalWork != null) {
+                if (externalWork == null) {
                     ErrorFragment.show(this, R.string.work_not_in_cache, 0, ex);
                 } else {
                     ErrorFragment.show(this, R.string.work_cant_open, 0, ex);
@@ -244,7 +245,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
         } else {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error, ex);
-            if(work != null && work.getLink() != null) {
+            if (work != null && work.getLink() != null) {
                 ACRA.getErrorReporter().handleException(new Exception("Unhandled exception occurred while parse author by url: " + work.getLink(), ex));
             } else {
                 ACRA.getErrorReporter().handleException(ex);
@@ -266,7 +267,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onDestroyView() {
-        if(work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext())  / Math.pow(1024 , 2)) - 100 < 100) {
+        if (work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext()) / Math.pow(1024, 2)) - 100 < 100) {
             work.setParsed(false);
             work.getIndents().clear();
             work.setRawContent(null);
@@ -411,7 +412,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (!work.isHasComments()) {
                 menu.removeItem(R.id.action_work_comments);
             }
-            if(!work.isHasRate()){
+            if (!work.isHasRate()) {
                 menu.removeItem(R.id.action_work_rate);
             }
             if (work.isNotSamlib()) {
@@ -442,7 +443,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 menu.removeItem(R.id.action_work_speaking);
                 menu.removeItem(R.id.action_work_speaking_language);
             }
-            if(work.getBookmark().isUserBookmark()) {
+            if (work.getBookmark().isUserBookmark()) {
                 safeCheckMenuItem(R.id.action_work_lock_bookmark, true);
             }
         } else {
@@ -597,7 +598,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                         WorkFragment.this.selectText(speakIndex, phrase.start, phrase.end);
                         isWaitingForSkipStart = false;
-                    } else if(isAdded() && !isStopped){
+                    } else if (isAdded() && !isStopped) {
                         clearSelection();
                         WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
                         itemList.postDelayed(new Runnable() {
@@ -659,11 +660,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), R.string.preferenceVoiceLanguage, "ru");
                 preference.keyValue = TTSPlayer.getAvailableLanguages(getContext());
                 editListPreferenceDialog.setPreference(preference);
-                editListPreferenceDialog.setOnCommit((value, d) -> {safeInvalidateOptionsMenu(); return true;});
+                editListPreferenceDialog.setOnCommit((value, d) -> {
+                    safeInvalidateOptionsMenu();
+                    return true;
+                });
                 editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
                 return true;
             case R.id.action_work_to_author:
-                AuthorFragment.show(new FragmentBuilder(getFragmentManager()), getBaseActivity().getContainer().getId(),  work.getAuthor());
+                AuthorFragment.show(new FragmentBuilder(getFragmentManager()), getBaseActivity().getContainer().getId(), work.getAuthor());
             case R.id.action_work_lock_bookmark:
                 boolean checked = !item.isChecked();
                 item.setChecked(checked);
@@ -750,8 +754,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                if(WorkParser.sendRate(work, value)) {
-                                    if(isAdded()) {
+                                if (WorkParser.sendRate(work, value)) {
+                                    if (isAdded()) {
                                         PreferenceMaster master = new PreferenceMaster(getContext());
                                         String vote = master.getValue(R.string.preferenceVoteCoockie, "0");
                                         if (!vote.equals(Parser.getVoteCookie())) {
@@ -824,7 +828,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public boolean onQueryTextChange(String query) {
-        if(!TextUtils.isEmpty(query)) {
+        if (!TextUtils.isEmpty(query)) {
             if (mode.equals(Mode.SPEAK)) {
                 safeCheckMenuItem(R.id.action_work_speaking, false);
                 stopSpeak(true);
@@ -1245,6 +1249,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            pressed = System.currentTimeMillis();
+                        }
                         if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
                             int offset = 0;
@@ -1269,6 +1276,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 lastIndent = firstIsHeader + ((ViewHolder) view.getTag()).getLayoutPosition();
                                 lastOffset = offset;
                                 v.performClick();
+                                return true;
                             }
 
                             if (textView.getText() instanceof Spanned && !mode.equals(Mode.SPEAK)) {
@@ -1276,7 +1284,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
                                 if (url.length > 0) {
                                     String surl = url[url.length - 1].getURL();
-                                    if(!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
+                                    if (!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
                                         SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
                                     } else {
                                         url[url.length - 1].onClick(textView);
@@ -1290,6 +1298,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 } else {
                                     speedLayout.setVisibility(GONE);
                                 }
+                                return true;
                             }
                             if (mode.equals(Mode.SPEAK) && !isPaused()) {
                                 if (speakLayout.getVisibility() == GONE) {
@@ -1297,6 +1306,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 } else {
                                     speakLayout.setVisibility(GONE);
                                 }
+                                return true;
                             }
                             if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                                 if (second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
@@ -1306,13 +1316,19 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                         enableFullscreen();
                                     }
                                     second = false;
+                                    return true;
                                 } else {
                                     second = true;
                                     timer = System.currentTimeMillis();
                                 }
                             }
+                            if(System.currentTimeMillis() - pressed > 3000) {
+                                v.performLongClick();
+                                return true;
+                            }
+                            return false;
                         }
-                        return true;
+                        return false;
                     });
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));

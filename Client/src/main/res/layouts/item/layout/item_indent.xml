@@ -3,11 +3,12 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="wrap_content">
-    <TextView
+    <ru.kazantsev.template.view.HackyTextView
         android:id="@+id/work_text_indent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/spacing_small"
         android:layout_marginRight="@dimen/spacing_small"
+        android:textIsSelectable="true"
         style="@style/work_content"/>
 </LinearLayout>
