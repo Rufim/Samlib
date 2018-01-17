@@ -1308,7 +1308,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 }
                                 return true;
                             }
-                            if ((mode.equals(Mode.NORMAL) || mode.equals(Mode.SEARCH)) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            if (mode.equals(Mode.NORMAL) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                                 if (second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
                                     if (isFullscreen) {
                                         stopFullscreen();
@@ -1322,13 +1322,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     timer = System.currentTimeMillis();
                                 }
                             }
-                            if(System.currentTimeMillis() - pressed > 3000) {
+                            if(mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 4000) {
                                 v.performLongClick();
                                 return true;
                             }
-                            return false;
+                            return !mode.equals(Mode.NORMAL);
                         }
-                        return false;
+                        return !mode.equals(Mode.NORMAL);
                     });
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
