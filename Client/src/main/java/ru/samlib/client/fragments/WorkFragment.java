@@ -1249,12 +1249,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {
+                        TextView textView = ((TextView) v);
                         if (mode.equals(Mode.NORMAL) && event.getAction() == MotionEvent.ACTION_DOWN) {
                             pressed = System.currentTimeMillis();
                             v.setSelected(false);
                         }
                         if (event.getAction() == MotionEvent.ACTION_UP) {
-                            TextView textView = ((TextView) v);
                             int offset = 0;
                             int x = (int) event.getX();
                             int y = (int) event.getY();
@@ -1270,6 +1270,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                             if (layout != null) {
                                 int line = layout.getLineForVertical(y);
                                 offset = layout.getOffsetForHorizontal(line, x);
+                            }
+
+                            if(mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
+                                v.performLongClick();
+                                return true;
+                            } else {
+                                textView.setSelected(false);
                             }
 
                             if (mode.equals(Mode.SPEAK) && isPaused()) {
@@ -1323,13 +1330,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     timer = System.currentTimeMillis();
                                 }
                             }
-                            if(mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
-                                v.performLongClick();
-                                return true;
-                            }
-                            return !mode.equals(Mode.NORMAL) && !(System.currentTimeMillis() - pressed > 6000);
                         }
-                        return !mode.equals(Mode.NORMAL) && !(System.currentTimeMillis() - pressed > 6000);
+                        return !mode.equals(Mode.NORMAL);
                     });
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
