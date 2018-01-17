@@ -1249,8 +1249,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        if (mode.equals(Mode.NORMAL) && event.getAction() == MotionEvent.ACTION_DOWN) {
                             pressed = System.currentTimeMillis();
+                            v.setSelected(false);
                         }
                         if (event.getAction() == MotionEvent.ACTION_UP) {
                             TextView textView = ((TextView) v);
@@ -1322,13 +1323,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     timer = System.currentTimeMillis();
                                 }
                             }
-                            if(mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 4000) {
+                            if(mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
                                 v.performLongClick();
                                 return true;
                             }
-                            return !mode.equals(Mode.NORMAL);
+                            return !mode.equals(Mode.NORMAL) && !(System.currentTimeMillis() - pressed > 6000);
                         }
-                        return !mode.equals(Mode.NORMAL);
+                        return !mode.equals(Mode.NORMAL) && !(System.currentTimeMillis() - pressed > 6000);
                     });
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
