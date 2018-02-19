@@ -7,7 +7,7 @@ ext {
     buildToolsProjectVersion = '27.0.3'
     supportLibraryVersion = '27.0.2'
     versionProjectCode = 33
-    versionProjectName = "0.6.7.3"
+    versionProjectName = "0.6.9.4"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     statServer = 'sistat.mj.milesweb.cloud'

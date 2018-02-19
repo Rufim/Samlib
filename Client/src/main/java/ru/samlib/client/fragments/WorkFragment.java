@@ -267,10 +267,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onDestroyView() {
-        if (work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext()) / Math.pow(1024, 2)) - 100 < 100) {
-            work.setParsed(false);
-            work.getIndents().clear();
-            work.setRawContent(null);
+        try {
+            if (work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext()) / Math.pow(1024, 2)) - 100 < 100) {
+                work.setParsed(false);
+                work.setRawContent(null);
+
+                work.getIndents().clear();
+            }
+        } catch (Throwable ignore) {
         }
         super.onDestroyView();
     }
@@ -1120,7 +1124,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private void selectText(int index, String text) {
         TextView textView = getTextViewIndent(index);
         if (textView != null) {
-            GuiUtils.selectText(textView, true, text, colorSpeakingText);
+            try {
+                GuiUtils.selectText(textView, true, text, colorSpeakingText);
+            } catch (Throwable ignore) {
+            }
         }
     }
 
@@ -1272,7 +1279,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 offset = layout.getOffsetForHorizontal(line, x);
                             }
 
-                            if(mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
+                            if (mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
                                 v.performLongClick();
                                 return true;
                             } else {
