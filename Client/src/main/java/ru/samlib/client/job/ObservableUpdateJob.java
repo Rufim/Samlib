@@ -16,6 +16,7 @@ import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.AndroidSystemUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.MainActivity;
@@ -151,6 +152,7 @@ public class ObservableUpdateJob extends Job {
                             parsed = true;
                         }
                     }
+                    if(TextUtils.isEmpty(author.getFullName())) continue; // Something go wrong
                     author.setLastCheckedTime(new Date());
                     if(parsed) {
                         author = service.createOrUpdateAuthor(author);
@@ -165,6 +167,7 @@ public class ObservableUpdateJob extends Job {
                     EventBus.getDefault().post(new AuthorUpdatedEvent(author));
                     Log.e(TAG, "Author " + author.getShortName() + " updated");
                 } catch (AuthorParser.AuthorNotExistException ex) {
+                    author = service.getAuthor(author.getLink()); // get valid author
                     author.setDeleted(true);
                     author.save();
                 } catch (Exception e) {

@@ -418,7 +418,7 @@ public class ObservableFragment extends ListFragment<Author> {
                     holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
             }
-            authorTextView.setText(author.getFullName());
+            authorTextView.setText(TextUtils.isEmpty(author.getFullName()) ? author.getShortName() : author.getFullName());
             if (author.getLastUpdateDate() != null) {
                 lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
             }
