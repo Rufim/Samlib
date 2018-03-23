@@ -245,7 +245,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     public FragmentPagerAdapter<Integer, CommentsFragment> newAdapter(List<Integer> currentItems) {
         return new FragmentPagerAdapter<Integer, CommentsFragment>(getChildFragmentManager(), currentItems) {
             @Override
-            public Fragment getItem(int position) {
+            public CommentsFragment getItem(int position) {
                 return new FragmentBuilder(null)
                         .putArg(Constants.ArgsName.COMMENTS_PAGE, position)
                         .putArg(Constants.ArgsName.COMMENTS_ARCHIVE, parser.getCurrentArchive())

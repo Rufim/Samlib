@@ -45,6 +45,7 @@ import static android.view.View.VISIBLE;
  */
 public class SettingsFragment extends ListFragment<SettingsFragment.Preference> {
 
+    public static final Boolean DEF_OBSERVABLE_AUTO = true;
 
     private final static Float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
 
@@ -75,7 +76,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             PreferenceGroup themeGroup = new PreferenceGroup(R.string.preferenceGroupTheme)
                     .addPreferenceList(R.string.preferenceCurrentTheme,R.string.preferenceCurrentThemeName, 0, 0, generateThemeMap(), getActivity().getApplicationInfo().theme);
             PreferenceGroup observableGroup = new PreferenceGroup(R.string.preferenceGroupObservableName)
-                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, true)
+                    .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OBSERVABLE_AUTO)
                     .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, true);
             return Arrays.asList(groupReader, groupCache, themeGroup, observableGroup);
         };
@@ -296,7 +297,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                             switchCompat.setTag(preference);
                             switchCompat.setChecked(AndroidSystemUtils.getStringResPreference(getContext(), preference.idKey, preference.defValue == null ? false : (Boolean)  preference.defValue));
                             if(preference.idKey == R.string.preferenceObservableNotification) {
-                                switchCompat.setEnabled(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceObservableAuto, false));
+                                switchCompat.setEnabled(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceObservableAuto, DEF_OBSERVABLE_AUTO));
                             }
                             switchCompat.setOnCheckedChangeListener((buttonView, isChecked) -> {
                                 Preference pref  = (Preference) buttonView.getTag();

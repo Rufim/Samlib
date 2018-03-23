@@ -128,7 +128,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
     public FragmentPagerAdapter<Image, IllustrationFragment> newAdapter(List<Image> currentItems) {
         return new FragmentPagerAdapter<Image, IllustrationFragment>(getChildFragmentManager(), currentItems) {
             @Override
-            public Fragment getItem(int position) {
+            public IllustrationFragment getItem(int position) {
                 return new FragmentBuilder(null)
                         .putArg(Constants.ArgsName.IMAGE, items.get(position))
                         .newFragment(IllustrationFragment.class);

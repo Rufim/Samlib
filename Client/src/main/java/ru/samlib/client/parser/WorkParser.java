@@ -363,6 +363,7 @@ public class WorkParser extends Parser {
                                 Bookmark bookmark = new Bookmark(((TextNode) node).text());
                                 bookmark.setIndent(href.substring(1));
                                 bookmarks.add(bookmark);
+                                append("<a href=\"" + href + "\">" + getNodeHtml(node) + "</a>");
                             } else {
                                 if (href.startsWith("/")) {
                                     append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "</a>");
@@ -372,6 +373,7 @@ public class WorkParser extends Parser {
                             }
                         } else if (parent.hasAttr("name")) {
                             initBookmark(parent.attr("name"));
+                            append(getNodeHtml(node));
                         } else {
                             append(getNodeHtml(node));
                         }
@@ -396,7 +398,7 @@ public class WorkParser extends Parser {
 
             private void initBookmark(String name) {
                 for (Bookmark bookmark : bookmarks) {
-                    if (bookmark.getIndent().equals(name)) {
+                    if (bookmark.getIndent().equals(name) && bookmark.getIndentIndex() <= 0) {
                         append("");
                         bookmark.setIndentIndex(indents.size());
                     }
