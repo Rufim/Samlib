@@ -81,6 +81,7 @@ public class ObservableFragment extends ListFragment<Author> {
         swipeRefresh.setOnRefreshListener(() -> {
             if (!isLoading) {
                 if (!isUpdateThreadActive()) {
+                    loading = true;
                     Handler handler = new Handler();
                     updateThread = new Thread(() -> {
                         ObservableUpdateJob.updateObservable(databaseService, getContext());
@@ -325,7 +326,7 @@ public class ObservableFragment extends ListFragment<Author> {
     public void refreshData(boolean update) {
         swipeRefresh.setRefreshing(update);
         loading = update;
-        int size = update ? adapter.getItemCount() : pageSize;
+        final int size = update ? adapter.getItemCount() : pageSize;
         Handler handler = new Handler();
         updateThread = new Thread(() -> {
             ObservableUpdateJob.updateObservable(databaseService, getContext());
@@ -333,7 +334,7 @@ public class ObservableFragment extends ListFragment<Author> {
                 @Override
                 public void run() {
                     adapter.clear();
-                    adapter.getItems().addAll(databaseService.getObservableAuthors(0, pageSize));
+                    adapter.getItems().addAll(databaseService.getObservableAuthors(0, size));
                     adapter.notifyDataSetChanged();
                 }
             });
