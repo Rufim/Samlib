@@ -271,8 +271,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext()) / Math.pow(1024, 2)) - 100 < 100) {
                 work.setParsed(false);
                 work.setRawContent(null);
-
                 work.getIndents().clear();
+                System.gc();
             }
         } catch (Throwable ignore) {
         }
