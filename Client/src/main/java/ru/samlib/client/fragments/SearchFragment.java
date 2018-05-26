@@ -128,13 +128,13 @@ public class SearchFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         Cat.e(ex);
         ErrorFragment.show(this, R.string.stat_server_not_available);
     }
 
     @Override
-    protected void firstLoad(boolean scroll) {
+    public void firstLoad(boolean scroll) {
         if(query != null) {
             super.firstLoad(scroll);
         } else {

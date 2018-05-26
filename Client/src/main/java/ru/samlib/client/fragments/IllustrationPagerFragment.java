@@ -57,7 +57,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
@@ -128,7 +128,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
     public FragmentPagerAdapter<Image, IllustrationFragment> newAdapter(List<Image> currentItems) {
         return new FragmentPagerAdapter<Image, IllustrationFragment>(getChildFragmentManager(), currentItems) {
             @Override
-            public Fragment getItem(int position) {
+            public IllustrationFragment getNewItem(int position) {
                 return new FragmentBuilder(null)
                         .putArg(Constants.ArgsName.IMAGE, items.get(position))
                         .newFragment(IllustrationFragment.class);

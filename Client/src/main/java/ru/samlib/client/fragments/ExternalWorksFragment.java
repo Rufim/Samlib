@@ -91,7 +91,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         ErrorFragment.show(this, R.string.error, ex);
         ACRA.getErrorReporter().handleException(ex);
     }

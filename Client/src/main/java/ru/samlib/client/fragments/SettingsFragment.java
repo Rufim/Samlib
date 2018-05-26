@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -402,6 +403,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
         }
 
 
+        @SuppressLint("ResourceType")
         public Preference(Context context, @StringRes int idKey, @StringRes int title, @StringRes int subtitle, @LayoutRes int layout, DialogType dialogType, T defValue) {
             this.idKey = idKey;
             this.layout = layout;

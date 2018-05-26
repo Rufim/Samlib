@@ -232,7 +232,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         if (ex instanceof IOException) {
             if (Parser.isCachedMode() || externalWork != null) {
                 if (externalWork == null) {
@@ -280,7 +280,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     @Override
-    protected void firstLoad(boolean scroll) {
+    public void firstLoad(boolean scroll) {
         try {
             Bookmark bookmark = databaseService.getBookmark(work.isNotSamlib() ? externalWork.getFilePath() : work.getFullLink());
             work.setBookmark(bookmark);

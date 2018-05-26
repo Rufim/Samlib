@@ -34,8 +34,8 @@ import java.util.*;
  * Created by Rufim on 22.05.2014.
  */
 @Data
-@EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
-@ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
+@EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "annotationBlocks", "indents"})
+@ToString(exclude = {"rawContent", "annotationBlocks", "indents"})
 @Table(database = MyDatabase.class, allFields = true, updateConflict = ConflictAction.REPLACE, insertConflict = ConflictAction.REPLACE)
 public class Work extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 

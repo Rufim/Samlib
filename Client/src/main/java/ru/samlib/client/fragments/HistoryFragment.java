@@ -175,7 +175,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         ErrorFragment.show(this, R.string.error, ex);
         ACRA.getErrorReporter().handleException(ex);
     }
