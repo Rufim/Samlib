@@ -133,6 +133,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                     for (int i = skip; i < count && i < size; i++) {
                         indexes.add(i);
                     }
+                    isEnd = true;
                     return indexes;
                 });
             } catch (MalformedURLException e) {
