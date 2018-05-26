@@ -308,6 +308,7 @@ public class SectionActivity extends NavigationActivity<String> {
             if (isTaskRoot()) {
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
+                finish();
             } else {
                 onBackPressedOriginal();
             }

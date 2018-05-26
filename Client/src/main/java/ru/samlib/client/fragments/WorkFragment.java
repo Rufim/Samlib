@@ -271,8 +271,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext()) / Math.pow(1024, 2)) - 100 < 100) {
                 work.setParsed(false);
                 work.setRawContent(null);
-
                 work.getIndents().clear();
+                System.gc();
             }
         } catch (Throwable ignore) {
         }
@@ -1134,7 +1134,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private void selectText(int index, int start, int end) {
         ItemListAdapter.ViewHolder holder = adapter.getHolder(index);
         if (holder != null) {
-            GuiUtils.selectText(holder.getView(R.id.work_text_indent), true, start, end, colorSpeakingText);
+            try {
+                GuiUtils.selectText(holder.getView(R.id.work_text_indent), true, start, end, colorSpeakingText);
+            } catch (Throwable ignore) {
+            }
         }
     }
 
@@ -1301,6 +1304,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                     String surl = url[url.length - 1].getURL();
                                     if (!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
                                         SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
+                                    } else if(surl.startsWith("#")) {
+                                        String bookmarkName = surl.substring(1);
+                                        for (Bookmark bookmark : work.getAutoBookmarks()) {
+                                            if(bookmark.getIndent().equals(bookmarkName)) {
+                                                scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
+                                                break;
+                                            }
+                                        }
                                     } else {
                                         url[url.length - 1].onClick(textView);
                                     }
@@ -1351,7 +1362,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     // end
                     break;
             }
-            selectText(holder, true, adapter.getLastQuery() == null ? null : adapter.getLastQuery().query, colorFoundedText);
+            try {
+                selectText(holder, true, adapter.getLastQuery() == null ? null : adapter.getLastQuery().query, colorFoundedText);
+            } catch (Throwable ignore) {
+            }
         }
 
         private void initPreference(TextView textView) {

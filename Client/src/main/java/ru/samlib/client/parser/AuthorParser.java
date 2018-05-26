@@ -80,7 +80,9 @@ public class AuthorParser extends Parser {
                     throw new EOFException(author.getLink() == null ? "null" : author.getLink() + " invalid state of parsing");
                 }
                 String[] titles = Jsoup.parseBodyFragment(parts[0]).select("center > h3").text().split(":");
-                author.setFullName(titles[0]);
+                if(TextUtils.notEmpty(titles[0])) {
+                    author.setFullName(titles[0]);
+                }
                 if(titles.length > 1) {
                     author.setAnnotation(titles[1].trim());
                 }

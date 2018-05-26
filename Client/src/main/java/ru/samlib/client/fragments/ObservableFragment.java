@@ -77,7 +77,30 @@ public class ObservableFragment extends ListFragment<Author> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_observable);
         setHasOptionsMenu(true);
-        return super.onCreateView(inflater, container, savedInstanceState);
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+        swipeRefresh.setOnRefreshListener(() -> {
+            if (!isLoading) {
+                if (!isUpdateThreadActive()) {
+                    loading = true;
+                    Handler handler = new Handler();
+                    updateThread = new Thread(() -> {
+                        ObservableUpdateJob.updateObservable(databaseService, getContext());
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapter.clear();
+                                adapter.getItems().addAll(databaseService.getObservableAuthors(0, pageSize));
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    });
+                    updateThread.start();
+                }
+            } else {
+                swipeRefresh.setRefreshing(false);
+            }
+        });
+        return root;
     }
 
 
@@ -303,16 +326,19 @@ public class ObservableFragment extends ListFragment<Author> {
     public void refreshData(boolean update) {
         swipeRefresh.setRefreshing(update);
         loading = update;
-        int size = update ? adapter.getItemCount() : pageSize;
-        adapter.clear();
-        adapter.getItems().addAll(databaseService.getObservableAuthors(0, size));
-        adapter.notifyDataSetChanged();
-        if (update && !isUpdateThreadActive()) {
-            updateThread = new Thread(() -> {
-                ObservableUpdateJob.updateObservable(databaseService, getContext());
+        final int size = update ? adapter.getItemCount() : pageSize;
+        Handler handler = new Handler();
+        updateThread = new Thread(() -> {
+            ObservableUpdateJob.updateObservable(databaseService, getContext());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.clear();
+                    adapter.getItems().addAll(databaseService.getObservableAuthors(0, size));
+                    adapter.notifyDataSetChanged();
+                }
             });
-            updateThread.start();
-        }
+        });
     }
 
     private boolean isUpdateThreadActive() {
@@ -392,7 +418,7 @@ public class ObservableFragment extends ListFragment<Author> {
                     holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
             }
-            authorTextView.setText(author.getFullName());
+            authorTextView.setText(TextUtils.isEmpty(author.getFullName()) ? author.getShortName() : author.getFullName());
             if (author.getLastUpdateDate() != null) {
                 lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
             }

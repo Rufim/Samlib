@@ -67,5 +67,5 @@ public class MyDatabase {
             addColumn(SQLiteType.INTEGER, Author_Table.lastCheckedDate.getNameAlias().nameRaw());
         }
     }
-    
+
 }

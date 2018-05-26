@@ -62,7 +62,10 @@ public class CategoryParser extends Parser{
                 if(delim > 0) {
                     category.setTitle(title.substring(delim + 1));
                     if (hasNotAuthor) {
-                        author.setFullName(title.substring(0, delim));
+                        String fn = title.substring(0, delim);
+                        if(TextUtils.notEmpty(fn)) {
+                            author.setFullName(fn);
+                        }
                     }
                 }
             }
