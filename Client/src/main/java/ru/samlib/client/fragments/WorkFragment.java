@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.SearchView;
 import android.text.Layout;
@@ -268,6 +269,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onDestroyView() {
+        getBaseActivity().getCoordinatorLayout().removeView(speakLayout);
+        getBaseActivity().getCoordinatorLayout().removeView(speedLayout);
         try {
             if (work != null && getContext() != null && (AndroidSystemUtils.getMemory(getContext()) / Math.pow(1024, 2)) - 100 < 100) {
                 work.setParsed(false);
@@ -813,7 +816,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                     }
                 });
-        getBaseActivity().getToolbarShadow().setVisibility(GONE);
+        getBaseActivity().hideActionBar();
         speakLayout.findViewById(R.id.btnFullscreen).setVisibility(GONE);
         speakLayout.findViewById(R.id.btnFullscreenExit).setVisibility(VISIBLE);
         speedLayout.findViewById(R.id.btnFullscreen).setVisibility(GONE);
@@ -822,7 +825,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     public void stopFullscreen() {
         if (isFullscreen) {
-            getBaseActivity().getToolbarShadow().setVisibility(VISIBLE);
+            getBaseActivity().showActionBar();
             speakLayout.findViewById(R.id.btnFullscreen).setVisibility(VISIBLE);
             speakLayout.findViewById(R.id.btnFullscreenExit).setVisibility(GONE);
             speedLayout.findViewById(R.id.btnFullscreen).setVisibility(VISIBLE);
@@ -954,11 +957,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         colorFoundedText = getResources().getColor(R.color.red_dark);
         colorSpeakingText = getResources().getColor(R.color.DeepSkyBlue);
         ViewGroup root = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
-        speakLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_tts_controls, root, false);
-        speedLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_auto_scroll, root, false);
-        root.addView(speedLayout);
-        root.addView(speakLayout);
-        speakLayout.bringToFront();
+        CoordinatorLayout coordinator = getBaseActivity().getCoordinatorLayout();
+        speakLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_tts_controls, coordinator, false);
+        speedLayout = (ViewGroup) inflater.inflate(R.layout.footer_work_auto_scroll, coordinator, false);
+        addToCoordinator(coordinator, speedLayout);
+        addToCoordinator(coordinator, speakLayout);
         GuiUtils.getView(speakLayout, R.id.btnPlay).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnPause).setOnClickListener(this);
         GuiUtils.getView(speakLayout, R.id.btnStop).setOnClickListener(this);
@@ -972,9 +975,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         GuiUtils.getView(speedLayout, R.id.btnFullscreen).setOnClickListener(this);
         GuiUtils.getView(speedLayout, R.id.btnFullscreenExit).setOnClickListener(this);
         SharedPreferences preferences = AndroidSystemUtils.getDefaultPreference(getContext());
-        autoScrollSpeed = GuiUtils.getView(root, R.id.footer_work_speed);
-        speechRate = GuiUtils.getView(root, R.id.footer_work_speech_rate);
-        pitch = GuiUtils.getView(root, R.id.footer_work_pitch);
+        autoScrollSpeed = GuiUtils.getView(coordinator, R.id.footer_work_speed);
+        speechRate = GuiUtils.getView(coordinator, R.id.footer_work_speech_rate);
+        pitch = GuiUtils.getView(coordinator, R.id.footer_work_pitch);
         autoScrollSpeed.setProgress(preferences.getInt(getString(R.string.preferenceWorkAutoScrollSpeed), 30));
         speechRate.setProgress(preferences.getInt(getString(R.string.preferenceWorkSpeechRate), 130));
         pitch.setProgress(preferences.getInt(getString(R.string.preferenceWorkPitch), 100));
@@ -1008,6 +1011,15 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return root;
     }
 
+    private void addToCoordinator(CoordinatorLayout coordinator, ViewGroup view) {
+        coordinator.addView(view);
+        CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) view.getLayoutParams();
+        p.setAnchorId(R.id.items);
+        p.anchorGravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        view.setLayoutParams(p);
+        view.bringToFront();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -1024,6 +1036,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         } else {
             syncState(TTSPlayer.State.END);
         }
+    }
+
+    @Override
+    protected void onStopList() {
+        getBaseActivity().disableFullCollapsingToolbar();
+    }
+
+    @Override
+    protected void onStartList() {
+        getBaseActivity().enableFullCollapsingToolbar();
     }
 
     @Override

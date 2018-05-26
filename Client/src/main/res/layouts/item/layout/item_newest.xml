@@ -10,10 +10,9 @@
                   android:layout_height="wrap_content"
                   android:id="@+id/update_item_body"
                   android:gravity="center_vertical"
-                  android:background="@android:drawable/list_selector_background"
                   android:weightSum="1">
         <LinearLayout android:orientation="vertical"
-                      android:background="@drawable/clickable"
+                     android:background="@android:drawable/list_selector_background"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:id="@+id/newest_item_work_layout"
