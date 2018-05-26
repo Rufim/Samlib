@@ -141,6 +141,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     public WorkFragment() {
         enableSearch = true;
         enableScrollbar = true;
+
         setDataSource(((skip, size) -> {
             if (skip != 0) return null;
             TTSPlayer.getAvailableLanguages(getContext());
@@ -272,9 +273,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 work.setParsed(false);
                 work.setRawContent(null);
                 work.getIndents().clear();
-                System.gc();
             }
         } catch (Throwable ignore) {
+        } finally {
+            System.gc();
         }
         super.onDestroyView();
     }

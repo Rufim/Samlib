@@ -1,5 +1,6 @@
 package ru.samlib.client.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -169,7 +170,7 @@ public class SectionActivity extends NavigationActivity<String> {
                 }
             } else {
                 Work work =  ((WorkFragment) current).getWork();
-                return work != null && work.getLink().equals(data.getPath());
+                return work != null && work.getLink() != null && work.getLink().equals(data.getPath());
             }
         } else {
             return false;
@@ -242,6 +243,7 @@ public class SectionActivity extends NavigationActivity<String> {
         }
     }
 
+    @SuppressLint("ResourceType")
     private View initNavigationView(@LayoutRes int header, Object... titles) {
         removeHeaderView();
         clearNavigationMenu();

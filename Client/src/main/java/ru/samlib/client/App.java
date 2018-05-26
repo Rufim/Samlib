@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 @ReportsCrashes(
         mailTo = "0rufim0@gmail.com",
         mode = ReportingInteractionMode.DIALOG,
+        alsoReportToAndroidFramework = true,
         resDialogIcon = R.drawable.sad_cat,
         resDialogTheme = R.style.AppTheme_Dialog,
         resDialogTitle = R.string.crash_title_text,
