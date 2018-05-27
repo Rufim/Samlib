@@ -77,6 +77,7 @@ public class IllustrationPagerFragment extends PagerFragment<Image, Illustration
             }
         }
         pagesSize = 999;
+        autoLoadMore = false;
         if(newWork) {
             clearData();
             try {
