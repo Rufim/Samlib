@@ -235,6 +235,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Override
     public void onDataTaskException(Throwable ex) {
+        stopLoading();
         if (ex instanceof IOException) {
             if (Parser.isCachedMode() || externalWork != null) {
                 if (externalWork == null) {

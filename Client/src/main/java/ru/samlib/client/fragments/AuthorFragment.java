@@ -119,6 +119,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     @Override
     public void onDataTaskException(Throwable ex) {
+        stopLoading();
         if(ex instanceof EOFException) {
             ErrorFragment.show(this, R.string.author_parse_error, ex);
         } else if(ex instanceof  AuthorParser.AuthorNotExistException) {

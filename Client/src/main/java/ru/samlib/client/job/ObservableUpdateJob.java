@@ -1,15 +1,15 @@
 package ru.samlib.client.job;
 
+import android.app.NotificationChannel;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import com.annimon.stream.Stream;
+
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+
 import net.vrallev.android.cat.Cat;
 import org.greenrobot.eventbus.EventBus;
 import ru.kazantsev.template.net.HTTPExecutor;
@@ -32,18 +32,12 @@ import ru.samlib.client.parser.api.ApiParser;
 import ru.samlib.client.parser.api.Command;
 import ru.samlib.client.parser.api.DataCommand;
 import ru.samlib.client.service.DatabaseService;
-import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.util.MergeFromRequery;
 
 import javax.inject.Inject;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
-import java.net.MalformedURLException;
+
 import java.text.SimpleDateFormat;
-import java.time.Period;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 ;
 
@@ -56,6 +50,7 @@ public class ObservableUpdateJob extends Job {
 
     @Inject
     DatabaseService databaseService;
+    private static NotificationChannel mChannelObservable;
 
     private static final String TAG = ObservableUpdateJob.class.getSimpleName();
     public static int jobId = -1;
@@ -178,7 +173,12 @@ public class ObservableUpdateJob extends Job {
         if(!notifyAuthors.isEmpty() && AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableNotification, true)) {
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(Constants.ArgsName.FRAGMENT_CLASS, ObservableFragment.class.getSimpleName());
-            GuiUtils.sendBigNotification(context, 1, R.drawable.ic_update_white, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);
+            if(context != null) {
+                if(mChannelObservable == null) {
+                    mChannelObservable = AndroidSystemUtils.createNotificationChannel(context, "samlib_observable", context.getString(R.string.drawer_observable));
+                }
+                AndroidSystemUtils.sendBigNotification(context, mChannelObservable, 1, R.drawable.ic_update_white, "Есть новые обновления", "Есть новые обновления", null, intent, notifyAuthors);
+            }
         }
         EventBus.getDefault().post(new ObservableCheckedEvent());
     }

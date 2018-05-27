@@ -90,6 +90,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
 
     @Override
     public void onDataTaskException(Throwable ex) {
+        stopLoading();
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {

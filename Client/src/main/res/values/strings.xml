@@ -199,4 +199,5 @@
     <string name="dialog_filter_genre">Жанр:</string>
     <string name="dialog_filter_genres">Жанры:</string>
     <string name="dialog_filter_size">Минимальный размер:</string>
+    <string name="tts_service">Управление синтезом речи</string>
 </resources>

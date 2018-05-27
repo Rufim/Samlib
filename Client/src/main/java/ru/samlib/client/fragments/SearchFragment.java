@@ -129,6 +129,7 @@ public class SearchFragment extends ListFragment<Work> {
 
     @Override
     public void onDataTaskException(Throwable ex) {
+        stopLoading();
         Cat.e(ex);
         ErrorFragment.show(this, R.string.stat_server_not_available);
     }

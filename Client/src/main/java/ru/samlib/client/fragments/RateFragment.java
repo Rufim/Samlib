@@ -48,6 +48,7 @@ public class RateFragment extends ListFragment<Work> {
 
     @Override
     public void onDataTaskException(Throwable ex) {
+        stopLoading();
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {

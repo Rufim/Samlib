@@ -2,14 +2,19 @@ package ru.samlib.client.service;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -26,7 +31,6 @@ import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.net.HtmlClient;
-import ru.samlib.client.parser.Parser;
 import ru.samlib.client.parser.WorkParser;
 import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.kazantsev.template.util.AndroidSystemUtils;
@@ -44,6 +48,7 @@ import static ru.samlib.client.receiver.TTSNotificationBroadcast.sendMessage;
 public class TTSService extends Service implements AudioManager.OnAudioFocusChangeListener {
 
     private static final String TAG = TTSService.class.getSimpleName();
+    private static NotificationChannel mChannelTTSService;
 
     public enum Action {
         PLAY, END, STOP, PAUSE, POSITION, NEXT, PRE;
@@ -65,6 +70,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     private AudioManager audioManager;
     private static boolean currentVersionSupportBigNotification = false;
     private static boolean currentVersionSupportLockScreenControls = false;
+    private Notification foregroundNotification = null;
 
     private static TTSService instance;
 
@@ -253,7 +259,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             ttsp.pre();
                             break;
                     }
-                    newNotification(work.isNotSamlib() ? "file://" + link : link);
+                    updateNotificationState();
                     Log.d(TAG, "TAG Pressed: " + action);
                     return false;
                 }
@@ -277,26 +283,53 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         launch.setData(Uri.parse(link));
         launch.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         launch.putExtra(Constants.ArgsName.WORK_RESTORE, true);
-        Notification notification = new NotificationCompat.Builder(getApplicationContext())
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
+                .setOngoing(true)
                 .setSmallIcon(R.drawable.ic_action_book)
                 .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, PendingIntent.FLAG_UPDATE_CURRENT))
                 .setCustomContentView(simpleContentView)
-                .setContentTitle(title).build();
+                .setAutoCancel(false)
+                .setContentTitle(title);
 
-        setListeners(simpleContentView);
-
-        if (ttsp.getState().equals(TTSPlayer.State.PAUSE) || ttsp.getState().equals(TTSPlayer.State.STOPPED)) {
-            notification.contentView.setViewVisibility(R.id.btnPause, View.GONE);
-            notification.contentView.setViewVisibility(R.id.btnPlay, View.VISIBLE);
-        } else {
-            notification.contentView.setViewVisibility(R.id.btnPause, View.VISIBLE);
-            notification.contentView.setViewVisibility(R.id.btnPlay, View.GONE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationBuilder.setChannelId(getNotificationChannel(getApplicationContext()).getId());
         }
-
+        setListeners(simpleContentView);
+        Notification notification = notificationBuilder.build();
         notification.contentView.setTextViewText(R.id.notification_work_title, title);
         notification.contentView.setTextViewText(R.id.notification_work_author, shortName);
+        notification.defaults = 0;
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
-        startForeground(NOTIFICATION_ID, notification);
+        foregroundNotification = notification;
+        updateNotificationState();
+    }
+
+    public void updateNotificationState() {
+        if (ttsp.getState().equals(TTSPlayer.State.PAUSE) || ttsp.getState().equals(TTSPlayer.State.STOPPED)) {
+            foregroundNotification.contentView.setViewVisibility(R.id.btnPause, View.GONE);
+            foregroundNotification.contentView.setViewVisibility(R.id.btnPlay, View.VISIBLE);
+        } else {
+            foregroundNotification.contentView.setViewVisibility(R.id.btnPause, View.VISIBLE);
+            foregroundNotification.contentView.setViewVisibility(R.id.btnPlay, View.GONE);
+        }
+        startForeground(NOTIFICATION_ID, foregroundNotification);
+    }
+
+    public static NotificationChannel getNotificationChannel(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (mChannelTTSService == null) {
+                NotificationManager mNotificationManager =
+                        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                String CHANNEL_ID = "samlib_tts";
+                int importance = NotificationManager.IMPORTANCE_LOW;
+                mChannelTTSService = new NotificationChannel(CHANNEL_ID, context.getString(R.string.tts_service), importance);
+                mChannelTTSService.setSound(null, null);
+                mNotificationManager.createNotificationChannel(mChannelTTSService);
+            }
+            return mChannelTTSService;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -305,11 +338,11 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
      * @param view
      */
     public void setListeners(RemoteViews view) {
-        Intent previous = new Intent(NOTIFY_PREVIOUS);
-        Intent delete = new Intent(NOTIFY_DELETE);
-        Intent pause = new Intent(NOTIFY_PAUSE);
-        Intent next = new Intent(NOTIFY_NEXT);
-        Intent play = new Intent(NOTIFY_PLAY);
+        Intent previous = new Intent(NOTIFY_PREVIOUS,null, getApplicationContext(),  TTSNotificationBroadcast.class);
+        Intent delete = new Intent(NOTIFY_DELETE, null, getApplicationContext(),  TTSNotificationBroadcast.class);
+        Intent pause = new Intent(NOTIFY_PAUSE,null, getApplicationContext(),  TTSNotificationBroadcast.class);
+        Intent next = new Intent(NOTIFY_NEXT,null, getApplicationContext(),  TTSNotificationBroadcast.class);
+        Intent play = new Intent(NOTIFY_PLAY, null, getApplicationContext(),  TTSNotificationBroadcast.class);
 
         PendingIntent pPrevious = PendingIntent.getBroadcast(getApplicationContext(), 0, previous, PendingIntent.FLAG_UPDATE_CURRENT);
         view.setOnClickPendingIntent(R.id.btnPrevious, pPrevious);

@@ -46,6 +46,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
 
     @Override
     public void onDataTaskException(Throwable ex) {
+        stopLoading();
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
