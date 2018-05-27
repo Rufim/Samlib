@@ -81,18 +81,19 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                 }
                 return true;
             case R.id.action_comments_choose_archive:
-                Map<Integer, String> keyVal = new LinkedHashMap<>();
-                keyVal.put(0,"0");
-                for (int i = 0; i <= parser.getArchiveCount(); i++) {
-                    keyVal.put(i, i + "");
+                Map<String, Integer> TitleVal = new LinkedHashMap<>();
+                String current = getString(R.string.comments_current);
+                TitleVal.put(current, 0);
+                for (int i = 1; i <= parser.getArchiveCount(); i++) {
+                    TitleVal.put(i + "", i);
                 }
                 EditListPreferenceDialog editListPreferenceDialog = new EditListPreferenceDialog();
-                SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), -1, "" + parser.getCurrentArchive());
+                SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), -1, parser.getCurrentArchive());
                 preference.title = getString(R.string.comments_choose_archive);
-                preference.keyValue = keyVal;
+                preference.keyValue = TitleVal;
                 editListPreferenceDialog.setPreference(preference);
                 editListPreferenceDialog.setOnCommit((value, d) -> {
-                    parser.setArchive(Integer.valueOf(value.toString()));
+                    parser.setArchive((Integer) value);
                     safeInvalidateOptionsMenu();
                     refreshData(true);
                     return true;

@@ -53,6 +53,10 @@ public class EditListPreferenceDialog extends BaseDialog {
         this.onCommit = onCommit;
     }
 
+    public Object getSelected() {
+        return selected;
+    }
+
     public void setSetItemList(OnSetItemList setItemList) {
         this.setItemList = setItemList;
     }
