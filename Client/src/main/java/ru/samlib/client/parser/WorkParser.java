@@ -3,6 +3,10 @@ package ru.samlib.client.parser;
 import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
+import ru.kazantsev.template.domain.Valuable;
+import ru.kazantsev.template.net.*;
+import ru.kazantsev.template.util.charset.CharsetDetector;
+import ru.kazantsev.template.util.charset.CharsetMatch;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
@@ -12,8 +16,6 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
-import ru.kazantsev.template.net.CachedResponse;
-import ru.kazantsev.template.net.Request;
 import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
@@ -22,9 +24,9 @@ import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.util.ParserUtils;
 import ru.kazantsev.template.util.TextUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -60,30 +62,54 @@ public class WorkParser extends Parser {
         } else {
             rawContent = HtmlClient.executeRequest(request, cached);
         }
-        if (rawContent == null) {
-            return work;
+        if (rawContent == null || rawContent.length() == 0) {
+            throw new IOException("Закешированный файл не найден и отцутствует соединение с интернетом");
         }
         if (work == null) {
             work = new Work(rawContent.getRequest().getBaseUrl().getPath().replaceAll("/+", "/"));
         }
         work.setCachedResponse(rawContent);
-        Work parsedWork =  parse(rawContent, rawContent.getEncoding(), work, processChapters);
+        Work parsedWork = parse(rawContent, rawContent.getEncoding(), work, processChapters);
         parsedWork.setCachedResponse(rawContent);
         return parsedWork;
     }
 
+    public static String detectCharset(File file, String defaultCharset) {
+        CharsetDetector detector = new CharsetDetector();
+        BufferedInputStream stream = null;
+        try {
+            stream = new BufferedInputStream(new FileInputStream(file));
+            detector.setText(stream);
+            CharsetMatch charset = detector.detect();
+            return charset == null ? defaultCharset : charset.getName();
+        } catch (IOException e) {
+            return defaultCharset;
+        } finally {
+            SystemUtils.close(stream);
+        }
+    }
+
     public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
         try {
-            work = parseWork(rawContent, encoding, work);
-            Log.i(TAG, "Work parsed using url " + work.getFullLink());
+            if (work.isNotSamlib()) {
+                String chrset = detectCharset(rawContent, encoding);
+                work.setRawContent(SystemUtils.readFile(rawContent, chrset.contains("UTF") ? chrset : encoding));
+            } else {
+                work = parseWork(rawContent, encoding, work);
+            }
+            if (rawContent instanceof CachedResponse) {
+                Log.i(TAG, "Work parsed using url " + work.getFullLink());
+            } else {
+                Log.i(TAG, "Work parsed using file " + rawContent.getAbsolutePath());
+            }
             work.setChanged(false);
             if (processChapters) {
-                processChapters(work);
+                processChapters(work, work.isNotSamlib() && !rawContent.getName().endsWith(".html"));
             }
-            workCache.put(work.getLink(), work);
+            workCache.put(work.isNotSamlib() ? rawContent.getAbsolutePath() : work.getLink(), work);
         } catch (Exception ex) {
             work.setParsed(false);
-            if(rawContent instanceof  CachedResponse) {
+            if (rawContent instanceof CachedResponse) {
                 Log.e(TAG, "Error in work parsing using url " + work.getFullLink(), ex);
             } else {
                 Log.e(TAG, "Error in work parsing using file " + rawContent.getAbsolutePath(), ex);
@@ -94,7 +120,7 @@ public class WorkParser extends Parser {
 
     public static Work parseWork(File file, String encoding, Work work) {
         String[] parts;
-        if (!work.getLink().matches(work.getAuthor().getLink() + "rating\\d.shtml")) {
+        if (!work.getLink().matches(work.getAuthor().getLink() + "rating\\d.shtml") && !work.getLink().endsWith("publish.shtml")) {
             parts = TextUtils.Splitter.extractLines(file, encoding, true,
                     new TextUtils.Splitter().addEnd("Первый блок ссылок"),
                     new TextUtils.Splitter("Блок описания произведения", "Кнопка вызова Лингвоанализатора"),
@@ -161,13 +187,8 @@ public class WorkParser extends Parser {
                     work.setHasIllustration(true);
                 } else if (text.contains("Скачать")) {
                     break;
-                } else if(a != null) {
-                    Category category;
-                    if(work instanceof WorkEntity) {
-                        category = new CategoryEntity();
-                    } else {
-                        category = new Category();
-                    }
+                } else if (a != null) {
+                    Category category = new Category();
                     category.setTitle(text);
                     category.setLink(a.attr("href"));
                     category.setAuthor(work.getAuthor());
@@ -177,10 +198,10 @@ public class WorkParser extends Parser {
                     hasNotDefaultCategory = true;
                 }
             }
-            if(!hasNotDefaultCategory) {
+            if (!hasNotDefaultCategory) {
                 Category category = new Category();
                 category.setType(work.getType());
-                if (work.getCategory() == null || !work.getCategory().equals(category)) {
+                if (work.getCategory() == null) {
                     work.setCategory(category);
                 }
             }
@@ -190,10 +211,14 @@ public class WorkParser extends Parser {
         } else if (parts.length == 4) {
             if (parts[2].contains("Аннотация")) {
                 work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
+
+            }
+            if (parts[2].contains("Оценка:")) {
+                work.setHasRate(true);
             }
             if (parts[3].contains("<!--Section Begins-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
-                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->").setMatchCount(999))[0]);
             } else {
                 work.setRawContent(parts[3]);
             }
@@ -206,23 +231,32 @@ public class WorkParser extends Parser {
         return work;
     }
 
-    public static void processChapters(Work work) {
-        List<String> indents = work.getIndents();
-        indents.clear();
-        List<Bookmark> bookmarks = work.getAutoBookmarks();
-        Document document = Jsoup.parseBodyFragment(work.getRawContent());
-        document.setBaseUri(Constants.Net.BASE_DOMAIN);
-        document.outputSettings().prettyPrint(false);
-        List<Node> rootNodes = new ArrayList<>();
-        //Element body = replaceTables(document.body());
-        Elements rootElements = document.body().select("> *");
-        HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
-        work.setIndents(forSpanner.getIndents(rootElements));
-        rootElements.clear();
-        Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
-                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        bookmarks.clear();
-        bookmarks.addAll(forSpanner.getBookmarks());
+    public static void processChapters(Work work, boolean isTextFile) {
+        if (isTextFile && !work.getRawContent().startsWith("<html>")) {
+            work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
+        } else {
+            List<String> indents = work.getIndents();
+            try {
+                indents.clear();
+            } catch (RuntimeException ex) {
+                // ignored
+            }
+            List<Bookmark> bookmarks = work.getAutoBookmarks();
+            Document document = Jsoup.parseBodyFragment(work.getRawContent());
+            document.setBaseUri(Constants.Net.BASE_DOMAIN);
+            document.outputSettings().prettyPrint(false);
+            List<Node> rootNodes = new ArrayList<>();
+            //Element body = replaceTables(document.body());
+            Elements rootElements = document.body().select("> *");
+            HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
+            work.setIndents(forSpanner.getIndents(rootElements));
+            if (rootElements != null) {
+                rootElements.clear();
+            }
+            Pattern pattern = Pattern.compile("((Пролог)|(Эпилог)|(Интерлюдия)|(Приложение)|(Глава \\d+)|(Часть \\d+)).*",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            bookmarks.clear();
+            bookmarks.addAll(forSpanner.getBookmarks());
         /*if(bookmarks.size() == 0) {
             for (int i = 0; i < indents.size(); i++) {
                 String text = indents.get(i);
@@ -234,6 +268,7 @@ public class WorkParser extends Parser {
                 }
             }
         }*/
+        }
         work.setParsed(true);
     }
 
@@ -300,6 +335,7 @@ public class WorkParser extends Parser {
                 if (bookmark.getIndentIndex() != 0 && !TextUtils.isEmpty(bookmark.getTitle())) {
                     resultBookmarks.add(bookmark);
                 }
+
             }
             return resultBookmarks;
         }
@@ -327,15 +363,17 @@ public class WorkParser extends Parser {
                                 Bookmark bookmark = new Bookmark(((TextNode) node).text());
                                 bookmark.setIndent(href.substring(1));
                                 bookmarks.add(bookmark);
+                                append("<a href=\"" + href + "\">" + getNodeHtml(node) + "</a>");
                             } else {
-                                if(href.startsWith("/")) {
-                                    append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "");
+                                if (href.startsWith("/")) {
+                                    append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "</a>");
                                 } else {
-                                    append("<a href=\"" + href + "\">" + getNodeHtml(node) + "");
+                                    append("<a href=\"" + href + "\">" + getNodeHtml(node) + "</a>");
                                 }
                             }
                         } else if (parent.hasAttr("name")) {
                             initBookmark(parent.attr("name"));
+                            append(getNodeHtml(node));
                         } else {
                             append(getNodeHtml(node));
                         }
@@ -352,7 +390,7 @@ public class WorkParser extends Parser {
                     append("\n" + getNodeHtml(node));
                 } else if (nodeName.equals("a")) {
                     Element a = (Element) node;
-                    if(a.hasAttr("name")) {
+                    if (a.hasAttr("name")) {
                         initBookmark(a.attr("name"));
                     }
                 }
@@ -360,7 +398,7 @@ public class WorkParser extends Parser {
 
             private void initBookmark(String name) {
                 for (Bookmark bookmark : bookmarks) {
-                    if (bookmark.getIndent().equals(name)) {
+                    if (bookmark.getIndent().equals(name) && bookmark.getIndentIndex() <= 0) {
                         append("");
                         bookmark.setIndentIndex(indents.size());
                     }
@@ -464,5 +502,60 @@ public class WorkParser extends Parser {
                 return null;
             }
         }
+    }
+
+    private static final String WORK_SEND_RATE = "/cgi-bin/votecounter";
+
+    public enum RateParams {
+        FILE, DIR, BALL, COOK, VOTE, COOK_CHECK, OK;
+    }
+
+    public static boolean sendRate(Work work, int rate) {
+        try {
+            String link = Constants.Net.BASE_DOMAIN + WORK_SEND_RATE;
+            String wlink = work.getLinkWithoutSuffix();
+            String alink = work.getAuthor().getLink();
+            String voteCookie = getVoteCookie();
+            Request request = new Request(link)
+                    .setMethod(Request.Method.POST)
+                    .addHeader(Header.ACCEPT, ACCEPT_VALUE)
+                    .addHeader(Header.USER_AGENT, USER_AGENT)
+                    .addHeader(Header.HOST, Constants.Net.BASE_HOST)
+                    .addHeader(Header.REFERER, work.getFullLink())
+                    .addHeader(Header.CONTENT_TYPE, "application/x-www-form-urlencoded")
+                    .addHeader(Header.UPGRADE_INSECURE_REQUESTS, "1")
+                    .setEncoding("CP1251")
+                    .addParam(RateParams.FILE, wlink.substring(wlink.lastIndexOf('/') + 1))
+                    .addParam(RateParams.DIR, alink.substring(1, alink.length() - 1))
+                    .addParam(RateParams.BALL, String.valueOf(rate))
+                    .addParam(RateParams.OK, "OK");
+            if(voteCookie != null) {
+                request.addCookie(RateParams.VOTE, voteCookie);
+            }
+            Response response = request.execute();
+            if(voteCookie == null) {
+                if (response.getHeaders().containsKey(Header.SET_COOKIE)) {
+                    voteCookie = HTTPExecutor.parseParamFromHeader(response.getHeaders().get(Header.SET_COOKIE).get(0), RateParams.VOTE);
+                    setVoteCookie(voteCookie);
+                }
+                Element element = Jsoup.parse(response.getRawContent()).head().select("meta[http-equiv=refresh]").first();
+                if (element != null) {
+                    String content = element.attr("content");
+                    Request redirectedRequest = new Request(Constants.Net.BASE_DOMAIN + content.substring(content.indexOf("=") + 1), true);
+                    redirectedRequest.getHeaders().putAll(request.getHeaders());
+                    redirectedRequest.setFollowRedirect(true);
+                    if (voteCookie != null) {
+                        redirectedRequest.addCookie(RateParams.VOTE, voteCookie);
+                    } else {
+                        setVoteCookie(request.getParam(RateParams.COOK));
+                        redirectedRequest.addCookie(RateParams.VOTE, getVoteCookie());
+                    }
+                    redirectedRequest.execute();
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }

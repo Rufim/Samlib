@@ -21,12 +21,15 @@ import java.util.Locale;
  */
 public class NewestFragment extends FilterDialogListFragment {
 
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
-    public static NewestFragment newInstance() {
-        return newInstance(NewestFragment.class);
+
+    public NewestFragment() {
+        pageSize = 25;
+    }
+
+    @Override
+    public void refreshData(boolean showProgress) {
+        setDataSource(null);
+        super.refreshData(showProgress);
     }
 
     @Override
@@ -42,6 +45,7 @@ public class NewestFragment extends FilterDialogListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_new);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_new);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -51,10 +55,11 @@ public class NewestFragment extends FilterDialogListFragment {
 
         public NewestArrayAdapter() {
             super(R.layout.item_newest);
+            performSelectRoot = true;
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             int id = view.getId();
             String link = null;
             switch (id) {
@@ -67,7 +72,10 @@ public class NewestFragment extends FilterDialogListFragment {
                     link = getItems().get(position).getAuthor().getFullLink(); //Link.getBaseDomain() +  "/p/plotnikow_sergej_aleksandrowich/"; //"/t/tagern/"; //
                     break;
             }
-            SectionActivity.launchActivity(getContext(), link);
+            if(link != null) {
+                SectionActivity.launchActivity(getContext(), link);
+            }
+            return true;
         }
 
         @Override

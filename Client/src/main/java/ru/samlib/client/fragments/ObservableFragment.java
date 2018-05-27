@@ -3,10 +3,15 @@ package ru.samlib.client.fragments;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.YuvImage;
+import android.graphics.drawable.ColorDrawable;
 import android.os.*;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
+import com.annimon.stream.Stream;
 import net.vrallev.android.cat.Cat;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -25,7 +30,7 @@ import ru.samlib.client.dialog.AddObservableDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.AuthorEntity;
+import ru.samlib.client.domain.entity.ExternalWork;
 import ru.samlib.client.domain.events.AuthorAddEvent;
 import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
@@ -33,24 +38,30 @@ import ru.samlib.client.job.ObservableUpdateJob;
 import ru.kazantsev.template.lister.DataSource;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.parser.AuthorParser;
+import ru.samlib.client.parser.Parser;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Created by 0shad on 16.06.2016.
  */
-public class ObservableFragment extends ListFragment<AuthorEntity> {
+public class ObservableFragment extends ListFragment<Author> {
 
     @Inject
     DatabaseService databaseService;
     SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.Pattern.DATA_PATTERN);
 
     private boolean loading;
+    private Thread updateThread;
+    private boolean stopped = false;
+
+    List<Author> toAction = new ArrayList<>();
 
     public static ObservableFragment newInstance() {
         return newInstance(ObservableFragment.class);
@@ -66,7 +77,30 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_observable);
         setHasOptionsMenu(true);
-        return super.onCreateView(inflater, container, savedInstanceState);
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+        swipeRefresh.setOnRefreshListener(() -> {
+            if (!isLoading) {
+                if (!isUpdateThreadActive()) {
+                    loading = true;
+                    Handler handler = new Handler();
+                    updateThread = new Thread(() -> {
+                        ObservableUpdateJob.updateObservable(databaseService, getContext());
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapter.clear();
+                                adapter.getItems().addAll(databaseService.getObservableAuthors(0, pageSize));
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    });
+                    updateThread.start();
+                }
+            } else {
+                swipeRefresh.setRefreshing(false);
+            }
+        });
+        return root;
     }
 
 
@@ -74,6 +108,11 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.observable, menu);
+        if (Parser.isCachedMode()) {
+            menu.removeItem(R.id.action_observable_import);
+            menu.removeItem(R.id.action_observable_add_link_or_author);
+            menu.removeItem(R.id.action_observable_check_updates);
+        }
     }
 
     @Override
@@ -90,10 +129,11 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), true, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            DirectoryChooserDialog chooserDialogImport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.NONE, false, false, true);
+                            chooserDialogImport.setSourceDirectory(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
                             chooserDialogImport.setTitle(getString(R.string.observable_import) + "...");
                             chooserDialogImport.setIcon(android.R.drawable.ic_menu_save);
-                            chooserDialogImport.setAllowRootDir(true);
+                            chooserDialogImport.setAllowRootDir(false);
                             chooserDialogImport.setFileTypes("txt");
                             chooserDialogImport.setOnChooseFileListener(chosenFile -> {
                                 if (chosenFile != null) {
@@ -102,26 +142,31 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
 
                                         @Override
                                         protected Boolean doInBackground(File... params) {
+                                            String fileContent = null;
                                             try {
-                                                String fileContent = SystemUtils.readFile(params[0], "UTF-8");
-                                                for (String line : fileContent.split("\n")) {
-                                                    String link = TextUtils.eraseHost(line).replace("indexdate.shtml", "").replace("indextitle.shtml", "");
-                                                    Author author;
-                                                    if (Linkable.isAuthorLink(link)) {
-                                                        AuthorEntity entity = databaseService.getAuthor(link);
+                                                fileContent = SystemUtils.readFile(params[0], "UTF-8");
+                                            } catch (FileNotFoundException e) {
+                                                Cat.e("Файл не найден!", e);
+                                                return false;
+                                            }
+                                            for (String line : fileContent.split("\n")) {
+                                                String link = TextUtils.eraseHost(line).replace("indexdate.shtml", "").replace("indextitle.shtml", "");
+                                                Author author;
+                                                if (Linkable.isAuthorLink(link)) {
+                                                    try {
+                                                        Author entity = databaseService.getAuthor(link);
                                                         if (entity == null) {
                                                             author = new AuthorParser(link).parse();
                                                             if (!TextUtils.isEmpty(author.getShortName())) {
-                                                                databaseService.insertObservableAuthor(author.createEntity());
+                                                                databaseService.insertObservableAuthor(author);
                                                             }
                                                         }
+                                                    } catch (Exception e) {
+                                                        Cat.e("Unknown exception", e);
                                                     }
                                                 }
-                                                return true;
-                                            } catch (Exception e) {
-                                                Cat.e("Unknown exception", e);
-                                                return false;
                                             }
+                                            return true;
                                         }
 
                                         @Override
@@ -148,17 +193,18 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
                         if (permissionGained) {
-                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()), false);
+                            DirectoryChooserDialog chooserDialogExport = new DirectoryChooserDialog(getActivity(), DirectoryChooserDialog.NeutralButtonAction.CREATE_DIR, false);
+                            chooserDialogExport.setSourceDirectory(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
                             chooserDialogExport.setTitle(getString(R.string.observable_export) + "...");
                             chooserDialogExport.setIcon(android.R.drawable.ic_menu_save);
-                            chooserDialogExport.setAllowRootDir(true);
+                            chooserDialogExport.setAllowRootDir(false);
                             chooserDialogExport.setFileTypes("txt");
                             chooserDialogExport.setOnChooseFileListener(chosenFile -> {
                                 if (chosenFile != null) {
                                     try {
                                         File file = new File(chosenFile, "authors.txt");
                                         StringBuilder builder = new StringBuilder();
-                                        for (AuthorEntity authorEntity : databaseService.getObservableAuthors()) {
+                                        for (Author authorEntity : databaseService.getObservableAuthors()) {
                                             builder.append(authorEntity.getFullLink());
                                             builder.append("\n");
                                         }
@@ -173,6 +219,22 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                     });
                 }
                 return true;
+            case R.id.action_observable_check_updates:
+                refreshData(true);
+                return true;
+            case R.id.action_observable_delete:
+                for (Author entity : toAction) {
+                    entity.setObservable(false);
+                }
+                databaseService.deleteAuthors(toAction);
+                toAction.clear();
+                refreshData(false);
+                return true;
+            case R.id.action_observable_cancel:
+                toAction.clear();
+                refreshData(false);
+                return true;
+
         }
         return false;
     }
@@ -192,21 +254,22 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
                         author = new AuthorParser(params[0]).parse();
                         if (!TextUtils.isEmpty(author.getShortName())) {
                             author.setParsed(true);
-                            databaseService.insertObservableAuthor(author.createEntity());
+                            databaseService.insertObservableAuthor(author);
+                            return author;
                         } else {
                             author.setParsed(false);
                         }
                     }
                 } catch (Exception ex) {
                     Cat.e(ex);
-                    author = new Author(link);
+                    return new Author(link);
                 }
-                return author;
+                return null;
             }
 
             @Override
             protected void onPostExecute(Author author) {
-                if (author.isEntity()) {
+                if (author == null) {
                     GuiUtils.toast(getContext(), R.string.observable_add_link_or_author_exist);
                 } else if (!author.isParsed()) {
                     GuiUtils.toast(getContext(), getString(R.string.observable_add_link_or_author_error_link) + " " + author.getFullLink());
@@ -221,13 +284,8 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     }
 
     @Override
-    protected DataSource<AuthorEntity> newDataSource() throws Exception {
-        return new DataSource<AuthorEntity>() {
-            @Override
-            public List<AuthorEntity> getItems(int skip, int size) throws IOException {
-                return new ArrayList<>(databaseService.getObservableAuthors(skip, size));
-            }
-        };
+    protected DataSource<Author> newDataSource() throws Exception {
+        return (skip, size) -> databaseService.getObservableAuthors(skip, size);
     }
 
     @Override
@@ -239,12 +297,17 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     @Override
     public void onStart() {
         super.onStart();
+        if (stopped) {
+            refreshData(false);
+        }
+        stopped = false;
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
         EventBus.getDefault().unregister(this);
+        stopped = true;
         super.onStop();
     }
 
@@ -263,27 +326,34 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
     public void refreshData(boolean update) {
         swipeRefresh.setRefreshing(update);
         loading = update;
-        adapter.clear();
-        adapter.getItems().addAll(databaseService.getObservableAuthors());
-        adapter.notifyDataSetChanged();
-        if (update) {
-            new Thread(() -> {
-                ObservableUpdateJob.updateObservable(databaseService, getContext());
-            }).start();
-        }
+        final int size = update ? adapter.getItemCount() : pageSize;
+        Handler handler = new Handler();
+        updateThread = new Thread(() -> {
+            ObservableUpdateJob.updateObservable(databaseService, getContext());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.clear();
+                    adapter.getItems().addAll(databaseService.getObservableAuthors(0, size));
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        });
+    }
+
+    private boolean isUpdateThreadActive() {
+        return updateThread != null && updateThread.isAlive() && !updateThread.isInterrupted();
     }
 
     private void initializeAuthor(Author author) {
-        if (author.isHasUpdates()) {
-            final int index;
-            for (int i = 0; i < adapter.getItems().size(); i++) {
-                if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
-                    index = i;
-                    adapter.getItems().set(i, author.createEntity());
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.post(() -> adapter.notifyItemChanged(index));
-                    break;
-                }
+        final int index;
+        for (int i = 0; i < adapter.getItems().size(); i++) {
+            if (author.getLink().equals(adapter.getItems().get(i).getLink())) {
+                index = i;
+                adapter.getItems().set(i, author);
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(() -> adapter.notifyItemChanged(index));
+                break;
             }
         }
     }
@@ -294,25 +364,43 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
         return new FavoritesAdapter();
     }
 
-    protected class FavoritesAdapter extends ItemListAdapter<AuthorEntity> {
+    protected class FavoritesAdapter extends ItemListAdapter<Author> {
 
         public FavoritesAdapter() {
             super(R.layout.item_favorites);
+            performSelectRoot = true;
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             if (!loading) {
-                AuthorEntity authorEntity = getItems().get(position);
-                authorEntity.setHasUpdates(false);
-                App.getInstance().getDataStore().update(authorEntity);
-                adapter.notifyDataSetChanged();
-                Intent i = new Intent(getActivity(), SectionActivity.class);
-                Author author = new Author(authorEntity.getLink());
-                i.putExtra(Constants.ArgsName.AUTHOR, author);
-                startActivity(i);
+                Author authorEntity = getItems().get(position);
+                if (!authorEntity.isDeleted()) {
+                    Intent i = new Intent(getActivity(), SectionActivity.class);
+                    Author author = new Author(authorEntity.getLink());
+                    i.putExtra(Constants.ArgsName.AUTHOR, author);
+                    startActivity(i);
+                } else {
+                    GuiUtils.toast(getContext(), R.string.author_not_exist);
+                }
             }
+            return true;
         }
+
+        @Override
+        public boolean onLongClick(View view, int position) {
+            ViewHolder holder = (ViewHolder) view.getTag();
+            Author author = getItems().get(position);
+            if (!toAction.contains(author)) {
+                toAction.add(getItems().get(position));
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+            } else {
+                toAction.remove(author);
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+            }
+            return true;
+        }
+
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
@@ -321,7 +409,16 @@ public class ObservableFragment extends ListFragment<AuthorEntity> {
             TextView newText = holder.getView(R.id.favorites_update);
             TextView annotationTextView = holder.getView(R.id.favorites_annotation);
             Author author = getItems().get(position);
-            authorTextView.setText(author.getFullName());
+            if (toAction.contains(author)) {
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+            } else {
+                if (author.isDeleted()) {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent_light_grey));
+                } else {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+                }
+            }
+            authorTextView.setText(TextUtils.isEmpty(author.getFullName()) ? author.getShortName() : author.getFullName());
             if (author.getLastUpdateDate() != null) {
                 lastUpdateView.setText(dateFormat.format(author.getLastUpdateDate()));
             }

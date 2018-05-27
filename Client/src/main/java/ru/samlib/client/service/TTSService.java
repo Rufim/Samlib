@@ -14,6 +14,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -32,6 +34,9 @@ import ru.samlib.client.util.TTSPlayer;
 import ru.kazantsev.template.util.TextUtils;
 
 import javax.inject.Inject;
+import java.io.File;
+
+import static ru.samlib.client.receiver.TTSNotificationBroadcast.sendMessage;
 
 /**
  * Created by Dmitry on 01.09.2015.
@@ -41,7 +46,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     private static final String TAG = TTSService.class.getSimpleName();
 
     public enum Action {
-        PLAY, STOP, PAUSE, POSITION, NEXT, PRE;
+        PLAY, END, STOP, PAUSE, POSITION, NEXT, PRE;
     }
 
     private TTSPlayer ttsp;
@@ -56,6 +61,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     private ComponentName remoteComponentName;
     private RemoteControlClient remoteControlClient;
+    private PhoneStateListener phoneStateListener;
     private AudioManager audioManager;
     private static boolean currentVersionSupportBigNotification = false;
     private static boolean currentVersionSupportLockScreenControls = false;
@@ -78,7 +84,8 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                 && instance.getPlayer() != null
                 && !instance.getPlayer().getState().equals(TTSPlayer.State.UNAVAILABLE)
                 && instance.getPlayer().getWork() != null
-                && instance.getPlayer().getWork().getLink().equals(work.getLink());
+                && ((work.isNotSamlib() && work.getTitle() != null && work.getTitle().equals(instance.getPlayer().getWork().getTitle()))
+                || (!work.isNotSamlib() && work.getLink().equals(instance.getPlayer().getWork().getLink())));
     }
 
     public TTSPlayer.State getState() {
@@ -95,14 +102,23 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
 
     public static void setNextPhraseListener(TTSPlayer.OnNextPhraseListener nextPhraseListener) {
         TTSService.nextPhraseListener = nextPhraseListener;
+        if(instance != null && instance.getPlayer() != null) {
+            instance.getPlayer().setOnNextPhraseListener(nextPhraseListener);
+        }
     }
 
     public static void setIndexSpeakFinished(TTSPlayer.OnIndexSpeakFinished indexSpeakFinished) {
         TTSService.indexSpeakFinished = indexSpeakFinished;
+        if(instance != null && instance.getPlayer() != null) {
+            instance.getPlayer().setOnIndexSpeakFinished(indexSpeakFinished);
+        }
     }
 
     public static void setOnPlayerStateChanged(TTSPlayer.OnTTSPlayerStateChanged stateChanged) {
         TTSService.stateChanged = stateChanged;
+        if(instance != null && instance.getPlayer() != null) {
+            instance.getPlayer().setOnTTSPlayerStateChanged(stateChanged);
+        }
     }
 
     public void setPlayer(TTSPlayer ttsp) {
@@ -124,6 +140,26 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVersionSupportBigNotification = AndroidSystemUtils.currentVersionSupportBigNotification();
         currentVersionSupportLockScreenControls = AndroidSystemUtils.currentVersionSupportLockScreenControls();
+        phoneStateListener = new PhoneStateListener() {
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                if (state == TelephonyManager.CALL_STATE_RINGING) {
+                    //Incoming call: Pause music
+                    if(ttsp.isSpeaking()) {
+                        sendMessage(TTSService.Action.PAUSE);
+                    }
+                } else if(state == TelephonyManager.CALL_STATE_IDLE) {
+                    //Not in call: Play music
+                } else if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                    //A call is dialing, active or on hold
+                }
+                super.onCallStateChanged(state, incomingNumber);
+            }
+        };
+        TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if(mgr != null) {
+            mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
         super.onCreate();
     }
 
@@ -131,14 +167,25 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-            String link =  intent.getStringExtra(Constants.ArgsName.LINK);
-            Work work = WorkParser.getCachedWork(link);
+            final String link =  intent.getStringExtra(Constants.ArgsName.LINK);
+            final Work work = WorkParser.getCachedWork(link);
             if(!work.isParsed()) {
                 if (work.getRawContent() == null) {
-                    work.setRawContent(SystemUtils.readFile(HtmlClient.getCachedFile(getBaseContext(), link), "CP1251"));
+                    File cached;
+                    if(work.isNotSamlib()) {
+                        cached = new File(link);
+                        if (cached.exists()) {
+                            work.setRawContent(SystemUtils.readFile(cached, WorkParser.detectCharset(cached, "UTF-8")));
+                        }
+                    } else {
+                        cached = HtmlClient.getCachedFile(getBaseContext(), link);
+                        if (cached.exists()) {
+                            work.setRawContent(SystemUtils.readFile(cached, "CP1251"));
+                        }
+                    }
                 }
                 if (!TextUtils.isEmpty(work.getRawContent())) {
-                    WorkParser.processChapters(work);
+                    WorkParser.processChapters(work, work.isNotSamlib() && !new File(link).getName().endsWith(".html"));
                 } else {
                     return START_STICKY_COMPATIBILITY;
                 }
@@ -155,6 +202,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                 ttsp.setLanguage(intent.getStringExtra(Constants.ArgsName.TTS_LANGUAGE));
             }
             playWork(work, intent.getStringExtra(Constants.ArgsName.TTS_PLAY_POSITION));
+            newNotification(work.isNotSamlib() ? "file://" + link : link);
             TTSPlayer.TTS_HANDLER = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message msg) {
@@ -173,6 +221,13 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                                 remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
                             }
                             ttsp.stop();
+                            break;
+                        case END:
+                            if (currentVersionSupportLockScreenControls) {
+                                remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_STOPPED);
+                            }
+                            ttsp.onStop();
+                            stopSelf();
                             break;
                         case PAUSE:
                             if (currentVersionSupportLockScreenControls) {
@@ -198,12 +253,11 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
                             ttsp.pre();
                             break;
                     }
-                    newNotification();
+                    newNotification(work.isNotSamlib() ? "file://" + link : link);
                     Log.d(TAG, "TAG Pressed: " + action);
                     return false;
                 }
             });
-
         } catch (Exception e) {
             Log.e(TAG, "Unexpeted error in TTS service", e);
         }
@@ -215,21 +269,23 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
      * Custom Bignotification is available from API 16
      */
     @SuppressLint("NewApi")
-    private void newNotification() {
+    private void newNotification(String link) {
         String title = ttsp.getWork().getTitle();
         String shortName = ttsp.getWork().getAuthor().getShortName();
         RemoteViews simpleContentView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.tts_notification);
         Intent launch = new Intent(getApplicationContext(), SectionActivity.class);
-        launch.setData(Uri.parse(getPlayer().getWork().getFullLink()));
+        launch.setData(Uri.parse(link));
+        launch.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        launch.putExtra(Constants.ArgsName.WORK_RESTORE, true);
         Notification notification = new NotificationCompat.Builder(getApplicationContext())
                 .setSmallIcon(R.drawable.ic_action_book)
-                .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, 0))
+                .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, launch, PendingIntent.FLAG_UPDATE_CURRENT))
                 .setCustomContentView(simpleContentView)
                 .setContentTitle(title).build();
 
         setListeners(simpleContentView);
 
-        if (ttsp.getState().equals(TTSPlayer.State.PAUSE)) {
+        if (ttsp.getState().equals(TTSPlayer.State.PAUSE) || ttsp.getState().equals(TTSPlayer.State.STOPPED)) {
             notification.contentView.setViewVisibility(R.id.btnPause, View.GONE);
             notification.contentView.setViewVisibility(R.id.btnPlay, View.VISIBLE);
         } else {
@@ -277,6 +333,10 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             ttsp.onStop();
             ttsp = null;
         }
+        TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if(mgr != null) {
+            mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        }
         super.onDestroy();
     }
 
@@ -291,11 +351,8 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
             UpdateMetadata(work);
             remoteControlClient.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
         }
-        ttsp.onStop();
         String[] pos = position.split(":");
-        ttsp.playOnStart(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
-        ttsp.onStart();
-        newNotification();
+        ttsp.play(work, Integer.valueOf(pos[0]), Integer.valueOf(pos[1]));
     }
 
     @SuppressLint("NewApi")

@@ -3,6 +3,7 @@ package ru.samlib.client.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.view.KeyEvent;
 import ru.samlib.client.domain.Constants;
@@ -12,7 +13,7 @@ import ru.samlib.client.util.TTSPlayer;
 /**
  * Created by Dmitry on 02.09.2015.
  */
-public class TTSNotificationBroadcast extends BroadcastReceiver {
+public class TTSNotificationBroadcast extends WakefulBroadcastReceiver {
 
     private static final String TAG = TTSNotificationBroadcast.class.getSimpleName();
 
@@ -20,7 +21,7 @@ public class TTSNotificationBroadcast extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_MEDIA_BUTTON)) {
             KeyEvent keyEvent = (KeyEvent) intent.getExtras().get(Intent.EXTRA_KEY_EVENT);
-            if (keyEvent.getAction() != KeyEvent.ACTION_DOWN)
+            if (keyEvent.getAction() != KeyEvent.ACTION_DOWN || TTSService.getInstance() == null)
                 return;
 
             switch (keyEvent.getKeyCode()) {
@@ -59,8 +60,7 @@ public class TTSNotificationBroadcast extends BroadcastReceiver {
             } else if (intent.getAction().equals(TTSService.NOTIFY_NEXT)) {
                 sendMessage(TTSService.Action.NEXT);
             } else if (intent.getAction().equals(TTSService.NOTIFY_DELETE)) {
-                Intent i = new Intent(context, TTSService.class);
-                context.stopService(i);
+                sendMessage(TTSService.Action.END);
             } else if (intent.getAction().equals(TTSService.NOTIFY_PREVIOUS)) {
                 sendMessage(TTSService.Action.PRE);
             }

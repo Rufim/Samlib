@@ -4,11 +4,11 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-ingleLine="true"/>
     <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dialog_filter_switch_mode"
+            android:layout_marginTop="4dp"
             android:id="@+id/dialog_filter_switch_mode"
             android:layout_gravity="center_horizontal"/>
     <TextView
@@ -17,30 +17,18 @@ ingleLine="true"/>
             android:text="@string/dialog_filter_gender"
             android:textSize="@dimen/text_large"
             android:layout_gravity="center_horizontal"/>
-    <LinearLayout android:orientation="horizontal"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:gravity="center_horizontal">
-        <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/dialog_filter_male"
-                android:id="@+id/dialog_filter_male"/>
-        <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/dialog_filter_female"
-                android:id="@+id/dialog_filter_female"/>
-        <CheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/dialog_filter_undefined"
-                android:id="@+id/dialog_filter_undefined"/>
-    </LinearLayout>
-    <ScrollView
+     <include layout="@layout/dialog_gender"/>
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/dialog_filter_genres"
+              android:textSize="@dimen/text_large"
+              android:padding="4dp"
+              android:layout_gravity="center_horizontal"/>
+    <ru.samlib.client.view.MaxHeightScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_horizontal"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
             android:id="@+id/scrollView" android:layout_gravity="center_horizontal">
         <android.support.v7.widget.GridLayout android:layout_width="wrap_content"
                                               android:layout_height="wrap_content"
@@ -48,5 +36,5 @@ ingleLine="true"/>
                                               app:columnCount="@integer/newest_filter_grid_count"
                                               app:useDefaultMargins="true"
                                               app:orientation="horizontal"/>
-    </ScrollView>
+    </ru.samlib.client.view.MaxHeightScrollView>
 </LinearLayout>

@@ -4,11 +4,9 @@ import android.content.Context;
 import android.util.Log;
 import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.net.*;
-import ru.kazantsev.template.util.AndroidSystemUtils;
-import ru.samlib.client.App;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.App;
 import ru.samlib.client.domain.entity.SavedHtml;
-import ru.samlib.client.domain.entity.Work;
 import ru.samlib.client.service.DatabaseService;
 
 import java.io.File;
@@ -45,13 +43,15 @@ public class HtmlClient {
         List<SavedHtml> savedHtmls = databaseService.selectCachedEntities();
         for (SavedHtml savedHtml : savedHtmls) {
             String url = savedHtml.getUrl();
-            try {
-                Request request = new Request(url, true);
-                CachedResponse cachedResponse = new CachedResponse(savedHtml.getFilePath(), request);
-                cachedResponse.setEncoding("CP1251");
-                htmlfiles.put(url, cachedResponse);
-            } catch (Exception e) {
-                Log.e(TAG, "Unknown exception", e);
+            if(url != null) {
+                try {
+                    Request request = new Request(url, true);
+                    CachedResponse cachedResponse = new CachedResponse(savedHtml.getFilePath(), request);
+                    cachedResponse.setEncoding("CP1251");
+                    htmlfiles.put(url, cachedResponse);
+                } catch (Exception e) {
+                    Log.e(TAG, "Unknown exception", e);
+                }
             }
         }
     }
@@ -81,17 +81,16 @@ public class HtmlClient {
 
     public static File getCachedFile(Context context, String link) {
         File cacheDir = context.getExternalCacheDir();
-        if(cacheDir == null)  {
+        if(cacheDir == null || !cacheDir.canWrite())  {
             cacheDir = context.getCacheDir();
         }
         String fileName = link.replaceAll("/+", "/");
         if (fileName.endsWith("/")) {
             fileName = fileName.substring(0, fileName.lastIndexOf("/"));
         }
-        if (!ru.kazantsev.template.util.TextUtils.contains(fileName, false, ".shtml", ".html", ".htm")) {
+        if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt")) {
             fileName += ".html";
-        }
-        if (fileName.endsWith(".shtml")) {
+        } else if (fileName.endsWith(".shtml")) {
             fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
         }
         return new File(cacheDir, fileName);
@@ -109,10 +108,12 @@ public class HtmlClient {
             if (htmlfiles.containsKey(url)) {
                 return htmlfiles.get(url);
             }
+            throw new IOException("Файл не найден в кеше");
+        } else {
+            CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
+            cache(response);
+            return response;
         }
-        CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
-        cache(response);
-        return response;
     }
 
     public static synchronized CachedResponse executeRequest(Request request, boolean cached) throws IOException {
@@ -140,18 +141,18 @@ public class HtmlClient {
             if (!cachedResponse.getRequest().isWithParams()) {
                 String url = getUrl(cachedResponse.getRequest());
                 htmlfiles.put(url, cachedResponse);
-                SavedHtml savedHtml = app.getDataStore().findByKey(SavedHtml.class, cachedResponse.getAbsolutePath());
+                SavedHtml savedHtml = databaseService.getSavedHtml(cachedResponse.getAbsolutePath());
                 if (savedHtml == null) {
                     savedHtml = new SavedHtml(cachedResponse);
                     savedHtml.setSize(cachedResponse.length());
                     savedHtml.setUrl(url);
                     savedHtml.setUpdated(new Date());
-                    app.getDataStore().insert(savedHtml);
+                    databaseService.insertOrUpdateSavedHtml(savedHtml);
                 } else {
                     savedHtml.setSize(cachedResponse.length());
                     savedHtml.setUrl(url);
                     savedHtml.setUpdated(new Date());
-                    app.getDataStore().update(savedHtml);
+                    databaseService.insertOrUpdateSavedHtml(savedHtml);
                 }
             }
         } catch (Exception e) {

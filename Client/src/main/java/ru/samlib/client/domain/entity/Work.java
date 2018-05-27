@@ -1,17 +1,22 @@
 package ru.samlib.client.domain.entity;
 
 import android.graphics.Color;
+import com.raizlabs.android.dbflow.annotation.*;
+import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import ru.kazantsev.template.util.TextUtils;
-import io.requery.*;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
+import ru.samlib.client.database.ListGenreConverter;
+import ru.samlib.client.database.ListStringConverter;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -28,12 +33,11 @@ import java.util.*;
 /**
  * Created by Rufim on 22.05.2014.
  */
-@NoArgsConstructor
 @Data
-@EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
-@ToString(exclude = {"rawContent", "rootElements", "chapters", "annotationBlocks", "indents"})
-@Entity
-public class Work implements Serializable, Linkable, Validatable, Parsable, Findable {
+@EqualsAndHashCode(callSuper = false, exclude = {"rawContent", "annotationBlocks", "indents"})
+@ToString(exclude = {"rawContent", "annotationBlocks", "indents"})
+@Table(database = MyDatabase.class, allFields = true, updateConflict = ConflictAction.REPLACE, insertConflict = ConflictAction.REPLACE)
+public class Work extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2705011939329628695L;
     public static final String HTML_SUFFIX = ".shtml";
@@ -42,122 +46,71 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
     public static final String COMMENT_PREFIX = "/comment";
     public static final String ILLUSTRATION_PREFIX = "/img";
 
-    @Key
+    @PrimaryKey
     String link;
     String title;
-    @ManyToOne
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
+    Category category;
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Author author;
     String imageLink;
     Integer size;
     Integer sizeDiff;
+    @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal rate;
-    Integer kudoed;
+    @Column(name = "kudoed")
+    Integer votes;
+    @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal expertRate;
-    Integer expertKudoed;
+    @Column(name = "expertKudoed")
+    Integer expertVotes;
+    @Column(typeConverter = ListGenreConverter.class)
     List<Genre> genres = new ArrayList<>();
     Type type = Type.OTHER;
-    @ManyToOne
-    Category category;
+    @Column(typeConverter = ListStringConverter.class)
     List<String> annotationBlocks = new ArrayList<>();
     Date createDate;
     Date updateDate;
     Date cachedDate;
+    Date changedDate;
     New state = New.EMPTY;
     String description;
+    @ColumnIgnore
+    String workAuthorName; // for json
+    @ColumnIgnore
+    String annotation; // for json
     boolean hasIllustration = false;
     boolean hasComments = false;
+    boolean hasRate = false;
     boolean changed = false;
     boolean recommendation = false;
     boolean rootWork = false;
 
     String md5;
 
-    @Transient
+    @ColumnIgnore
     ExternalWork externalWork;
-    @Transient
+    @ColumnIgnore
     Bookmark bookmark;
-    @Transient
+    @ColumnIgnore
     CachedResponse cachedResponse;
-    @Transient
+    @ColumnIgnore
     String rawContent = "";
-    @Transient
+    @ColumnIgnore
     List<String> indents = new ArrayList<>();
-    @Transient
+    @ColumnIgnore
     List<Bookmark> autoBookmarks = new ArrayList<>();
-    @Transient
+    @ColumnIgnore
     boolean parsed = false;
 
+
+    public Work(){}
+
     public Work(String link) {
-        setLink(link);
+        setSmartLink(link);
     }
 
-    public WorkEntity createEntity(AuthorEntity authorEntity, CategoryEntity categoryEntity) {
-        WorkEntity entity;
-        if (isEntity()) {
-            entity = (WorkEntity) this;
-        } else {
-            entity = new WorkEntity();
-        }
-        if(categoryEntity != null) {
-            if(categoryEntity.getWorks() == null) {
-                categoryEntity.setWorks(new ArrayList<>());
-            }
-            boolean found = false;
-            for (int i = 0; i < categoryEntity.getWorks().size(); i++) {
-                Work work = categoryEntity.getWorks().get(i);
-                if (work.getLink().equals(getLink())) {
-                    found = true;
-                    if (work.isEntity()) {
-                        entity = (WorkEntity) work;
-                    } else {
-                        categoryEntity.getWorks().set(i, entity);
-                    }
-                }
-            }
-            if(!found) {
-                categoryEntity.getWorks().add(entity);
-            }
-        }
-        entity.setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
-        entity.setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
-        if (!isEntity()) {
-            entity.setTitle(title);
-            entity.setLink(getLink());
-            entity.setChanged(changed);
-            entity.setCreateDate(createDate);
-            entity.setDescription(description);
-            entity.setExpertKudoed(expertKudoed);
-            entity.setExpertRate(expertRate);
-            entity.setImageLink(imageLink);
-            entity.setMd5(md5);
-            entity.setCachedDate(cachedDate);
-            entity.setUpdateDate(updateDate);
-            entity.setGenres(genres);
-            entity.setType(type);
-            entity.setHasComments(hasComments);
-            entity.setHasIllustration(hasIllustration);
-            entity.setAnnotationBlocks(annotationBlocks);
-            entity.setSizeDiff(sizeDiff);
-            entity.setSize(size);
-            entity.setKudoed(kudoed);
-            entity.setRate(rate);
-            entity.setState(state);
-        }
-        return entity;
-    }
-
-    public WorkEntity createEntity() {
-        AuthorEntity authorEntity = author == null ? null : author.createEntity();
-        CategoryEntity categoryEntity = null;
-        if (authorEntity == null) {
-            categoryEntity = category == null ? null : category.createEntity();
-        } else {
-            categoryEntity = category == null ? null : category.createEntity(authorEntity);
-        }
-        return createEntity(authorEntity, categoryEntity);
-    }
-
-    public void setLink(String link) {
+    public void setSmartLink(String link) {
         if (link == null) return;
         link = ru.kazantsev.template.util.TextUtils.eraseHost(link);
         if (link.contains("/")) {
@@ -169,13 +122,25 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             this.link = "/" + link;
         }
         this.link = this.link.replaceAll("/+", "/");
+        if(getAuthor() != null) {
+            this.link = getSmartLink();
+        }
     }
 
-    public String getLink() {
+    public String getSmartLink() {
         if (link != null && !link.contains(getAuthor().getLink())) {
             link = (author.getLink() + link).replaceAll("/+", "/");
         }
         return link;
+    }
+
+    public boolean isEntity() {
+        return exists();
+    }
+
+
+    public boolean isNotSamlib() {
+        return getLink() == null;
     }
 
     public String getLinkWithoutSuffix() {
@@ -259,6 +224,14 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
         return android.text.TextUtils.join("", annotationBlocks);
     }
 
+    public void setAnnotation(String annotation) {
+        addAnnotation(annotation);
+    }
+
+    public String getAnnotationJson() {
+        return annotation;
+    }
+
     public String processAnnotationBloks(int color) {
         Document an = Jsoup.parse(getAnnotation());
         an.select("font[color=#555555]").attr("color",
@@ -285,9 +258,9 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
 
         Work work = (Work) o;
 
-        if (work.getLink() == null && getLink() == null) return true;
-        if (work.getLink() == null || getLink() == null) return false;
-        return TextUtils.trim(getLink()).equalsIgnoreCase(TextUtils.trim(work.getLink()));
+        if (work.link == null && link == null) return true;
+        if (work.link == null || link == null) return false;
+        return TextUtils.trim(link).equalsIgnoreCase(TextUtils.trim(work.link));
     }
 
     public void setChanged(boolean changed) {
@@ -323,10 +296,6 @@ public class Work implements Serializable, Linkable, Validatable, Parsable, Find
             return result;
         }
         return false;
-    }
-
-    public boolean isEntity() {
-        return getClass() == WorkEntity.class;
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {

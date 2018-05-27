@@ -4,10 +4,12 @@ import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.Serializable;
+
 /**
  * Created by Rufim on 02.07.2015.
  */
-public enum Type implements Linkable {
+public enum Type implements Linkable, Serializable {
 
     NOVEL("Роман", "/type/index_type_1-1.shtml"),
     TALE("Повесть", "/type/index_type_2-1.shtml"),

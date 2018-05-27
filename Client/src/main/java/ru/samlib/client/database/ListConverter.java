@@ -1,8 +1,9 @@
 package ru.samlib.client.database;
 
-import io.requery.Converter;
-import io.requery.Nullable;
+import android.annotation.SuppressLint;
+import com.raizlabs.android.dbflow.converter.TypeConverter;
 import net.vrallev.android.cat.Cat;
+import ru.samlib.client.domain.entity.Genre;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,29 +13,13 @@ import java.util.List;
 /**
  * Created by 0shad on 26.06.2016.
  */
-public class ListConverter implements Converter<List, String> {
-    private static final String SEPARATOR = "\0007";
-    private static final char STRING = 'S';
-    private static final char ENUM = 'E';
+public interface ListConverter {
+    String SEPARATOR = "\0007";
+    char STRING = 'S';
+    char ENUM = 'E';
 
-
-    public Class<List> getMappedType() {
-        //noinspection unchecked
-        return (Class) List.class;
-    }
-
-
-    public Class<String> getPersistedType() {
-        return String.class;
-    }
-
-    @Nullable
-    public Integer getPersistedSize() {
-        return null;
-    }
-
-    @Override
-    public String convertToPersisted(List list) {
+    @SuppressLint("NewApi")
+    default String getStringDBValue(List list) {
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -65,8 +50,8 @@ public class ListConverter implements Converter<List, String> {
         return sb.toString();
     }
 
-    @Override
-    public List convertToMapped(Class<? extends List> type, String value) {
+    @SuppressLint("NewApi")
+    default List getListModelValue(String value) {
         if (value == null) {
             return Collections.emptyList();
         }
@@ -77,7 +62,7 @@ public class ListConverter implements Converter<List, String> {
                     ArrayList<Enum> enumArrayList = new ArrayList<>();
                     for (String name : value.substring(value.indexOf("]") + 1).split(SEPARATOR)) {
                         for (Enum anEnum : enums) {
-                            if(anEnum.name().equals(name)) {
+                            if (anEnum.name().equals(name)) {
                                 enumArrayList.add(anEnum);
                             }
                         }

@@ -2,37 +2,43 @@ package ru.samlib.client.domain.entity;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import io.requery.*;
+
+import com.raizlabs.android.dbflow.annotation.*;
+import com.raizlabs.android.dbflow.converter.BigDecimalConverter;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.kazantsev.template.util.TextUtils;
-import ru.samlib.client.domain.google.Page;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.*;
+
+import static ru.samlib.client.util.DBFlowUtils.dbFlowOneTwoManyUtilMethod;
 
 /**
  * Created by Rufim on 22.05.2014.
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Entity
-public class Author implements Serializable, Linkable, Validatable, Parsable, Findable {
+@Table(database = MyDatabase.class, allFields = true)
+public class Author extends BaseModel implements Serializable, Linkable, Validatable, Parsable, Findable {
 
     private static final long serialVersionUID = -2312409864781561240L;
 
     private static final String AVATAR = ".photo2.jpg";
 
-    @Key
+    @PrimaryKey
     String link;
-    String fullName;;
+    String fullName;
     String shortName;
     String email;
     String annotation;
@@ -46,36 +52,70 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     boolean newest = false;
     boolean notNotified = false;
     boolean observable = false;
+    boolean deleted = false;
     Date lastUpdateDate;
+    Integer lastCheckedDate;
     Integer size;
     Integer workCount;
+    @Column(typeConverter = BigDecimalConverter.class)
     BigDecimal rate;
-    Integer kudoed;
+    @Column(name = "kudoed")
+    Integer votes;
     Integer views;
     String about;
     String sectionAnnotation;
-    @OneToMany(mappedBy = "author",cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Category> categories;
-    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Link> links;
-    @OneToMany(mappedBy = "author", cascade = {CascadeAction.DELETE, CascadeAction.SAVE})
-    List<Work> works;
-    @Transient
-    List<Author> friendList  = new ArrayList<>();
-    @Transient
-    List<Author> friendOfList  = new ArrayList<>();
+    @ColumnIgnore
+    List<Category> categories = new LinkedList<>();
+    @ColumnIgnore
+    List<Link> links = new LinkedList<>();
+    @ColumnIgnore
+    List<Work> works = new LinkedList<>();
+
+    @ColumnIgnore
+    List<Author> friendList = new ArrayList<>();
+    @ColumnIgnore
+    List<Author> friendOfList = new ArrayList<>();
     Integer friends;
     Integer friendsOf;
 
-    @Transient
+    @ColumnIgnore
     boolean parsed = false;
 
-    public Author() {
-        if(!isEntity()) {
-            categories = new ArrayList<>();
-            works = new ArrayList<>();
-            links = new ArrayList<>();
+    @OneToMany(methods = {OneToMany.Method.DELETE}, variableName = "works")
+    public synchronized List<Work> loadWorks() {
+        if (works == null || works.isEmpty()) {
+            works =  SQLite.select().distinct()
+                    .from(Work.class)
+                    .where(Work_Table.author_link.eq(link))
+                    .orderBy(Work_Table.changedDate, false)
+                    .queryList();
         }
+        return works;
+    }
+
+    @OneToMany(methods = {OneToMany.Method.DELETE}, variableName = "links")
+    public synchronized List<Link> loadLinks() {
+        return links = dbFlowOneTwoManyUtilMethod(links, Link.class, Link_Table.author_link.eq(link));
+    }
+
+    @OneToMany(methods = {OneToMany.Method.DELETE}, variableName = "categories")
+    public synchronized List<Category> loadCategories() {
+        return categories = dbFlowOneTwoManyUtilMethod(categories, Category.class, Category_Table.author_link.eq(link));
+    }
+
+    public List<Work> getWorks() {
+        return loadWorks();
+    }
+
+    public List<Link> getLinks() {
+        return loadLinks();
+    }
+
+    public List<Category> getCategories() {
+        return loadCategories();
+    }
+
+    public Author() {
     }
 
     public Author(Author other) {
@@ -97,7 +137,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.size = other.getSize();
         this.workCount = other.getWorkCount();
         this.rate = other.getRate();
-        this.kudoed = other.getKudoed();
+        this.votes = other.getVotes();
         this.views = other.getViews();
         this.about = other.getAbout();
         this.sectionAnnotation = other.sectionAnnotation;
@@ -109,93 +149,49 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         this.parsed = other.isParsed();
     }
 
-    public AuthorEntity createEntity() {
-        if(isEntity()) return (AuthorEntity) this;
-        AuthorEntity entity = new AuthorEntity();
-        entity.setHasUpdates(hasUpdates);
-        entity.setHasAvatar(hasAvatar);
-        entity.setHasAbout(hasAbout);
-        entity.setObservable(observable);
-        entity.setDateBirth(dateBirth);
-        entity.setRate(rate);
-        entity.setSize(size);
-        entity.setKudoed(kudoed);
-        entity.setLink(link);
-        entity.setNewest(newest);
-        entity.setShortName(getShortName());
-        entity.setFullName(fullName);
-        entity.setAnnotation(annotation);
-        entity.setEmail(email);
-        entity.setWorkCount(workCount);
-        entity.setSectionAnnotation(sectionAnnotation);
-        entity.setGender(getGender());
-        entity.setAbout(about);
-        entity.setViews(views);
-        entity.setAddress(address);
-        entity.setParsed(parsed);
-        entity.setAuthorSiteUrl(authorSiteUrl);
-        entity.setLastUpdateDate(lastUpdateDate);
-        for (Category category : categories) {
-            category.createEntity(entity);
-        }
-        for (Work rootWork : getRootWorks()) {
-            entity.addRootLink(rootWork.createEntity(entity, null));
-        }
-        for (Link rootLink : getRootLinks()) {
-            entity.addRootLink(rootLink.createEntity(entity, null));
-        }
-        for (Author author : friendList) {
-            entity.addFriend(author.createEntity());
-        }
-        for (Author author : friendOfList) {
-            entity.addFriendOf(author.createEntity());
-        }
-        return entity;
-    }
-
-    public boolean isEntity() {
-        return getClass() == AuthorEntity.class;
-    }
-
     public void setShortName(String shortName) {
         this.shortName = shortName;
     }
 
     public Author(String link) {
         this();
-        setLink(link);
+        setSmartLink(link);
     }
 
-    public void setLink(String link) {
+    public boolean isEntity() {
+        return exists();
+    }
+
+    public void setSmartLink(String link) {
         if (link == null) return;
         link = TextUtils.eraseHost(link);
         if (link.contains("/")) {
-            if(link.startsWith(Work.COMMENT_PREFIX)) {
+            if (link.startsWith(Work.COMMENT_PREFIX)) {
                 link = link.replace(Work.COMMENT_PREFIX, "");
             }
-            if(link.startsWith(Work.ILLUSTRATION_PREFIX)) {
+            if (link.startsWith(Work.ILLUSTRATION_PREFIX)) {
                 link = link.replace(Work.ILLUSTRATION_PREFIX, "");
             }
-            if(link.contains(Work.HTML_SUFFIX)) {
+            if (link.contains(Work.HTML_SUFFIX)) {
                 this.link = new Work(link).getAuthor().getLink();
             } else {
                 this.link = link;
             }
         }
-        if(this.link != null && !this.link.endsWith("/")) {
+        if (this.link != null && !this.link.endsWith("/")) {
             this.link += "/";
         }
         this.link = this.link.replaceAll("/+", "/");
     }
 
-    public Gender getGender(){
-        if(gender != null) return gender;
+    public Gender getGender() {
+        if (gender != null) return gender;
         String lastName = null;
-        if (shortName == null && fullName != null) {
+        if (fullName != null) {
             String names[] = fullName.split(" ");
             lastName = names[0];
         }
-        if (shortName != null && fullName == null) {
+        if (shortName != null && lastName == null) {
             String names[] = shortName.split(" ");
             lastName = names[0];
         }
@@ -215,7 +211,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
                         builder.append(" " + names[j].charAt(0) + ".");
                     }
                 }
-                if(i + 1 < authors.length) {
+                if (i + 1 < authors.length) {
                     builder.append(",");
                 }
             }
@@ -236,6 +232,24 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
                 .collect(Collectors.toList());
     }
 
+    public List<Work> getUpdates() {
+        List<Work> updates = new ArrayList<>();
+        for (Category category : getCategories()) {
+            for (Work work : category.getWorks()) {
+                if (work.isChanged()) {
+                    updates.add(work);
+                }
+            }
+        }
+        Collections.sort(updates, (o1, o2) -> {
+            if (o1.getCachedDate() == null) {
+                return -1;
+            }
+            return o1.getCachedDate().compareTo(o2.getCachedDate());
+        });
+        return updates;
+    }
+
     public void addCategory(Category category) {
         this.getCategories().add(category);
     }
@@ -250,15 +264,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
 
     public void addRecommendation(Work work) {
         Map<String, Work> all = getAllWorks();
-        if(all.containsKey(work.getLink())) {
+        if (all.containsKey(work.getLink())) {
             all.get(work.getLink()).setRecommendation(true);
         } else {
             work.setRecommendation(true);
-            if(!isEntity()) {
-                this.getWorks().add(work);
-            } else {
-                getWorks().add(work.createEntity((AuthorEntity) this, null));
-            }
+            work.setCategory(null);
+            this.getWorks().add(work);
         }
     }
 
@@ -276,16 +287,16 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     }
 
     public void addRootLink(Linkable linkable) {
-        if(linkable instanceof Work) {
-             Work exist = Stream.of(getWorks()).filter(work -> work.equals(linkable)).findFirst().orElse(null);
-             if(exist != null) {
-                 exist.setRootWork(true);
-             } else {
-                 ((Work) linkable).setRootWork(true);
-                 this.getWorks().add((Work) linkable);
-             }
+        if (linkable instanceof Work) {
+            Work exist = Stream.of(getWorks()).filter(work -> work.equals(linkable)).findFirst().orElse(null);
+            if (exist != null) {
+                exist.setRootWork(true);
+            } else {
+                ((Work) linkable).setRootWork(true);
+                this.getWorks().add((Work) linkable);
+            }
         }
-        if(linkable instanceof Link) {
+        if (linkable instanceof Link) {
             Link exist = Stream.of(getLinks()).filter(link -> link.equals(linkable)).findFirst().orElse(null);
             if (exist != null) {
                 exist.setRootLink(true);
@@ -296,7 +307,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         }
     }
 
-    public List<Linkable> getLinkables()  {
+    public List<Linkable> getLinkables() {
         List<Linkable> linkables = new ArrayList<>();
         if (getRootLinks() != null) {
             linkables.addAll(getRootWorks());
@@ -339,10 +350,11 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     public boolean hasCategory(Category category) {
         for (Category next : getCategories()) {
             if (next.title != null ? !next.title.equals(category.title) : category.title != null) continue;
-            if (next.annotation != null ? !next.annotation.equals(category.annotation) : category.annotation != null) continue;
+            if (next.annotation != null ? !next.annotation.equals(category.annotation) : category.annotation != null)
+                continue;
             if (next.author != null ? !next.author.equals(category.author) : category.author != null) continue;
             if (next.type != category.type) continue;
-            if(!(next.link != null ? next.link.equals(category.link) : category.link == null)) {
+            if (!(next.link != null ? next.link.equals(category.link) : category.link == null)) {
                 return true;
             }
         }
@@ -352,12 +364,12 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
     @Override
     public boolean find(ItemListAdapter.FilterEvent query) {
         String shortName = getShortName().toLowerCase();
-        if(shortName == null) return false;
-        if(query.query == null) return true;
+        if (shortName == null) return false;
+        if (query.query == null) return true;
         return shortName.toLowerCase().contains(query.query.toLowerCase());
     }
 
-    public void hasNewUpdates(){
+    public void hasNewUpdates() {
         setHasUpdates(true);
         setNotNotified(true);
     }
@@ -366,7 +378,7 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         for (Link rootLink : rootLinks) {
             rootLink.setRootLink(true);
         }
-        if(getLinks() == null) setLinks(new ArrayList<>());
+        if (getLinks() == null) setLinks(new ArrayList<>());
         getLinks().addAll(rootLinks);
     }
 
@@ -374,11 +386,20 @@ public class Author implements Serializable, Linkable, Validatable, Parsable, Fi
         for (Work rootLink : rootWorks) {
             rootLink.setRootWork(true);
         }
-        if(getWorks() == null) setWorks(new ArrayList<>());
+        if (getWorks() == null) setWorks(new ArrayList<>());
         getWorks().addAll(rootWorks);
     }
 
     public List<Work> getRecommendations() {
         return Stream.of(getAllWorks().entrySet()).map(Map.Entry::getValue).filter(Work::isRecommendation).collect(Collectors.toList());
+    }
+
+    public Date getLastCheckedTime() {
+        if(lastCheckedDate == null) return null;
+        return new Date(((long) lastCheckedDate) * 1000);
+    }
+
+    public void setLastCheckedTime(Date lastCheckedDate) {
+        this.lastCheckedDate = (int) (lastCheckedDate.getTime() / 1000);
     }
 }

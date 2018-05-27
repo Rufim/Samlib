@@ -7,10 +7,11 @@
               android:visibility="gone"
               android:layout_marginLeft="@dimen/spacing_medium"
               android:gravity="left">
-    <TextView
+    <ru.kazantsev.template.view.HackyTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/work_annotation"
-            android:textColor="@color/light_gold"
+            android:textIsSelectable="true"
+            android:textColor="?attr/textColorAnnotations"
             android:textSize="@dimen/text_medium"/>
 </LinearLayout>

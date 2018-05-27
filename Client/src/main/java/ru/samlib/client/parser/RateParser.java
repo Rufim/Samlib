@@ -30,17 +30,17 @@ public class RateParser extends PageListParser<Work> {
                 case 0:
                     String expertRate = item.select("a").text();
                     work.setExpertRate(new BigDecimal(expertRate.split("\\*")[0]));
-                    work.setExpertKudoed(Integer.parseInt(expertRate.split("\\*")[1]));
+                    work.setExpertVotes(Integer.parseInt(expertRate.split("\\*")[1]));
                     break;
                 case 1:
                     Author author = new Author();
-                    author.setLink(item.select("a[href]").attr("href"));
+                    author.setSmartLink(item.select("a[href]").attr("href"));
                     author.setFullName(item.text());
                     work.setAuthor(author);
                     break;
                 case 2:
                     work.setTitle(item.text());
-                    work.setLink(item.select("a[href]").attr("href"));
+                    work.setSmartLink(item.select("a[href]").attr("href"));
                     break;
                 case 3:
                     Elements info = item.select("b");
@@ -48,7 +48,7 @@ public class RateParser extends PageListParser<Work> {
                     if (info.size() > 1) {
                         String[] rate = info.get(1).text().split("\\*");
                         work.setRate(new BigDecimal(rate[0]));
-                        work.setKudoed(Integer.parseInt(rate[1]));
+                        work.setVotes(Integer.parseInt(rate[1]));
                     }
                     String ownText = item.ownText();
                     work.setGenresAsString(ownText.substring(ownText.lastIndexOf("\u00A0") + 1).trim());

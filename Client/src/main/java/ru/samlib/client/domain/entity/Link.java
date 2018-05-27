@@ -1,8 +1,14 @@
 package ru.samlib.client.domain.entity;
 
-import io.requery.*;
+
+import com.raizlabs.android.dbflow.annotation.ForeignKey;
+import com.raizlabs.android.dbflow.annotation.ForeignKeyAction;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.samlib.client.database.MyDatabase;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Validatable;
 
@@ -12,16 +18,15 @@ import java.util.ArrayList;
 /**
  * Created by Rufim on 01.07.2015.
  */
-@NoArgsConstructor
 @Data
-@Entity
-public class Link implements Validatable, Linkable, Serializable {
+@Table(database = MyDatabase.class, allFields = true)
+public class Link extends BaseModel implements Validatable, Linkable, Serializable {
 
-    @Key @Generated
-    Integer id;
-    @ManyToOne
+    @PrimaryKey(autoincrement = true, quickCheckAutoIncrement = true)
+    Integer id = 0;
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Author author;
-    @ManyToOne
+    @ForeignKey(stubbedRelationship = true, onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     Category category;
 
     boolean rootLink = false;
@@ -30,57 +35,7 @@ public class Link implements Validatable, Linkable, Serializable {
     String link;
     String annotation;
 
-    public LinkEntity createEntity(AuthorEntity authorEntity, CategoryEntity categoryEntity) {
-        LinkEntity entity = new LinkEntity();
-        if (getClass() == LinkEntity.class) {
-            entity = (LinkEntity) this;
-        } else {
-            entity = new LinkEntity();
-        }
-        if (categoryEntity != null) {
-            if (categoryEntity.getLinks() == null) {
-                categoryEntity.setLinks(new ArrayList<>());
-            }
-            boolean found = false;
-            for (int i = 0; i < categoryEntity.getLinks().size(); i++) {
-                Link link = categoryEntity.getLinks().get(i);
-                if (link.getLink().equals(getLink())) {
-                    found = true;
-                    if (link.getClass() == LinkEntity.class) {
-                        entity = (LinkEntity) link;
-                    } else {
-                        categoryEntity.getLinks().set(i, entity);
-                    }
-                }
-            }
-            if (!found) {
-                categoryEntity.getLinks().add(entity);
-            }
-        }
-        if(getClass() == LinkEntity.class) {
-            setAuthor(author = authorEntity == null ? getAuthor() : authorEntity);
-            setCategory(category = categoryEntity == null ? getCategory() : categoryEntity);
-            return (LinkEntity) this;
-        }
-        entity.setAnnotation(annotation);
-        entity.setAuthor(author = authorEntity == null ? author : authorEntity);
-        entity.setId(id);
-        entity.setLink(link);
-        entity.setTitle(title);
-        entity.setCategory(category = categoryEntity == null ? category : categoryEntity);
-        return entity;
-    }
-
-    public LinkEntity createEntity() {
-        AuthorEntity  authorEntity = author == null ? null : author.createEntity();
-        CategoryEntity categoryEntity = null;
-        if(authorEntity == null) {
-            categoryEntity = category == null ? null : category.createEntity();
-        } else {
-            categoryEntity = category == null ? null : category.createEntity(authorEntity);
-        }
-        return createEntity(authorEntity, categoryEntity);
-    }
+    public Link(){}
 
     public Link(String title, String link, String annotation) {
         this.title = title;

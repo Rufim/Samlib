@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
+import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +35,7 @@ import ru.samlib.client.parser.Parser;
 public class MainActivity extends BaseActivity {
 
     public static final String ONLINE = "online";
+    public static final String SELECTED = "selected";
 
     private boolean doubleBackToExitPressedOnce = false;
 
@@ -46,37 +49,38 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(AndroidSystemUtils.getStringResPreference(this, R.string.preferenceCurrentTheme, getApplicationInfo().theme));
         super.onCreate(savedInstanceState);
         singleInstance = this;
-        if (!isConfigChange(savedInstanceState)) {
-            online = AndroidSystemUtils.isNetworkAvailable(this);
-        } else {
-            online = savedInstanceState.getBoolean(ONLINE);
-        }
         View header = getLayoutInflater().inflate(R.layout.header_main, navigationView, false);
         SwitchCompat switchButton = GuiUtils.getView(header, R.id.header_main_status);
-        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (!switchMode(isChecked)) {
-                    switchButton.setChecked(false);
-                }
+        navigationView.addHeaderView(header);
+        switchButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (!switchMode(isChecked)) {
+                switchButton.setChecked(false);
             }
         });
         switchButton.setSwitchTextAppearance(this, R.style.SwitchTextAppearance);
-        navigationView.addHeaderView(header);
-        switchStatus(online);
+        if (!isConfigChange(savedInstanceState)) {
+            online = AndroidSystemUtils.isNetworkAvailable(this);
+            switchStatus(online, -1);
+        } else {
+            online = savedInstanceState.getBoolean(ONLINE);
+            switchStatus(online, savedInstanceState.getInt(SELECTED));
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(ONLINE, online);
+        outState.putInt(SELECTED, getCheckedNavigationItem());
     }
 
     protected void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+            /*SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     SuggestionProvider.AUTHORITY, SuggestionProvider.MODE);
             suggestions.saveRecentQuery(query, null);
             if (Linkable.isSamlibLink(TextUtils.eraseHost(query))) {
@@ -89,9 +93,14 @@ public class MainActivity extends BaseActivity {
                     searchIntent.putExtra(SearchManager.QUERY, query + " site:" + Constants.Net.BASE_HOST); // query contains search string
                     startActivity(searchIntent);
                 } catch (ActivityNotFoundException ex) {}
+            } */
+            BaseFragment baseFragment = (BaseFragment) getCurrentFragment();
+            if(baseFragment instanceof SearchFragment) {
+                ((SearchFragment) baseFragment).onQueryTextSubmit(query);
+            } else {
+                SearchFragment.show(baseFragment, query);
             }
             return;
-            //SearchFragment.show(getCurrentFragment(), query);  TODO: make own serchview
         }
         if (intent.getAction() == null && ObservableFragment.class.getSimpleName().equals(intent.getStringExtra(Constants.ArgsName.FRAGMENT_CLASS))) {
             replaceFragment(ObservableFragment.class);
@@ -108,6 +117,10 @@ public class MainActivity extends BaseActivity {
     public boolean onNavigationItemSelected(MenuItem item) {
         // update the main content by replacing fragments
         Integer itemId = item.getItemId();
+        if(getIntent() != null && getIntent().getBooleanExtra(Constants.ArgsName.ON_CHANGE_THEME, false)) {
+            itemId = R.id.drawer_settings;
+            getIntent().putExtra(Constants.ArgsName.ON_CHANGE_THEME, false);
+        }
         switch (itemId) {
             case R.id.drawer_rate:
                 replaceFragment(RateFragment.class);
@@ -132,6 +145,15 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.drawer_observable:
                 replaceFragment(ObservableFragment.class);
+                break;
+            case R.id.drawer_settings:
+                replaceFragment(SettingsFragment.class);
+                break;
+            case R.id.drawer_help:
+                replaceFragment(HelpFragment.class);
+                break;
+            case R.id.drawer_search:
+                replaceFragment(SearchFragment.class);
                 break;
             default:
                 replaceFragment(BaseFragment.class);
@@ -163,17 +185,16 @@ public class MainActivity extends BaseActivity {
                 GuiUtils.toast(this, R.string.network_not_available);
                 return false;
             } else {
-                switchStatus(online);
+                switchStatus(online, getCheckedNavigationItem());
                 return true;
             }
         }
         return true;
     }
 
-    private void switchStatus(boolean online) {
+    private void switchStatus(boolean online, int id) {
         this.online = online;
         Parser.setCachedMode(!online);
-        int id = getCheckedNavigationItem();
         navigationView.getMenu().clear();
         if (online) {
             navigationView.inflateMenu(R.menu.drawer);

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
 import ru.kazantsev.template.net.Response;
+import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.dialog.NewCommentDialog;
@@ -43,6 +45,7 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     private Work work;
     private int showPage = -1;
+    private int archive = 0;
     private Document document;
 
     public static CommentsFragment show(FragmentBuilder builder, @IdRes int container, String link) {
@@ -70,14 +73,16 @@ public class CommentsFragment extends ListFragment<Comment> {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         boolean newWork = false;
         Integer page = getArguments().getInt(Constants.ArgsName.COMMENTS_PAGE);
+        Integer archive = getArguments().getInt(Constants.ArgsName.COMMENTS_ARCHIVE, 0);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         if (incomingWork != null && !incomingWork.equals(work)) {
             work = incomingWork;
             newWork = true;
         }
         pageSize = 10;
-        if (newWork && showPage != page) {
+        if (newWork && (showPage != page || this.archive != archive)) {
             showPage = page;
+            this.archive = archive;
             clearData();
         }
         return super.onCreateView(inflater, container, savedInstanceState);
@@ -104,14 +109,17 @@ public class CommentsFragment extends ListFragment<Comment> {
 
     protected class CommentsAdapter extends ItemListAdapter<Comment> {
 
+        private float fontSize;
+
         public CommentsAdapter(int layoutId) {
             super(layoutId);
             bindClicks = false;
+            fontSize = AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceFontSizeComments, 13f);
         }
 
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             final CommentsParser.Operation operation;
             switch (view.getId()) {
                 case R.id.comment_reply:
@@ -126,6 +134,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                     break;
                 default: operation = null;
             }
+
             final Comment comment = getItems().get(position);
             if(operation != null) {
                 ((CommentsPagerFragment) getParentFragment()).startLoading(true);
@@ -177,6 +186,7 @@ public class CommentsFragment extends ListFragment<Comment> {
                     }
                 }.execute();
             }
+            return true;
         }
 
         private String getTextareaText(String body) {
@@ -220,6 +230,7 @@ public class CommentsFragment extends ListFragment<Comment> {
             spanner.registerHandler("a", new LinkHandler(content));
             GuiUtils.setTextOrHide(content, spanner.fromHtml(comment.getRawContent()));
             content.setMovementMethod(LinkMovementMethod.getInstance());
+            content.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             if (comment.getLink() != null) {
                 GuiUtils.setTextOrHide(author, GuiUtils.spannableText(comment.getNickName(),
                         new URLSpanNoUnderline(comment.getLink().isAuthor() ? comment.getLink().getFullLink() : comment.getLink().getLink())));
@@ -229,7 +240,7 @@ public class CommentsFragment extends ListFragment<Comment> {
             } else {
                 GuiUtils.setTextOrHide(author, comment.getNickName());
             }
-            if (comment.getMsgid() == null) {
+            if (comment.getMsgid() == null || archive > 0) {
                 GuiUtils.setVisibility(GONE, reply, edit, delete);
             } else {
                 reply.setVisibility(VISIBLE);

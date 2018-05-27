@@ -5,23 +5,24 @@ import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import com.annimon.stream.Stream;
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.SystemUtils;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
+import ru.samlib.client.domain.entity.Bookmark;
 import ru.samlib.client.domain.entity.SavedHtml;
 import ru.samlib.client.net.HtmlClient;
 import ru.samlib.client.service.DatabaseService;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by 0shad on 07.05.2017.
@@ -56,32 +57,49 @@ public class CleanCacheJob extends Job {
     }
 
     private void cleanCache(DatabaseService databaseService, Context context) {
-        List<SavedHtml> savedHtmls = databaseService.selectCachedEntities();
+        TreeSet<File> allCachedFiles = new TreeSet<>(new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                long x = o1 == null ? 0 : o1.lastModified();
+                long y = o1 == null ? 0 : o2.lastModified();
+                return (x < y) ? -1 : ((x == y) ? 0 : 1);
+            }
+        });
+        SystemUtils.listFilesRecursive(context.getCacheDir(), allCachedFiles);
+        if(context.getExternalCacheDir().canWrite()) {
+            SystemUtils.listFilesRecursive(context.getExternalCacheDir(), allCachedFiles);
+        }
         long totalSize = 0;
-        for (SavedHtml savedHtml : savedHtmls) {
-            totalSize += savedHtml.getSize();
+        List<SavedHtml> savedHtmls = databaseService.selectCachedEntities();
+        for (File cached : allCachedFiles) {
+            totalSize += cached.length();
         }
         SharedPreferences preference = AndroidSystemUtils.getDefaultPreference(context);
-        int maxSizeMB = preference.getInt(context.getString(R.string.preferenceMaxCacheSize), context.getResources().getInteger(R.integer.preferenceMaxCacheSizeDefault));
+        int maxSizeMB = TextUtils.parseInt(preference.getString(context.getString(R.string.preferenceMaxCacheSize), context.getResources().getString(R.string.preferenceMaxCacheSizeDefault)));
+        if(maxSizeMB < 0) return;
         long maxSize = maxSizeMB * 1024 * 1024;
-        List<SavedHtml> delete = new ArrayList<>();
-        int i = 0;
+        List<File> deleteFiles = new ArrayList<>();
+        List<SavedHtml> deleteEntities = new ArrayList<>();
         while (maxSize < totalSize) {
-            SavedHtml toDelete = savedHtmls.get(i++);
-            totalSize -= toDelete.getSize();
-            delete.add(toDelete);
+            File toDelete = allCachedFiles.pollFirst();
+            totalSize -= toDelete.length();
+            deleteFiles.add(toDelete);
+            SavedHtml savedHtml = Stream.of(savedHtmls).filter(html -> html.getFilePath().equals(toDelete.getAbsolutePath())).findFirst().orElse(null);
+            if(savedHtml != null) {
+                deleteEntities.add(savedHtml);
+            }
         }
-        if(delete.size() > 0) {
-            Iterator<SavedHtml> it = delete.iterator();
+        if(deleteFiles.size() > 0) {
+            Iterator<File> it = deleteFiles.iterator();
             while (it.hasNext()){
-                SavedHtml savedHtml = it.next();
-                if(!(new File(savedHtml.getFilePath()).delete())) {
-                    Log.e(TAG, "Cannot delete file on path: " + savedHtml.getFilePath());
+                File file = it.next();
+                if(!file.delete()) {
+                    Log.e(TAG, "Cannot delete file on path: " + file.getAbsolutePath());
                     it.remove();
                 }
             }
-            HtmlClient.cleanCache(delete);
-            databaseService.deleteCachedEntities(delete);
+            HtmlClient.cleanCache(deleteEntities);
+            databaseService.deleteCachedEntities(deleteEntities);
         }
     }
 

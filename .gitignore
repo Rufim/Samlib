@@ -5,3 +5,5 @@
 build/
 /captures
 .gradle/
+/.idea/gradle.xml
+/.idea/modules.xml

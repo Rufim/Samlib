@@ -6,11 +6,14 @@
               android:icon="@drawable/ic_clock_white_24dp"
               android:title="@string/drawer_history"/>
         <item android:id="@+id/drawer_external_works"
-              android:icon="@drawable/ic_clock_white_24dp"
+              android:icon="@drawable/ic_content_save_white_24dp"
               android:title="@string/drawer_external_works"/>
         <item android:id="@+id/drawer_observable"
               android:icon="@drawable/ic_feather_white_24dp"
               android:title="@string/drawer_observable"/>
+        <item android:id="@+id/drawer_settings"
+              android:icon="@drawable/ic_settings_white_24dp"
+              android:title="@string/drawer_settings"/>
         <item android:id="@+id/drawer_help"
               android:icon="@drawable/ic_help_circle_white_24dp"
               android:title="@string/drawer_help"/>

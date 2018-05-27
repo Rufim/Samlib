@@ -22,6 +22,7 @@ import ru.kazantsev.template.util.GuiUtils;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
+import ru.samlib.client.dialog.EditListPreferenceDialog;
 import ru.samlib.client.dialog.NewCommentDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Work;
@@ -35,7 +36,9 @@ import ru.samlib.client.parser.Parser;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 0shad on 05.11.2015.
@@ -52,17 +55,8 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsPagerFragment.class);
     }
 
-    public static CommentsPagerFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
-        return show(builder.putArg(Constants.ArgsName.WORK, work), container, CommentsPagerFragment.class);
-    }
-
-
     public static CommentsPagerFragment show(BaseFragment fragment, String link) {
         return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.LINK, link);
-    }
-
-    public static CommentsPagerFragment show(BaseFragment fragment, Work work) {
-        return show(fragment, CommentsPagerFragment.class, Constants.ArgsName.WORK, work);
     }
 
     @Override
@@ -86,6 +80,26 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                     dialog.show(getFragmentManager(), NewCommentDialog.class.getSimpleName());
                 }
                 return true;
+            case R.id.action_comments_choose_archive:
+                Map<String, Integer> TitleVal = new LinkedHashMap<>();
+                String current = getString(R.string.comments_current);
+                TitleVal.put(current, 0);
+                for (int i = 1; i <= parser.getArchiveCount(); i++) {
+                    TitleVal.put(i + "", i);
+                }
+                EditListPreferenceDialog editListPreferenceDialog = new EditListPreferenceDialog();
+                SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), -1, parser.getCurrentArchive());
+                preference.title = getString(R.string.comments_choose_archive);
+                preference.keyValue = TitleVal;
+                editListPreferenceDialog.setPreference(preference);
+                editListPreferenceDialog.setOnCommit((value, d) -> {
+                    parser.setArchive((Integer) value);
+                    safeInvalidateOptionsMenu();
+                    refreshData(true);
+                    return true;
+                });
+                editListPreferenceDialog.show(getFragmentManager(), editListPreferenceDialog.getClass().getSimpleName());
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -104,17 +118,14 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         boolean newWork = false;
         String link = getArguments().getString(Constants.ArgsName.LINK);
-        Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
-        if (incomingWork != null && !incomingWork.equals(work)) {
-            work = incomingWork;
-            newWork = true;
-        } else if (link != null) {
+        if (link != null && (work == null || !work.getLink().equals(link))) {
             if (work == null || !work.getLink().equals(link)) {
                 work = new Work(link);
                 newWork = true;
             }
         }
         pagesSize = 999;
+        autoLoadMore = false;
         if (newWork) {
             clearData();
             try {
@@ -134,7 +145,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         } else {
             postEvent(new CommentsParsedEvent(adapter.getItems()));
         }
-      
+        ((SectionActivity) getActivity()).setSelected(0);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -164,7 +175,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
@@ -237,9 +248,10 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     public FragmentPagerAdapter<Integer, CommentsFragment> newAdapter(List<Integer> currentItems) {
         return new FragmentPagerAdapter<Integer, CommentsFragment>(getChildFragmentManager(), currentItems) {
             @Override
-            public Fragment getItem(int position) {
+            public CommentsFragment getNewItem(int position) {
                 return new FragmentBuilder(null)
                         .putArg(Constants.ArgsName.COMMENTS_PAGE, position)
+                        .putArg(Constants.ArgsName.COMMENTS_ARCHIVE, parser.getCurrentArchive())
                         .putArg(Constants.ArgsName.WORK, work)
                         .newFragment(CommentsFragment.class);
             }

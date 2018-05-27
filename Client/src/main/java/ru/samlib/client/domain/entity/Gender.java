@@ -1,16 +1,17 @@
 package ru.samlib.client.domain.entity;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by 0shad on 25.10.2015.
  */
-public enum Gender {
+public enum Gender implements Serializable {
 
     MALE, FEMALE, UNDEFINED;
 
-    public static final String MALE_REGEX = "(ов)|(ев)|(ин)|(ын)|(ой)|(цкий)|(ский)|(цкой)|(ской)";
+    public static final String MALE_REGEX = "(ло)|(ый)|(чук)|(ко)(ик)|(ов)|(ев)|(ин)|(ын)|(ой)|(цкий)|(ский)|(цкой)|(ской)";
     public static final String FEMALE_REGEX = "(ова)|(ева)|(ина)|(ая)|(ия)|(яя)|(екая)|(цкая)|(ская)";
     public static final Pattern male_pattern = Pattern.compile(".*(" + MALE_REGEX + ")",
             Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);

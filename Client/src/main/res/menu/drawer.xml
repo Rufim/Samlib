@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
+        <item android:id="@+id/drawer_search"
+            android:icon="@drawable/ic_action_search"
+            android:title="@string/drawer_search"/>
         <item android:id="@+id/drawer_new"
               android:checked="true"
               android:icon="@drawable/ic_new_box_white_24dp"
@@ -26,6 +29,9 @@
         <item android:id="@+id/drawer_observable"
               android:icon="@drawable/ic_feather_white_24dp"
               android:title="@string/drawer_observable"/>
+        <item android:id="@+id/drawer_settings"
+              android:icon="@drawable/ic_settings_white_24dp"
+              android:title="@string/drawer_settings"/>
         <item android:id="@+id/drawer_help"
               android:icon="@drawable/ic_help_circle_white_24dp"
               android:title="@string/drawer_help"/>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:padding="@dimen/spacing_medium"
+              android:layout_width="match_parent"
+              android:gravity="center_vertical"
+              android:background="@android:drawable/list_selector_background"
+              android:layout_height="wrap_content">
+        <include layout="@layout/item_settings_title"/>
+        <TextView android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:textSize="@dimen/text_medium"
+                  android:id="@+id/settings_value"
+                  android:textStyle="bold"
+                  android:textColor="@color/light_grey"
+                  android:text="Value"/>
+</LinearLayout>

@@ -83,11 +83,11 @@ public class SearchParser extends PageListParser {
         if (tbodys.size() > 0) {
             Elements workElements = tbodys.get(0).select("a");
             Author author = new Author();
-            author.setLink(workElements.get(0).select("a[href]").attr("href"));
+            author.setSmartLink(workElements.get(0).select("a[href]").attr("href"));
             author.setFullName(workElements.get(0).text());
             work.setAuthor(author);
             work.setTitle(workElements.get(1).text());
-            work.setLink(workElements.get(1).select("a[href]").attr("href"));
+            work.setSmartLink(workElements.get(1).select("a[href]").attr("href"));
             work.setSize(Integer.parseInt(tbodys.get(0).select("ul").text().split("k")[0]));
             String[] subtext = tbodys.get(1).select("font[size=2]").text().split("\"");
             if (subtext.length > 1 && !subtext[1].isEmpty()) {

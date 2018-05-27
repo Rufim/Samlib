@@ -74,7 +74,6 @@ public class FilterDialog extends BaseDialog {
             }
         }
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.newest_filter)
                 .setPositiveButton(android.R.string.ok, this)
                 .setNeutralButton(R.string.dialog_filter_clear, this)
                 .setNegativeButton(android.R.string.cancel, this)

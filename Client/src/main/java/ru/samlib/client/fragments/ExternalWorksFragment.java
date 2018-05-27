@@ -42,6 +42,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_external_works);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_external_works);
         setHasOptionsMenu(true);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
@@ -90,7 +91,7 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         ErrorFragment.show(this, R.string.error, ex);
         ACRA.getErrorReporter().handleException(ex);
     }
@@ -118,14 +119,23 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
                 }
 
             }
-            return false;
+            return true;
         }
 
         @Override
         public boolean onLongClick(View view, @Nullable ExternalWork item) {
             ViewHolder holder = (ViewHolder) view.getTag();
-            holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
-            toActionWorks.add(item);
+            if (!toActionWorks.contains(item)) {
+                toActionWorks.add(item);
+                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+            } else {
+                toActionWorks.remove(item);
+                if (!item.isExist()) {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent_light_grey));
+                } else {
+                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+                }
+            }
             return true;
         }
 
@@ -133,20 +143,30 @@ public class ExternalWorksFragment extends ListFragment<ExternalWork> {
         public void onBindHolder(ViewHolder holder, @Nullable ExternalWork item) {
             ViewGroup root = (ViewGroup) holder.getItemView();
             if(toActionWorks.contains(item)) {
-                holder.getItemView().setBackgroundColor(getResources().getColor(R.color.Orange));
+                root.setBackgroundColor(getResources().getColor(R.color.Orange));
             } else {
                 if (!item.isExist()) {
-                    root.setBackgroundColor(getResources().getColor(R.color.light_grey));
+                    root.setBackgroundColor(getResources().getColor(R.color.transparent_light_grey));
                 } else {
-                    holder.getItemView().setBackgroundColor(getResources().getColor(R.color.transparent));
+                    root.setBackgroundColor(getResources().getColor(R.color.transparent));
                 }
             }
-            TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
             TextView filepathView = GuiUtils.getView(root, R.id.external_item_filepath);
-            TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
-            GuiUtils.setText(titleView, item.getWorkTitle());
             GuiUtils.setText(filepathView, item.getFilePath());
-            GuiUtils.setText(authorView, item.getAuthorShortName());
+            /*if(item.getWorkUrl() != null) {
+                GuiUtils.setVisibility(View.VISIBLE, root, R.id.external_item_author_layout);
+                TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
+                TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
+                GuiUtils.setText(titleView, item.getWorkTitle());
+                GuiUtils.setText(authorView, item.getAuthorShortName());
+            } else*/
+            {
+                GuiUtils.setVisibility(View.GONE, root, R.id.external_item_author_layout);
+                TextView titleView = GuiUtils.getView(root, R.id.external_item_work);
+                TextView authorView = GuiUtils.getView(root, R.id.external_item_author);
+                GuiUtils.setText(titleView, item.getWorkTitle());
+                GuiUtils.setText(authorView, item.getAuthorShortName());
+            }
         }
     }
 }

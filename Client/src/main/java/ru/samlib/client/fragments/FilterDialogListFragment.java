@@ -16,6 +16,7 @@ import ru.samlib.client.domain.entity.Gender;
 import ru.samlib.client.domain.entity.Genre;
 import ru.kazantsev.template.domain.event.Event;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.domain.entity.Type;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {

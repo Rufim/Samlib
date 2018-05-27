@@ -36,10 +36,17 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
         return new NewestArrayAdapter();
     }
 
+    @Override
+    public void refreshData(boolean showProgress) {
+        setDataSource(null);
+        super.refreshData(showProgress);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_discuss);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_discuss);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -56,10 +63,11 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
 
         public NewestArrayAdapter() {
             super(R.layout.item_discussion);
+            performSelectRoot = true;
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             int id = view.getId();
             String link = null;
             switch (id) {
@@ -73,6 +81,7 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
                     break;
             }
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override

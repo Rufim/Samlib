@@ -1,5 +1,6 @@
 package ru.samlib.client.activity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -17,14 +18,12 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import ru.kazantsev.template.activity.NavigationActivity;
+import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
-import ru.samlib.client.domain.entity.Author;
-import ru.samlib.client.domain.entity.Category;
-import ru.samlib.client.domain.entity.Image;
-import ru.samlib.client.domain.entity.Work;
+import ru.samlib.client.domain.entity.*;
 import ru.samlib.client.domain.events.*;
 import ru.samlib.client.fragments.AuthorFragment;
 import ru.samlib.client.fragments.CommentsPagerFragment;
@@ -36,6 +35,7 @@ import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.util.SamlibUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -57,6 +57,7 @@ public class SectionActivity extends NavigationActivity<String> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(AndroidSystemUtils.getStringResPreference(this, R.string.preferenceCurrentTheme, getApplicationInfo().theme));
         super.onCreate(savedInstanceState);
         Fragment sectionFragment = getLastFragment(savedInstanceState);
         if (sectionFragment != null) {
@@ -69,7 +70,7 @@ public class SectionActivity extends NavigationActivity<String> {
                 if (workFragment.getWork() != null && workFragment.getWork().getAuthor() != null) {
                     initializeAuthor(workFragment.getWork().getAuthor());
                 } else {
-                    Log.e(TAG, "Error ocurred unknown author!! Work url is: " + workFragment.getWork().getLink());
+                    Log.e(TAG, "Error ocurred unknown author!! Work url is: " + workFragment.getWork());
                 }
             }
             builder.replaceFragment(R.id.container, sectionFragment);
@@ -77,6 +78,9 @@ public class SectionActivity extends NavigationActivity<String> {
         navigationListMenu.setPadding(0, (int) getResources().getDimension(R.dimen.spacing_medium), 0, (int) getResources().getDimension(R.dimen.spacing_medium));
         if(!Parser.hasCoockieComment()) {
             Parser.setCommentCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceCommentCoockie), null));
+        }
+        if(!Parser.hasCoockieVote()) {
+            Parser.setVoteCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceVoteCoockie), null));
         }
     }
 
@@ -94,7 +98,7 @@ public class SectionActivity extends NavigationActivity<String> {
         } else {
             textView.setGravity(Gravity.START);
         }
-        if(state.equals(SectionActivityState.AUTHOR) && ((AuthorFragment)getCurrentFragment()).isSimpleView()) {
+        if(state.equals(SectionActivityState.AUTHOR) && getCurrentFragment() instanceof AuthorFragment && ((AuthorFragment)getCurrentFragment()).isSimpleView()) {
             Category category = Stream.of(author.getLinkableCategory()).filter(c -> title.equals(c.toString())).findFirst().orElse(null);
             if(category.isHasUpdates()) {
                 GuiUtils.setText(textView, SamlibUtils.generateText(title, getResString(R.string.favorites_update), GuiUtils.getThemeColor(this, R.attr.colorAccent), 0.8f));
@@ -129,24 +133,49 @@ public class SectionActivity extends NavigationActivity<String> {
         String link;
         Uri data;
         if ((data = intent.getData()) != null && (link = data.getPath()) != null) {
+            File file = new File(link);
             if (Linkable.isAuthorLink(link)) {
                 AuthorFragment.show(builder, id, link);
-            }
-            if (Linkable.isWorkLink(link)) {
-                WorkFragment.show(builder, id, link);
-            }
-            if(data.getScheme() != null && data.getScheme().startsWith("file")) {
-                WorkFragment.showFile(builder, id, link);
-            }
-            if (Linkable.isIllustrationsLink(link)) {
+            } else if (Linkable.isWorkLink(link)) {
+                if(!isRestore(current, intent, false)) {
+                    WorkFragment.show(builder, id, link);
+                }
+            } else if (Linkable.isIllustrationsLink(link)) {
                 IllustrationPagerFragment.show(builder, id, link);
-            }
-            if (Linkable.isCommentsLink(link)) {
+            } else if (Linkable.isCommentsLink(link)) {
                 CommentsPagerFragment.show(builder, id, link);
+            } else if((data.getScheme() != null && data.getScheme().startsWith("file")) || (file.exists() && file.isFile())) {
+                if(!isRestore(current, intent, true)) {
+                    WorkFragment.showFile(builder, id, link);
+                }
+            } else if(data.getScheme() != null && data.getScheme().startsWith("content")) {
+                if (!isRestore(current, intent, true)) {
+                    WorkFragment.showContent(builder, id, intent.getData());
+                }
+            } else {
+                BaseFragment.show(builder, id, getResString(R.string.page_not_supported));
             }
         }
     }
 
+    public boolean isRestore(Fragment current, Intent intent, boolean external) {
+        if(current != null && current instanceof WorkFragment && intent.getBooleanExtra(Constants.ArgsName.WORK_RESTORE, false)) {
+            Uri data = intent.getData();
+            if(external) {
+                ExternalWork externalWork = ((WorkFragment) current).getExternalWork();
+                if(intent.getScheme() != null && intent.getScheme().equals("content")) {
+                    return externalWork != null && externalWork.getContentUri() != null && externalWork.getContentUri().equals(data);
+                }  else {
+                    return externalWork != null && externalWork.getFilePath().equals(data.getPath());
+                }
+            } else {
+                Work work =  ((WorkFragment) current).getWork();
+                return work != null && work.getLink() != null && work.getLink().equals(data.getPath());
+            }
+        } else {
+            return false;
+        }
+    }
 
     public SectionActivityState getState() {
         return state;
@@ -179,7 +208,7 @@ public class SectionActivity extends NavigationActivity<String> {
         if(work != null) {
             setState(SectionActivityState.WORK);
             initNavigationView(R.layout.header_work_bar, work.getAutoBookmarks().toArray());
-            actionBar.setTitle(work.getAuthor().getShortName());
+            actionBar.setTitle(work.getTitle());
             TextView workTitle = GuiUtils.getView(drawerHeader, R.id.work_title);
             TextView workCreated = GuiUtils.getView(drawerHeader, R.id.work_created);
             TextView workUpdated = GuiUtils.getView(drawerHeader, R.id.work_updated);
@@ -188,16 +217,33 @@ public class SectionActivity extends NavigationActivity<String> {
             GuiUtils.setText(workTitle, work.getTitle());
             if (work.getCreateDate() != null) {
                 GuiUtils.setText(workCreated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getCreateDate()));
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_created_layout);
+            } else {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_created_layout);
             }
             if (work.getUpdateDate() != null) {
                 GuiUtils.setText(workUpdated, new SimpleDateFormat(Constants.Pattern.DATA_PATTERN).format(work.getUpdateDate()));
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_updated_layout);
+            } else {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_updated_layout);
             }
-            GuiUtils.setText(workGenres, work.printGenres());
-            GuiUtils.setText(workSeries, work.getType().getTitle());
+            if(TextUtils.isEmpty(work.printGenres())) {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_genres_layout);
+            } else {
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_genres_layout);
+                GuiUtils.setText(workGenres, work.printGenres());
+            }
+            if(TextUtils.isEmpty(work.getType().getTitle())) {
+                GuiUtils.setVisibility(View.GONE, drawerHeader, R.id.work_series_layout);
+            } else {
+                GuiUtils.setVisibility(View.VISIBLE, drawerHeader, R.id.work_series_layout);
+                GuiUtils.setText(workSeries, work.getType().getTitle());
+            }
             setNavigationLayoutWidth(GuiUtils.dpToPx(navigationFixedDpWidth, this));
         }
     }
 
+    @SuppressLint("ResourceType")
     private View initNavigationView(@LayoutRes int header, Object... titles) {
         removeHeaderView();
         clearNavigationMenu();
@@ -264,6 +310,7 @@ public class SectionActivity extends NavigationActivity<String> {
             if (isTaskRoot()) {
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
+                finish();
             } else {
                 onBackPressedOriginal();
             }

@@ -2,8 +2,12 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="match_parent"
+                  android:orientation="vertical"
+                  android:layout_height="wrap_content">
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/author_header_annotation_root"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
         <RelativeLayout android:layout_width="wrap_content"
@@ -63,10 +67,11 @@
                       android:id="@+id/author_annotation"
                       style="@style/author_info"
                       android:text="@string/author_annotation"/>
-            <TextView android:layout_width="wrap_content"
+            <ru.kazantsev.template.view.HackyTextView android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
                       android:id="@+id/author_section_annotation_text"
                       style="@style/author_info_content"
+                      android:textIsSelectable="true"
                       android:text="Пишу на Самиздате с 21.05.2014
 Копирование и размещение текстов на сторонних ресурсах без разрешения автора запрещается!!!
 Для желающих угостить автора и Муза шоколадкой: Яндекс.Деньги 410011573041491"/>
@@ -87,4 +92,6 @@
                                                   app:orientation="horizontal"/>
         </LinearLayout>
     </RelativeLayout>
+     <include android:id="@+id/author_header_updates" layout="@layout/item_section"/>
+    </LinearLayout>
 </ScrollView>

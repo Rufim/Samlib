@@ -4,10 +4,12 @@ import lombok.Getter;
 import ru.samlib.client.domain.Linkable;
 import ru.kazantsev.template.util.TextUtils;
 
+import java.io.Serializable;
+
 /**
  * Created by Rufim on 22.05.2014.
  */
-public enum Genre implements Linkable {
+public enum Genre implements Linkable, Serializable {
     PROSE("Проза", "/janr/index_janr_5"),
     POETRY("Поэзия", "/janr/index_janr_4"),
     LYRICS("Лирика", "/janr/index_janr_3"),

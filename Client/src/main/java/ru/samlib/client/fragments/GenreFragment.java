@@ -45,6 +45,7 @@ public class GenreFragment extends ListFragment<Work> {
         Genre genre = (Genre) getArguments().getSerializable(Constants.ArgsName.Type);
         if(genre.equals(Genre.LITREVIEW)) {
             getActivity().setTitle(R.string.drawer_review);
+            getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_review);
         } else {
             getActivity().setTitle(genre.getTitle());
         }
@@ -52,7 +53,7 @@ public class GenreFragment extends ListFragment<Work> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
@@ -75,9 +76,10 @@ public class GenreFragment extends ListFragment<Work> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             String link = getItems().get(position).getFullLink();
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override

@@ -19,6 +19,7 @@
 
 
     <!-- Dreawer -->
+    <string name="drawer_search">Поиск</string>
     <string name="drawer_new">Новинки</string>
     <string name="drawer_top">Топ Авторов</string>
     <string name="drawer_favorite">Избранное</string>
@@ -52,6 +53,20 @@
         <item>Friends:</item>
     </string-array>
 
+    <string-array name="work_rating">
+        <item>не читал</item>
+        <item>не читать</item>
+        <item>очень плохо</item>
+        <item>плохо</item>
+        <item>посредственно</item>
+        <item>терпимо</item>
+        <item>нормально</item>
+        <item>хорошая книга</item>
+        <item>отличная книга</item>
+        <item>великолепно</item>
+        <item>шедевр</item>
+    </string-array>
+
     <string name="crash_title_text">Ошибка</string>
     <string name="crash_text">\u000AПослать отчет разработчику, чтобы помочь ее исправить?</string>
 
@@ -69,19 +84,23 @@
     <string name="author_about">Об авторе:</string>
     <string name="author_suggestion">Начните знакомство с:</string>
     <string name="author_annotation">Аннотация к разделу:</string>
+    <string name="author_section_updates">Обновления</string>
+    <string name="author_section_updates_annotation">Последние обновления в произведений автора</string>
     <string name="illustration">Иллюстрации</string>
     <string name="comments">Комментарии</string>
     <string name="author_page">Страничка автора</string>
-    <string name="work_created">Размёщн:</string>
+    <string name="work_created">Размещен:</string>
     <string name="work_updated">Изменён:</string>
     <string name="work_series">Серия:</string>
     <!-- Меню -->
-    <string name="work_speaking">Режим чтения</string>
+    <string name="work_speaking">Синтез речи</string>
+    <string name="work_speaking_language">Язык синтеза</string>
     <string name="work_to_author">К автору</string>
     <string name="work_save">Сохранить</string>
     <string name="work_parse">Парсинг…</string>
     <string name="work_share">Поделиться</string>
     <string name="work_comments">Комментарии</string>
+    <string name="work_rate">Оценить</string>
     <string name="work_open_with">Открыть в…</string>
     <string name="work_auto_scroll">Автопрокрутка</string>
     <string name="work_fullscreen">Полный экран</string>
@@ -90,11 +109,15 @@
     <string name="newest_filter">Фильтр по категориям</string>
     <string name="dialog_filter_text">Текст:</string>
     <string name="dialog_filter_switch_mode">Исключающий фильтр</string>
+    <string name="dialog_filter_find">Найти</string>
+    <string name="dialog_filter_apply">Применть фильтр</string>
     <string name="dialog_filter_clear">Сбросить фильтр</string>
     <string name="dialog_filter_gender">Пол автора</string>
     <string name="dialog_filter_male">Мужской</string>
     <string name="dialog_filter_female">Женский</string>
     <string name="dialog_filter_undefined">Не опознанные</string>
+    <string name="dialog_filter_any">Любая</string>
+    <string name="dialog_filter_an">Любой</string>
     <string name="example_book_annotation">
         <![CDATA[
          <font color="#555555"><table><tbody><tr><td><img src="http://samlib.ru/img/r/rusaja_w/temnye_pravila/t_p.jpg" width="150"></td>  <td><p><font color="teal"><i>Легко ли жить обладательнице редкого магического дара, с которым она не умеет управляться? А если добавить к этому опеку строгого дяди-короля? И запутанные семейные тайны! А ещё потенциальное замужество, от которого хочется убежать со всех ног! Куда? Да куда угодно. Хоть в Темную Империю! Спросите, какой смысл? А светлые маги там сейчас нужны. И не важно, что играть придётся по чужим правилам. Разве трудно их поменять? </i></font></p>    <p><font color="red">Часть текста удалена. <br> Полную версию романа можно приобрести по ссылкам ниже. <br> <a href="http://feisovet.ru/%D0%BC%D0%B0%D0%B3%D0%B0%D0%B7%D0%B8%D0%BD/%D0%A2%D0%B5%D0%BC%D0%BD%D1%8B%D0%B5-%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0-%D0%92%D0%B5%D1%80%D0%B0-%D0%A0%D1%83%D1%81%D0%B0%D1%8F">Купить на Призрачных Мирах</a> <br><a href="http://russolit.ru/books/item/temnye-pravila.html">Купить на Руссолит</a></font></p>  <p>Огромная благодарность <a href="http://samlib.ru/b/belousowa_e_e/">Эль Бланк</a> за бесценную помощь в вычитке и корректуре! <br> Девочкам-авторам, а также моим любимым читателям спасибо за активную поддержку во время написания!</p> </td></tr></tbody></table></font>
@@ -103,10 +126,17 @@
     <string name="example_comment">
         <![CDATA[
             &nbsp;&nbsp;&gt;<b> </b>&gt;<b> <b><i><font color="6060b0">963.Rufim</font></i></b></b><br>
-            &nbsp;&nbsp;&gt;<b>Фу ***. ГГ какой-то очередной моральный уродец. С каких пор это стало круто хз. Ладно, урод, а еще паинькой притворяется. Таких тварей давить надо в зародыше. </b><br>
-            &nbsp;&nbsp;А точно не вас давить, тупых моралефагов? Люди они разные, а не как в сказках<br>
+            &nbsp;&nbsp;&gt;<b>Фу ***. ssdgmsdklndlnsdjkngksd g;sdjkng;sdjnfg;sdk fgs d jfgnsd;lfgn;dlgsd флвждфтажвтажпт дж вжапыв </b><br>
+            &nbsp;&nbsp;Дапвапвыапвы апываплдваоыждлпоывждыоап вапвыпджл вапывпывапв<br>
             &nbsp;&nbsp;<br>
             &nbsp;&nbsp;
+        ]]>
+    </string>
+    <string name="help">
+        <![CDATA[
+           Это тестовая верия клиента для сайта Самиздат под Андройд.<br/>
+           По вопросам и возникающим багам пишите на электронную почту <a href="0rufim0@gmail.com">0rufim0@gmail.com</a><br/>
+            <a href="https://htmlpreview.github.io/?https://github.com/Rufim/Samlib/blob/bugfix/privacy_policy.html"> Политика приватности.</a> Для гугла.
         ]]>
     </string>
     <string name="comments_goto">Перейти</string>
@@ -115,6 +145,8 @@
     <string name="comments_dialog_title">Напишите комментарий</string>
     <string name="comments_add_new">Оставить комментарий</string>
     <string name="comments_new_send">Отправить</string>
+    <string name="comments_choose_archive">Архивы</string>
+    <string name="comments_current">Текущие комментарии</string>
     <string name="comments_new_name">Ваше имя</string>
     <string name="comments_new_email">Ваш e-mail</string>
     <string name="comments_new_link">Адрес странички</string>
@@ -130,7 +162,16 @@
     <string name="author_observable">Подписка</string>
     <string name="author_make_all_visited">Отметить все, как прочитанное</string>
     <string name="author_mode">Компактный вид</string>
+    <string name="author_not_exist">Раздел не существует!</string>
+    <string name="author_deleted">Раздел удалён.</string>
+    <string name="author_parse_error">Ошибка во время парсига.</string>
+    <string name="author_invalid_intent">Ошибка! Не могу прочитать url автора.</string>
+    <string name="author_delete_action">Ошибка при удалении.</string>
+    <string name="author_insert_action">Ошибка при удалении.</string>
     <string name="history_clean">Очистить историю</string>
+    <string name="history_only_locked">Только закреплённые</string>
+    <string name="history_lock">Закрепить/открепить в истории</string>
+    <string name="history_lock_dialog">Закрепить/открепить выбранные?</string>
     <string name="back_to_exit">Нажмите еще раз для выхода</string>
     <string name="network_not_available">Нет интернет соединения…</string>
     <string name="external_work_delete">Удалить</string>
@@ -140,8 +181,22 @@
     <string name="observable_add_link_or_author_added">Автор успешно добавлен</string>
     <string name="observable_add_link_or_author_error">Вы ничего не ввели</string>
     <string name="observable_add_link_or_author_error_link">Не могу найти автора по ссылке:</string>
-    <string name="observable_import">Импорт</string>
-    <string name="observable_export">Экспорт</string>
-    <string name="observable_link_or_author_hint">Введите имя автора или ссылку</string>
+    <string name="observable_import">Импорт из</string>
+    <string name="observable_export">Экспорт в</string>
+    <string name="observable_check_updates">Проверить обновления</string>
+    <string name="observable_link_or_author_hint">Введите имя автора или ссылку (на-р: /k/kazancew_d)</string>
     <string name="observable_link_or_author_title">Добавить</string>
+    <string name="page_not_supported">Страница не поддерживается!</string>
+    <string name="work_not_in_cache">Произведение не закешированно.</string>
+    <string name="work_cant_open">Не могу открыть файл. Возможно, он находится в недоступном программе месте.</string>
+    <string name="stat_server_not_available">Нет соединения c сервером…</string>
+    <string name="search_filter">Параметры поиска</string>
+    <string name="dialog_filter_sort_views">Просмотрам</string>
+    <string name="dialog_filter_sort_rating">Рейтингу</string>
+    <string name="dialog_filter_sort_activity">Активности</string>
+    <string name="dialog_filter_sort">Сортировка по:</string>
+    <string name="dialog_filter_type">Форма:</string>
+    <string name="dialog_filter_genre">Жанр:</string>
+    <string name="dialog_filter_genres">Жанры:</string>
+    <string name="dialog_filter_size">Минимальный размер:</string>
 </resources>

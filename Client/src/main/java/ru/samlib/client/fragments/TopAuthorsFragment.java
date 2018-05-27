@@ -29,13 +29,11 @@ public class TopAuthorsFragment extends ListFragment<Author> {
         return newInstance(TopAuthorsFragment.class);
     }
 
-    public TopAuthorsFragment() {
-        enableSearch = true;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getActivity().setTitle(R.string.drawer_top);
+        getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_top);
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -47,7 +45,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
     }
 
     @Override
-    protected void onDataTaskException(Exception ex) {
+    public void onDataTaskException(Throwable ex) {
         if(ex instanceof IOException) {
             ErrorFragment.show(this, ru.kazantsev.template.R.string.error_network, ex);
         } else {
@@ -68,9 +66,10 @@ public class TopAuthorsFragment extends ListFragment<Author> {
         }
 
         @Override
-        public void onClick(View view, int position) {
+        public boolean onClick(View view, int position) {
             String link = getItems().get(position).getFullLink();
             SectionActivity.launchActivity(getContext(), link);
+            return true;
         }
 
         @Override
