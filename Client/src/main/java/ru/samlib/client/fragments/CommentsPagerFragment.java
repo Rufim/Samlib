@@ -88,6 +88,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                 }
                 EditListPreferenceDialog editListPreferenceDialog = new EditListPreferenceDialog();
                 SettingsFragment.Preference preference = new SettingsFragment.Preference(getContext(), -1, "" + parser.getCurrentArchive());
+                preference.title = getString(R.string.comments_choose_archive);
                 preference.keyValue = keyVal;
                 editListPreferenceDialog.setPreference(preference);
                 editListPreferenceDialog.setOnCommit((value, d) -> {
