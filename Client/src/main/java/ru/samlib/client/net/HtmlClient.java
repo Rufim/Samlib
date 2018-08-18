@@ -80,18 +80,24 @@ public class HtmlClient {
     }
 
     public static File getCachedFile(Context context, String link) {
+        return getCachedFile(context, link, false);
+    }
+
+    public static File getCachedFile(Context context, String link, boolean strict) {
         File cacheDir = context.getExternalCacheDir();
         if(cacheDir == null || !cacheDir.canWrite())  {
             cacheDir = context.getCacheDir();
         }
         String fileName = link.replaceAll("/+", "/");
-        if (fileName.endsWith("/")) {
-            fileName = fileName.substring(0, fileName.lastIndexOf("/"));
-        }
-        if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt")) {
-            fileName += ".html";
-        } else if (fileName.endsWith(".shtml")) {
-            fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
+        if(!strict) {
+            if (fileName.endsWith("/")) {
+                fileName = fileName.substring(0, fileName.lastIndexOf("/"));
+            }
+            if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt", ".fb2")) {
+                fileName += ".html";
+            } else if (fileName.endsWith(".shtml")) {
+                fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";
+            }
         }
         return new File(cacheDir, fileName);
     }

@@ -1,6 +1,7 @@
 package ru.samlib.client.util;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -8,6 +9,7 @@ import android.os.AsyncTask;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.style.DynamicDrawableSpan;
+import android.util.Base64;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import net.nightwhistler.htmlspanner.SpanStack;
@@ -132,16 +134,21 @@ public class PicassoImageHandler extends TagNodeHandler {
                 if (meh.length > 0) {
                     TagNode tag = meh[0];
                     String src = Html.fromHtml(tag.getAttributeByName("src")).toString().replace("\"", "");
-                    URL url;
-                    try {
-                        url = new URL(src);
-                    } catch (MalformedURLException ex) {
-                        url = new URL(Constants.Net.BASE_DOMAIN + "/" + src);
-                    }
-                    if (src != null) {
-                        int width = parseDimen(tag.getAttributeByName("width"), -1);
-                        int height = parseDimen(tag.getAttributeByName("height"), -1);
-                        return picasso.load(url.toString()).transform(new PicassoTransformImage(width, height, calculateMaxWidth(), src)).get();
+                    if(!src.contains("base64,")) {
+                        URL url;
+                        try {
+                            url = new URL(src);
+                        } catch (MalformedURLException ex) {
+                            url = new URL(Constants.Net.BASE_DOMAIN + "/" + src);
+                        }
+                        if (src != null) {
+                            int width = parseDimen(tag.getAttributeByName("width"), -1);
+                            int height = parseDimen(tag.getAttributeByName("height"), -1);
+                            return picasso.load(url.toString()).transform(new PicassoTransformImage(width, height, calculateMaxWidth(), src)).get();
+                        }
+                    } else {
+                        byte[] decodedString = Base64.decode(src.substring(src.indexOf("base64,") + 7), Base64.DEFAULT);
+                        return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                     }
                 }
             } catch (Exception e) {

@@ -916,7 +916,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         if (filePath != null || contentUri != null) {
             if (externalWork == null || (filePath != null && !filePath.equals(externalWork.getFilePath())) || (contentUri != null && !contentUri.equals(externalWork.getContentUri()))) {
                 if (contentUri != null) {
-                    filePath = HtmlClient.getCachedFile(getContext(), contentUri.getPath()).getAbsolutePath();
+                    filePath = HtmlClient.getCachedFile(getContext(), contentUri.getPath(), true).getAbsolutePath();
                 }
                 this.externalWork = databaseService.getExternalWork(filePath);
                 if (externalWork == null) {

@@ -175,6 +175,9 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
 
     public String printGenres() {
         if (getGenres().isEmpty()) {
+            if(getCustomGenres() != null) {
+              return getCustomGenres();
+            }
             return "";
         }
         StringBuilder builder = new StringBuilder();

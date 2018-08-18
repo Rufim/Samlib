@@ -28,6 +28,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 /**
@@ -233,13 +234,13 @@ public class WorkParser extends Parser {
 
     public static void parseFB2(Work work) {
         Document doc = Jsoup.parse(work.getRawContent(), "", org.jsoup.parser.Parser.xmlParser());
-        Elements description = doc.select("description");
-        Elements body = doc.select("body");
-        Elements binary = doc.select("binary");
+        Elements description = doc.select("> FictionBook description");
+        Elements bodys = doc.select("> FictionBook body");
+        Elements binary = doc.select("> FictionBook binary");
         if(description.size() == 0) {
             work.setAnnotation("");
         } else {
-            Elements genres = description.select("genres");
+            Elements genres = description.select("genre");
             if(genres.size() != 0) {
                 ArrayList<FB2Genre> fb2Genres = new ArrayList<>();
                 for (Element genre : genres) {
@@ -265,9 +266,11 @@ public class WorkParser extends Parser {
                     builder.append(author.select("last-name").text());
                 }
                 if(author.select("middle-name").size() > 0) {
+                    if(builder.length() > 0) builder.append(" ");
                     builder.append(author.select("middle-name").text());
                 }
                 if(author.select("first-name").size() > 0) {
+                    if(builder.length() > 0) builder.append(" ");
                     builder.append(author.select("first-name").text());
                 }
                 work.getAuthor().setFullName(builder.toString());
@@ -280,21 +283,96 @@ public class WorkParser extends Parser {
             }
             Elements annotation = description.select("annotation");
             if(annotation.size() > 0) {
+                work.getAnnotationBlocks().clear();
                 work.setAnnotation(annotation.html());
             }
         }
-        work.setRawContent(body.html());
-        processChapters(work, false);
+        ArrayList<String> indents = new ArrayList<>();
+        for (Element body : bodys) {
+            parseSection(body, indents, binary);
+        }
+        work.setIndents(indents);
+        work.setParsed(true);
+    }
+
+    private static void parseSection(Element section, ArrayList<String> indents, Elements binary) {
+            for (Element titleP : section.select("> title")) {
+                parseFB2Content(titleP, indents, binary);
+                indents.add("");
+            }
+            for (Element epigraphP : section.select("> epigraph")) {
+                parseFB2Content(epigraphP, indents, binary);
+                indents.add("");
+            }
+            for (Element annotation : section.select("> annotation")) {
+                parseFB2Content(annotation, indents, binary);
+                indents.add("");
+            }
+            for (Element subSection : section.select("> section")) {
+                parseSection(subSection, indents, binary);
+                indents.add("");
+            }
+            parseFB2Content(section, indents, binary);
+    }
+
+    private static void addImage(Element element, ArrayList<String> indents, Elements binary) {
+        String id = element.attr("l:href");
+        if(id != null && id.startsWith("#")) {
+            Elements image = binary.select("binary[id=" + id.substring(1) + "]");
+            if(image.size() > 0) {
+                indents.add("<img src=\"data:" + image.first().attr("content-type") + ";base64," + image.first().text() + "\">");
+            }
+        }
+    }
+
+    private static void parseFB2Content(Elements content, ArrayList<String> indents, Elements binary) {
+        for (Element element : content) {
+            parseFB2Content(element, indents, binary);
+        }
+    }
+
+    private static void parseFB2Content(Element content, ArrayList<String> indents, Elements binary) {
+        for (Element children : content.children()) {
+            String tag = children.tag().getName();
+            if(tag.equalsIgnoreCase("p") || tag.equalsIgnoreCase("text-author") || tag.equalsIgnoreCase("v")) {
+                children.select("emphasis").tagName("i");
+                children.select("strikethrough").tagName("strike");
+                indents.add(children.html());
+            }
+            if(tag.equalsIgnoreCase("empty-line")) {
+                indents.add("");
+            }
+            if(tag.equalsIgnoreCase("image")) {
+                addImage(children, indents, binary);
+            }
+            if(tag.equalsIgnoreCase("poem")) {
+                indents.add("");
+                for (Element stanza : children.select("stanza")) {
+                    for (Element v : stanza.select("v")) {
+                        indents.add("<i>" + v.text() + "</i>");
+                    }
+                    indents.add("");
+                }
+                Elements author = children.select("text-author");
+                if(author.size() > 0) {
+                    indents.add(author.text());
+                    indents.add("");
+                }
+            }
+            if(tag.equalsIgnoreCase("subtitle")) {
+                parseSection(children, indents, binary);
+            }
+            if(tag.equalsIgnoreCase("cite")) {
+                parseSection(children, indents, binary);
+            }
+        }
     }
 
     public static void processChapters(Work work, boolean isNotHtml) {
-        if (isNotHtml && !TextUtils.startWithIgnoreSpaces(work.getRawContent(), "<html>")) {
-            if(TextUtils.startWithIgnoreSpaces(work.getRawContent(), "<?xml")) {
-                if(work.getRawContent().contains("FictionBook")) {
-                    parseFB2(work);
-                } else {
-                    processChapters(work, false);
-                }
+        if (isNotHtml && !work.getRawContent().startsWith("<html>")) {
+            if(work.getRawContent().contains("<FictionBook")) {
+                parseFB2(work);
+                return;
             } else {
                 work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
             }
