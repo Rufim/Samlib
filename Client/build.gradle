@@ -1,6 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
-
 
 ext {
     compileSdkProjectVersion = 27
@@ -99,10 +97,6 @@ android {
 
 }
 
-retrolambda {
-    defaultMethods true
-}
-
 dependencies {
     compile fileTree(include: ["*.jar"], dir: "libs")
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
@@ -117,7 +111,7 @@ dependencies {
     implementation "com.android.support:support-annotations:$supportLibraryVersion"
     implementation 'com.jrummyapps:colorpicker:2.1.6'
     implementation "org.jetbrains:annotations-java5:15.0"
-    implementation "org.jsoup:jsoup:1.11.2"
+    implementation "org.jsoup:jsoup:1.11.3"
     implementation "com.annimon:stream:1.1.0"
     implementation "com.jakewharton:butterknife:$butterknifeVersion"
     implementation "org.greenrobot:eventbus:3.1.1"

@@ -68,4 +68,16 @@ public class MyDatabase {
         }
     }
 
+    @Migration(version = 23, database = MyDatabase.class)
+    public static class MigrationWork22 extends AlterTableMigration<Work>  {
+
+        public MigrationWork22() {
+            super(Work.class);
+        }
+
+        @Override
+        public void onPreMigrate() {
+            addColumn(SQLiteType.get(String.class.getName()), Work_Table.customGenres.getNameAlias().nameRaw());
+        }
+    }
 }

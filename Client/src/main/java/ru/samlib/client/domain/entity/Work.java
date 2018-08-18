@@ -79,6 +79,7 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     String workAuthorName; // for json
     @ColumnIgnore
     String annotation; // for json
+    String customGenres;
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean hasRate = false;
@@ -203,7 +204,6 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
             setGenres(new ArrayList<>());
         }
         if (tryGenre != null) {
-
             getGenres().add(tryGenre);
         } else {
             getGenres().add(Genre.EMPTY);

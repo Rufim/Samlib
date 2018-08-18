@@ -231,9 +231,73 @@ public class WorkParser extends Parser {
         return work;
     }
 
-    public static void processChapters(Work work, boolean isTextFile) {
-        if (isTextFile && !work.getRawContent().startsWith("<html>")) {
-            work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
+    public static void parseFB2(Work work) {
+        Document doc = Jsoup.parse(work.getRawContent(), "", org.jsoup.parser.Parser.xmlParser());
+        Elements description = doc.select("description");
+        Elements body = doc.select("body");
+        Elements binary = doc.select("binary");
+        if(description.size() == 0) {
+            work.setAnnotation("");
+        } else {
+            Elements genres = description.select("genres");
+            if(genres.size() != 0) {
+                ArrayList<FB2Genre> fb2Genres = new ArrayList<>();
+                for (Element genre : genres) {
+                    FB2Genre fb2Genre = FB2Genre.parseGenre(genre.text());
+                    if(fb2Genre != null) {
+                        fb2Genres.add(fb2Genre);
+                    }
+                }
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < fb2Genres.size(); i++) {
+                    builder.append(fb2Genres.get(i).getName());
+                    if(i + 1 != genres.size()) {
+                        builder.append(", ");
+                    }
+                }
+                work.setCustomGenres(builder.toString());
+            }
+            Elements authors = description.select("author");
+            if(authors.size() > 0) {
+                Element author = authors.first();
+                StringBuilder builder = new StringBuilder();
+                if(author.select("last-name").size() > 0) {
+                    builder.append(author.select("last-name").text());
+                }
+                if(author.select("middle-name").size() > 0) {
+                    builder.append(author.select("middle-name").text());
+                }
+                if(author.select("first-name").size() > 0) {
+                    builder.append(author.select("first-name").text());
+                }
+                work.getAuthor().setFullName(builder.toString());
+                work.getAuthor().setShortName(null);
+                work.getAuthor().getShortName();
+            }
+            Elements title = description.select("book-title");
+            if(title.size() > 0) {
+                work.setTitle(title.text());
+            }
+            Elements annotation = description.select("annotation");
+            if(annotation.size() > 0) {
+                work.setAnnotation(annotation.html());
+            }
+        }
+        work.setRawContent(body.html());
+        processChapters(work, false);
+    }
+
+    public static void processChapters(Work work, boolean isNotHtml) {
+        if (isNotHtml && !TextUtils.startWithIgnoreSpaces(work.getRawContent(), "<html>")) {
+            if(TextUtils.startWithIgnoreSpaces(work.getRawContent(), "<?xml")) {
+                if(work.getRawContent().contains("FictionBook")) {
+                    parseFB2(work);
+                } else {
+                    processChapters(work, false);
+                }
+            } else {
+                work.setIndents(Arrays.asList(work.getRawContent().split("\n")));
+            }
         } else {
             List<String> indents = work.getIndents();
             try {

@@ -67,7 +67,7 @@ public class Constants {
         public static final int VERSION = BuildConfig.VERSION_CODE;
         public static final String VERSION_NAME = BuildConfig.VERSION_NAME;
         public static final String DATABASE_NAME = "Samlib";
-        public static final int DATABASE_VERSION = 22;
+        public static final int DATABASE_VERSION = 23;
     }
 
     public static class Pattern {

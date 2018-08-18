@@ -98,7 +98,9 @@ public class HtmlClient {
 
     public static synchronized void cleanCache(List<SavedHtml> savedHtmls) {
         for (SavedHtml savedHtml : savedHtmls) {
-            htmlfiles.remove(savedHtml.getUrl());
+            if(savedHtml.getUrl() != null) {
+                htmlfiles.remove(savedHtml.getUrl());
+            }
         }
     }
 
