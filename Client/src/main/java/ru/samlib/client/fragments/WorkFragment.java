@@ -913,6 +913,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
         Uri contentUri = getArguments().getParcelable(Constants.ArgsName.CONTENT_URI);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
+        setEmptyViewText("");
         if (filePath != null || contentUri != null) {
             if (externalWork == null || (filePath != null && !filePath.equals(externalWork.getFilePath())) || (contentUri != null && !contentUri.equals(externalWork.getContentUri()))) {
                 if (contentUri != null) {
