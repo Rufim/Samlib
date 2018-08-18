@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -71,6 +72,7 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
     private static boolean currentVersionSupportBigNotification = false;
     private static boolean currentVersionSupportLockScreenControls = false;
     private Notification foregroundNotification = null;
+    private PowerManager.WakeLock wakeLock;
 
     private static TTSService instance;
 
@@ -142,6 +144,11 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         App.getInstance().getComponent().inject(this);
         if(ttsp == null) {
             ttsp = new TTSPlayer(this);
+        }
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        if(powerManager != null) {
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+            wakeLock.acquire();
         }
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVersionSupportBigNotification = AndroidSystemUtils.currentVersionSupportBigNotification();
@@ -365,6 +372,9 @@ public class TTSService extends Service implements AudioManager.OnAudioFocusChan
         if (ttsp != null) {
             ttsp.onStop();
             ttsp = null;
+        }
+        if(wakeLock != null) {
+            wakeLock.release();
         }
         TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         if(mgr != null) {

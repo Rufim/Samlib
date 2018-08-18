@@ -1,11 +1,21 @@
 package ru.samlib.client.util;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
+import android.util.Log;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import net.vrallev.android.cat.Cat;
+
+import ru.kazantsev.template.util.Dumper;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.SystemUtils;
 import ru.kazantsev.template.util.TextUtils;
@@ -38,6 +48,8 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     private float speechRate = 1.3f;
     private float pitch = 1f;
     private String language = null;
+    private Timer crashChecker;
+    private int crashTimeout = 1000;
 
     private static AtomicBoolean ready = new AtomicBoolean(false);
 
@@ -272,11 +284,39 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     @Override
     public synchronized  void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            tts.setOnUtteranceCompletedListener(utteranceId -> {
-                if (state == State.SPEAKING) {
-                    nextPhrase();
-                }
-            });
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                    @Override
+                    public void onStart(String utteranceId) {
+                        Cat.e("TTS onStart utteranceId=" + utteranceId);
+                    }
+
+                    @Override
+                    public void onDone(String utteranceId) {
+                        if (state == State.SPEAKING) {
+                            nextPhrase();
+                        }
+                        Cat.e("TTS onDone utteranceId=" + utteranceId);
+                    }
+
+                    @Override
+                    public void onError(String utteranceId) {
+                        Cat.e("TTS onError utteranceId=" + utteranceId);
+                    }
+
+                    @Override
+                    public void onStop(String utteranceId, boolean interrupted) {
+                        super.onStop(utteranceId, interrupted);
+                        Cat.e("TTS onStop utteranceId=" + utteranceId + " interrupted=" + interrupted);
+                    }
+                });
+            } else {
+                tts.setOnUtteranceCompletedListener(utteranceId -> {
+                    if (state == State.SPEAKING) {
+                        nextPhrase();
+                    }
+                });
+            }
             tts.setSpeechRate(speechRate);
             tts.setPitch(pitch);
             if(language == null) {
@@ -331,8 +371,6 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             stateChanged.onStateChanged(state);
         }
     }
-
-
 
     public static Map<String, String> getAvailableLanguages(Context context) {
         if (available != null) return available;

@@ -21,6 +21,7 @@
     <string name="preferenceCommentName">CommentName</string>
     <string name="preferenceCommentEmail">CommentEmail</string>
     <string name="preferenceCommentLink">CommentLink</string>
+    <string name="preferenceCommentContent">CommentContent</string>
 
     <string name="preferenceWorkAutoScrollSpeed">WorkAutoScrollSpeed</string>
     <string name="preferenceWorkSpeechRate">WorkSpeechRate</string>

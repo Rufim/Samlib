@@ -98,7 +98,7 @@ public class SectionActivity extends NavigationActivity<String> {
         } else {
             textView.setGravity(Gravity.START);
         }
-        if(state.equals(SectionActivityState.AUTHOR) && getCurrentFragment() instanceof AuthorFragment && ((AuthorFragment)getCurrentFragment()).isSimpleView()) {
+        if(author != null && state.equals(SectionActivityState.AUTHOR) && getCurrentFragment() instanceof AuthorFragment && ((AuthorFragment)getCurrentFragment()).isSimpleView()) {
             Category category = Stream.of(author.getLinkableCategory()).filter(c -> title.equals(c.toString())).findFirst().orElse(null);
             if(category.isHasUpdates()) {
                 GuiUtils.setText(textView, SamlibUtils.generateText(title, getResString(R.string.favorites_update), GuiUtils.getThemeColor(this, R.attr.colorAccent), 0.8f));

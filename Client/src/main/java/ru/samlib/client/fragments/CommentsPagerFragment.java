@@ -1,5 +1,6 @@
 package ru.samlib.client.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import ru.kazantsev.template.fragments.PagerFragment;
 import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
+import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.FragmentPagerAdapter;
 import ru.samlib.client.activity.SectionActivity;
@@ -167,6 +169,14 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
         super.onStop();
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(App.getInstance()).edit();
+        editor.putString(getString(R.string.preferenceCommentContent), "");
+        editor.apply();
+    }
+
     @Subscribe
     public void onEvent(SelectCommentPageEvent event) {
         if (event.pageIndex >= 0) {
@@ -186,6 +196,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     @Subscribe
     public void onEvent(final CommentSendEvent event) {
         loadMoreBar.setVisibility(View.VISIBLE);
@@ -203,13 +214,17 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                     } else {
                         Document resp = Jsoup.parse(response.getRawContent(response.getEncoding()));
                         Elements error = resp.select("table[BORDERCOLOR=#222222] table table b");
-                        if (error.size() == 0) {
+                        if (error.size() == 0 && resp.select("small:contains(Отсортировано по)").size() > 0) {
                             answer[0] = "OK";
                             answer[1] = saveNewCookie ? Parser.getCommentCookie() : null;
                             answer[2] = resp;
                         } else {
                             answer[0] = "ERROR";
-                            answer[1] = error.text();
+                            if(error.size() > 0 ) {
+                                answer[1] = error.text();
+                            } else {
+                                answer[1] = getString(R.string.error);
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -223,13 +238,16 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
             protected void onPostExecute(Object[] answer) {
                 if ("OK".equals(answer[0])) {
                     if(answer[1] != null) {
-                        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(getContext()).edit();
+                        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(App.getInstance()).edit();
                         editor.putString(getString(R.string.preferenceCommentCoockie), answer[1].toString());
                         editor.apply();
                     }
                     if (adapter.getCount() > 0) {
                         adapter.getRegisteredFragment(event.indexPage).refreshWithDocument((Document) answer[2]);
                     }
+                    SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(App.getInstance()).edit();
+                    editor.putString(getString(R.string.preferenceCommentContent), "");
+                    editor.apply();
                 } else if("ERROR".equals(answer[0])) {
                     GuiUtils.toast(getContext(), answer[1].toString(), false);
                 }

@@ -1,5 +1,6 @@
 package ru.samlib.client.dialog;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -15,6 +16,7 @@ import ru.kazantsev.template.dialog.*;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.entity.Comment;
 import ru.samlib.client.domain.events.CommentSendEvent;
@@ -43,6 +45,7 @@ public class NewCommentDialog extends BaseDialog {
     private String preferenceName;
     private String preferenceEmail;
     private String preferenceLink;
+    private String preferenceComment;
 
     public CommentsParser.Operation getOperation() {
         return operation;
@@ -76,6 +79,7 @@ public class NewCommentDialog extends BaseDialog {
         this.text = text;
     }
 
+    @SuppressLint("SetTextI18n")
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -85,13 +89,19 @@ public class NewCommentDialog extends BaseDialog {
         name.setText(preferenceName = preferences.getString(getString(R.string.preferenceCommentName), ""));
         email.setText(preferenceEmail = preferences.getString(getString(R.string.preferenceCommentEmail), ""));
         link.setText(preferenceLink = preferences.getString(getString(R.string.preferenceCommentLink), ""));
+        preferenceComment = preferences.getString(getString(R.string.preferenceCommentContent), "");
         if(text != null) {
             if(operation.equals(CommentsParser.Operation.store_reply)) {
+                if(preferenceComment.startsWith(text)) {
+                  text = preferenceComment;
+                }
                 comment.setText(text + "\n");
                 comment.setSelection(comment.getText().length());
             } else {
-                comment.setText(text);
+                comment.setText(TextUtils.isEmpty(text) ? preferenceComment : text);
             }
+        } else {
+            comment.setText(preferenceComment);
         }
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.comments_dialog_title)
@@ -99,6 +109,14 @@ public class NewCommentDialog extends BaseDialog {
                 .setNegativeButton(android.R.string.cancel, this)
                 .setView(rootView);
         return adb.create();
+    }
+
+    @Override
+    public void onDestroy() {
+        SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(App.getInstance()).edit();
+        editor.putString(getString(R.string.preferenceCommentContent), comment.getText().toString());
+        editor.apply();
+        super.onDestroy();
     }
 
     @Override
@@ -116,6 +134,9 @@ public class NewCommentDialog extends BaseDialog {
             }
             if (!link.getText().toString().equals(preferenceLink)) {
                 editor.putString(getString(R.string.preferenceCommentLink), preferenceLink = link.getText().toString());
+            }
+            if (!comment.toString().equals(preferenceComment)) {
+                editor.putString(getString(R.string.preferenceCommentContent), preferenceComment = comment.getText().toString());
             }
             editor.apply();
 
