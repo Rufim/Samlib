@@ -1343,20 +1343,22 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
                                 if (url.length > 0) {
                                     String surl = url[url.length - 1].getURL();
-                                    if (!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
-                                        SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
-                                    } else if(surl.startsWith("#")) {
-                                        String bookmarkName = surl.substring(1);
-                                        for (Bookmark bookmark : work.getAutoBookmarks()) {
-                                            if(bookmark.getIndent().equals(bookmarkName)) {
-                                                scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
-                                                break;
+                                    if(surl != null) {
+                                        if (!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
+                                            SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
+                                        } else if (surl.startsWith("#")) {
+                                            String bookmarkName = surl.substring(1);
+                                            for (Bookmark bookmark : work.getAutoBookmarks()) {
+                                                if (bookmark.getIndent().equals(bookmarkName)) {
+                                                    scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
+                                                    break;
+                                                }
                                             }
+                                        } else {
+                                            url[url.length - 1].onClick(textView);
                                         }
-                                    } else {
-                                        url[url.length - 1].onClick(textView);
+                                        return true;
                                     }
-                                    return true;
                                 } else {
                                     DynamicImageSpan images[] = spannableString.getSpans(offset, spannableString.length(), DynamicImageSpan.class);
                                     if (images.length > 0) {

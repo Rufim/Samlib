@@ -21,6 +21,9 @@ public class LinkHandler extends TagNodeHandler {
 
     public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end, SpanStack stack) {
         String href = node.getAttributeByName("href");
+        if(href == null) {
+            href = node.getAttributeByName("l:href"); // FB2 ref
+        }
         stack.pushSpan(new URLSpanNoUnderline(href), start, end);
     }
 

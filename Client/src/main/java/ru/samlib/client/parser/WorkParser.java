@@ -329,63 +329,84 @@ public class WorkParser extends Parser {
                 work.setAnnotation(annotation.html());
             }
         }
-        ArrayList<String> indents = new ArrayList<>();
-        for (Element body : bodys) {
-            parseSection(body, indents, binary);
+        try {
+            work.getIndents().clear();
+        } catch (RuntimeException ex) {// ignored
         }
-        work.setIndents(indents);
+        work.setIndents(new ArrayList<>());
+        work.setAnnotationBlocks(new ArrayList<>());
+        for (Element body : bodys) {
+            parseSection(body, work, binary);
+        }
         work.setParsed(true);
     }
 
-    private static void parseSection(Element section, ArrayList<String> indents, Elements binary) {
+    private static void parseSection(Element section, Work work, Elements binary) {
+        List<String> indents = work.getIndents();
+        String id = section.attr("id");
+        if(TextUtils.notEmpty(id)) {
+            for (Bookmark bookmark : work.getAutoBookmarks()) {
+                if (bookmark.getIndent().equals(id) && bookmark.getIndentIndex() <= 0) {
+                    bookmark.setIndentIndex(indents.size());
+                }
+            }
+        }
         for (Element titleP : section.select("> title")) {
-            parseFB2Content(titleP, indents, binary);
+            parseFB2Content(titleP, work, binary);
             indents.add("");
         }
         for (Element epigraphP : section.select("> epigraph")) {
-            parseFB2Content(epigraphP, indents, binary);
+            parseFB2Content(epigraphP, work, binary);
             indents.add("");
         }
         for (Element annotation : section.select("> annotation")) {
-            parseFB2Content(annotation, indents, binary);
+            parseFB2Content(annotation, work, binary);
             indents.add("");
         }
         for (Element subSection : section.select("> section")) {
-            parseSection(subSection, indents, binary);
+            parseSection(subSection, work, binary);
             indents.add("");
         }
-        parseFB2Content(section, indents, binary);
+        parseFB2Content(section, work, binary);
     }
 
-    private static void addImage(Element element, ArrayList<String> indents, Elements binary) {
+    private static void addImage(Element element, Work work, Elements binary) {
         String id = element.attr("l:href");
         if (id != null && id.startsWith("#")) {
             Elements image = binary.select("binary[id=" + id.substring(1) + "]");
             if (image.size() > 0) {
-                indents.add("<img src=\"data:" + image.first().attr("content-type") + ";base64," + image.first().text() + "\">");
+                work.getIndents().add("<img src=\"data:" + image.first().attr("content-type") + ";base64," + image.first().text() + "\">");
             }
         }
     }
 
-    private static void parseFB2Content(Elements content, ArrayList<String> indents, Elements binary) {
+    private static void parseFB2Content(Elements content, Work work, Elements binary) {
         for (Element element : content) {
-            parseFB2Content(element, indents, binary);
+            parseFB2Content(element, work, binary);
         }
     }
 
-    private static void parseFB2Content(Element content, ArrayList<String> indents, Elements binary) {
+    private static void parseFB2Content(Element content, Work work, Elements binary) {
+        List<String> indents = work.getIndents();
         for (Element children : content.children()) {
             String tag = children.tag().getName();
             if (tag.equalsIgnoreCase("p") || tag.equalsIgnoreCase("text-author") || tag.equalsIgnoreCase("v")) {
                 children.select("emphasis").tagName("i");
                 children.select("strikethrough").tagName("strike");
                 indents.add(children.html());
+                Elements refs = children.select("a");
+                for (Element ref : refs) {
+                    Bookmark bookmark = new Bookmark(ref.text());
+                    bookmark.setIndent(ref.attr("l:href").substring(1));
+                    work.getAutoBookmarks().add(bookmark);
+                }
+
             }
             if (tag.equalsIgnoreCase("empty-line")) {
                 indents.add("");
             }
             if (tag.equalsIgnoreCase("image")) {
-                addImage(children, indents, binary);
+                addImage(children, work, binary);
             }
             if (tag.equalsIgnoreCase("poem")) {
                 indents.add("");
@@ -402,10 +423,10 @@ public class WorkParser extends Parser {
                 }
             }
             if (tag.equalsIgnoreCase("subtitle")) {
-                parseSection(children, indents, binary);
+                parseSection(children, work, binary);
             }
             if (tag.equalsIgnoreCase("cite")) {
-                parseSection(children, indents, binary);
+                parseSection(children, work, binary);
             }
         }
     }
