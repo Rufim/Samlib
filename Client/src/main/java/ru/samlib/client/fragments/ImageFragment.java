@@ -1,5 +1,8 @@
 package ru.samlib.client.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -8,23 +11,25 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import butterknife.BindView;
+
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import java.lang.reflect.Field;
+
+import butterknife.BindView;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.util.PicassoTransformImage;
+import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Image;
-import ru.kazantsev.template.util.SystemUtils;
-
-import java.lang.reflect.Field;
 
 /**
  * Created by Dmitry on 26.10.2015.
  */
-public class IllustrationFragment extends BaseFragment {
+public class ImageFragment extends BaseFragment {
 
     @BindView(R.id.load_progress)
     ProgressBar progressBar;
@@ -32,12 +37,24 @@ public class IllustrationFragment extends BaseFragment {
     TextView loadingText;
     @BindView(R.id.illustration)
     ImageView illustration;
-    Image image;
+    Bitmap image;
+
+    public static ImageFragment show(BaseFragment fragment, Bitmap image) {
+        return show(fragment, ImageFragment.class, Constants.ArgsName.IMAGE, image);
+    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        retainInstance = false;
-        super.onCreate(savedInstanceState);
+    public void onStart() {
+        getBaseActivity().hideActionBar();
+        getBaseActivity().lockDrawerClosed();
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        getBaseActivity().showActionBar();
+        getBaseActivity().unlockDrawer();
+        super.onStop();
     }
 
     @Override
@@ -45,12 +62,15 @@ public class IllustrationFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.item_illustration, container, false);
         bind(rootView);
-        image = (Image) getArguments().getSerializable(Constants.ArgsName.IMAGE);
+        image =  getArguments().getParcelable(Constants.ArgsName.IMAGE);
         int maxWidth = getResources().getDisplayMetrics().widthPixels;
-        Picasso.with(getActivity())
-                .load(image.getFullLink())
-                .transform(new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.getFullLink()))
-                .into(illustration, new ImageCallback(progressBar, loadingText, illustration));
+        if(image != null) {
+            illustration.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.GONE);
+            loadingText.setVisibility(View.GONE);
+            PicassoTransformImage transformImage = new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.hashCode() + "");
+            illustration.setImageBitmap(transformImage.transform(image));
+        }
         return rootView;
     }
 
@@ -67,33 +87,6 @@ public class IllustrationFragment extends BaseFragment {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    class ImageCallback implements Callback {
-
-        ProgressBar progressBar;
-        TextView loadingText;
-        ImageView illustration;
-
-        public ImageCallback(ProgressBar progressBar, TextView loadingText, ImageView illustration) {
-            this.progressBar = progressBar;
-            this.loadingText = loadingText;
-            this.illustration = illustration;
-        }
-
-        @Override
-        public void onSuccess() {
-            SystemUtils.nn(() -> {
-                illustration.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-                loadingText.setVisibility(View.GONE);
-            }, illustration, progressBar, loadingText);
-        }
-
-        @Override
-        public void onError() {
-            ErrorFragment.show(IllustrationFragment.this, R.string.error_network);
         }
     }
 

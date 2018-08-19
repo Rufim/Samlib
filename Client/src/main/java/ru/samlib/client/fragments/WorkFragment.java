@@ -1,6 +1,7 @@
 package ru.samlib.client.fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.*;
 import android.support.annotation.IdRes;
@@ -1281,6 +1283,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             return false;
         }
 
+        @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             HtmlSpanner spanner = new HtmlSpanner();
@@ -1354,6 +1357,15 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                         url[url.length - 1].onClick(textView);
                                     }
                                     return true;
+                                } else {
+                                    DynamicImageSpan images[] = spannableString.getSpans(offset, spannableString.length(), DynamicImageSpan.class);
+                                    if (images.length > 0) {
+                                        DynamicImageSpan imageSpan = images[images.length - 1];
+                                        if (imageSpan.getDrawable() instanceof BitmapDrawable) {
+                                            ImageFragment.show(WorkFragment.this, ((BitmapDrawable) imageSpan.getDrawable()).getBitmap());
+                                        }
+                                        return true;
+                                    }
                                 }
                             }
                             if (mode.equals(Mode.AUTO_SCROLL)) {
