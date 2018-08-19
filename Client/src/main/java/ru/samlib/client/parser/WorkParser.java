@@ -117,9 +117,7 @@ public class WorkParser extends Parser {
                                 if (!ze.isDirectory() && HtmlClient.isSupportedFormat(ze.getName())) {
                                     fileFound = true;
                                     FileOutputStream out = new FileOutputStream(unzipped);
-                                    for (int c = zin.read(); c != -1; c = zin.read()) {
-                                        out.write(c);
-                                    }
+                                    SystemUtils.copy(zin, out);
                                     zin.closeEntry();
                                     out.close();
                                     break;
