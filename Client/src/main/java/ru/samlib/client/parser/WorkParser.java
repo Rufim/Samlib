@@ -128,13 +128,16 @@ public class WorkParser extends Parser {
                     if(!fileFound) {
                         return work;
                     } else {
+                        File tmp = rawContent;
                         rawContent = unzipped;
+                        unzipped = tmp;
                     }
                 }
                 String chrset = detectCharset(rawContent, encoding);
                 work.setRawContent(SystemUtils.readFile(rawContent, chrset.contains("UTF") ? chrset : encoding));
                 if(unzipped != null) {
-                    unzipped.delete();
+                    rawContent.delete();
+                    rawContent = unzipped;
                 }
             } else {
                 work = parseWork(rawContent, encoding, work);
