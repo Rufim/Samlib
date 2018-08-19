@@ -80,4 +80,17 @@ public class MyDatabase {
             addColumn(SQLiteType.get(String.class.getName()), Work_Table.customGenres.getNameAlias().nameRaw());
         }
     }
+
+    @Migration(version = 24, database = MyDatabase.class)
+    public static class ExternalWork11 extends AlterTableMigration<ExternalWork>  {
+
+        public ExternalWork11() {
+            super(ExternalWork.class);
+        }
+
+        @Override
+        public void onPreMigrate() {
+            addColumn(SQLiteType.get(String.class.getName()), ExternalWork_Table.mimeType.getNameAlias().nameRaw());
+        }
+    }
 }

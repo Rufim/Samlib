@@ -3,10 +3,12 @@ package ru.samlib.client.parser;
 import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
+
 import ru.kazantsev.template.domain.Valuable;
 import ru.kazantsev.template.net.*;
 import ru.kazantsev.template.util.charset.CharsetDetector;
 import ru.kazantsev.template.util.charset.CharsetMatch;
+
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
@@ -16,7 +18,9 @@ import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
+
 import ru.kazantsev.template.util.SystemUtils;
+import ru.samlib.client.App;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.*;
 
@@ -30,6 +34,8 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by Rufim on 04.07.2015.
@@ -91,10 +97,47 @@ public class WorkParser extends Parser {
     }
 
     public static Work parse(File rawContent, String encoding, Work work, boolean processChapters) throws IOException {
+        return parse(rawContent, "text/html", encoding, work, processChapters);
+    }
+
+    public static Work parse(File rawContent, String mimeType, String encoding, Work work, boolean processChapters) throws IOException {
         try {
             if (work.isNotSamlib()) {
+                File unzipped = null;
+                if (mimeType == null) mimeType = "";
+                if (rawContent.getName().endsWith(".zip") || mimeType.contains("zip")) {
+                    unzipped = HtmlClient.getCachedFile(App.getInstance(), "unzip.tmp", true);
+                    boolean fileFound = false;
+                    unzipped.delete();
+                    if(unzipped.createNewFile()) {
+                        try (FileInputStream fin = new FileInputStream(rawContent);
+                             ZipInputStream zin = new ZipInputStream(fin)) {
+                            ZipEntry ze = null;
+                            while ((ze = zin.getNextEntry()) != null) {
+                                if (!ze.isDirectory() && HtmlClient.isSupportedFormat(ze.getName())) {
+                                    fileFound = true;
+                                    FileOutputStream out = new FileOutputStream(unzipped);
+                                    for (int c = zin.read(); c != -1; c = zin.read()) {
+                                        out.write(c);
+                                    }
+                                    zin.closeEntry();
+                                    out.close();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if(!fileFound) {
+                        return work;
+                    } else {
+                        rawContent = unzipped;
+                    }
+                }
                 String chrset = detectCharset(rawContent, encoding);
                 work.setRawContent(SystemUtils.readFile(rawContent, chrset.contains("UTF") ? chrset : encoding));
+                if(unzipped != null) {
+                    unzipped.delete();
+                }
             } else {
                 work = parseWork(rawContent, encoding, work);
             }
@@ -187,6 +230,7 @@ public class WorkParser extends Parser {
                 if (text.contains("Иллюстрации")) {
                     work.setHasIllustration(true);
                 } else if (text.contains("Скачать")) {
+                    work.setHasFB2(true);
                     break;
                 } else if (a != null) {
                     Category category = new Category();
@@ -237,40 +281,40 @@ public class WorkParser extends Parser {
         Elements description = doc.select("> FictionBook description");
         Elements bodys = doc.select("> FictionBook body");
         Elements binary = doc.select("> FictionBook binary");
-        if(description.size() == 0) {
+        if (description.size() == 0) {
             work.setAnnotation("");
         } else {
             Elements genres = description.select("genre");
-            if(genres.size() != 0) {
+            if (genres.size() != 0) {
                 ArrayList<FB2Genre> fb2Genres = new ArrayList<>();
                 for (Element genre : genres) {
                     FB2Genre fb2Genre = FB2Genre.parseGenre(genre.text());
-                    if(fb2Genre != null) {
+                    if (fb2Genre != null) {
                         fb2Genres.add(fb2Genre);
                     }
                 }
                 StringBuilder builder = new StringBuilder();
                 for (int i = 0; i < fb2Genres.size(); i++) {
                     builder.append(fb2Genres.get(i).getName());
-                    if(i + 1 != genres.size()) {
+                    if (i + 1 != genres.size()) {
                         builder.append(", ");
                     }
                 }
                 work.setCustomGenres(builder.toString());
             }
             Elements authors = description.select("author");
-            if(authors.size() > 0) {
+            if (authors.size() > 0) {
                 Element author = authors.first();
                 StringBuilder builder = new StringBuilder();
-                if(author.select("last-name").size() > 0) {
+                if (author.select("last-name").size() > 0) {
                     builder.append(author.select("last-name").text());
                 }
-                if(author.select("middle-name").size() > 0) {
-                    if(builder.length() > 0) builder.append(" ");
+                if (author.select("middle-name").size() > 0) {
+                    if (builder.length() > 0) builder.append(" ");
                     builder.append(author.select("middle-name").text());
                 }
-                if(author.select("first-name").size() > 0) {
-                    if(builder.length() > 0) builder.append(" ");
+                if (author.select("first-name").size() > 0) {
+                    if (builder.length() > 0) builder.append(" ");
                     builder.append(author.select("first-name").text());
                 }
                 work.getAuthor().setFullName(builder.toString());
@@ -278,11 +322,11 @@ public class WorkParser extends Parser {
                 work.getAuthor().getShortName();
             }
             Elements title = description.select("book-title");
-            if(title.size() > 0) {
+            if (title.size() > 0) {
                 work.setTitle(title.text());
             }
             Elements annotation = description.select("annotation");
-            if(annotation.size() > 0) {
+            if (annotation.size() > 0) {
                 work.getAnnotationBlocks().clear();
                 work.setAnnotation(annotation.html());
             }
@@ -296,30 +340,30 @@ public class WorkParser extends Parser {
     }
 
     private static void parseSection(Element section, ArrayList<String> indents, Elements binary) {
-            for (Element titleP : section.select("> title")) {
-                parseFB2Content(titleP, indents, binary);
-                indents.add("");
-            }
-            for (Element epigraphP : section.select("> epigraph")) {
-                parseFB2Content(epigraphP, indents, binary);
-                indents.add("");
-            }
-            for (Element annotation : section.select("> annotation")) {
-                parseFB2Content(annotation, indents, binary);
-                indents.add("");
-            }
-            for (Element subSection : section.select("> section")) {
-                parseSection(subSection, indents, binary);
-                indents.add("");
-            }
-            parseFB2Content(section, indents, binary);
+        for (Element titleP : section.select("> title")) {
+            parseFB2Content(titleP, indents, binary);
+            indents.add("");
+        }
+        for (Element epigraphP : section.select("> epigraph")) {
+            parseFB2Content(epigraphP, indents, binary);
+            indents.add("");
+        }
+        for (Element annotation : section.select("> annotation")) {
+            parseFB2Content(annotation, indents, binary);
+            indents.add("");
+        }
+        for (Element subSection : section.select("> section")) {
+            parseSection(subSection, indents, binary);
+            indents.add("");
+        }
+        parseFB2Content(section, indents, binary);
     }
 
     private static void addImage(Element element, ArrayList<String> indents, Elements binary) {
         String id = element.attr("l:href");
-        if(id != null && id.startsWith("#")) {
+        if (id != null && id.startsWith("#")) {
             Elements image = binary.select("binary[id=" + id.substring(1) + "]");
-            if(image.size() > 0) {
+            if (image.size() > 0) {
                 indents.add("<img src=\"data:" + image.first().attr("content-type") + ";base64," + image.first().text() + "\">");
             }
         }
@@ -334,18 +378,18 @@ public class WorkParser extends Parser {
     private static void parseFB2Content(Element content, ArrayList<String> indents, Elements binary) {
         for (Element children : content.children()) {
             String tag = children.tag().getName();
-            if(tag.equalsIgnoreCase("p") || tag.equalsIgnoreCase("text-author") || tag.equalsIgnoreCase("v")) {
+            if (tag.equalsIgnoreCase("p") || tag.equalsIgnoreCase("text-author") || tag.equalsIgnoreCase("v")) {
                 children.select("emphasis").tagName("i");
                 children.select("strikethrough").tagName("strike");
                 indents.add(children.html());
             }
-            if(tag.equalsIgnoreCase("empty-line")) {
+            if (tag.equalsIgnoreCase("empty-line")) {
                 indents.add("");
             }
-            if(tag.equalsIgnoreCase("image")) {
+            if (tag.equalsIgnoreCase("image")) {
                 addImage(children, indents, binary);
             }
-            if(tag.equalsIgnoreCase("poem")) {
+            if (tag.equalsIgnoreCase("poem")) {
                 indents.add("");
                 for (Element stanza : children.select("stanza")) {
                     for (Element v : stanza.select("v")) {
@@ -354,15 +398,15 @@ public class WorkParser extends Parser {
                     indents.add("");
                 }
                 Elements author = children.select("text-author");
-                if(author.size() > 0) {
+                if (author.size() > 0) {
                     indents.add(author.text());
                     indents.add("");
                 }
             }
-            if(tag.equalsIgnoreCase("subtitle")) {
+            if (tag.equalsIgnoreCase("subtitle")) {
                 parseSection(children, indents, binary);
             }
-            if(tag.equalsIgnoreCase("cite")) {
+            if (tag.equalsIgnoreCase("cite")) {
                 parseSection(children, indents, binary);
             }
         }
@@ -370,7 +414,7 @@ public class WorkParser extends Parser {
 
     public static void processChapters(Work work, boolean isNotHtml) {
         if (isNotHtml && !work.getRawContent().startsWith("<html>")) {
-            if(work.getRawContent().contains("<FictionBook")) {
+            if (work.getRawContent().contains("<FictionBook")) {
                 parseFB2(work);
                 return;
             } else {
@@ -671,11 +715,11 @@ public class WorkParser extends Parser {
                     .addParam(RateParams.DIR, alink.substring(1, alink.length() - 1))
                     .addParam(RateParams.BALL, String.valueOf(rate))
                     .addParam(RateParams.OK, "OK");
-            if(voteCookie != null) {
+            if (voteCookie != null) {
                 request.addCookie(RateParams.VOTE, voteCookie);
             }
             Response response = request.execute();
-            if(voteCookie == null) {
+            if (voteCookie == null) {
                 if (response.getHeaders().containsKey(Header.SET_COOKIE)) {
                     voteCookie = HTTPExecutor.parseParamFromHeader(response.getHeaders().get(Header.SET_COOKIE).get(0), RateParams.VOTE);
                     setVoteCookie(voteCookie);

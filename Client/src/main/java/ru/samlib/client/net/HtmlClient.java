@@ -79,6 +79,10 @@ public class HtmlClient {
 
     }
 
+    public static boolean isSupportedFormat(String fileName) {
+        return TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt", ".fb2");
+    }
+
     public static File getCachedFile(Context context, String link) {
         return getCachedFile(context, link, false);
     }
@@ -93,7 +97,7 @@ public class HtmlClient {
             if (fileName.endsWith("/")) {
                 fileName = fileName.substring(0, fileName.lastIndexOf("/"));
             }
-            if (!TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt", ".fb2")) {
+            if (!isSupportedFormat(fileName)) {
                 fileName += ".html";
             } else if (fileName.endsWith(".shtml")) {
                 fileName = fileName.substring(0, fileName.lastIndexOf(".shtml")) + ".html";

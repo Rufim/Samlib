@@ -80,6 +80,8 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     @ColumnIgnore
     String annotation; // for json
     String customGenres;
+    @ColumnIgnore
+    boolean hasFB2 = false;
     boolean hasIllustration = false;
     boolean hasComments = false;
     boolean hasRate = false;
@@ -146,6 +148,10 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
 
     public String getLinkWithoutSuffix() {
         return getLink().replace(HTML_SUFFIX, "");
+    }
+
+    public String getFB2Link() {
+        return getLink().replace(HTML_SUFFIX, FB2_SUFFIX);
     }
 
     public Author getAuthor() {

@@ -373,7 +373,11 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public static Map<String, String> getAvailableLanguages(Context context) {
-        if (available != null) return available;
+        return getAvailableLanguages(context, false);
+    }
+
+    public static Map<String, String> getAvailableLanguages(Context context, boolean parse) {
+        if (available != null || !parse) return available == null ? new HashMap<>() : available;
         TextToSpeech myTTS = new TextToSpeech(context, status -> {
             ready.set(true);
         });

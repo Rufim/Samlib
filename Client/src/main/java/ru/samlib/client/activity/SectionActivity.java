@@ -150,7 +150,7 @@ public class SectionActivity extends NavigationActivity<String> {
                 }
             } else if(data.getScheme() != null && data.getScheme().startsWith("content")) {
                 if (!isRestore(current, intent, true)) {
-                    WorkFragment.showContent(builder, id, intent.getData());
+                    WorkFragment.showContent(builder, id, intent.getData(), intent.getType());
                 }
             } else {
                 BaseFragment.show(builder, id, getResString(R.string.page_not_supported));

@@ -97,6 +97,7 @@
     <string name="work_speaking_language">Язык синтеза</string>
     <string name="work_to_author">К автору</string>
     <string name="work_save">Сохранить</string>
+    <string name="work_save_fb2">Сохранить FB2</string>
     <string name="work_parse">Парсинг…</string>
     <string name="work_share">Поделиться</string>
     <string name="work_comments">Комментарии</string>
@@ -104,6 +105,7 @@
     <string name="work_open_with">Открыть в…</string>
     <string name="work_auto_scroll">Автопрокрутка</string>
     <string name="work_fullscreen">Полный экран</string>
+    <string name="work_download_fb2">Загрузка FB2</string>
     <string name="footer_work_pitch">Тембр:</string>
     <string name="footer_work_speech_rate">Скорость:</string>
     <string name="newest_filter">Фильтр по категориям</string>

@@ -10,7 +10,7 @@
     <string name="preferenceMaxCacheSizeError">Введите целое число больше 0!</string>
 
     <string name="preferenceGroupObservableName">Подписки</string>
-    <string name="preferenceObservableNotificationName">Нотификации при обновлениях</string>
+    <string name="preferenceObservableNotificationName">Уведомления при обновлениях</string>
     <string name="preferenceObservableNotification">ObservableNotification</string>
     <string name="preferenceObservableAutoName">Отслеживать обновления</string>
     <string name="preferenceObservableAuto">ObservableAuto</string>

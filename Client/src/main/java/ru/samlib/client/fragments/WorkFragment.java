@@ -123,8 +123,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         return show(builder.putArg(Constants.ArgsName.FILE_PATH, link), container, WorkFragment.class);
     }
 
-    public static WorkFragment showContent(FragmentBuilder builder, @IdRes int container, Uri uri) {
-        return show(builder.putArg(Constants.ArgsName.CONTENT_URI, uri), container, WorkFragment.class);
+    public static WorkFragment showContent(FragmentBuilder builder, @IdRes int container, Uri uri, String mimeType) {
+        return show(builder.putArg(Constants.ArgsName.CONTENT_URI, uri).putArg(Constants.ArgsName.MIME_TYPE, mimeType), container, WorkFragment.class);
     }
 
     public static WorkFragment show(FragmentBuilder builder, @IdRes int container, Work work) {
@@ -145,7 +145,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         setDataSource(((skip, size) -> {
             if (skip != 0) return null;
-            TTSPlayer.getAvailableLanguages(getContext());
+            try {
+                TTSPlayer.getAvailableLanguages(getContext(), true);
+            } catch (Throwable ignore) {}
             while (work == null) {
                 SystemClock.sleep(100);
             }
@@ -196,7 +198,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     if (gained.get() == 0 || !externalFile.exists()) {
                         throw new IOException();
                     }
-                    work = WorkParser.parse(new File(externalWork.getFilePath()), "CP1251", work, true);
+                    work = WorkParser.parse(new File(externalWork.getFilePath()), externalWork.getMimeType(), "CP1251", work, true);
                     if (work.getBookmark() == null) {
                         setBookmark(work, "", 0);
                     }
@@ -431,6 +433,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
             if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
+            }
+            if(!work.isHasFB2()) {
+                menu.removeItem(R.id.action_work_save_fb2);
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                 menu.removeItem(R.id.action_work_fullscreen);
@@ -687,6 +692,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             case R.id.action_work_share:
                 AndroidSystemUtils.shareText(getActivity(), work.getAuthor().getShortName(), work.getTitle(), work.getFullLink(), "text/plain");
                 return true;
+            case R.id.action_work_save_fb2:
+                if (isAdded()) {
+                    String link = work.getFB2Link();
+                    String name = link.contains("/") ? link.substring(link.lastIndexOf("/") + 1) : link;
+                    AndroidSystemUtils.download(getContext(), Constants.Net.BASE_DOMAIN + link, getString(R.string.work_download_fb2), work.getTitle(), name);
+                }
+                return true;
             case R.id.action_work_save:
                 if (isAdded()) {
                     getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
@@ -912,6 +924,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         String link = getArguments().getString(Constants.ArgsName.LINK);
         String filePath = getArguments().getString(Constants.ArgsName.FILE_PATH);
         Uri contentUri = getArguments().getParcelable(Constants.ArgsName.CONTENT_URI);
+        String mimeType = getArguments().getString(Constants.ArgsName.MIME_TYPE);
         Work incomingWork = (Work) getArguments().getSerializable(Constants.ArgsName.WORK);
         if (filePath != null || contentUri != null) {
             if (externalWork == null || (filePath != null && !filePath.equals(externalWork.getFilePath())) || (contentUri != null && !contentUri.equals(externalWork.getContentUri()))) {
@@ -925,6 +938,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     externalWork.setWorkTitle(new File(filePath).getName());
                     externalWork.setGenres("");
                 }
+                externalWork.setMimeType(mimeType);
                 externalWork.setContentUri(contentUri);
                 databaseService.insertOrUpdateExternalWork(externalWork);
                 work = new Work(externalWork.getWorkUrl());

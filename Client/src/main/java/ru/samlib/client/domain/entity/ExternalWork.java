@@ -39,7 +39,7 @@ public class ExternalWork extends BaseModel implements Findable, Serializable {
     String genres;
     String workTitle;
     String authorShortName;
-
+    String mimeType;
     @ColumnIgnore
     Uri ContentUri;
 
