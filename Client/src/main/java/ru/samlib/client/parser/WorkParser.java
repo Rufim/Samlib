@@ -141,14 +141,14 @@ public class WorkParser extends Parser {
             } else {
                 work = parseWork(rawContent, encoding, work);
             }
+            work.setChanged(false);
+            if (processChapters) {
+                processChapters(work, work.isNotSamlib() && !rawContent.getName().endsWith(".html"));
+            }
             if (rawContent instanceof CachedResponse) {
                 Log.i(TAG, "Work parsed using url " + work.getFullLink());
             } else {
                 Log.i(TAG, "Work parsed using file " + rawContent.getAbsolutePath());
-            }
-            work.setChanged(false);
-            if (processChapters) {
-                processChapters(work, work.isNotSamlib() && !rawContent.getName().endsWith(".html"));
             }
             workCache.put(work.isNotSamlib() ? rawContent.getAbsolutePath() : work.getLink(), work);
         } catch (Exception ex) {
@@ -413,8 +413,9 @@ public class WorkParser extends Parser {
     }
 
     public static void processChapters(Work work, boolean isNotHtml) {
-        if (isNotHtml && !work.getRawContent().startsWith("<html>")) {
-            if (work.getRawContent().contains("<FictionBook")) {
+        String startWith = work.getRawContent().length() > 200 ? work.getRawContent().substring(0, 199) : work.getRawContent();
+        if (isNotHtml && !startWith.contains("<html")) {
+            if (startWith.contains("<FictionBook")) {
                 parseFB2(work);
                 return;
             } else {
