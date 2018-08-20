@@ -16,8 +16,10 @@
     <string name="preferenceObservableAuto">ObservableAuto</string>
     <string name="preferenceObservableAddLastAuthor">ObservableAddLastAuthor</string>
 
-    <string name="preferenceVoteCoockie">VoteCoockie</string>
-    <string name="preferenceCommentCoockie">CommentCoockie</string>
+    <string name="preferenceVoteCookie">VoteCoockie</string>
+    <string name="preferenceCommentCookie">CommentCoockie</string>
+    <string name="preferenceLoginCookie">LoginCookie</string>
+    <string name="preferenceLoginCookieName">Аккаунт на Самиздате</string>
     <string name="preferenceCommentName">CommentName</string>
     <string name="preferenceCommentEmail">CommentEmail</string>
     <string name="preferenceCommentLink">CommentLink</string>

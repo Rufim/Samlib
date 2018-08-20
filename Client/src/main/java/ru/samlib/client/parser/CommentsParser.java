@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 public class CommentsParser extends PageParser<Comment> {
 
     public static final String COMMENT_NEW_PREFIX = "/cgi-bin/comment";
+    public static final String COMMNET_HEADER = "COMMENT";
+
 
     private Work work;
     private int archiveCount = -1;
@@ -57,7 +59,7 @@ public class CommentsParser extends PageParser<Comment> {
             try {
                 lister.setPage(request, index);
                 Document doc = getDocument(request);
-                Elements arch = doc.select("b:contains(Архивы)");
+                Elements arch = doc.select("body center b:contains(Архивы)");
                 if (arch.size() > 0) {
                     String count = arch.text();
                     archiveCount = TextUtils.extractInt(count, 0);
@@ -67,6 +69,20 @@ public class CommentsParser extends PageParser<Comment> {
             }
         }
         return archiveCount;
+    }
+
+    public boolean canLeaveComments() {
+        try {
+            Document doc = getDocument(request);
+            Elements add = doc.select("body center a b:contains(Добавить комментарий)");
+            if (add.size() > 0) {
+                return true;
+            }
+        } catch (Throwable ex) {
+            Cat.e(ex);
+
+        }
+        return false;
     }
 
     public void setArchive(int page) {
@@ -156,13 +172,21 @@ public class CommentsParser extends PageParser<Comment> {
 
 
     public static String requestCookie(Work work) {
-        if (commentCookie != null) return commentCookie;
+        String cookie = "";
+        if (hasCookieComment() || hasLogin()) {
+            cookie = getCookie();
+        }
+        if(cookie.contains(COMMNET_HEADER)) {
+            return cookie;
+        }
         try {
             Response response = new HTTPExecutor(new Request(Constants.Net.BASE_DOMAIN + COMMENT_NEW_PREFIX + "?COMMENT=" + work.getLinkWithoutSuffix())
                     .addHeader(Header.ACCEPT, ACCEPT_VALUE)
+                    .addHeader("Cookie", cookie)
                     .addHeader(Header.USER_AGENT, USER_AGENT)).execute();
-            String coockie = response.getHeaders().get(Header.SET_COOKIE).get(0);
-            return commentCookie = HTTPExecutor.parseParamFromHeader(coockie, "COMMENT");
+            cookie = response.getHeaders().get(Header.SET_COOKIE).get(0);
+            commentCookie = HTTPExecutor.parseParamFromHeader(cookie, COMMNET_HEADER);
+            return getCookie();
         } catch (Exception e) {
             return null;
         }
@@ -178,7 +202,7 @@ public class CommentsParser extends PageParser<Comment> {
             Request request = new Request(link)
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT)
-                    .addHeader("Cookie", "COMMENT=" + commentCookie)
+                    .addHeader("Cookie", commentCookie)
                     .addHeader("Host", Constants.Net.BASE_HOST)
                     .addHeader("Referer", link)
                     .addHeader("Upgrade-Insecure-Requests", "1")
@@ -204,7 +228,7 @@ public class CommentsParser extends PageParser<Comment> {
                     .setMethod(Request.Method.POST)
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT)
-                    .addHeader("Cookie", "COMMENT=" + commentCookie)
+                    .addHeader("Cookie", commentCookie)
                     .addHeader("Host", Constants.Net.BASE_HOST)
                     .addHeader("Referer", link)
                     .addHeader("Content-Type", "application/x-www-form-urlencoded")

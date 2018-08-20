@@ -41,7 +41,6 @@ import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
-import ru.kazantsev.template.net.Response;
 import ru.kazantsev.template.util.*;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
@@ -781,9 +780,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                 if (WorkParser.sendRate(work, value)) {
                                     if (isAdded()) {
                                         PreferenceMaster master = new PreferenceMaster(getContext());
-                                        String vote = master.getValue(R.string.preferenceVoteCoockie, "0");
+                                        String vote = master.getValue(R.string.preferenceVoteCookie, "0");
                                         if (!vote.equals(Parser.getVoteCookie())) {
-                                            master.putValue(R.string.preferenceVoteCoockie, Parser.getVoteCookie());
+                                            master.putValue(R.string.preferenceVoteCookie, Parser.getVoteCookie());
                                         }
                                     }
                                 }
@@ -1045,9 +1044,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             syncState(state);
             if (state.equals(TTSPlayer.State.PAUSE) || state.equals(TTSPlayer.State.SPEAKING)) {
                 mode = Mode.SPEAK;
-            }
-            if (mode.equals(Mode.SPEAK)) {
                 initFragmentForSpeak();
+                scrollToIndex(TTSService.getInstance().getPlayer().getIndentIndex());
             }
         } else {
             syncState(TTSPlayer.State.END);

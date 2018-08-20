@@ -5,17 +5,12 @@ import android.os.Build;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.speech.tts.Voice;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import net.vrallev.android.cat.Cat;
 
-import ru.kazantsev.template.util.Dumper;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.SystemUtils;
 import ru.kazantsev.template.util.TextUtils;
@@ -212,6 +207,14 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
             SystemUtils.sleepQuietly(100);
         }
         startSpeak(current - 1);
+    }
+
+    public int getIndentIndex() {
+        return indentIndex;
+    }
+
+    public int getPhraseIndex(){
+        return phraseIndex;
     }
 
     public State getState() {

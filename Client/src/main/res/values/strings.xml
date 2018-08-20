@@ -202,4 +202,11 @@
     <string name="dialog_filter_genres">Жанры:</string>
     <string name="dialog_filter_size">Минимальный размер:</string>
     <string name="tts_service">Управление синтезом речи</string>
+    <string name="sign_in_login_hint">Логин</string>
+    <string name="sign_in_password_hint">Пароль</string>
+    <string name="sign_in_invalid">Неверный логин или пароль!</string>
+    <string name="sign_in_password_empty">Введите пароль!</string>
+    <string name="sign_in_login_empty">Введте логин!</string>
+    <string name="sign_in_enter">Войти</string>
+    <string name="sign_in_exit">Выйти</string>
 </resources>

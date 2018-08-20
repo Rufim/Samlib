@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.net.Request;
+import ru.kazantsev.template.util.TextUtils;
 import ru.samlib.client.domain.Constants;
 import ru.kazantsev.template.net.CachedResponse;
 import ru.samlib.client.net.HtmlClient;
@@ -47,6 +48,7 @@ public abstract class Parser {
     protected static boolean cached = false;
     protected static String commentCookie = null;
     protected static String voteCookie = null;
+    protected static String loginCookie = null;
 
     public void setPath(String path) throws MalformedURLException {
         if (path == null) {
@@ -57,12 +59,27 @@ public abstract class Parser {
                     .setEncoding("CP1251")
                     .addHeader("Accept", ACCEPT_VALUE)
                     .addHeader("User-Agent", USER_AGENT);
-            if (hasCoockieComment()) {
-                request.addHeader("Cookie", "COMMENT=" + commentCookie);
+            if (hasCookieComment() || hasLogin()) {
+                request.addHeader("Cookie", getCookie());
             }
         } catch (UnsupportedEncodingException e) {
             Log.e(TAG, "Unknown exception", e);
         }
+    }
+
+    protected static String getCookie() {
+        StringBuilder cookie = new StringBuilder();
+        if (hasLogin()) {
+            cookie.append(loginCookie);
+            String comment = HTTPExecutor.parseParamFromHeader(loginCookie, "COMMENT");
+            if(TextUtils.notEmpty(comment)) {
+                return cookie.toString();
+            }
+        }
+        if (hasCookieComment()) {
+            cookie.append("COMMENT=" + commentCookie);
+        }
+        return cookie.toString();
     }
 
     public Document getDocument(Request request) throws IOException {
@@ -130,6 +147,14 @@ public abstract class Parser {
         return commentCookie;
     }
 
+    public static String getLoginCookie() {
+        return loginCookie;
+    }
+
+    public static void setLoginCookie(String loginCookie) {
+        Parser.loginCookie = loginCookie;
+    }
+
     public static String getVoteCookie() {
         return voteCookie;
     }
@@ -163,11 +188,15 @@ public abstract class Parser {
         }
     }
 
-    public static boolean hasCoockieComment() {
+    public static boolean hasCookieComment() {
         return commentCookie != null;
     }
 
-    public static boolean hasCoockieVote() {
+    public static boolean hasLogin() {
+        return loginCookie != null;
+    }
+
+    public static boolean hasCookieVote() {
         return voteCookie != null;
     }
 

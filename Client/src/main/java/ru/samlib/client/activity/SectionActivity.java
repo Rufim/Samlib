@@ -73,14 +73,19 @@ public class SectionActivity extends NavigationActivity<String> {
                     Log.e(TAG, "Error ocurred unknown author!! Work url is: " + workFragment.getWork());
                 }
             }
+
+
             builder.replaceFragment(R.id.container, sectionFragment);
         }
         navigationListMenu.setPadding(0, (int) getResources().getDimension(R.dimen.spacing_medium), 0, (int) getResources().getDimension(R.dimen.spacing_medium));
-        if(!Parser.hasCoockieComment()) {
-            Parser.setCommentCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceCommentCoockie), null));
+        if(!Parser.hasCookieComment()) {
+            Parser.setCommentCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceCommentCookie), null));
         }
-        if(!Parser.hasCoockieVote()) {
-            Parser.setVoteCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceVoteCoockie), null));
+        if(!Parser.hasCookieVote()) {
+            Parser.setVoteCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceVoteCookie), null));
+        }
+        if(!Parser.hasLogin()) {
+            Parser.setLoginCookie(AndroidSystemUtils.getDefaultPreference(this).getString(getString(R.string.preferenceLoginCookie), null));
         }
     }
 

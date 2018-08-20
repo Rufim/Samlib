@@ -19,10 +19,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
+
+import net.vrallev.android.cat.Cat;
+
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
+import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.PreferenceMaster;
@@ -31,11 +35,15 @@ import ru.samlib.client.R;
 import ru.samlib.client.dialog.EditListPreferenceDialog;
 import ru.samlib.client.dialog.EditTextPreferenceDialog;
 import ru.samlib.client.dialog.OnCommit;
+import ru.samlib.client.dialog.SignInDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Font;
+import ru.samlib.client.parser.SignInParser;
 import ru.samlib.client.util.TTSPlayer;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 import static android.view.View.GONE;
@@ -71,7 +79,8 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
                     .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
-                    .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName);
+                    .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName)
+                    .addPreference(R.string.preferenceLoginCookie, R.string.preferenceLoginCookieName);
             PreferenceGroup groupCache = new PreferenceGroup(R.string.preferenceGroupCache)
                     .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getString(R.string.preferenceMaxCacheSizeDefault));
             PreferenceGroup themeGroup = new PreferenceGroup(R.string.preferenceGroupTheme)
@@ -143,6 +152,23 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     getBaseActivity().startActivity(intent);
                     TTSPlayer.dropAvailableLanguages();
+                    return true;
+                }
+                if (preference.idKey == R.string.preferenceLoginCookie) {
+                    SignInDialog signInDialog  = new SignInDialog();
+                    signInDialog.setPreference(preference);
+                    signInDialog.setOnCommit((cookie, d) -> {
+                        if(TextUtils.notEmpty(cookie)) {
+                            SignInParser parser = new SignInParser(cookie);
+                            PreferenceMaster preferenceMaster = new PreferenceMaster(getContext());
+                            preferenceMaster.putValue(R.string.preferenceCommentName, parser.getUsername());
+                            preferenceMaster.putValue(R.string.preferenceCommentEmail, parser.getEmail());
+                            preferenceMaster.putValue(R.string.preferenceCommentLink, parser.getSectionPath());
+                        }
+                        notifyChanged();
+                        return true;
+                    });
+                    signInDialog.show(getFragmentManager(), signInDialog.getClass().getSimpleName());
                     return true;
                 }
                 switch (preference.dialogType) {
@@ -275,7 +301,24 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                                     Object value = preferences.get(preference.key);
                                     GuiUtils.setText(root, R.id.settings_value, EditListPreferenceDialog.getValueKey(preference, value).toString());
                                 } else {
-                                    GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
+                                    if (preference.idKey == R.string.preferenceLoginCookie) {
+                                        String cookie =  preferences.get(preference.key).toString();
+                                        if(TextUtils.notEmpty(cookie)) {
+                                            SignInParser parser = new SignInParser(cookie);
+                                            try {
+                                                String login = parser.getLogin();
+                                                if(TextUtils.notEmpty(login)) {
+                                                    GuiUtils.setText(root, R.id.settings_value, login);
+                                                    break;
+                                                }
+                                            } catch (Exception e) {
+                                                Cat.e(e);
+                                            }
+                                        }
+                                        GuiUtils.setText(root, R.id.settings_value, "");
+                                    } else {
+                                        GuiUtils.setText(root, R.id.settings_value, preferences.get(preference.key).toString());
+                                    }
                                 }
                             } else {
                                 if(preference.dialogType.equals(DialogType.LIST)) {

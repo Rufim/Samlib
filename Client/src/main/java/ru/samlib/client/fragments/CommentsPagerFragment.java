@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.*;
 import org.acra.ACRA;
@@ -52,6 +51,8 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
     private Work work;
 
     CommentsParser parser;
+    private boolean parsed = false;
+    private boolean canLeaveComment = false;
 
     public static CommentsPagerFragment show(FragmentBuilder builder, @IdRes int container, String link) {
         return show(builder.putArg(Constants.ArgsName.LINK, link), container, CommentsPagerFragment.class);
@@ -69,7 +70,17 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.comments, menu);
+        if(parsed) {
+            inflater.inflate(R.menu.comments, menu);
+            if(!canLeaveComment) {
+                menu.removeItem(R.id.action_comments_add_new);
+            }
+        }
+    }
+
+    @Override
+    public void onPostLoadItems() {
+        safeInvalidateOptionsMenu();
     }
 
     @Override
@@ -134,10 +145,12 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                 parser = new CommentsParser(work, false);
                 setDataSource((skip, size) -> {
                     int count = parser.requestPageCount();
+                    canLeaveComment = parser.canLeaveComments();
                     ArrayList<Integer> indexes = new ArrayList();
                     for (int i = skip; i < count && i < size; i++) {
                         indexes.add(i);
                     }
+                    parsed = true;
                     return indexes;
                 });
             } catch (MalformedURLException e) {
@@ -205,7 +218,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
             @Override
             protected Object[] doInBackground(Void... params) {
                 Object[] answer = new Object[3];
-                boolean saveNewCookie = !Parser.hasCoockieComment();
+                boolean saveNewCookie = !Parser.hasCookieComment();
                 Response response = CommentsParser.sendComment(work, event.name, event.email, event.link, event.comment, event.operation, event.msgid);
                 try {
                     if (response == null || response.getCode() != 200) {
@@ -239,7 +252,7 @@ public class CommentsPagerFragment extends PagerFragment<Integer, CommentsFragme
                 if ("OK".equals(answer[0])) {
                     if(answer[1] != null) {
                         SharedPreferences.Editor editor = AndroidSystemUtils.getDefaultPreference(App.getInstance()).edit();
-                        editor.putString(getString(R.string.preferenceCommentCoockie), answer[1].toString());
+                        editor.putString(getString(R.string.preferenceCommentCookie), answer[1].toString());
                         editor.apply();
                     }
                     if (adapter.getCount() > 0) {
