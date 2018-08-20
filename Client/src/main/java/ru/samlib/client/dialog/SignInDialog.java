@@ -73,8 +73,8 @@ public class SignInDialog  extends BaseDialog {
     }
 
     public void setPasswordError(@StringRes int error) {
-        loginLayout.setError(getString(error));
-        loginLayout.setErrorEnabled(true);
+        passwordLayout.setError(getString(error));
+        passwordLayout.setErrorEnabled(true);
     }
 
     @Override
