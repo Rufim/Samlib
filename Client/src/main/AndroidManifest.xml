@@ -42,7 +42,7 @@
 
         <activity
             android:name=".activity.SectionActivity"
-            android:configChanges="orientation"
+            android:configChanges="screenSize|orientation"
             android:launchMode="singleTask"
             android:parentActivityName=".activity.MainActivity"
             android:windowSoftInputMode="adjustPan">
