@@ -96,8 +96,10 @@ public class SignInParser extends Parser {
     public void eraseLogin(Context context) {
         loginCookie = null;
         localLoginCookie = null;
+        commentCookie = null;
         PreferenceMaster master = new PreferenceMaster(context);
         master.putValue(R.string.preferenceLoginCookie, "");
+        master.putValue(R.string.preferenceCommentCookie, "");
     }
 
     private String getLoginCookieValue(String name) {

@@ -252,7 +252,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         });
                     }
                     categoryUpdate.getWorks().clear();
-                    author.setHasUpdates(false);
                     databaseService.createOrUpdateAuthor(author);
                 }
                 adapter.notifyChanged();
