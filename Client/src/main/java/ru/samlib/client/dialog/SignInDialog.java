@@ -96,7 +96,7 @@ public class SignInDialog  extends BaseDialog {
                         return;
                     }
                     if(TextUtils.isEmpty(password)) {
-                        setLoginError(R.string.sign_in_password_empty);
+                        setPasswordError(R.string.sign_in_password_empty);
                         return;
                     }
                     new AsyncTask<String,Void, String>() {
