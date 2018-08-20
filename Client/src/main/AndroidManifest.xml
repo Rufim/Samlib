@@ -24,7 +24,7 @@
 
         <activity
             android:name=".activity.MainActivity"
-            android:configChanges="orientation"
+            android:configChanges="screenSize|orientation"
             android:label="@string/app_name"
             android:launchMode="singleTask">
             <meta-data
