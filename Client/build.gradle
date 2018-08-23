@@ -4,12 +4,12 @@ ext {
     compileSdkProjectVersion = 27
     buildToolsProjectVersion = '27.0.3'
     supportLibraryVersion = '27.1.1'
-    versionProjectCode = 40
-    versionProjectName = "0.7.3"
+    versionProjectCode = 41
+    versionProjectName = "0.7.4"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     statServer = 'sistat.mj.milesweb.cloud'
-    dbflowVersion = '4.1.1'
+    dbflowVersion = '4.2.4'
     daggerVersion = '2.9'
     lombokVersion = '1.16.16'
     butterknifeVersion = '8.5.1'
