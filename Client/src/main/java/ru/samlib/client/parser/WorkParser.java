@@ -65,9 +65,9 @@ public class WorkParser extends Parser {
     public Work parse(boolean fullDownload, boolean processChapters) throws IOException {
         CachedResponse rawContent = null;
         if (work.getRawContent() == null && !fullDownload) {
-            rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached);
+            rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached || lazyLoad);
         } else {
-            rawContent = HtmlClient.executeRequest(request, cached);
+            rawContent = HtmlClient.executeRequest(request, cached || lazyLoad);
         }
         if (rawContent == null || rawContent.length() == 0) {
             throw new IOException("Закешированный файл не найден и отцутствует соединение с интернетом");
@@ -287,16 +287,18 @@ public class WorkParser extends Parser {
         } else {
             Elements genres = description.select("genre");
             if (genres.size() != 0) {
-                ArrayList<FB2Genre> fb2Genres = new ArrayList<>();
+                ArrayList<String> fb2Genres = new ArrayList<>();
                 for (Element genre : genres) {
                     FB2Genre fb2Genre = FB2Genre.parseGenre(genre.text());
                     if (fb2Genre != null) {
-                        fb2Genres.add(fb2Genre);
+                        fb2Genres.add(fb2Genre.getName());
+                    } else if(!genre.text().isEmpty()) {
+                        fb2Genres.add(genre.text());
                     }
                 }
                 StringBuilder builder = new StringBuilder();
                 for (int i = 0; i < fb2Genres.size(); i++) {
-                    builder.append(fb2Genres.get(i).getName());
+                    builder.append(fb2Genres.get(i));
                     if (i + 1 != genres.size()) {
                         builder.append(", ");
                     }
@@ -327,8 +329,8 @@ public class WorkParser extends Parser {
                 work.setTitle(title.text());
             }
             Elements annotation = description.select("annotation");
+            work.setAnnotationBlocks(new ArrayList<>());
             if (annotation.size() > 0) {
-                work.getAnnotationBlocks().clear();
                 work.setAnnotation(annotation.html());
             }
         }
@@ -337,7 +339,6 @@ public class WorkParser extends Parser {
         } catch (RuntimeException ex) {// ignored
         }
         work.setIndents(new ArrayList<>());
-        work.setAnnotationBlocks(new ArrayList<>());
         for (Element body : bodys) {
             parseSection(body, work, binary);
         }

@@ -55,6 +55,8 @@ import static android.view.View.VISIBLE;
 public class SettingsFragment extends ListFragment<SettingsFragment.Preference> {
 
     public static final Boolean DEF_OBSERVABLE_AUTO = true;
+    public static final Boolean DEF_OBSERVABLE_NOTIFICATION = true;
+    public static final Boolean DEF_OPEN_FROM_CACHE = true;
 
     private final static Float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
 
@@ -79,7 +81,9 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
                     .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
-                    .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName)
+                    .addPreference(R.string.preferenceCacheByDefault, R.string.preferenceCacheByDefaultName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OPEN_FROM_CACHE)
+                    .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName);
+            PreferenceGroup accountGroup = new PreferenceGroup(R.string.preferenceGroupAccount)
                     .addPreference(R.string.preferenceLoginCookie, R.string.preferenceLoginCookieName);
             PreferenceGroup groupCache = new PreferenceGroup(R.string.preferenceGroupCache)
                     .addPreference(R.string.preferenceMaxCacheSize, R.string.preferenceMaxCacheSizeName, 0,0, DialogType.TEXT, getResources().getString(R.string.preferenceMaxCacheSizeDefault));
@@ -87,7 +91,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreferenceList(R.string.preferenceCurrentTheme,R.string.preferenceCurrentThemeName, 0, 0, generateThemeMap(), getActivity().getApplicationInfo().theme);
             PreferenceGroup observableGroup = new PreferenceGroup(R.string.preferenceGroupObservableName)
                     .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OBSERVABLE_AUTO)
-                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, true);
+                    .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OBSERVABLE_NOTIFICATION );
             return Arrays.asList(groupReader, groupCache, themeGroup, observableGroup);
         };
     }

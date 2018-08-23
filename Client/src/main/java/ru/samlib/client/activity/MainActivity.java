@@ -1,10 +1,15 @@
 package ru.samlib.client.activity;
 
+import android.Manifest;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.v7.app.AppCompatDelegate;
@@ -15,20 +20,32 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+
+import net.vrallev.android.cat.Cat;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import ru.kazantsev.template.activity.BaseActivity;
+import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.PermissionUtils;
+import ru.kazantsev.template.util.PreferenceMaster;
+import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.database.SuggestionProvider;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
+import ru.samlib.client.domain.entity.Author;
 import ru.samlib.client.domain.entity.ExternalWork;
 import ru.samlib.client.domain.entity.Genre;
 import ru.samlib.client.fragments.*;
 
 import ru.kazantsev.template.util.TextUtils;
+import ru.samlib.client.net.HtmlClient;
+import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.Parser;
 
 
@@ -154,6 +171,26 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.drawer_search:
                 replaceFragment(SearchFragment.class);
+                break;
+            case R.id.drawer_open_file:
+                doActionWithPermission(Manifest.permission.READ_EXTERNAL_STORAGE, permissionGained -> {
+                    if (permissionGained) {
+                        DirectoryChooserDialog chooserDialogOpen = new DirectoryChooserDialog(this, DirectoryChooserDialog.NeutralButtonAction.NONE, false, false, true);
+                        chooserDialogOpen.setSourceDirectory(AndroidSystemUtils.getStringResPreference(this, R.string.preferenceLastSavedWorkPath, Environment.getExternalStorageDirectory().getAbsolutePath()));
+                        chooserDialogOpen.setTitle(getString(R.string.drawer_open_file) + "...");
+                        chooserDialogOpen.setIcon(R.drawable.ic_open_file_24dp);
+                        chooserDialogOpen.setAllowRootDir(false);
+                        chooserDialogOpen.setFileTypes(HtmlClient.SUPPORTED_FORMATS);
+                        chooserDialogOpen.setOnChooseFileListener(chosenFile -> {
+                            if (chosenFile != null) {
+                                new PreferenceMaster(MainActivity.this).putValue(R.string.preferenceLastSavedWorkPath, chosenFile.getParent());
+                                SectionActivity.launchActivity(this, chosenFile);
+                                chooserDialogOpen.dismiss();
+                            }
+                        });
+                        chooserDialogOpen.show();
+                    }
+                });
                 break;
             default:
                 replaceFragment(BaseFragment.class);

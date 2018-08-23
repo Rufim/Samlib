@@ -242,7 +242,7 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     }
 
     public String processAnnotationBloks(int color) {
-        Document an = Jsoup.parse(getAnnotation());
+        Document an = Jsoup.parseBodyFragment(getAnnotation());
         an.select("font[color=#555555]").attr("color",
                 String.format("#%02x%02x%02x",
                         Color.red(color),

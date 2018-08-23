@@ -2,6 +2,10 @@ package ru.samlib.client.net;
 
 import android.content.Context;
 import android.util.Log;
+
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
 import net.vrallev.android.cat.Cat;
 import ru.kazantsev.template.net.*;
 import ru.kazantsev.template.util.TextUtils;
@@ -24,6 +28,8 @@ import java.util.List;
 public class HtmlClient {
 
     private static final String TAG = HtmlClient.class.getSimpleName();
+
+    public static final String [] SUPPORTED_FORMATS = {"shtml", "html", "htm", "txt", "fb2"};
 
     private static HtmlClient instance;
     private static Hashtable<String, CachedResponse> htmlfiles = new Hashtable<>(1);
@@ -65,11 +71,13 @@ public class HtmlClient {
         @Override
         protected Response prepareResponse() throws IOException {
             String linkPath = request.getBaseUrl().getPath().replaceAll("/+", "/");
-            CachedResponse cachedResponse = new CachedResponse(getCachedFile(app, linkPath).getAbsolutePath(), request);
-            if (cachedResponse.exists()) {
-                cachedResponse.delete();
+            File cached = getCachedFile(app, linkPath);
+            cached.getParentFile().mkdirs();
+            if (cached.exists()) {
+                cached.renameTo(new File(cached.getAbsolutePath() + ".tmp"));
             }
-            cachedResponse.getParentFile().mkdirs();
+            CachedResponse cachedResponse = new CachedResponse(getCachedFile(app, linkPath).getAbsolutePath(), request);
+            cachedResponse.delete();
             if(cachedResponse.createNewFile()) {
                 return cachedResponse;
             } else {
@@ -80,7 +88,7 @@ public class HtmlClient {
     }
 
     public static boolean isSupportedFormat(String fileName) {
-        return TextUtils.contains(fileName, false, ".shtml", ".html", ".htm", ".txt", ".fb2");
+        return TextUtils.endsWith(fileName, false, Stream.of(SUPPORTED_FORMATS).map(s -> "." + s).collect(Collectors.toList()).toArray(new String[SUPPORTED_FORMATS.length]));
     }
 
     public static File getCachedFile(Context context, String link) {
@@ -122,9 +130,22 @@ public class HtmlClient {
             }
             throw new IOException("Файл не найден в кеше");
         } else {
-            CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
-            cache(response);
-            return response;
+            String linkPath = request.getBaseUrl().getPath().replaceAll("/+", "/");
+            File cachedFile = getCachedFile(app, linkPath);
+            File tmp = new File(cachedFile.getAbsolutePath() + ".tmp");
+            try {
+                CachedResponse response = (CachedResponse) new AsyncHtmlDownloader(request).execute(minBytes);
+                cache(response);
+                if(tmp.exists()) {
+                    tmp.delete();
+                }
+                return response;
+            } catch (Throwable tr) {
+                if(tmp.exists()) {
+                    tmp.renameTo(cachedFile);
+                }
+                throw tr;
+            }
         }
     }
 

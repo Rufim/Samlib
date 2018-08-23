@@ -111,6 +111,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
     @Inject
     DatabaseService databaseService;
+    private boolean refreshing = false;
 
     private enum Mode {
         SEARCH, SPEAK, NORMAL, AUTO_SCROLL
@@ -154,6 +155,9 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             }
             if (!work.isParsed()) {
                 if (externalWork != null) {
+                    if(isAdded()) {
+                        GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
+                    }
                     if (externalWork.getContentUri() != null) {
                         FileDescriptor descriptor = getContext().getContentResolver().openFileDescriptor(externalWork.getContentUri(), "r").getFileDescriptor();
                         File cachedFile = new File(externalWork.getFilePath());
@@ -204,7 +208,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         setBookmark(work, "", 0);
                     }
                 } else {
-                    work = new WorkParser(work).parse(true, false);
+                    boolean fromCache = false;
+                    if(isAdded()) {
+                        PreferenceMaster master = new PreferenceMaster(getContext());
+                        fromCache = master.getValue(R.string.preferenceCacheByDefault, SettingsFragment.DEF_OPEN_FROM_CACHE);
+                    }
+                    WorkParser parser = new WorkParser(work);
+                    parser.setLazyLoad(fromCache && !refreshing);
+                    work = parser.parse(true, false);
                     work.setCachedDate(new Date());
                     if (work.getBookmark() == null) {
                         setBookmark(work, "", 0);
@@ -228,6 +239,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 }
             }
             if (work.isParsed()) {
+                refreshing = false;
                 postEvent(new WorkParsedEvent(work));
                 return work.getIndents();
             } else {
@@ -399,6 +411,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     @Override
     public void refreshData(boolean showProgress) {
         work.setParsed(false);
+        refreshing = true;
         ((WorkFragmentAdaptor) adapter).refreshSettings(getContext());
         super.refreshData(showProgress);
     }

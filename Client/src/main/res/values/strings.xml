@@ -30,6 +30,7 @@
     <string name="drawer_external_works">Сохранённые</string>
     <string name="drawer_observable">Подписки</string>
     <string name="drawer_settings">Настройки</string>
+    <string name="drawer_open_file">Открыть книгу</string>
     <string name="drawer_help">Помощь</string>
 
     <string name="refresh">Обновить</string>

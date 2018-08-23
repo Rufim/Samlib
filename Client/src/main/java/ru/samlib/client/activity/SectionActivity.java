@@ -350,5 +350,11 @@ public class SectionActivity extends NavigationActivity<String> {
         }
     }
 
-
+    public static void launchActivity(Context context, File external) {
+        if (external != null && external.exists()) {
+            Intent i = new Intent(context, SectionActivity.class);
+            i.setData(Uri.fromFile(external));
+            context.startActivity(i);
+        }
+    }
 }

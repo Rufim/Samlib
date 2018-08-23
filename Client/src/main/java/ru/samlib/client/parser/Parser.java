@@ -90,8 +90,9 @@ public abstract class Parser {
         return getDocument(request, minBodySize, false);
     };
 
-    public void setLazyLoad(boolean lazyLoad) {
+    public Parser setLazyLoad(boolean lazyLoad) {
         this.lazyLoad = lazyLoad;
+        return this;
     }
 
     public Document getDocument(Request request, long minBodySize, boolean cached) throws IOException {

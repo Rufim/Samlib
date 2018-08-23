@@ -27,6 +27,7 @@ import ru.samlib.client.domain.events.AuthorUpdatedEvent;
 import ru.kazantsev.template.domain.event.Event;
 import ru.samlib.client.domain.events.ObservableCheckedEvent;
 import ru.samlib.client.fragments.ObservableFragment;
+import ru.samlib.client.fragments.SettingsFragment;
 import ru.samlib.client.parser.AuthorParser;
 import ru.samlib.client.parser.api.ApiParser;
 import ru.samlib.client.parser.api.Command;
@@ -39,7 +40,8 @@ import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-;
+;import static ru.samlib.client.fragments.SettingsFragment.DEF_OBSERVABLE_AUTO;
+import static ru.samlib.client.fragments.SettingsFragment.DEF_OBSERVABLE_NOTIFICATION;
 
 /**
  * Created by 0shad on 01.03.2016.
@@ -63,7 +65,7 @@ public class ObservableUpdateJob extends Job {
     @Override
     protected Result onRunJob(Params params) {
         Context context = getContext();
-        if (isCanceled() || context == null || !AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableAuto, true)) {
+        if (isCanceled() || context == null || !AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableAuto, DEF_OBSERVABLE_AUTO)) {
             return Result.SUCCESS;
         }
         try {
@@ -170,7 +172,7 @@ public class ObservableUpdateJob extends Job {
                 }
             }
         }
-        if(!notifyAuthors.isEmpty() && AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableNotification, true)) {
+        if(!notifyAuthors.isEmpty() && AndroidSystemUtils.getStringResPreference(context, R.string.preferenceObservableNotification, DEF_OBSERVABLE_NOTIFICATION )) {
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(Constants.ArgsName.FRAGMENT_CLASS, ObservableFragment.class.getSimpleName());
             if(context != null) {
