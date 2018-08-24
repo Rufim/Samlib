@@ -165,7 +165,7 @@ public class TTSPlayer implements TextToSpeech.OnInitListener {
     }
 
     public boolean isSpeaking() {
-        return tts.isSpeaking() || State.SPEAKING == state;
+        return tts != null && (tts.isSpeaking() || State.SPEAKING == state);
     }
 
     public  void resume() {

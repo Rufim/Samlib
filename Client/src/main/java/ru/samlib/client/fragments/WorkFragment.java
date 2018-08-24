@@ -29,13 +29,19 @@ import android.util.TypedValue;
 import android.view.*;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import net.nightwhistler.htmlspanner.FontFamily;
 import net.nightwhistler.htmlspanner.FontResolver;
 import net.nightwhistler.htmlspanner.SystemFontResolver;
+
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
+
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import net.vrallev.android.cat.Cat;
+
 import org.greenrobot.eventbus.Subscribe;
+
 import ru.kazantsev.template.activity.BaseActivity;
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
@@ -65,6 +71,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 import javax.inject.Inject;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -149,13 +156,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (skip != 0) return null;
             try {
                 TTSPlayer.getAvailableLanguages(getContext(), true);
-            } catch (Throwable ignore) {}
+            } catch (Throwable ignore) {
+            }
             while (work == null) {
                 SystemClock.sleep(100);
             }
             if (!work.isParsed()) {
                 if (externalWork != null) {
-                    if(isAdded()) {
+                    if (isAdded()) {
                         GuiUtils.runInUI(getContext(), (v) -> progressBarText.setText(R.string.work_parse));
                     }
                     if (externalWork.getContentUri() != null) {
@@ -209,7 +217,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     }
                 } else {
                     boolean fromCache = false;
-                    if(isAdded()) {
+                    if (isAdded()) {
                         PreferenceMaster master = new PreferenceMaster(getContext());
                         fromCache = master.getValue(R.string.preferenceCacheByDefault, SettingsFragment.DEF_OPEN_FROM_CACHE);
                     }
@@ -448,7 +456,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             if (externalWork != null) {
                 menu.removeItem(R.id.action_work_save);
             }
-            if(!work.isHasFB2()) {
+            if (!work.isHasFB2()) {
                 menu.removeItem(R.id.action_work_save_fb2);
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
@@ -575,12 +583,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     }
 
     public void clearSelection() {
-        adapter.selectText(null, true, 0);
+        if(adapter != null) adapter.selectText(null, true, 0);
     }
 
 
     public boolean isPaused() {
-        return speakLayout.findViewById(R.id.btnPlay).getVisibility() == VISIBLE;
+        if(speakLayout != null) {
+            return speakLayout.findViewById(R.id.btnPlay).getVisibility() == VISIBLE;
+        } else {
+            return true;
+        }
     }
 
     private void syncState(TTSPlayer.State state) {
@@ -708,9 +720,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return true;
             case R.id.action_work_save_fb2:
                 if (isAdded()) {
-                    String link = work.getFB2Link();
-                    String name = link.contains("/") ? link.substring(link.lastIndexOf("/") + 1) : link;
-                    AndroidSystemUtils.download(getContext(), Constants.Net.BASE_DOMAIN + link, getString(R.string.work_download_fb2), work.getTitle(), name);
+                    getBaseActivity().doActionWithPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, permissionGained -> {
+                        if (permissionGained) {
+                            String link = work.getFB2Link();
+                            String name = link.contains("/") ? link.substring(link.lastIndexOf("/") + 1) : link;
+                            AndroidSystemUtils.download(getContext(), Constants.Net.BASE_DOMAIN + link, getString(R.string.work_download_fb2), work.getTitle(), name);
+                        }
+                    });
                 }
                 return true;
             case R.id.action_work_save:
@@ -1021,7 +1037,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mode.equals(Mode.SPEAK) && TTSService.isReady(work) && TTSService.getInstance().getState().equals(TTSPlayer.State.SPEAKING)  && !isWaitingPlayerCallback) {
+                if (mode.equals(Mode.SPEAK) && TTSService.isReady(work) && TTSService.getInstance().getState().equals(TTSPlayer.State.SPEAKING) && !isWaitingPlayerCallback) {
                     TTSNotificationBroadcast.sendMessage(TTSService.Action.STOP);
                     startSpeak(lastIndent, lastOffset);
                     isWaitingPlayerCallback = true;
@@ -1311,108 +1327,115 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {
-                        TextView textView = ((TextView) v);
-                        if (mode.equals(Mode.NORMAL) && event.getAction() == MotionEvent.ACTION_DOWN) {
-                            pressed = System.currentTimeMillis();
-                            v.setSelected(false);
-                        }
-                        if (event.getAction() == MotionEvent.ACTION_UP) {
-                            int offset = 0;
-                            int x = (int) event.getX();
-                            int y = (int) event.getY();
-
-                            x -= textView.getTotalPaddingLeft();
-                            y -= textView.getTotalPaddingTop();
-
-                            x += textView.getScrollX();
-                            y += textView.getScrollY();
-
-                            Layout layout = textView.getLayout();
-
-                            if (layout != null) {
-                                int line = layout.getLineForVertical(y);
-                                offset = layout.getOffsetForHorizontal(line, x);
+                        try {
+                            TextView textView = ((TextView) v);
+                            if (mode.equals(Mode.NORMAL) && event.getAction() == MotionEvent.ACTION_DOWN) {
+                                pressed = System.currentTimeMillis();
+                                v.setSelected(false);
                             }
+                            if (event.getAction() == MotionEvent.ACTION_UP) {
+                                int offset = 0;
+                                int x = (int) event.getX();
+                                int y = (int) event.getY();
 
-                            if (mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
-                                v.performLongClick();
-                                return true;
-                            } else {
-                                textView.setSelected(false);
-                            }
+                                x -= textView.getTotalPaddingLeft();
+                                y -= textView.getTotalPaddingTop();
 
-                            if (mode.equals(Mode.SPEAK) && isPaused()) {
-                                clearSelection();
-                                lastIndent = firstIsHeader + ((ViewHolder) view.getTag()).getLayoutPosition();
-                                lastOffset = offset;
-                                v.performClick();
-                                return true;
-                            }
+                                x += textView.getScrollX();
+                                y += textView.getScrollY();
 
-                            if (textView.getText() instanceof Spanned && !mode.equals(Mode.SPEAK)) {
-                                Spanned spannableString = (Spanned) textView.getText();
-                                URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
-                                if (url.length > 0) {
-                                    String surl = url[url.length - 1].getURL();
-                                    if(surl != null) {
-                                        if (!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
-                                            SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
-                                        } else if (surl.startsWith("#")) {
-                                            String bookmarkName = surl.substring(1);
-                                            for (Bookmark bookmark : work.getAutoBookmarks()) {
-                                                if (bookmark.getIndent().equals(bookmarkName)) {
-                                                    scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
-                                                    break;
-                                                }
-                                            }
-                                        } else {
-                                            url[url.length - 1].onClick(textView);
-                                        }
-                                        return true;
-                                    }
-                                } else {
-                                    DynamicImageSpan images[] = spannableString.getSpans(offset, spannableString.length(), DynamicImageSpan.class);
-                                    if (images.length > 0) {
-                                        DynamicImageSpan imageSpan = images[images.length - 1];
-                                        if (imageSpan.getDrawable() instanceof BitmapDrawable) {
-                                            ImageFragment.show(WorkFragment.this, ((BitmapDrawable) imageSpan.getDrawable()).getBitmap());
-                                        }
-                                        return true;
-                                    }
+                                Layout layout = textView.getLayout();
+
+                                if (layout != null) {
+                                    int line = layout.getLineForVertical(y);
+                                    offset = layout.getOffsetForHorizontal(line, x);
                                 }
-                            }
-                            if (mode.equals(Mode.AUTO_SCROLL)) {
-                                if (speedLayout.getVisibility() == GONE) {
-                                    speedLayout.setVisibility(VISIBLE);
-                                } else {
-                                    speedLayout.setVisibility(GONE);
-                                }
-                                return true;
-                            }
-                            if (mode.equals(Mode.SPEAK) && !isPaused()) {
-                                if (speakLayout.getVisibility() == GONE) {
-                                    speakLayout.setVisibility(VISIBLE);
-                                } else {
-                                    speakLayout.setVisibility(GONE);
-                                }
-                                return true;
-                            }
-                            if (mode.equals(Mode.NORMAL) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                if (second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
-                                    if (isFullscreen) {
-                                        stopFullscreen();
-                                    } else {
-                                        enableFullscreen();
-                                    }
-                                    second = false;
+
+                                if (mode.equals(Mode.NORMAL) && System.currentTimeMillis() - pressed > 6000) {
+                                    v.performLongClick();
                                     return true;
                                 } else {
-                                    second = true;
-                                    timer = System.currentTimeMillis();
+                                    textView.setSelected(false);
+                                }
+
+                                if (mode.equals(Mode.SPEAK) && isPaused()) {
+                                    clearSelection();
+                                    if(view.getTag() instanceof  ViewHolder) {
+                                        lastIndent = firstIsHeader + ((ViewHolder) view.getTag()).getLayoutPosition();
+                                        lastOffset = offset;
+                                        v.performClick();
+                                    }
+                                    return true;
+                                }
+
+                                if (textView.getText() instanceof Spanned && !mode.equals(Mode.SPEAK)) {
+                                    Spanned spannableString = (Spanned) textView.getText();
+                                    URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
+                                    if (url.length > 0) {
+                                        String surl = url[url.length - 1].getURL();
+                                        if (surl != null) {
+                                            if (!surl.contains("/") && surl.endsWith(".shtml") && work.getAuthor() != null & work.getLink() != null) {
+                                                SectionActivity.launchActivity(getContext(), work.getAuthor().getLink() + surl);
+                                            } else if (surl.startsWith("#")) {
+                                                String bookmarkName = surl.substring(1);
+                                                for (Bookmark bookmark : work.getAutoBookmarks()) {
+                                                    if (bookmark.getIndent().equals(bookmarkName)) {
+                                                        scrollToIndex(bookmark.getIndentIndex(), Integer.MIN_VALUE);
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                url[url.length - 1].onClick(textView);
+                                            }
+                                            return true;
+                                        }
+                                    } else {
+                                        DynamicImageSpan images[] = spannableString.getSpans(offset, spannableString.length(), DynamicImageSpan.class);
+                                        if (images.length > 0) {
+                                            DynamicImageSpan imageSpan = images[images.length - 1];
+                                            if (imageSpan.getDrawable() instanceof BitmapDrawable) {
+                                                ImageFragment.show(WorkFragment.this, ((BitmapDrawable) imageSpan.getDrawable()).getBitmap());
+                                            }
+                                            return true;
+                                        }
+                                    }
+                                }
+                                if (mode.equals(Mode.AUTO_SCROLL)) {
+                                    if (speedLayout.getVisibility() == GONE) {
+                                        speedLayout.setVisibility(VISIBLE);
+                                    } else {
+                                        speedLayout.setVisibility(GONE);
+                                    }
+                                    return true;
+                                }
+                                if (mode.equals(Mode.SPEAK) && !isPaused()) {
+                                    if (speakLayout.getVisibility() == GONE) {
+                                        speakLayout.setVisibility(VISIBLE);
+                                    } else {
+                                        speakLayout.setVisibility(GONE);
+                                    }
+                                    return true;
+                                }
+                                if (mode.equals(Mode.NORMAL) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                    if (second && timer > 0 && System.currentTimeMillis() - timer < 2000) {
+                                        if (isFullscreen) {
+                                            stopFullscreen();
+                                        } else {
+                                            enableFullscreen();
+                                        }
+                                        second = false;
+                                        return true;
+                                    } else {
+                                        second = true;
+                                        timer = System.currentTimeMillis();
+                                    }
                                 }
                             }
+                            return !mode.equals(Mode.NORMAL);
+                        } catch (Throwable ignore) {
+                            Cat.e(ignore);
+                            return false;
                         }
-                        return !mode.equals(Mode.NORMAL);
                     });
                     holder.getItemView().invalidate();
                     spanner.registerHandler("img", new PicassoImageHandler(view));

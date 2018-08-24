@@ -7,3 +7,4 @@ build/
 .gradle/
 /.idea/gradle.xml
 /.idea/modules.xml
+/.idea/vcs.xml
