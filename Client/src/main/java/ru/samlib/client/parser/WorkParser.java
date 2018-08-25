@@ -606,7 +606,7 @@ public class WorkParser extends Parser {
                     }
                 } else if (nodeName.equals("dt")) {
                     append("  ");
-                } else if (StringUtil.in(nodeName, "p", "h1", "h2", "h3", "h4", "h5", "tr")) {
+                } else if (StringUtil.in(nodeName, "p", "h1", "h2", "h3", "h4", "h5", "tr", "li", "ul")) {
                     append("\n");
                 } else if (nodeName.equals("img")) {
                     append("\n" + getNodeHtml(node));
@@ -614,6 +614,21 @@ public class WorkParser extends Parser {
                     Element a = (Element) node;
                     if (a.hasAttr("name")) {
                         initBookmark(a.attr("name"));
+                    }
+                } if(nodeName.equals("li")) {
+                    Node parent = node.parent();
+                    for (int i = 0; i < getParentCount(node, "ul", "ol") - 1; i++) {
+                        append("\t");
+                    }
+                    if(parent.nodeName().equalsIgnoreCase("ul")) {
+                        append("\u25CF");
+                    }
+                    if(parent.nodeName().equalsIgnoreCase( "ol")) {
+                        for (int i = 0; i < parent.childNodeSize(); i++) {
+                            if(parent.childNode(i) == node) {
+                                append(i + ".");
+                            }
+                        }
                     }
                 }
             }
@@ -630,7 +645,7 @@ public class WorkParser extends Parser {
             // hit when all of the node's children (if any) have been visited
             public void tail(Node node, int depth) {
                 String name = node.nodeName();
-                if (StringUtil.in(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5", "div"))
+                if (StringUtil.in(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5", "div", "li", "ul"))
                     append("\n");
             }
 
@@ -722,6 +737,15 @@ public class WorkParser extends Parser {
                     }
                 }
                 return null;
+            }
+
+            private int getParentCount(Node node, String... tags) {
+                int count = 0;
+                Node parentNode = node;
+                while ((parentNode = getParentOrNull(parentNode, tags)) != null) {
+                    count++;
+                }
+                return count;
             }
         }
     }
