@@ -56,7 +56,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
 
     public static final Boolean DEF_OBSERVABLE_AUTO = true;
     public static final Boolean DEF_OBSERVABLE_NOTIFICATION = true;
-    public static final Boolean DEF_OPEN_FROM_CACHE = true;
+    public static final Boolean DEF_OPEN_FROM_CACHE = false;
 
     private final static Float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
 
@@ -92,7 +92,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
             PreferenceGroup observableGroup = new PreferenceGroup(R.string.preferenceGroupObservableName)
                     .addPreference(R.string.preferenceObservableAuto, R.string.preferenceObservableAutoName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OBSERVABLE_AUTO)
                     .addPreference(R.string.preferenceObservableNotification, R.string.preferenceObservableNotificationName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OBSERVABLE_NOTIFICATION );
-            return Arrays.asList(groupReader, groupCache, themeGroup, observableGroup);
+            return Arrays.asList(groupReader, accountGroup, groupCache, themeGroup, observableGroup);
         };
     }
 
