@@ -4,6 +4,8 @@ import android.support.v4.util.LruCache;
 import android.text.Html;
 import android.util.Log;
 
+import net.vrallev.android.cat.Cat;
+
 import ru.kazantsev.template.domain.Valuable;
 import ru.kazantsev.template.net.*;
 import ru.kazantsev.template.util.charset.CharsetDetector;
@@ -64,10 +66,20 @@ public class WorkParser extends Parser {
 
     public Work parse(boolean fullDownload, boolean processChapters) throws IOException {
         CachedResponse rawContent = null;
-        if (work.getRawContent() == null && !fullDownload) {
-            rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached || lazyLoad);
-        } else {
-            rawContent = HtmlClient.executeRequest(request, cached || lazyLoad);
+        try {
+            if (work.getRawContent() == null && !fullDownload) {
+                rawContent = HtmlClient.executeRequest(request, MIN_BODY_SIZE, cached || lazyLoad);
+            } else {
+                rawContent = HtmlClient.executeRequest(request, cached || lazyLoad);
+            }
+        } catch (Throwable tr) {
+            if(lazyLoad) {
+                lazyLoad = false;
+                Cat.w(tr);
+                return parse(fullDownload, processChapters);
+            } else {
+                throw tr;
+            }
         }
         if (rawContent == null || rawContent.length() == 0) {
             throw new IOException("Закешированный файл не найден и отцутствует соединение с интернетом");
