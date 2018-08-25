@@ -1248,10 +1248,12 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         private Font font;
         private FontResolver fontResolver;
         private String fontPath;
+        private HtmlSpanner spanner;
 
         public WorkFragmentAdaptor() {
             super(false, R.layout.header_work_list, R.layout.item_indent);
             bindOnlyRootViews = false;
+            spanner = new HtmlSpanner();
             refreshSettings(getContext());
         }
 
@@ -1313,12 +1315,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            HtmlSpanner spanner = new HtmlSpanner();
+
             switch (holder.getItemViewType()) {
                 case R.layout.header_work_list:
                     TextView annotationView = holder.getView(R.id.work_annotation_header);
+                    spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(annotationView));
                     spanner.registerHandler("a", new LinkHandler(annotationView));
+                    spanner.setTextView(annotationView);
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                     annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
                     holder.getItemView().setBackgroundColor(backgroundColor);
@@ -1438,8 +1442,10 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                     });
                     holder.getItemView().invalidate();
+                    spanner = new HtmlSpanner();
                     spanner.registerHandler("img", new PicassoImageHandler(view));
                     spanner.registerHandler("a", new LinkHandler(view));
+                    spanner.setTextView(view);
                     spanner.setFontResolver(fontResolver);
                     view.setText(spanner.fromHtml(indent), TextView.BufferType.SPANNABLE);
                     // fix wrong height when use image spans

@@ -1,4 +1,6 @@
-include ':Client', ':template'
+include ':Client', ':template', ':spanner'
 Properties properties = new Properties()
 properties.load(new FileInputStream(new File(settingsDir, 'local.properties')))
 project(':template').projectDir = new File(properties.getProperty('template'))
+properties.load(new FileInputStream(new File(settingsDir, 'local.properties')))
+project(':spanner').projectDir = new File(properties.getProperty('spanner'))

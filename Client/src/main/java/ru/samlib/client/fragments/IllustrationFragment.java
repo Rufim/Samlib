@@ -47,9 +47,9 @@ public class IllustrationFragment extends BaseFragment {
         bind(rootView);
         image = (Image) getArguments().getSerializable(Constants.ArgsName.IMAGE);
         int maxWidth = getResources().getDisplayMetrics().widthPixels;
-        Picasso.with(getActivity())
+        Picasso.get()
                 .load(image.getFullLink())
-                .transform(new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.getFullLink()))
+                .transform(new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.getFullLink(), getResources().getDisplayMetrics().density))
                 .into(illustration, new ImageCallback(progressBar, loadingText, illustration));
         return rootView;
     }
@@ -92,7 +92,7 @@ public class IllustrationFragment extends BaseFragment {
         }
 
         @Override
-        public void onError() {
+        public void onError(Exception e) {
             ErrorFragment.show(IllustrationFragment.this, R.string.error_network);
         }
     }

@@ -41,7 +41,7 @@ public class PicassoImageHandler extends TagNodeHandler {
 
     public PicassoImageHandler(final TextView textView) {
         this.textView = textView;
-        this.picasso = Picasso.with(textView.getContext());
+        this.picasso = Picasso.get();
     }
 
     public int getMaxWidth() {
@@ -141,7 +141,7 @@ public class PicassoImageHandler extends TagNodeHandler {
                     if (src != null) {
                         int width = parseDimen(tag.getAttributeByName("width"), -1);
                         int height = parseDimen(tag.getAttributeByName("height"), -1);
-                        PicassoTransformImage transformImage = new PicassoTransformImage(width, height, calculateMaxWidth(), src.hashCode() + "");
+                        PicassoTransformImage transformImage = new PicassoTransformImage(width, height, calculateMaxWidth(), src.hashCode() + "",  textView.getResources().getDisplayMetrics().density);
                         if (!src.contains("base64,")) {
                             URL url;
                             try {

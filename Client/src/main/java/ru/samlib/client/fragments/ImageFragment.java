@@ -1,8 +1,6 @@
 package ru.samlib.client.fragments;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -12,19 +10,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-
 import java.lang.reflect.Field;
 
 import butterknife.BindView;
 import ru.kazantsev.template.fragments.BaseFragment;
-import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.util.PicassoTransformImage;
-import ru.kazantsev.template.util.SystemUtils;
 import ru.samlib.client.R;
 import ru.samlib.client.domain.Constants;
-import ru.samlib.client.domain.entity.Image;
 
 /**
  * Created by Dmitry on 26.10.2015.
@@ -68,7 +60,7 @@ public class ImageFragment extends BaseFragment {
             illustration.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.GONE);
             loadingText.setVisibility(View.GONE);
-            PicassoTransformImage transformImage = new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.hashCode() + "");
+            PicassoTransformImage transformImage = new PicassoTransformImage(image.getWidth(), image.getHeight(), maxWidth, image.hashCode() + "", getResources().getDisplayMetrics().density);
             illustration.setImageBitmap(transformImage.transform(image));
         }
         return rootView;

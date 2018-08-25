@@ -202,7 +202,7 @@ public class SectionActivity extends NavigationActivity<String> {
             drawerAuthorTitle.setText(author.getFullName());
             drawerAuthorAnnotation.setText(author.getAnnotation());
             if (author.isHasAvatar()) {
-                Picasso.with(this).load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
+                Picasso.get().load(author.getImageLink()).resize(GuiUtils.dpToPx(150, this), GuiUtils.dpToPx(150, this)).into(authorAvatar);
             }
             setNavigationLayoutWidth(GuiUtils.dpToPx(navigationFixedDpWidth, this));
         }

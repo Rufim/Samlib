@@ -13,6 +13,7 @@ import ru.kazantsev.template.util.charset.CharsetMatch;
 
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -599,17 +600,33 @@ public class WorkParser extends Parser {
                         } else {
                             append(getNodeHtml(node));
                         }
-                    } else if ((parent = getParentOrNull(node, "i", "b")) != null) {
-                        append("<" + parent.nodeName() + ">" + getNodeHtml(node) + "</" + parent.nodeName() + ">");
                     } else {
                         append(getNodeHtml(node)); // TextNodes carry all user-readable text in the DOM.
                     }
                 } else if (nodeName.equals("dt")) {
                     append("  ");
-                } else if (StringUtil.in(nodeName, "p", "h1", "h2", "h3", "h4", "h5", "tr", "li", "ul")) {
+                } else if(StringUtil.in(nodeName, "span", "p", "br", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
+                    if(!nodeName.equalsIgnoreCase("br") || node.parent() == null || !StringUtil.in(node.parent().nodeName(), "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
+                        StringBuilder attrs = new StringBuilder();
+                        for (Attribute attribute : node.attributes()) {
+                            attrs.append(" ");
+                            attrs.append(attribute.getKey());
+                            attrs.append("=");
+                            attrs.append("\"");
+                            attrs.append(attribute.getValue());
+                            attrs.append("\"");
+                        }
+                        attrs.append(" ");
+                        if (StringUtil.in(nodeName, "p", "div")) {
+                            append("<" + "span" + attrs + ">");
+                        } else {
+                            append("<" + nodeName + attrs + ">");
+                        }
+                    }
+                } else if (StringUtil.in(nodeName, "tr", "ul")) {
                     append("\n");
                 } else if (nodeName.equals("img")) {
-                    append("\n" + getNodeHtml(node));
+                    append(getNodeHtml(node));
                 } else if (nodeName.equals("a")) {
                     Element a = (Element) node;
                     if (a.hasAttr("name")) {
@@ -642,10 +659,21 @@ public class WorkParser extends Parser {
                 }
             }
 
+
+
+
+
             // hit when all of the node's children (if any) have been visited
             public void tail(Node node, int depth) {
-                String name = node.nodeName();
-                if (StringUtil.in(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5", "div", "li", "ul"))
+                String nodeName = node.nodeName();
+                if(StringUtil.in(nodeName, "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
+                    if(StringUtil.in(nodeName, "p", "div")) {
+                        append("</span>");
+                    } else {
+                        append("</" + nodeName + ">");
+                    }
+                }
+                if (StringUtil.in(nodeName,  "dd", "dt", "p", "div", "li", "ul"))
                     append("\n");
             }
 

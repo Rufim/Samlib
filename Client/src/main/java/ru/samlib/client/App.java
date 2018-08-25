@@ -5,6 +5,8 @@ import android.support.multidex.MultiDexApplication;
 import com.evernote.android.job.JobManager;
 import com.raizlabs.android.dbflow.config.FlowConfig;
 import com.raizlabs.android.dbflow.config.FlowManager;
+import com.squareup.picasso.Picasso;
+
 import dagger.Module;
 
 
@@ -77,6 +79,7 @@ public class App extends MultiDexApplication {
         ObservableUpdateJob.startSchedule();
         CleanCacheJob.startSchedule();
         Font.mapFonts(getAssets());
+        Picasso.setSingletonInstance(new Picasso.Builder(singleton).build());
         FlowManager.init(new FlowConfig.Builder(this).build());
    }
 
