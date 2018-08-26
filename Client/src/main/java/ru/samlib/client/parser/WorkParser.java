@@ -74,7 +74,7 @@ public class WorkParser extends Parser {
                 rawContent = HtmlClient.executeRequest(request, cached || lazyLoad);
             }
         } catch (Throwable tr) {
-            if(lazyLoad) {
+            if (lazyLoad) {
                 lazyLoad = false;
                 Cat.w(tr);
                 return parse(fullDownload, processChapters);
@@ -122,7 +122,7 @@ public class WorkParser extends Parser {
                     unzipped = HtmlClient.getCachedFile(App.getInstance(), "unzip.tmp", true);
                     boolean fileFound = false;
                     unzipped.delete();
-                    if(unzipped.createNewFile()) {
+                    if (unzipped.createNewFile()) {
                         try (FileInputStream fin = new FileInputStream(rawContent);
                              ZipInputStream zin = new ZipInputStream(fin)) {
                             ZipEntry ze = null;
@@ -138,7 +138,7 @@ public class WorkParser extends Parser {
                             }
                         }
                     }
-                    if(!fileFound) {
+                    if (!fileFound) {
                         return work;
                     } else {
                         File tmp = rawContent;
@@ -148,7 +148,7 @@ public class WorkParser extends Parser {
                 }
                 String chrset = detectCharset(rawContent, encoding);
                 work.setRawContent(SystemUtils.readFile(rawContent, chrset.contains("UTF") ? chrset : encoding));
-                if(unzipped != null) {
+                if (unzipped != null) {
                     rawContent.delete();
                     rawContent = unzipped;
                 }
@@ -305,7 +305,7 @@ public class WorkParser extends Parser {
                     FB2Genre fb2Genre = FB2Genre.parseGenre(genre.text());
                     if (fb2Genre != null) {
                         fb2Genres.add(fb2Genre.getName());
-                    } else if(!genre.text().isEmpty()) {
+                    } else if (!genre.text().isEmpty()) {
                         fb2Genres.add(genre.text());
                     }
                 }
@@ -361,7 +361,7 @@ public class WorkParser extends Parser {
     private static void parseSection(Element section, Work work, Elements binary) {
         List<String> indents = work.getIndents();
         String id = section.attr("id");
-        if(TextUtils.notEmpty(id)) {
+        if (TextUtils.notEmpty(id)) {
             for (Bookmark bookmark : work.getAutoBookmarks()) {
                 if (bookmark.getIndent().equals(id) && bookmark.getIndentIndex() <= 0) {
                     bookmark.setIndentIndex(indents.size());
@@ -465,12 +465,17 @@ public class WorkParser extends Parser {
                 // ignored
             }
             List<Bookmark> bookmarks = work.getAutoBookmarks();
-            Document document = Jsoup.parseBodyFragment(work.getRawContent());
+            Document document = Jsoup.parse(work.getRawContent(), "", org.jsoup.parser.Parser.xmlParser());
             document.setBaseUri(Constants.Net.BASE_DOMAIN);
             document.outputSettings().prettyPrint(false);
             List<Node> rootNodes = new ArrayList<>();
             //Element body = replaceTables(document.body());
-            Elements rootElements = document.body().select("> *");
+            Elements rootElements = null;
+            if(document.body() != null) {
+                rootElements = document.body().select("> *");
+            } else {
+                rootElements = document.select("> *");
+            }
             HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
             work.setIndents(forSpanner.getIndents(rootElements));
             if (rootElements != null) {
@@ -605,23 +610,28 @@ public class WorkParser extends Parser {
                     }
                 } else if (nodeName.equals("dt")) {
                     append("  ");
-                } else if(StringUtil.in(nodeName, "span", "p", "br", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
-                    if(!nodeName.equalsIgnoreCase("br") || node.parent() == null || !StringUtil.in(node.parent().nodeName(), "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
-                        StringBuilder attrs = new StringBuilder();
-                        for (Attribute attribute : node.attributes()) {
-                            attrs.append(" ");
-                            attrs.append(attribute.getKey());
-                            attrs.append("=");
-                            attrs.append("\"");
-                            attrs.append(attribute.getValue());
-                            attrs.append("\"");
-                        }
+                } else if (StringUtil.in(nodeName, "span", "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
+                    StringBuilder attrs = new StringBuilder();
+                    for (Attribute attribute : node.attributes()) {
                         attrs.append(" ");
-                        if (StringUtil.in(nodeName, "p", "div")) {
-                            append("<" + "span" + attrs + ">");
-                        } else {
-                            append("<" + nodeName + attrs + ">");
-                        }
+                        attrs.append(attribute.getKey());
+                        attrs.append("=");
+                        attrs.append("\"");
+                        attrs.append(attribute.getValue());
+                        attrs.append("\"");
+                    }
+                    attrs.append(" ");
+                    if (StringUtil.in(nodeName, "p", "div")) {
+                        append("<" + "span" + attrs + ">");
+                    } else {
+                        append("<" + nodeName + attrs + ">");
+                    }
+                } else if (nodeName.equalsIgnoreCase("br")) {
+                    Node parent = node.parent();
+                    if(parent == null || getParentOrNull(node, "span", "p", "div") == null || parent.nodeName().equalsIgnoreCase("body")) {
+                        append("\n");
+                    } else if(!StringUtil.in(parent.nodeName(), "h1", "h2", "h3", "h4", "h5", "h6"))  {
+                        append("<" + nodeName +">");
                     }
                 } else if (StringUtil.in(nodeName, "tr", "ul")) {
                     append("\n");
@@ -632,17 +642,18 @@ public class WorkParser extends Parser {
                     if (a.hasAttr("name")) {
                         initBookmark(a.attr("name"));
                     }
-                } if(nodeName.equals("li")) {
+                }
+                if (nodeName.equals("li")) {
                     Node parent = node.parent();
                     for (int i = 0; i < getParentCount(node, "ul", "ol") - 1; i++) {
                         append("\t");
                     }
-                    if(parent.nodeName().equalsIgnoreCase("ul")) {
+                    if (parent.nodeName().equalsIgnoreCase("ul")) {
                         append("\u25CF");
                     }
-                    if(parent.nodeName().equalsIgnoreCase( "ol")) {
+                    if (parent.nodeName().equalsIgnoreCase("ol")) {
                         for (int i = 0; i < parent.childNodeSize(); i++) {
-                            if(parent.childNode(i) == node) {
+                            if (parent.childNode(i) == node) {
                                 append(i + ".");
                             }
                         }
@@ -660,20 +671,17 @@ public class WorkParser extends Parser {
             }
 
 
-
-
-
             // hit when all of the node's children (if any) have been visited
             public void tail(Node node, int depth) {
                 String nodeName = node.nodeName();
-                if(StringUtil.in(nodeName, "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
-                    if(StringUtil.in(nodeName, "p", "div")) {
+                if (StringUtil.in(nodeName, "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
+                    if (StringUtil.in(nodeName, "p", "div")) {
                         append("</span>");
                     } else {
                         append("</" + nodeName + ">");
                     }
                 }
-                if (StringUtil.in(nodeName,  "dd", "dt", "p", "div", "li", "ul"))
+                if (StringUtil.in(nodeName, "dd", "dt", "p", "div", "li", "ul"))
                     append("\n");
             }
 
