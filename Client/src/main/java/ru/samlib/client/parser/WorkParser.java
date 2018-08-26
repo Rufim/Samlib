@@ -633,7 +633,7 @@ public class WorkParser extends Parser {
                     } else if(!StringUtil.in(parent.nodeName(), "h1", "h2", "h3", "h4", "h5", "h6"))  {
                         append("<" + nodeName +">");
                     }
-                } else if (StringUtil.in(nodeName, "tr", "ul")) {
+                } else if (StringUtil.in(nodeName, "tr", "ul", "dd")) {
                     append("\n");
                 } else if (nodeName.equals("img")) {
                     append(getNodeHtml(node));
@@ -642,8 +642,7 @@ public class WorkParser extends Parser {
                     if (a.hasAttr("name")) {
                         initBookmark(a.attr("name"));
                     }
-                }
-                if (nodeName.equals("li")) {
+                } else if (nodeName.equals("li")) {
                     Node parent = node.parent();
                     for (int i = 0; i < getParentCount(node, "ul", "ol") - 1; i++) {
                         append("\t");
@@ -681,7 +680,7 @@ public class WorkParser extends Parser {
                         append("</" + nodeName + ">");
                     }
                 }
-                if (StringUtil.in(nodeName, "dd", "dt", "p", "div", "li", "ul"))
+                if (StringUtil.in(nodeName, "dt", "p", "div", "li", "ul"))
                     append("\n");
             }
 
