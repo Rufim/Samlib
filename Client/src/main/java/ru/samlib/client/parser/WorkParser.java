@@ -594,7 +594,7 @@ public class WorkParser extends Parser {
                     if (node.hasAttr("href")) {
                         String href = node.attr("href");
                         if (href.startsWith("#")) {
-                            Bookmark bookmark = new Bookmark(((TextNode) node).text());
+                            Bookmark bookmark = new Bookmark(((Element) node).text());
                             bookmark.setIndent(href.substring(1));
                             bookmarks.add(bookmark);
                         } else {
