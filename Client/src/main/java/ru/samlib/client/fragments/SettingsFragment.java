@@ -57,6 +57,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
     public static final Boolean DEF_OBSERVABLE_AUTO = true;
     public static final Boolean DEF_OBSERVABLE_NOTIFICATION = true;
     public static final Boolean DEF_OPEN_FROM_CACHE = false;
+    public static final Boolean DEF_JUSTIFY = false;
 
     private final static Float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
 
@@ -79,6 +80,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0,  16f,  fontSizes)
                     .addPreferenceList(R.string.preferenceFontSizeComments, R.string.preferenceFontSizeCommentsName, 0, 0,  13f,  fontSizes)
                     .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
+                    .addPreference(R.string.preferenceTextJustify, R.string.preferenceTextJustifyName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_JUSTIFY)
                     .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
                     .addPreference(R.string.preferenceCacheByDefault, R.string.preferenceCacheByDefaultName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OPEN_FROM_CACHE)

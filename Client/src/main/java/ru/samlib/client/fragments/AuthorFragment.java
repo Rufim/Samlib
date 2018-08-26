@@ -41,7 +41,6 @@ import ru.samlib.client.parser.CategoryParser;
 import ru.samlib.client.parser.Parser;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.util.LinkHandler;
-import ru.samlib.client.util.PicassoImageHandler;
 import ru.samlib.client.util.SamlibUtils;
 
 import javax.inject.Inject;
@@ -419,10 +418,13 @@ public class AuthorFragment extends ListFragment<Linkable> {
 
     private class ExpandableAuthorFragmentAdaptor extends MultiItemListAdapter<Linkable> {
 
+        final HtmlSpanner spanner;
+
         public ExpandableAuthorFragmentAdaptor() {
             super(false, R.layout.item_section_expandable_header, R.layout.item_section_expandable);
             performSelectRoot = true;
             bindOnlyRootViews = false;
+            spanner =  new HtmlSpanner(Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
         }
 
 
@@ -628,9 +630,9 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 workView.findViewById(R.id.work_annotation_layout).setVisibility(View.VISIBLE);
                 View annotation_view = workView.findViewById(R.id.work_annotation);
                 TextView textView = (TextView) annotation_view;
-                HtmlSpanner spanner = new HtmlSpanner();
-                spanner.registerHandler("img", new PicassoImageHandler(textView));
-                spanner.registerHandler("a", new LinkHandler(textView));
+                HtmlSpanner spanner = new HtmlSpanner(Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
+                spanner.setTextView(textView);
+                spanner.registerHandler("a", new LinkHandler());
                 spanner.setStripExtraWhiteSpace(true);
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
                 textView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
@@ -718,10 +720,10 @@ public class AuthorFragment extends ListFragment<Linkable> {
                     Category category = (Category) getItem(position);
                     GuiUtils.setTextOrHide(holder.getView(R.id.section_label), category.getTitle() + ":");
                     if (!TextUtils.isEmpty(category.getAnnotation())) {
-                        HtmlSpanner spanner = new HtmlSpanner();
+                        HtmlSpanner spanner =  new HtmlSpanner(Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
                         TextView annotationView = holder.getView(R.id.section_annotation);
-                        spanner.registerHandler("img", new PicassoImageHandler(annotationView));
-                        spanner.registerHandler("a", new LinkHandler(annotationView));
+                        spanner.setTextView(annotationView);
+                        spanner.registerHandler("a", new LinkHandler());
                         spanner.setStripExtraWhiteSpace(true);
                         annotationView.setVisibility(View.VISIBLE);
                         annotationView.setMovementMethod(LinkMovementMethod.getInstance());

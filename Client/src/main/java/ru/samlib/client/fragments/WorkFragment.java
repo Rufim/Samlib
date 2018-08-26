@@ -38,6 +38,7 @@ import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 
 import net.nightwhistler.htmlspanner.HtmlSpanner;
+import net.nightwhistler.htmlspanner.spans.DynamicImageSpan;
 import net.vrallev.android.cat.Cat;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -47,7 +48,13 @@ import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.kazantsev.template.fragments.ErrorFragment;
 import ru.kazantsev.template.fragments.ListFragment;
-import ru.kazantsev.template.util.*;
+import ru.kazantsev.template.util.AndroidSystemUtils;
+import ru.kazantsev.template.util.FragmentBuilder;
+import ru.kazantsev.template.util.GuiUtils;
+import ru.kazantsev.template.util.PreferenceMaster;
+import ru.kazantsev.template.util.SystemUtils;
+import ru.kazantsev.template.util.TextUtils;
+import ru.kazantsev.template.util.URLSpanNoUnderline;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
@@ -1249,11 +1256,13 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         private FontResolver fontResolver;
         private String fontPath;
         private HtmlSpanner spanner;
+        private boolean justify = false;
 
         public WorkFragmentAdaptor() {
             super(false, R.layout.header_work_list, R.layout.item_indent);
             bindOnlyRootViews = false;
-            spanner = new HtmlSpanner();
+            spanner = new HtmlSpanner(work.isNotSamlib() ? "" : Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
+            spanner.setStripExtraWhiteSpace(true);
             refreshSettings(getContext());
         }
 
@@ -1265,11 +1274,16 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             defaultType = Font.Type.valueOf(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontStyleReader, Font.Type.PLAIN.name()));
             fontResolver = new WorkFontResolver(getContext().getAssets(), font, defaultType);
             fontPath = Font.getFontPath(getContext(), font.getName(), defaultType);
+            justify = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceTextJustify, SettingsFragment.DEF_JUSTIFY);
         }
 
         @Override
         public int getLayoutId(String item) {
-            return R.layout.item_indent;
+            if(justify) {
+                return R.layout.item_indent_justify;
+            } else {
+                return R.layout.item_indent;
+            }
         }
 
         @Override
@@ -1319,15 +1333,14 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             switch (holder.getItemViewType()) {
                 case R.layout.header_work_list:
                     TextView annotationView = holder.getView(R.id.work_annotation_header);
-                    spanner = new HtmlSpanner();
-                    spanner.registerHandler("img", new PicassoImageHandler(annotationView));
-                    spanner.registerHandler("a", new LinkHandler(annotationView));
                     spanner.setTextView(annotationView);
+                    spanner.registerHandler("a", new LinkHandler());
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
                     annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
                     holder.getItemView().setBackgroundColor(backgroundColor);
                     break;
                 case R.layout.item_indent:
+                case R.layout.item_indent_justify:
                     String indent = getItem(position);
                     TextView view = holder.getView(R.id.work_text_indent);
                     view.setOnTouchListener((v, event) -> {
@@ -1442,10 +1455,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                         }
                     });
                     holder.getItemView().invalidate();
-                    spanner = new HtmlSpanner();
-                    spanner.registerHandler("img", new PicassoImageHandler(view));
-                    spanner.registerHandler("a", new LinkHandler(view));
                     spanner.setTextView(view);
+                    spanner.registerHandler("a", new LinkHandler());
                     spanner.setFontResolver(fontResolver);
                     view.setText(spanner.fromHtml(indent), TextView.BufferType.SPANNABLE);
                     // fix wrong height when use image spans

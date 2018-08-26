@@ -227,7 +227,8 @@ public class CommentsFragment extends ListFragment<Comment> {
             }
             GuiUtils.setTextOrHide(email, comment.getEmail());
             HtmlSpanner spanner = new HtmlSpanner();
-            spanner.registerHandler("a", new LinkHandler(content));
+            spanner.setTextView(content);
+            spanner.registerHandler("a", new LinkHandler());
             GuiUtils.setTextOrHide(content, spanner.fromHtml(comment.getRawContent()));
             content.setMovementMethod(LinkMovementMethod.getInstance());
             content.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);

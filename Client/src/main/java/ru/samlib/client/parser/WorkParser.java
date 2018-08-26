@@ -1,12 +1,10 @@
 package ru.samlib.client.parser;
 
 import android.support.v4.util.LruCache;
-import android.text.Html;
 import android.util.Log;
 
 import net.vrallev.android.cat.Cat;
 
-import ru.kazantsev.template.domain.Valuable;
 import ru.kazantsev.template.net.*;
 import ru.kazantsev.template.util.charset.CharsetDetector;
 import ru.kazantsev.template.util.charset.CharsetMatch;
@@ -33,9 +31,7 @@ import ru.kazantsev.template.util.TextUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
-import java.nio.charset.Charset;
 import java.util.*;
-import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -464,19 +460,21 @@ public class WorkParser extends Parser {
             } catch (RuntimeException ex) {
                 // ignored
             }
+            String baseDomain = work.isNotSamlib() ? "" : Constants.Net.BASE_DOMAIN;
             List<Bookmark> bookmarks = work.getAutoBookmarks();
             Document document = Jsoup.parse(work.getRawContent(), "", org.jsoup.parser.Parser.xmlParser());
-            document.setBaseUri(Constants.Net.BASE_DOMAIN);
+            document.setBaseUri(baseDomain);
             document.outputSettings().prettyPrint(false);
             List<Node> rootNodes = new ArrayList<>();
             //Element body = replaceTables(document.body());
             Elements rootElements = null;
-            if(document.body() != null) {
+            if (document.body() != null) {
                 rootElements = document.body().select("> *");
             } else {
                 rootElements = document.select("> *");
             }
             HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
+            forSpanner.setBaseDomain(baseDomain);
             work.setIndents(forSpanner.getIndents(rootElements));
             if (rootElements != null) {
                 rootElements.clear();
@@ -541,6 +539,11 @@ public class WorkParser extends Parser {
 
         private List<Bookmark> bookmarks = new ArrayList<>();
         private List<String> indents = new ArrayList<>();
+        private String baseDomain = "";
+
+        public void setBaseDomain(String baseDomain) {
+            this.baseDomain = baseDomain;
+        }
 
         /**
          * Format an Element to plain-text
@@ -584,29 +587,25 @@ public class WorkParser extends Parser {
                     Node parent;
                     if ((parent = getParentOrNull(node, "pre")) != null) {
                         append(((TextNode) node).getWholeText());
-                    } else if ((parent = getParentOrNull(node, "a")) != null) {
-                        if (parent.hasAttr("href")) {
-                            String href = parent.attr("href");
-                            if (href.startsWith("#")) {
-                                Bookmark bookmark = new Bookmark(((TextNode) node).text());
-                                bookmark.setIndent(href.substring(1));
-                                bookmarks.add(bookmark);
-                                append("<a href=\"" + href + "\">" + getNodeHtml(node) + "</a>");
-                            } else {
-                                if (href.startsWith("/")) {
-                                    append("<a href=\"" + Constants.Net.BASE_DOMAIN + href + "\">" + getNodeHtml(node) + "</a>");
-                                } else {
-                                    append("<a href=\"" + href + "\">" + getNodeHtml(node) + "</a>");
-                                }
-                            }
-                        } else if (parent.hasAttr("name")) {
-                            initBookmark(parent.attr("name"));
-                            append(getNodeHtml(node));
-                        } else {
-                            append(getNodeHtml(node));
-                        }
-                    } else {
+                    } else if(getParentOrNull(node, "img") == null) {
                         append(getNodeHtml(node)); // TextNodes carry all user-readable text in the DOM.
+                    }
+                } else if (nodeName.equalsIgnoreCase("a")) {
+                    if (node.hasAttr("href")) {
+                        String href = node.attr("href");
+                        if (href.startsWith("#")) {
+                            Bookmark bookmark = new Bookmark(((TextNode) node).text());
+                            bookmark.setIndent(href.substring(1));
+                            bookmarks.add(bookmark);
+                        } else {
+                            if (href.startsWith("/")) {
+                                append("<a href=\"" + baseDomain + href + "\">");
+                            } else {
+                                append("<a href=\"" + href + "\">");
+                            }
+                        }
+                    } else if (node.hasAttr("name")) {
+                        initBookmark(node.attr("name"));
                     }
                 } else if (nodeName.equals("dt")) {
                     append("  ");
@@ -628,10 +627,10 @@ public class WorkParser extends Parser {
                     }
                 } else if (nodeName.equalsIgnoreCase("br")) {
                     Node parent = node.parent();
-                    if(parent == null || getParentOrNull(node, "span", "p", "div") == null || parent.nodeName().equalsIgnoreCase("body")) {
+                    if (parent == null || getParentOrNull(node, "span", "p", "div") == null || parent.nodeName().equalsIgnoreCase("body")) {
                         append("\n");
-                    } else if(!StringUtil.in(parent.nodeName(), "h1", "h2", "h3", "h4", "h5", "h6"))  {
-                        append("<" + nodeName +">");
+                    } else if (!StringUtil.in(parent.nodeName(), "h1", "h2", "h3", "h4", "h5", "h6")) {
+                        append("<" + nodeName + ">");
                     }
                 } else if (StringUtil.in(nodeName, "tr", "ul", "dd")) {
                     append("\n");
@@ -673,7 +672,7 @@ public class WorkParser extends Parser {
             // hit when all of the node's children (if any) have been visited
             public void tail(Node node, int depth) {
                 String nodeName = node.nodeName();
-                if (StringUtil.in(nodeName, "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
+                if (StringUtil.in(nodeName, "i", "a", "b", "h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
                     if (StringUtil.in(nodeName, "p", "div")) {
                         append("</span>");
                     } else {

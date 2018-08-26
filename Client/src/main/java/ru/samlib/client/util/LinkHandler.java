@@ -11,21 +11,15 @@ import ru.kazantsev.template.util.URLSpanNoUnderline;
 /**
  * Created by Dmitry on 21.10.2015.
  */
-public class LinkHandler extends TagNodeHandler {
+public class LinkHandler extends net.nightwhistler.htmlspanner.handlers.LinkHandler {
 
-    final TextView textView;
-
-    public LinkHandler(final TextView textView) {
-        this.textView = textView;
-    }
-
-    public void handleTagNode(TagNode node, SpannableStringBuilder builder, int start, int end, SpanStack stack) {
+    @Override
+    protected String getHref(TagNode node) {
         String href = node.getAttributeByName("href");
         if(href == null) {
             href = node.getAttributeByName("l:href"); // FB2 ref
         }
-        stack.pushSpan(new URLSpanNoUnderline(href), start, end);
+        return href;
     }
-
 
 }

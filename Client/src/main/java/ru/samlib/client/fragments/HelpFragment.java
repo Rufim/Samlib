@@ -10,8 +10,8 @@ import butterknife.BindView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
 import ru.kazantsev.template.fragments.BaseFragment;
 import ru.samlib.client.R;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.util.LinkHandler;
-import ru.samlib.client.util.PicassoImageHandler;
 
 /**
  * Created by 0shad on 04.06.2017.
@@ -28,9 +28,9 @@ public class HelpFragment extends BaseFragment {
         getBaseActivity().getNavigationView().setCheckedItem(R.id.drawer_help);
         View root = inflater.inflate(R.layout.item_indent, container, false);
         bind(root);
-        HtmlSpanner spanner = new HtmlSpanner();
-        spanner.registerHandler("img", new PicassoImageHandler(textView));
-        spanner.registerHandler("a", new LinkHandler(textView));
+        HtmlSpanner spanner =  new HtmlSpanner(Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
+        spanner.setTextView(textView);
+        spanner.registerHandler("a", new LinkHandler());
         textView.setMovementMethod(LinkMovementMethod.getInstance());
         textView.setText(spanner.fromHtml(getString(R.string.help)));
         return root;

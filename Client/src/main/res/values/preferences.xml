@@ -48,6 +48,8 @@
     <string name="preferenceColorBackgroundReader">ColorBackground</string>
     <string name="preferenceColorBackgroundReaderName">Цвет фона читалки</string>
     <string name="preferenceVoiceLanguageName">Язык синтеза</string>
+    <string name="preferenceTextJustify">TextJustify</string>
+    <string name="preferenceTextJustifyName">Выравнивание по ширине</string>
     <string name="preferenceVoiceLanguage">VoiceLanguage</string>
     <string name="preferenceVoiceName">Настройки синтеза речи</string>
     <string name="preferenceVoice">Voice</string>

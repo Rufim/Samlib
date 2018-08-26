@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import android.provider.SearchRecentSuggestions;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
 import net.nightwhistler.htmlspanner.HtmlSpanner;
@@ -17,7 +16,6 @@ import ru.samlib.client.R;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.samlib.client.activity.SectionActivity;
 import ru.samlib.client.database.SuggestionProvider;
-import ru.samlib.client.dialog.FilterDialog;
 import ru.samlib.client.dialog.SearchFilterDialog;
 import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
@@ -27,7 +25,6 @@ import ru.kazantsev.template.lister.DataSource;
 
 import ru.samlib.client.parser.SearchStatParser;
 import ru.samlib.client.util.LinkHandler;
-import ru.samlib.client.util.PicassoImageHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,9 +182,9 @@ public class SearchFragment extends ListFragment<Work> {
                 subtitle.add(work.getRate() + "/" + work.getVotes());
             }
             if(work.getSize() != null) subtitle.add(work.getSize().toString() + "k");
-            HtmlSpanner spanner = new HtmlSpanner();
-            spanner.registerHandler("img", new PicassoImageHandler(subtitleTextView));
-            spanner.registerHandler("a", new LinkHandler(subtitleTextView));
+            HtmlSpanner spanner = new HtmlSpanner(Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
+            spanner.setTextView(subtitleTextView);
+            spanner.registerHandler("a", new LinkHandler());
             subtitleTextView.setText(TextUtils.join(" ", subtitle));
         }
     }
