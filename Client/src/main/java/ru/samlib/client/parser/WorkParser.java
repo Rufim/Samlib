@@ -597,6 +597,7 @@ public class WorkParser extends Parser {
                             Bookmark bookmark = new Bookmark(((Element) node).text());
                             bookmark.setIndent(href.substring(1));
                             bookmarks.add(bookmark);
+                            append("<a href=\"" + href + "\">");
                         } else {
                             if (href.startsWith("/")) {
                                 append("<a href=\"" + baseDomain + href + "\">");
@@ -604,7 +605,8 @@ public class WorkParser extends Parser {
                                 append("<a href=\"" + href + "\">");
                             }
                         }
-                    } else if (node.hasAttr("name")) {
+                    }
+                    if (node.hasAttr("name")) {
                         initBookmark(node.attr("name"));
                     }
                 } else if (nodeName.equals("dt")) {

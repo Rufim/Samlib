@@ -13,6 +13,12 @@ import ru.kazantsev.template.util.URLSpanNoUnderline;
  */
 public class LinkHandler extends net.nightwhistler.htmlspanner.handlers.LinkHandler {
 
+
+    @Override
+    protected URLSpan newSpan(String url) {
+        return new URLSpanNoUnderline(url);
+    }
+
     @Override
     protected String getHref(TagNode node) {
         String href = node.getAttributeByName("href");

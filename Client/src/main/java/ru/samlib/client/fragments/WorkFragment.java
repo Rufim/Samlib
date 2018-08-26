@@ -54,7 +54,6 @@ import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.PreferenceMaster;
 import ru.kazantsev.template.util.SystemUtils;
 import ru.kazantsev.template.util.TextUtils;
-import ru.kazantsev.template.util.URLSpanNoUnderline;
 import ru.samlib.client.App;
 import ru.samlib.client.R;
 import ru.samlib.client.activity.SectionActivity;
@@ -76,6 +75,8 @@ import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
+import xyz.danoz.recyclerviewfastscroller.AbsRecyclerViewFastScroller;
+import xyz.danoz.recyclerviewfastscroller.FastScrollerTouchListener;
 
 import javax.inject.Inject;
 
@@ -956,6 +957,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         scrollToIndex(event.bookmark.getIndentIndex(), Integer.MIN_VALUE);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         String link = getArguments().getString(Constants.ArgsName.LINK);
@@ -1059,7 +1061,58 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
             GuiUtils.getView(speedLayout, R.id.btnFullscreen).setVisibility(GONE);
         }
         setEmptyViewText("");
+        scroller.setOnTouchListener(new CarefulFastScrollerTouchListener(scroller, new Handler()));
         return root;
+    }
+
+    class CarefulFastScrollerTouchListener extends FastScrollerTouchListener {
+
+        private final Handler handler;
+        private Runnable mLongPressed;
+
+        public CarefulFastScrollerTouchListener(AbsRecyclerViewFastScroller fastScroller, Handler handler) {
+            super(fastScroller);
+            this.handler = handler;
+        }
+
+        public boolean oldOnTouch(View v, MotionEvent event) {
+            return super.onTouch(v, event);
+        }
+
+        public boolean onTouch(View v, MotionEvent event) {
+            if(event.getAction() != MotionEvent.ACTION_SCROLL || event.getAction() == MotionEvent.ACTION_MOVE ) {
+                if(mLongPressed != null) {
+                    handler.removeCallbacks(mLongPressed);
+                    mLongPressed = null;
+                }
+                return oldOnTouch(v, event);
+            } else if (event.getAction() == MotionEvent.ACTION_DOWN && mLongPressed == null) {
+                mLongPressed = new LongPress(v, event);
+                handler.postDelayed(mLongPressed, 1000);
+            } else if ((event.getAction() == MotionEvent.ACTION_UP) && mLongPressed != null) {
+                handler.removeCallbacks(mLongPressed);
+                mLongPressed = null;
+            }
+            return true;
+        }
+
+
+
+        class LongPress implements Runnable {
+
+            final View v;
+            final MotionEvent event;
+
+            LongPress(View v, MotionEvent event) {
+                this.v = v;
+                this.event = event;
+            }
+
+            @Override
+            public void run() {
+                oldOnTouch(v, event);
+            }
+        }
     }
 
     private void addToCoordinator(CoordinatorLayout coordinator, ViewGroup view) {
@@ -1387,7 +1440,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
                                 if (textView.getText() instanceof Spanned && !mode.equals(Mode.SPEAK)) {
                                     Spanned spannableString = (Spanned) textView.getText();
-                                    URLSpanNoUnderline url[] = spannableString.getSpans(offset, spannableString.length(), URLSpanNoUnderline.class);
+                                    URLSpan url[] = spannableString.getSpans(offset, spannableString.length(), URLSpan.class);
                                     if (url.length > 0) {
                                         String surl = url[url.length - 1].getURL();
                                         if (surl != null) {
