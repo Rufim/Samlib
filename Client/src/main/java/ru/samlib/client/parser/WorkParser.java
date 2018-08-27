@@ -462,13 +462,13 @@ public class WorkParser extends Parser {
             }
             String baseDomain = work.isNotSamlib() ? "" : Constants.Net.BASE_DOMAIN;
             List<Bookmark> bookmarks = work.getAutoBookmarks();
-            Document document = Jsoup.parse(work.getRawContent(), "", org.jsoup.parser.Parser.xmlParser());
+            Document document = Jsoup.parse(work.getRawContent(), baseDomain, org.jsoup.parser.Parser.xmlParser());
             document.setBaseUri(baseDomain);
             document.outputSettings().prettyPrint(false);
             List<Node> rootNodes = new ArrayList<>();
             //Element body = replaceTables(document.body());
             Elements rootElements = null;
-            if (document.body() != null) {
+            if (work.getRawContent().contains("<body>")) {
                 rootElements = document.body().select("> *");
             } else {
                 rootElements = document.select("> *");
