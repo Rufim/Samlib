@@ -1080,7 +1080,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
 
         public boolean onTouch(View v, MotionEvent event) {
-            if(event.getAction() != MotionEvent.ACTION_SCROLL || event.getAction() == MotionEvent.ACTION_MOVE ) {
+            if(event.getAction() == MotionEvent.ACTION_SCROLL || event.getAction() == MotionEvent.ACTION_MOVE ) {
                 if(mLongPressed != null) {
                     handler.removeCallbacks(mLongPressed);
                     mLongPressed = null;

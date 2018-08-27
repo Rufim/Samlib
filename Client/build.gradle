@@ -122,8 +122,7 @@ dependencies {
     implementation "com.google.dagger:dagger:$daggerVersion"
 
     //   implementation "com.github.User:Repo:Tag"  for github repos
-    //implementation "com.github.Rufim:HtmlSpanner:0.8.1"
-    implementation project(':spanner')
+    implementation "com.github.Rufim:HtmlSpanner:0.8.2"
     implementation 'com.uncopt:android.justified:1.0'
     implementation "com.evernote:android-job:1.2.5"
     implementation "net.vrallev.android:cat:1.0.5"
