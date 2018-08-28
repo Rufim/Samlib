@@ -1332,11 +1332,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         @Override
         public int getLayoutId(String item) {
-            if(justify) {
-                return R.layout.item_indent_justify;
-            } else {
-                return R.layout.item_indent;
-            }
+            return R.layout.item_indent;
         }
 
         @Override
@@ -1525,6 +1521,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
 
         private void initPreference(TextView textView) {
+            if(justify) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    textView.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                }
+            }
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             textView.setTextColor(fontColor);
             CalligraphyUtils.applyFontToTextView(getContext(), textView, fontPath);
