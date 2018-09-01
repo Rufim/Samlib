@@ -1088,7 +1088,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                 return oldOnTouch(v, event);
             } else if (event.getAction() == MotionEvent.ACTION_DOWN && mLongPressed == null) {
                 mLongPressed = new LongPress(v, event);
-                handler.postDelayed(mLongPressed, 1000);
+                handler.postDelayed(mLongPressed, 1500);
             } else if ((event.getAction() == MotionEvent.ACTION_UP) && mLongPressed != null) {
                 handler.removeCallbacks(mLongPressed);
                 mLongPressed = null;
@@ -1332,7 +1332,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         @Override
         public int getLayoutId(String item) {
-            return R.layout.item_indent;
+            if(justify) {
+                return R.layout.item_indent_justify;
+            } else {
+                return R.layout.item_indent;
+            }
         }
 
         @Override
@@ -1521,11 +1525,6 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
 
         private void initPreference(TextView textView) {
-            if(justify) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    textView.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
-                }
-            }
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             textView.setTextColor(fontColor);
             CalligraphyUtils.applyFontToTextView(getContext(), textView, fontPath);
