@@ -271,9 +271,9 @@ public class WorkParser extends Parser {
             if (parts[2].contains("Оценка:")) {
                 work.setHasRate(true);
             }
-            if (parts[3].contains("<!--Section Begins-->")) {
+            if (parts[3].contains("<!--Section Begins-->") && parts[3].contains("<!--Section Ends-->")) {
                 work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
-                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->").setMatchCount(999))[0]);
+                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
             } else {
                 work.setRawContent(parts[3]);
             }
