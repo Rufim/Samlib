@@ -630,8 +630,6 @@ public class WorkParser extends Parser {
                     attrs.append(" ");
                     if (StringUtil.in(nodeName, "p", "div")) {
                         append("<" + "span" + attrs + ">");
-                    } if(!nodeName.equalsIgnoreCase("b") || ((Element) node).text().isEmpty()) {
-                        appendText(" ");
                     } else {
                         append("<" + nodeName + attrs + ">");
                     }
@@ -679,9 +677,15 @@ public class WorkParser extends Parser {
                 if (StringUtil.in(nodeName, "i", "a", "b", "h1", "font", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
                     if (StringUtil.in(nodeName, "p", "div")) {
                         append("</span>");
-                    } else if(StringUtil.in(nodeName,"font", "a")) {
-                        append(" </" + nodeName + ">");
-                    } else if(!nodeName.equalsIgnoreCase("b") || !((Element) node).text().isEmpty()) {
+                    } else if(StringUtil.in(nodeName,"font", "a", "b")) {
+                        Node next = node.nextSibling();
+                        //TODO: fix HtmlSpanner for handle this
+                        if(next != null && (next.toString().trim().isEmpty() || (next instanceof Element && ((Element) next).text().trim().isEmpty()))) {
+                            append(" </" + nodeName + ">");
+                        } else {
+                            append("</" + nodeName + ">");
+                        }
+                    } else if(!nodeName.equalsIgnoreCase("b") || !((Element) node).html().trim().isEmpty()) {
                         append("</" + nodeName + ">");
                     }
                 }
