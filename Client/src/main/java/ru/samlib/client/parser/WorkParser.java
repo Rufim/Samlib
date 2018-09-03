@@ -590,7 +590,7 @@ public class WorkParser extends Parser {
                     Node parent;
                     if ((parent = getParentOrNull(node, "pre")) != null) {
                         append(((TextNode) node).getWholeText());
-                    } else if(getParentOrNull(node, "img") == null) {
+                    } else {
                         append(getNodeHtml(node)); // TextNodes carry all user-readable text in the DOM.
                     }
                 } else if (nodeName.equalsIgnoreCase("a")) {
@@ -612,9 +612,6 @@ public class WorkParser extends Parser {
                     if (node.hasAttr("name")) {
                         initBookmark(node.attr("name"));
                     }
-                } else if(nodeName.equalsIgnoreCase("td")
-                        && (node.parent() == null || Stream.of(node.parent().childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("td")).collect(Collectors.toList()).indexOf(node) > 0)) {
-                    append("\n");
                 } else if (nodeName.equalsIgnoreCase("dt")) {
                     append("  ");
                 } else if (StringUtil.in(nodeName, "span", "img", "font" , "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
@@ -683,7 +680,7 @@ public class WorkParser extends Parser {
                     } else if(StringUtil.in(nodeName,"font", "a", "b")) {
                         Node next = node.nextSibling();
                         //TODO: fix HtmlSpanner for handle this
-                        if(next != null && (next.toString().trim().isEmpty() || (next instanceof Element && ((Element) next).text().trim().isEmpty()))) {
+                        if(nodeName.equals("font") || (next != null && (next.toString().trim().isEmpty() || (next instanceof Element && ((Element) next).text().trim().isEmpty())))) {
                             append(" </" + nodeName + ">");
                         } else {
                             append("</" + nodeName + ">");
@@ -692,8 +689,13 @@ public class WorkParser extends Parser {
                         append("</" + nodeName + ">");
                     }
                 }
-                if (StringUtil.in(nodeName, "dt", "p", "div", "li", "ul"))
+                if (StringUtil.in(nodeName, "dt", "p", "div", "li", "ul")) {
                     append("\n");
+                } else if(nodeName.equalsIgnoreCase("td")
+                        && (node.parent() == null || Stream.of(node.parent().childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("td")).collect(Collectors.toList()).indexOf(node) > 0)) {
+                     append("\n");
+                }
+
             }
 
             private String getNodeHtml(Node node) {
