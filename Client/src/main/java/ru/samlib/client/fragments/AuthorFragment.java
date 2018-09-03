@@ -633,9 +633,8 @@ public class AuthorFragment extends ListFragment<Linkable> {
                 HtmlSpanner spanner = new HtmlSpanner(Constants.Net.BASE_DOMAIN, R.drawable.ic_image_crop_original);
                 spanner.setTextView(textView);
                 spanner.registerHandler("a", new LinkHandler());
-                spanner.setStripExtraWhiteSpace(true);
                 textView.setMovementMethod(LinkMovementMethod.getInstance());
-                textView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
+                textView.setText(spanner.fromHtml(work.processAnnotationBlocks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
             } else {
                 workView.findViewById(R.id.work_annotation_layout).setVisibility(GONE);
             }

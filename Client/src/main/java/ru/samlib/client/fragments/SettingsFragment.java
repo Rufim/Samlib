@@ -81,11 +81,9 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                     .addPreferenceList(R.string.preferenceFontReader, R.string.preferenceFontReaderName, 0, 0, Font.mapFonts(getContext().getAssets()), Font.getDefFont())
                     .addPreferenceList(R.string.preferenceFontSizeReader, R.string.preferenceFontSizeReaderName, 0, 0, 16f, fontSizes)
                     .addPreferenceList(R.string.preferenceFontSizeComments, R.string.preferenceFontSizeCommentsName, 0, 0, 13f, fontSizes)
-                    .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                groupReader.addPreference(R.string.preferenceTextJustify, R.string.preferenceTextJustifyName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_JUSTIFY);
-            }
-            groupReader.addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
+                    .addPreferenceList(R.string.preferenceFontStyleReader, R.string.preferenceFontStyleReaderName, 0, 0, Font.Type.PLAIN, Font.getFontTypes(getContext(), null).keySet().toArray())
+                    .addPreference(R.string.preferenceTextJustify, R.string.preferenceTextJustifyName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_JUSTIFY)
+                    .addPreference(R.string.preferenceColorFontReader, R.string.preferenceColorFontReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, GuiUtils.getThemeColor(getContext(), android.R.attr.textColor))
                     .addPreference(R.string.preferenceColorBackgroundReader, R.string.preferenceColorBackgroundReaderName, 0, R.layout.item_settings_color, DialogType.COLOR, getResources().getColor(R.color.transparent))
                     .addPreference(R.string.preferenceCacheByDefault, R.string.preferenceCacheByDefaultName, 0, R.layout.item_settings_switch, DialogType.NONE, DEF_OPEN_FROM_CACHE)
                     .addPreference(R.string.preferenceVoice, R.string.preferenceVoiceName);

@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.domain.Findable;
 import ru.samlib.client.database.MyDatabase;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
@@ -165,6 +166,9 @@ public class Author extends BaseModel implements Serializable, Linkable, Validat
     public void setSmartLink(String link) {
         if (link == null) return;
         link = TextUtils.eraseHost(link);
+        if(link.contains("/editors")) {
+            link = link.replaceAll(Constants.Net.EDITORS_PATH, "");
+        }
         if (link.contains("/")) {
             if (link.startsWith(Work.COMMENT_PREFIX)) {
                 link = link.replace(Work.COMMENT_PREFIX, "");

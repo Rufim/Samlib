@@ -1389,7 +1389,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.setTextView(annotationView);
                     spanner.registerHandler("a", new LinkHandler());
                     annotationView.setMovementMethod(LinkMovementMethod.getInstance());
-                    annotationView.setText(spanner.fromHtml(work.processAnnotationBloks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
+                    annotationView.setText(spanner.fromHtml(work.processAnnotationBlocks(GuiUtils.getThemeColor(getContext(), R.attr.textColorAnnotations))));
                     holder.getItemView().setBackgroundColor(backgroundColor);
                     break;
                 case R.layout.item_indent:

@@ -54,6 +54,7 @@ public class Constants {
         public static final String STAT_SERVER_DOMAIN = BASE_SCHEME + "://" + BuildConfig.STAT_SERVER;
         public static final String STAT_SERVER_UPDATE = STAT_SERVER_DOMAIN + "/update_date";
         public static final String LOG_PATH = BASE_DOMAIN + "/logs";
+        public static final String EDITORS_PATH = "/editors";
     }
 
     public static class Cache {
@@ -81,9 +82,9 @@ public class Constants {
         public static final String DATA_ISO_8601_24H_FULL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         public static final String DATA_ISO_8601_24H_FULL_FORMAT_WITHOUT_MC = "yyyy-MM-dd'T'HH:mm:ss'Z'";
         @RegExp
-        public static final String WORK_URL_REGEXP = "/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml";
+        public static final String WORK_URL_REGEXP = "(/editors)?/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+\\.shtml";
         @RegExp
-        public static final String AUTHOR_URL_REGEXP = "/*[a-z]/+[a-z_0-9]+(/*)";
+        public static final String AUTHOR_URL_REGEXP = "(/editors)?/*[a-z]/+[a-z_0-9]+(/*)";
         @RegExp
         public static final String COMMENTS_URL_REGEXP = "/comment/*[a-z]/+[a-z_0-9]+/+[a-z-_0-9]+";
         @RegExp

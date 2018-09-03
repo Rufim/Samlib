@@ -3,6 +3,9 @@ package ru.samlib.client.parser;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
 import net.vrallev.android.cat.Cat;
 
 import ru.kazantsev.template.net.*;
@@ -272,8 +275,8 @@ public class WorkParser extends Parser {
                 work.setHasRate(true);
             }
             if (parts[3].contains("<!--Section Begins-->") && parts[3].contains("<!--Section Ends-->")) {
-                work.setRawContent(TextUtils.Splitter.extractLines(file, encoding, true,
-                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->"))[0]);
+                work.setRawContent(TextUtils.Splitter.extractLines(parts[3], encoding, true,
+                        new TextUtils.Splitter("<!--Section Begins-->", "<!--Section Ends-->").setSkipEnd(999))[0]);
             } else {
                 work.setRawContent(parts[3]);
             }
@@ -609,9 +612,12 @@ public class WorkParser extends Parser {
                     if (node.hasAttr("name")) {
                         initBookmark(node.attr("name"));
                     }
-                } else if (nodeName.equals("dt")) {
+                } else if(nodeName.equalsIgnoreCase("td")
+                        && (node.parent() == null || Stream.of(node.parent().childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("td")).collect(Collectors.toList()).indexOf(node) > 0)) {
+                    append("\n");
+                } else if (nodeName.equalsIgnoreCase("dt")) {
                     append("  ");
-                } else if (StringUtil.in(nodeName, "span", "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
+                } else if (StringUtil.in(nodeName, "span", "img", "font" , "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
                     StringBuilder attrs = new StringBuilder();
                     for (Attribute attribute : node.attributes()) {
                         attrs.append(" ");
@@ -624,6 +630,8 @@ public class WorkParser extends Parser {
                     attrs.append(" ");
                     if (StringUtil.in(nodeName, "p", "div")) {
                         append("<" + "span" + attrs + ">");
+                    } if(!nodeName.equalsIgnoreCase("b") || ((Element) node).text().isEmpty()) {
+                        appendText(" ");
                     } else {
                         append("<" + nodeName + attrs + ">");
                     }
@@ -636,13 +644,6 @@ public class WorkParser extends Parser {
                     }
                 } else if (StringUtil.in(nodeName, "tr", "ul", "dd")) {
                     append("\n");
-                } else if (nodeName.equals("img")) {
-                    append(getNodeHtml(node));
-                } else if (nodeName.equals("a")) {
-                    Element a = (Element) node;
-                    if (a.hasAttr("name")) {
-                        initBookmark(a.attr("name"));
-                    }
                 } else if (nodeName.equals("li")) {
                     Node parent = node.parent();
                     for (int i = 0; i < getParentCount(node, "ul", "ol") - 1; i++) {
@@ -652,10 +653,11 @@ public class WorkParser extends Parser {
                         append("\u25CF");
                     }
                     if (parent.nodeName().equalsIgnoreCase("ol")) {
-                        for (int i = 0; i < parent.childNodeSize(); i++) {
-                            if (parent.childNode(i) == node) {
-                                append(i + ".");
-                            }
+                        List<Node> lis = Stream.of(parent.childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("li")).collect(Collectors.toList());
+                        int indexLi = lis.indexOf(node);
+                        if(indexLi >= 0) {
+                            indexLi++;
+                            append(indexLi + ".");
                         }
                     }
                 }
@@ -665,7 +667,7 @@ public class WorkParser extends Parser {
                 for (Bookmark bookmark : bookmarks) {
                     if (bookmark.getIndent().equals(name) && bookmark.getIndentIndex() <= 0) {
                         append("");
-                        bookmark.setIndentIndex(indents.size());
+                        bookmark.setIndentIndex(indents.size() + 1);
                     }
                 }
             }
@@ -674,10 +676,12 @@ public class WorkParser extends Parser {
             // hit when all of the node's children (if any) have been visited
             public void tail(Node node, int depth) {
                 String nodeName = node.nodeName();
-                if (StringUtil.in(nodeName, "i", "a", "b", "h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
+                if (StringUtil.in(nodeName, "i", "a", "b", "h1", "font", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
                     if (StringUtil.in(nodeName, "p", "div")) {
                         append("</span>");
-                    } else {
+                    } else if(StringUtil.in(nodeName,"font", "a")) {
+                        append(" </" + nodeName + ">");
+                    } else if(!nodeName.equalsIgnoreCase("b") || !((Element) node).text().isEmpty()) {
                         append("</" + nodeName + ">");
                     }
                 }

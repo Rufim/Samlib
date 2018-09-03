@@ -17,11 +17,13 @@ import ru.kazantsev.template.domain.Findable;
 import ru.samlib.client.database.ListGenreConverter;
 import ru.samlib.client.database.ListStringConverter;
 import ru.samlib.client.database.MyDatabase;
+import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.Linkable;
 import ru.samlib.client.domain.Parsable;
 import ru.samlib.client.domain.Validatable;
 import ru.samlib.client.fragments.FilterDialogListFragment;
 import ru.kazantsev.template.net.CachedResponse;
+import ru.samlib.client.parser.WorkParser;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -116,6 +118,9 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
     public void setSmartLink(String link) {
         if (link == null) return;
         link = ru.kazantsev.template.util.TextUtils.eraseHost(link);
+        if(link.contains("/editors")) {
+            link = link.replaceAll(Constants.Net.EDITORS_PATH, "");
+        }
         if (link.contains("/")) {
             if (author == null) {
                 author = new Author(link.substring(0, link.lastIndexOf("/")));
@@ -241,14 +246,15 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
         return annotation;
     }
 
-    public String processAnnotationBloks(int color) {
+    public String processAnnotationBlocks(int color) {
         Document an = Jsoup.parseBodyFragment(getAnnotation());
         an.select("font[color=#555555]").attr("color",
                 String.format("#%02x%02x%02x",
                         Color.red(color),
                         Color.green(color),
                         Color.blue(color)));
-        return an.body().html();
+        WorkParser.HtmlToTextForSpanner toTextForSpanner = new WorkParser.HtmlToTextForSpanner();
+        return android.text.TextUtils.join("<br>", toTextForSpanner.getIndents(an.body().select("> *")));
     }
 
     public void addAnnotation(String annotation) {
