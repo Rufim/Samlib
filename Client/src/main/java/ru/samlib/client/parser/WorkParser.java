@@ -620,12 +620,15 @@ public class WorkParser extends Parser {
                 } else if (StringUtil.in(nodeName, "span", "img", "font" , "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
                     StringBuilder attrs = new StringBuilder();
                     for (Attribute attribute : node.attributes()) {
-                        attrs.append(" ");
-                        attrs.append(attribute.getKey());
-                        attrs.append("=");
-                        attrs.append("\"");
-                        attrs.append(attribute.getValue());
-                        attrs.append("\"");
+                        //TODO: fix HtmlSpanner for handle this
+                        if(!(nodeName.equalsIgnoreCase("font") && attribute.getKey().equalsIgnoreCase("size") && (attribute.getValue().startsWith("+") || attribute.getValue().startsWith("-")))) {
+                            attrs.append(" ");
+                            attrs.append(attribute.getKey());
+                            attrs.append("=");
+                            attrs.append("\"");
+                            attrs.append(attribute.getValue());
+                            attrs.append("\"");
+                        }
                     }
                     attrs.append(" ");
                     if (StringUtil.in(nodeName, "p", "div")) {
