@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
@@ -114,7 +115,7 @@ public class SectionActivity extends NavigationActivity<String> {
     }
 
     @Override
-    protected void handleIntent(Intent intent) {
+    protected void handleIntent(@NonNull Intent intent) {
         Bundle args = intent.getExtras();
         FragmentBuilder builder = new FragmentBuilder(getSupportFragmentManager());
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);

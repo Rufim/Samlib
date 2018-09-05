@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.SwitchCompat;
@@ -94,7 +95,7 @@ public class MainActivity extends BaseActivity {
         outState.putInt(SELECTED, getCheckedNavigationItem());
     }
 
-    protected void handleIntent(Intent intent) {
+    protected void handleIntent(@NonNull Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
             /*SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
