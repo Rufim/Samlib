@@ -73,6 +73,7 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
+import ru.samlib.client.view.JustifiedTextView;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 import xyz.danoz.recyclerviewfastscroller.AbsRecyclerViewFastScroller;
@@ -123,6 +124,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
     private boolean second = false;
 
     private int lastOffset = 0;
+    private int lastOffsetEnd = 0;
 
     @Inject
     DatabaseService databaseService;
@@ -639,6 +641,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     TextView textView = WorkFragment.this.getTextViewIndent(speakIndex);
                     if (phrase == null) return;
                     lastOffset = phrase.start;
+                    lastOffsetEnd = phrase.end;
                     if (textView != null) {
                         int visibleLines = WorkFragment.this.getVisibleLines(textView);
                         Layout layout = textView.getLayout();
@@ -1516,11 +1519,19 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     view.setTextSize(20);
                     initPreference(view);
                     // end
+                    if(mode.equals(Mode.SEARCH)) {
+                        try {
+                            GuiUtils.selectText(view, true, searchView.getQuery().toString(), colorFoundedText);
+                        } catch (Throwable ignore) {
+                        }
+                    }
+                    if(mode.equals(Mode.SPEAK) && position  == lastIndent + firstIsHeader && lastOffset > 0 && lastOffsetEnd > 0) {
+                        try {
+                            GuiUtils.selectText(view, true, lastOffset, lastOffsetEnd, colorSpeakingText);
+                        } catch (Throwable ignore) {
+                        }
+                    }
                     break;
-            }
-            try {
-                selectText(holder, true, adapter.getLastQuery() == null ? null : adapter.getLastQuery().query, colorFoundedText);
-            } catch (Throwable ignore) {
             }
         }
 

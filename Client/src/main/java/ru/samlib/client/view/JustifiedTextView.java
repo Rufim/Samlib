@@ -79,9 +79,6 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         }
     }
 
-
-
-
     @Override
     @NotNull
     public TextView getTextView() {
