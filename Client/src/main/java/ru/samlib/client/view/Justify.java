@@ -51,7 +51,7 @@ public class Justify {
 
         // We use the layout to get line widths before justification
         final Layout layout = textView.getLayout();
-        assert(layout != null);
+        if(layout == null) return;
         final int count = layout.getLineCount();
         if (count < 2) return;
 
@@ -126,7 +126,7 @@ public class Justify {
                         final int c = sub.charAt(matchStart);
                         if (c == '\u200a' || c == '\u2009' || c == '\u00a0') continue;
                     }
-                    assert(layout.getPaint() != null);
+                    if(layout.getPaint() == null) return;
                     final float matchWidth =
                             layout.getPaint().measureText(spannable, lineStart + matchStart, lineStart + matchEnd);
 
@@ -194,7 +194,6 @@ public class Justify {
             }
         }
         if(builder.length() > 0) {
-            spannable.removeSpan(spannable.getSpans(0 , spannable.length(), UpdateLayout.class));
             textView.setText(builder);
         }
     }

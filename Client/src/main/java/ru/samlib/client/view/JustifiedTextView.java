@@ -3,6 +3,7 @@ package ru.samlib.client.view;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Layout;
+import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.widget.TextView;
@@ -52,20 +53,23 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
                     mTextScaleX = textScaleX;
                     mFakeBold = fakeBold;
                     mWidth = width;
-                    mMeasuring = true;
-                    try {
-                        // Setup ScaleXSpans on whitespaces to justify the text.
-                        Justify.setupScaleSpans(this, mSpanStarts, mSpanEnds, mSpans);
-                    }
-                    finally {
-                        mMeasuring = false;
-                    }
+                    justify();
                 }
             }
         }
     }
 
-
+    private void justify() {
+        if(!mMeasuring) {
+            mMeasuring = true;
+            try {
+                // Setup ScaleXSpans on whitespaces to justify the text.
+                Justify.setupScaleSpans(this, mSpanStarts, mSpanEnds, mSpans);
+            } finally {
+                mMeasuring = false;
+            }
+        }
+    }
 
     @Override
     protected void onTextChanged(final CharSequence text,
@@ -73,11 +77,19 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         final Layout layout = getLayout();
         if (layout != null) {
-            if(!mMeasuring && lengthAfter != lengthBefore) {
-                Justify.setupScaleSpans(this, mSpanStarts, mSpanEnds, mSpans);
+            if(lengthAfter != lengthBefore || !isJustified(text)) {
+                justify();
             }
         }
     }
+
+    private boolean isJustified(CharSequence text) {
+        if(text instanceof SpannableString) {
+            return ((SpannableString) text).getSpans(0, text.length(), Justify.ScaleSpan.class).length > 0;
+        }
+        return false;
+    }
+
 
     @Override
     @NotNull
