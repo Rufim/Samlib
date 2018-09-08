@@ -192,6 +192,7 @@ public class HistoryFragment extends FilterDialogListFragment<Bookmark> {
 
         @Override
         public boolean onClick(View view, int position) {
+            if(!toAction.isEmpty()) return true;
             int id = view.getId();
             String link = null;
             switch (id) {

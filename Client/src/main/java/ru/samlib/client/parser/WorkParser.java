@@ -551,14 +551,27 @@ public class WorkParser extends Parser {
         /**
          * Format an Element to plain-text
          *
-         * @param elements the root element to format
+         * @param elements the root elements to format
          * @return formatted text
          */
         public List<String> getIndents(Elements elements) {
             for (Element element : elements) {
                 FormattingVisitor formatter = new FormattingVisitor(indents);
-                NodeTraversor traversor = new NodeTraversor(formatter);
-                traversor.traverse(element);
+                NodeTraversor.traverse(formatter , elements);
+            }
+            return indents;
+        }
+
+        /**
+         * Format an Element to plain-text
+         *
+         * @param nodes the root nodes to format
+         * @return formatted text
+         */
+        public List<String> getIndents(List<Node> nodes) {
+            for (Node node : nodes) {
+                FormattingVisitor formatter = new FormattingVisitor(indents);
+                NodeTraversor.traverse(formatter, node);
             }
             return indents;
         }

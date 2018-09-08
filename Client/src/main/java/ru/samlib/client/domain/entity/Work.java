@@ -254,7 +254,7 @@ public class Work extends BaseModel implements Serializable, Linkable, Validatab
                         Color.green(color),
                         Color.blue(color)));
         WorkParser.HtmlToTextForSpanner toTextForSpanner = new WorkParser.HtmlToTextForSpanner();
-        return android.text.TextUtils.join("<br>", toTextForSpanner.getIndents(an.body().select("> *")));
+        return android.text.TextUtils.join("<br>", toTextForSpanner.getIndents(an.body().childNodes()));
     }
 
     public void addAnnotation(String annotation) {

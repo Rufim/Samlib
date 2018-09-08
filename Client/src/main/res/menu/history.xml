@@ -6,7 +6,7 @@
           android:orderInCategory="1"
           app:showAsAction="always"/>
     <item android:id="@+id/action_history_lock"
-          android:title="@string/history_clean"
+          android:title="@string/history_lock"
           android:icon="@drawable/ic_lock_white_24dp"
           android:orderInCategory="2"
           app:showAsAction="always"/>
