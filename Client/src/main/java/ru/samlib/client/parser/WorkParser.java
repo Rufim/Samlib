@@ -557,7 +557,7 @@ public class WorkParser extends Parser {
         public List<String> getIndents(Elements elements) {
             for (Element element : elements) {
                 FormattingVisitor formatter = new FormattingVisitor(indents);
-                NodeTraversor.traverse(formatter , elements);
+                NodeTraversor.traverse(formatter , element);
             }
             return indents;
         }
@@ -661,14 +661,14 @@ public class WorkParser extends Parser {
                         append("\t");
                     }
                     if (parent.nodeName().equalsIgnoreCase("ul")) {
-                        append("\u25CF");
+                        append("\u25CF ");
                     }
                     if (parent.nodeName().equalsIgnoreCase("ol")) {
                         List<Node> lis = Stream.of(parent.childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("li")).collect(Collectors.toList());
                         int indexLi = lis.indexOf(node);
                         if(indexLi >= 0) {
                             indexLi++;
-                            append(indexLi + ".");
+                            append(indexLi + ". ");
                         }
                     }
                 }
