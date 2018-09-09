@@ -41,14 +41,6 @@ public class Justify {
         final int length = spannable.length();
         if (length == 0) return;
 
-        // Remove any existing ScaleXSpan (from a previous pass).
-        final  Justify.ScaleSpan[] scaleSpans = spannable.getSpans(0, spannable.length(), Justify.ScaleSpan.class);
-        if (scaleSpans != null) {
-            for (final Justify.ScaleSpan span: scaleSpans) {
-                spannable.removeSpan(span);
-            }
-        }
-
         // We use the layout to get line widths before justification
         final Layout layout = textView.getLayout();
         if(layout == null) return;
@@ -68,6 +60,13 @@ public class Justify {
             maxProportion = DEFAULT_MAX_PROPORTION;
         }
         SpannableStringBuilder builder = new SpannableStringBuilder(spannable);
+        // Remove any existing ScaleXSpan (from a previous pass).
+        final  Justify.ScaleSpan[] scaleSpans = builder.getSpans(0, builder.length(), Justify.ScaleSpan.class);
+        if (scaleSpans != null) {
+            for (final Justify.ScaleSpan span: scaleSpans) {
+                builder.removeSpan(span);
+            }
+        }
         for (int line=0; line<count; ++line) {
 
             final int lineStart = layout.getLineStart(line);
@@ -115,12 +114,16 @@ public class Justify {
 
                 // Find whitespace sections and store their start and end positions
                 final Matcher matcher = WHITESPACE_PATTERN.matcher(sub);
+                int previousStartIndent = 0;
                 while (matcher.find()) {
                     final int matchStart = matcher.start();
                     final int matchEnd = matcher.end();
                     // If the line starts with whitespace, it's probably an indentation
                     // and we don't want to expand indentation space to preserve alignment
-                    if (matchStart == 0) continue;
+                    if (matchStart == 0 || previousStartIndent == matchStart) {
+                        previousStartIndent = matchEnd;
+                        continue;
+                    }
                     // skip single thin and hair spaces, as well as a single non breaking space
                     if ((matchEnd - matchStart) == 1) {
                         final int c = sub.charAt(matchStart);
