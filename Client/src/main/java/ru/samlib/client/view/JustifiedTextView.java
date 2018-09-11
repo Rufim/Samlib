@@ -83,7 +83,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         final Layout layout = getLayout();
         if (layout != null) {
-            if(lastString == null || lastString.get() == null || !lastString.get().equals(text)) {
+            if(lastString == null || lastString.get() == null || !lastString.get().toString().equals(text.toString())) {
                 justify();
             }
         }
