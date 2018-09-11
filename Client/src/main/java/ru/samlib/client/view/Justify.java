@@ -131,7 +131,7 @@ public class Justify {
                         if (c == '\u200a' || c == '\u2009' || c == '\u00a0') continue;
                     }
                     if(layout.getPaint() == null) return;
-                    final float matchWidth = measureSpannedText(spannable, layout.getPaint(), lineStart + matchStart, lineStart + matchEnd);
+                    final float matchWidth = measureSpannedText(spannable, layout,lineStart + matchStart, lineStart + matchEnd);
                          //   layout.getPaint().measureText(spannable, lineStart + matchStart, lineStart + matchEnd);
 
                     spaceWidth += matchWidth;
@@ -203,8 +203,8 @@ public class Justify {
     }
 
 
-    private static float measureSpannedText(CharSequence text, TextPaint paint, int start, int end) {
-        StaticLayout tempLayout = new StaticLayout(text.subSequence(start, end), paint, 10000, android.text.Layout.Alignment.ALIGN_NORMAL, 1f, 0f, false);
+    private static float measureSpannedText(CharSequence text, Layout layout, int start, int end) {
+        StaticLayout tempLayout = new StaticLayout(text.subSequence(start, end), layout.getPaint(), Integer.MAX_VALUE, layout.getAlignment(), layout.getSpacingMultiplier(), layout.getSpacingAdd(), false);
         int lineCount = tempLayout.getLineCount();
         float textWidth =0;
         for(int i=0 ; i < lineCount ; i++){

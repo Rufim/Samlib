@@ -46,12 +46,13 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
             final float textSize = getTextSize();
             final float textScaleX = getTextScaleX();
             final boolean fakeBold = getPaint().isFakeBoldText();
+            final int width = MeasureSpec.getSize(widthMeasureSpec);
             if (mTypeface != typeface ||
                     mTextSize != textSize ||
                     mTextScaleX != textScaleX ||
-                    mFakeBold != fakeBold) {
-                final int width = MeasureSpec.getSize(widthMeasureSpec);
-                if (width > 0 && width != mWidth) {
+                    mFakeBold != fakeBold ||
+                    mWidth != width) {
+                if (width > 0) {
                     mTypeface = typeface;
                     mTextSize = textSize;
                     mTextScaleX = textScaleX;
@@ -67,6 +68,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         if(!mMeasuring) {
             mMeasuring = true;
             try {
+                lastString = new WeakReference<>(getText());
                 // Setup ScaleXSpans on whitespaces to justify the text.
                 Justify.setupScaleSpans(this, mSpanStarts, mSpanEnds, mSpans);
             } finally {
@@ -81,11 +83,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         final Layout layout = getLayout();
         if (layout != null) {
-            if(lastString == null) {
-                lastString = new WeakReference<>(text);
-                justify();
-            } else if(lastString.get() == null || !lastString.get().equals(text)) {
-                lastString = new WeakReference<>(text);
+            if(lastString == null || lastString.get() == null || !lastString.get().equals(text)) {
                 justify();
             }
         }
