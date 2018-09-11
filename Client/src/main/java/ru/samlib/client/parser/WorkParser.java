@@ -647,7 +647,7 @@ public class WorkParser extends Parser {
                     }
                 } else if (nodeName.equalsIgnoreCase("br")) {
                     Node parent = node.parent();
-                    if (parent == null || getParentOrNull(node, "span", "p", "div") == null || parent.nodeName().equalsIgnoreCase("body")) {
+                    if (parent == null || parent.nodeName().equalsIgnoreCase("xxx7") || getParentOrNull(node, "span", "p", "div") == null || parent.nodeName().equalsIgnoreCase("body")) {
                         append("\n");
                     } else if (!StringUtil.in(parent.nodeName(), "h1", "h2", "h3", "h4", "h5", "h6")) {
                         append("<" + nodeName + ">");
