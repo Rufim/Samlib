@@ -4,6 +4,7 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.style.MetricAffectingSpan;
 import android.text.style.ScaleXSpan;
@@ -130,8 +131,8 @@ public class Justify {
                         if (c == '\u200a' || c == '\u2009' || c == '\u00a0') continue;
                     }
                     if(layout.getPaint() == null) return;
-                    final float matchWidth =
-                            layout.getPaint().measureText(spannable, lineStart + matchStart, lineStart + matchEnd);
+                    final float matchWidth = measureSpannedText(spannable, layout.getPaint(), lineStart + matchStart, lineStart + matchEnd);
+                         //   layout.getPaint().measureText(spannable, lineStart + matchStart, lineStart + matchEnd);
 
                     spaceWidth += matchWidth;
 
@@ -199,6 +200,17 @@ public class Justify {
         if(builder.length() > 0) {
             textView.setText(builder);
         }
+    }
+
+
+    private static float measureSpannedText(CharSequence text, TextPaint paint, int start, int end) {
+        StaticLayout tempLayout = new StaticLayout(text.subSequence(start, end), paint, 10000, android.text.Layout.Alignment.ALIGN_NORMAL, 1f, 0f, false);
+        int lineCount = tempLayout.getLineCount();
+        float textWidth =0;
+        for(int i=0 ; i < lineCount ; i++){
+            textWidth += tempLayout.getLineWidth(i);
+        }
+        return textWidth;
     }
 
     public static interface Justified {

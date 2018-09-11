@@ -2,6 +2,7 @@ package ru.samlib.client.view;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.Parcelable;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -10,8 +11,11 @@ import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
+
 public class JustifiedTextView extends android.support.v7.widget.AppCompatTextView implements Justify.Justified  {
 
+    WeakReference<CharSequence> lastString;
 
     @SuppressWarnings("unused")
     public JustifiedTextView(final @NotNull Context context) {
@@ -77,13 +81,18 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         final Layout layout = getLayout();
         if (layout != null) {
-            if(lengthAfter != lengthBefore || !isJustified(text)) {
+            if(lastString == null) {
+                lastString = new WeakReference<>(text);
+                justify();
+            } else if(lastString.get() == null || !lastString.get().equals(text)) {
+                lastString = new WeakReference<>(text);
                 justify();
             }
         }
     }
 
-    private boolean isJustified(CharSequence text) {
+    public boolean isJustified() {
+        CharSequence text = getText();
         if(text instanceof SpannableString) {
             return ((SpannableString) text).getSpans(0, text.length(), Justify.ScaleSpan.class).length > 0;
         }
