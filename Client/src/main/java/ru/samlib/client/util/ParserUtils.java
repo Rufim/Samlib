@@ -18,7 +18,12 @@ public class ParserUtils {
     protected static final String TAG = ParserUtils.class.getSimpleName();
 
     public static String cleanupHtml(Element el) {
-        return cleanupHtml(el.children());
+        if(el == null) return "";
+        if(el.children().size() == 0) {
+            return cleanupHtml(new Elements(el));
+        } else {
+            return cleanupHtml(el.children());
+        }
     }
 
     public static String cleanupHtml(Elements el) {

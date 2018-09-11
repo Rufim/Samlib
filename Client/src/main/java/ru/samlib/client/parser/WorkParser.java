@@ -268,8 +268,7 @@ public class WorkParser extends Parser {
             work.setRawContent(parts[2]);
         } else if (parts.length == 4) {
             if (parts[2].contains("Аннотация")) {
-                work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i"))));
-
+                work.setAnnotationBlocks(Arrays.asList(ParserUtils.cleanupHtml(Jsoup.parseBodyFragment(parts[2]).select("i").first())));
             }
             if (parts[2].contains("Оценка:")) {
                 work.setHasRate(true);
@@ -465,20 +464,20 @@ public class WorkParser extends Parser {
             }
             String baseDomain = work.isNotSamlib() ? "" : Constants.Net.BASE_DOMAIN;
             List<Bookmark> bookmarks = work.getAutoBookmarks();
-            Document document = Jsoup.parse(work.getRawContent(), baseDomain, org.jsoup.parser.Parser.xmlParser());
+            Document document = Jsoup.parseBodyFragment(work.getRawContent(), baseDomain);
             document.setBaseUri(baseDomain);
             document.outputSettings().prettyPrint(false);
             List<Node> rootNodes = new ArrayList<>();
             //Element body = replaceTables(document.body());
             Elements rootElements = null;
             if (work.getRawContent().contains("<body>")) {
-                rootElements = document.body().select("> *");
+                rootNodes = document.body().childNodes();
             } else {
-                rootElements = document.select("> *");
+                rootNodes = document.childNodes();
             }
             HtmlToTextForSpanner forSpanner = new HtmlToTextForSpanner();
             forSpanner.setBaseDomain(baseDomain);
-            work.setIndents(forSpanner.getIndents(rootElements));
+            work.setIndents(forSpanner.getIndents(rootNodes));
             if (rootElements != null) {
                 rootElements.clear();
             }
@@ -689,7 +688,9 @@ public class WorkParser extends Parser {
                 String nodeName = node.nodeName();
                 if (StringUtil.in(nodeName, "i", "a", "b", "h1", "font", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
                     if (StringUtil.in(nodeName, "p", "div")) {
-                        append("</span>");
+                        if(lastString().contains("<span>")) {
+                            append("</span>");
+                        }
                     } else if(StringUtil.in(nodeName,"font", "a", "b")) {
                         Node next = node.nextSibling();
                         //TODO: fix HtmlSpanner for handle this
@@ -716,6 +717,7 @@ public class WorkParser extends Parser {
             }
 
             boolean newLine = true;
+            StringBuilder lastString = new StringBuilder();
 
             // appends text to the string builder with a simple word wrap method
             private void append(String text) {
