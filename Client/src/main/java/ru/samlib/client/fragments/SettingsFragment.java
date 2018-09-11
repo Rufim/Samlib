@@ -59,7 +59,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
     public static final Boolean DEF_OBSERVABLE_AUTO = true;
     public static final Boolean DEF_OBSERVABLE_NOTIFICATION = true;
     public static final Boolean DEF_OPEN_FROM_CACHE = false;
-    public static final Boolean DEF_JUSTIFY = true;
+    public static final Boolean DEF_JUSTIFY = false;
 
     private final static Float[] fontSizes = {6f, 8f, 9f, 10f, 10.5f, 11f, 11.5f, 12f, 12.5f, 13f, 13.5f, 14f, 15f, 16f, 18f, 20f, 22f, 24f};
 
