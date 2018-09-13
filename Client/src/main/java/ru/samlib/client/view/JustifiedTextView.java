@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference;
 
 public class JustifiedTextView extends android.support.v7.widget.AppCompatTextView implements Justify.Justified  {
 
-    WeakReference<CharSequence> lastString;
+   String lastString;
 
     @SuppressWarnings("unused")
     public JustifiedTextView(final @NotNull Context context) {
@@ -68,7 +68,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         if(!mMeasuring) {
             mMeasuring = true;
             try {
-                lastString = new WeakReference<>(getText());
+                lastString = getText().toString();
                 // Setup ScaleXSpans on whitespaces to justify the text.
                 Justify.setupScaleSpans(this, mSpanStarts, mSpanEnds, mSpans);
             } finally {
@@ -83,7 +83,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         final Layout layout = getLayout();
         if (layout != null) {
-            if(lastString == null || lastString.get() == null || !lastString.get().toString().equals(text.toString())) {
+            if(lastString == null || !lastString.equals(text.toString())) {
                 justify();
             }
         }

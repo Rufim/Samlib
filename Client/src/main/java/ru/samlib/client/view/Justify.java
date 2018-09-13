@@ -66,6 +66,7 @@ public class Justify {
         if (scaleSpans != null) {
             for (final Justify.ScaleSpan span: scaleSpans) {
                 builder.removeSpan(span);
+                spannable.removeSpan(span);
             }
         }
         for (int line=0; line<count; ++line) {
@@ -77,13 +78,13 @@ public class Justify {
             if (lineEnd == lineStart) continue;
 
             // Don't justify the last line or lines ending with a newline.
-            if (lineEnd == length || spannable.charAt(lineEnd - 1) == '\n') continue;
+            if (lineEnd == length || builder.charAt(lineEnd - 1) == '\n') continue;
 
             // Don't include the trailing whitespace as an expandable whitespace.
             final int visibleLineEnd = layout.getLineVisibleEnd(line);
 //      int visibleLineEnd = lineEnd;
 //      while (visibleLineEnd > lineStart &&
-//             Character.isWhitespace(spannable.charAt(visibleLineEnd-1))) --visibleLineEnd;
+//             Character.isWhitespace(builder.charAt(visibleLineEnd-1))) --visibleLineEnd;
 
             // Don't justify lines that only contain whitespace
             if (visibleLineEnd == lineStart) continue;
@@ -91,7 +92,7 @@ public class Justify {
             // Layout line width
 //      final float w = layout.getLineWidth(line);    // Works fine, but only for API > 11
 //      final float w = layout.getLineMax(line);      // Doesn't work well
-            final float w = Layout.getDesiredWidth(spannable, lineStart, lineEnd, layout.getPaint());
+            final float w = Layout.getDesiredWidth(builder, lineStart, lineEnd, layout.getPaint());
 
             // Remaining space to fill
             int remaining = (int)Math.floor(want - w);
@@ -106,7 +107,7 @@ public class Justify {
                 }
 
                 // Line text
-                final CharSequence sub = spannable.subSequence(lineStart, visibleLineEnd);
+                final CharSequence sub = builder.subSequence(lineStart, visibleLineEnd);
 
                 // Accumulated total whitespace width
                 float spaceWidth = 0f;
@@ -131,8 +132,8 @@ public class Justify {
                         if (c == '\u200a' || c == '\u2009' || c == '\u00a0') continue;
                     }
                     if(layout.getPaint() == null) return;
-                    final float matchWidth = measureSpannedText(spannable, layout,lineStart + matchStart, lineStart + matchEnd);
-                         //   layout.getPaint().measureText(spannable, lineStart + matchStart, lineStart + matchEnd);
+                    final float matchWidth = measureSpannedText(builder, layout,lineStart + matchStart, lineStart + matchEnd);
+                         //   layout.getPaint().measureText(builder, lineStart + matchStart, lineStart + matchEnd);
 
                     spaceWidth += matchWidth;
 
@@ -161,7 +162,7 @@ public class Justify {
                             Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 // Compute the excess space.
-                int excess = (int)Math.ceil(Layout.getDesiredWidth(spannable,
+                int excess = (int)Math.ceil(Layout.getDesiredWidth(builder,
                         lineStart, lineEnd,
                         layout.getPaint())) - want;
                 // We might have added too much space because of rounding errors and because adding spans
@@ -176,6 +177,7 @@ public class Justify {
                     }
                     // Clear the spans from the previous attempt.
                     for (int span=0; span<n; ++span) {
+                        builder.removeSpan(textViewSpans[span]);
                         spannable.removeSpan(textViewSpans[span]);
                     }
                     // Reduce the remaining space exponentially for each iteration.
@@ -191,7 +193,7 @@ public class Justify {
                                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                     }
                     // recompute the excess space.
-                    excess = (int)Math.ceil(Layout.getDesiredWidth(spannable,
+                    excess = (int)Math.ceil(Layout.getDesiredWidth(builder,
                             lineStart, lineEnd,
                             layout.getPaint())) - want;
                 }

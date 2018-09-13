@@ -653,7 +653,8 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     } else if (isAdded() && !isStopped) {
                         clearSelection();
                         WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
-                        itemList.postDelayed(new Runnable() {
+                        itemList.getHandler().removeCallbacks(null);
+                        itemList.getHandler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 onNextPhrase(speakIndex, phraseIndex, phrases);
