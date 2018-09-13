@@ -100,8 +100,10 @@ public class SearchFragment extends ListFragment<Work> {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle(R.string.search);
-        return super.onCreateView(inflater, container, savedInstanceState);
+        setTitle(R.string.search);
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+        setEmptyViewText(R.string.search_empty);
+        return root;
     }
 
     @Override

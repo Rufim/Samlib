@@ -1,9 +1,14 @@
 package ru.samlib.client.fragments;
 
+import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
 import org.acra.ACRA;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,6 +51,13 @@ public abstract class FilterDialogListFragment<T> extends ListFragment<T> {
             return adapter.getLastQuery();
         }
         return new FilterEvent(query);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        setEmptyViewText("");
+        return view;
     }
 
     @Override

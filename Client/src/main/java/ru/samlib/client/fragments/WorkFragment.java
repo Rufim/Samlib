@@ -1066,6 +1066,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         }
         setEmptyViewText("");
         scroller.setOnTouchListener(new CarefulFastScrollerTouchListener(scroller, new Handler()));
+        setEmptyViewText(R.string.work_cant_open);
         return root;
     }
 

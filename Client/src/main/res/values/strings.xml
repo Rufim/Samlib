@@ -192,6 +192,7 @@
     <string name="page_not_supported">Страница не поддерживается!</string>
     <string name="work_not_in_cache">Произведение не закешированно.</string>
     <string name="work_cant_open">Не могу открыть файл. Возможно, он находится в недоступном программе месте.</string>
+    <string name="work_empty">Текст не найден</string>
     <string name="stat_server_not_available">Нет соединения c сервером…</string>
     <string name="search_filter">Параметры поиска</string>
     <string name="dialog_filter_sort_views">Просмотрам</string>
@@ -210,4 +211,5 @@
     <string name="sign_in_login_empty">Введте логин!</string>
     <string name="sign_in_enter">Войти</string>
     <string name="sign_in_exit">Выйти</string>
+    <string name="search_empty">Ничего не найдено</string>
 </resources>
