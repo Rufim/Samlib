@@ -1,6 +1,7 @@
 package ru.samlib.client.view;
 
 import android.text.Layout;
+import android.text.NoCopySpan;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -13,6 +14,10 @@ import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,14 +30,8 @@ public class Justify {
     /**
      * Adds ScaleX spans to expand widespaces and justify the lines.
      * @param justified the justified TextView.
-     * @param textViewSpanEnds a preallocated array that will hold the span end positions.
-     * @param textViewSpanStarts a preallocated array that will hold the span start positions.
-     * @param textViewSpans a preallocated array that will hold the spans.
      */
-    public static void setupScaleSpans(final @NotNull Justify.Justified justified,
-                                final @NotNull int[] textViewSpanStarts,
-                                final @NotNull int[] textViewSpanEnds,
-                                final @NotNull Justify.ScaleSpan[] textViewSpans) {
+    public static void setupScaleSpans(final @NotNull Justify.Justified justified) {
         final TextView textView = justified.getTextView();
         final CharSequence text = textView.getText();
 
@@ -61,14 +60,18 @@ public class Justify {
             maxProportion = DEFAULT_MAX_PROPORTION;
         }
         SpannableStringBuilder builder = new SpannableStringBuilder(spannable);
+
         // Remove any existing ScaleXSpan (from a previous pass).
-        final  Justify.ScaleSpan[] scaleSpans = builder.getSpans(0, builder.length(), Justify.ScaleSpan.class);
+        final   ScaleXSpan[] scaleSpans = builder.getSpans(0, builder.length(), ScaleXSpan.class);
         if (scaleSpans != null) {
-            for (final Justify.ScaleSpan span: scaleSpans) {
-                builder.removeSpan(span);
+            for (final  ScaleXSpan span: scaleSpans) {
                 spannable.removeSpan(span);
+                builder.removeSpan(span);
             }
         }
+
+        Map<Integer, Integer> textViewSpanStarts = new LinkedHashMap<>();
+        Map<Integer, Integer> textViewSpanEnds = new LinkedHashMap<>();
         for (int line=0; line<count; ++line) {
 
             final int lineStart = layout.getLineStart(line);
@@ -137,12 +140,9 @@ public class Justify {
 
                     spaceWidth += matchWidth;
 
-                    textViewSpanStarts[n] = matchStart;
-                    textViewSpanEnds[n] = matchEnd;
+                    textViewSpanStarts.put(n, matchStart);
+                    textViewSpanEnds.put(n, matchEnd);
                     ++n;
-                }
-                if (n > textViewSpans.length) {
-                    n = textViewSpans.length;
                 }
 
                 // Excess space is distributed evenly
@@ -154,11 +154,10 @@ public class Justify {
 
                 // Add ScaleX spans on the whitespace sections we want to expand.
                 for (int span=0; span<n; ++span) {
-                    textViewSpans[span] = new Justify.ScaleSpan(proportion);
                     builder.setSpan(
-                            textViewSpans[span],
-                            lineStart + textViewSpanStarts[span],
-                            lineStart + textViewSpanEnds[span],
+                            new  ScaleXSpan(proportion),
+                            lineStart + textViewSpanStarts.get(span),
+                            lineStart + textViewSpanEnds.get(span),
                             Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 // Compute the excess space.
@@ -175,21 +174,15 @@ public class Justify {
                         android.util.Log.e("ERROR",
                                 "Could not compensate for excess space (" + excess + "px).");
                     }
-                    // Clear the spans from the previous attempt.
-                    for (int span=0; span<n; ++span) {
-                        builder.removeSpan(textViewSpans[span]);
-                        spannable.removeSpan(textViewSpans[span]);
-                    }
                     // Reduce the remaining space exponentially for each iteration.
                     remaining -= (excess + loop * loop);
                     // Set the spans with the new proportions.
                     final float reducedProportions = (spaceWidth + remaining) / spaceWidth;
                     for (int span=0; span<n; ++span) {
-                        textViewSpans[span] = new Justify.ScaleSpan(reducedProportions);
                         builder.setSpan(
-                                textViewSpans[span],
-                                lineStart + textViewSpanStarts[span],
-                                lineStart + textViewSpanEnds[span],
+                                new ScaleXSpan(reducedProportions),
+                                lineStart + textViewSpanStarts.get(span),
+                                lineStart + textViewSpanEnds.get(span),
                                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                     }
                     // recompute the excess space.
@@ -200,7 +193,7 @@ public class Justify {
             }
         }
         if(builder.length() > 0) {
-            textView.setText(builder);
+            textView.setText(builder, TextView.BufferType.SPANNABLE);
         }
     }
 
