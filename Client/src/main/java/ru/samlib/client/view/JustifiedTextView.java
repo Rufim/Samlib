@@ -9,6 +9,8 @@ import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+import net.vrallev.android.cat.Cat;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
@@ -70,7 +72,11 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
             try {
                 lastString = getText().toString();
                 // Setup ScaleXSpans on whitespaces to justify the text.
-                Justify.setupScaleSpans(this);
+                try {
+                    Justify.setupScaleSpans(this);
+                } catch (Throwable ex) {
+                    Cat.e(ex);
+                }
             } finally {
                 mMeasuring = false;
             }

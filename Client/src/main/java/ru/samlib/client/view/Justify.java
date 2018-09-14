@@ -12,6 +12,8 @@ import android.text.style.ScaleXSpan;
 import android.text.style.UpdateLayout;
 import android.widget.TextView;
 
+import net.vrallev.android.cat.Cat;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -76,7 +78,13 @@ public class Justify {
         for (int line=0; line<count; ++line) {
 
             final int lineStart = layout.getLineStart(line);
-            final int lineEnd = line == count - 1 ? length : layout.getLineEnd(line);
+            int lineEnd;
+            try {
+                lineEnd = line == count - 1 ? length : layout.getLineEnd(line);
+            } catch (Throwable ex) {
+                Cat.e(ex);
+                return;
+            }
 
             // Don't justify empty lines
             if (lineEnd == lineStart) continue;
@@ -136,9 +144,14 @@ public class Justify {
                         if (c == '\u200a' || c == '\u2009' || c == '\u00a0') continue;
                     }
                     if(layout.getPaint() == null) return;
-                    final float matchWidth = measureSpannedText(builder, layout,lineStart + matchStart, lineStart + matchEnd);
-                         //   layout.getPaint().measureText(builder, lineStart + matchStart, lineStart + matchEnd);
 
+                    Object [] builderSpans = builder.getSpans(lineStart + matchStart, lineEnd + matchEnd, Object.class);
+                    float matchWidth = 0;
+                    if (builderSpans.length > 0) {
+                        matchWidth = measureSpannedText(builder, layout, lineStart + matchStart, lineStart + matchEnd);
+                    } else {
+                        matchWidth = layout.getPaint().measureText(builder, lineStart + matchStart, lineStart + matchEnd);
+                    }
                     spaceWidth += matchWidth;
 
                     textViewSpanStarts.put(n, matchStart);
