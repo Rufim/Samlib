@@ -72,6 +72,9 @@ public class WorkParser extends Parser {
             } else {
                 rawContent = HtmlClient.executeRequest(request, cached || lazyLoad);
             }
+            if (rawContent == null || rawContent.length() == 0) {
+                throw new IOException("Закешированный файл не найден или отцутствует соединение с интернетом");
+            }
         } catch (Throwable tr) {
             if (lazyLoad) {
                 lazyLoad = false;
@@ -80,9 +83,6 @@ public class WorkParser extends Parser {
             } else {
                 throw tr;
             }
-        }
-        if (rawContent == null || rawContent.length() == 0) {
-            throw new IOException("Закешированный файл не найден и отцутствует соединение с интернетом");
         }
         if (work == null) {
             work = new Work(rawContent.getRequest().getBaseUrl().getPath().replaceAll("/+", "/"));

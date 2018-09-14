@@ -73,8 +73,9 @@ public class HtmlClient {
             String linkPath = request.getBaseUrl().getPath().replaceAll("/+", "/");
             File cached = getCachedFile(app, linkPath);
             cached.getParentFile().mkdirs();
-            if (cached.exists()) {
-                cached.renameTo(new File(cached.getAbsolutePath() + ".tmp"));
+            File saveTmp  = new File(cached.getAbsolutePath() + ".tmp");
+            if (cached.exists() && !saveTmp.exists()) {
+                cached.renameTo(saveTmp);
             }
             CachedResponse cachedResponse = new CachedResponse(getCachedFile(app, linkPath).getAbsolutePath(), request);
             cachedResponse.delete();
@@ -142,6 +143,7 @@ public class HtmlClient {
                 return response;
             } catch (Throwable tr) {
                 if(tmp.exists()) {
+                    cachedFile.delete();
                     tmp.renameTo(cachedFile);
                 }
                 throw tr;
