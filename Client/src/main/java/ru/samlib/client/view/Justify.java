@@ -147,7 +147,13 @@ public class Justify {
 
                     Object [] builderSpans = builder.getSpans(lineStart + matchStart, lineEnd + matchEnd, Object.class);
                     float matchWidth = 0;
-                    if (builderSpans.length > 0) {
+                    boolean otherSpans = false;
+                    for (Object builderSpan : builderSpans) {
+                        if(builderSpan.getClass() != ScaleSpan.class) {
+                            otherSpans = true;
+                        }
+                    }
+                    if (otherSpans) {
                         matchWidth = measureSpannedText(builder, layout, lineStart + matchStart, lineStart + matchEnd);
                     } else {
                         matchWidth = layout.getPaint().measureText(builder, lineStart + matchStart, lineStart + matchEnd);
