@@ -76,7 +76,9 @@ public class Justify {
         Map<Integer, Integer> textViewSpanEnds = new LinkedHashMap<>();
         List<ScaleSpan> spans = new ArrayList<>();
         for (int line=0; line<count; ++line) {
-
+            textViewSpanStarts.clear();
+            textViewSpanEnds.clear();
+            spans.clear();
             final int lineStart = layout.getLineStart(line);
             int lineEnd;
             try {
@@ -154,7 +156,7 @@ public class Justify {
                         }
                     }
                     if (otherSpans) {
-                        matchWidth = measureSpannedText(builder, layout, lineStart + matchStart, lineStart + matchEnd);
+                        matchWidth = measureSpannedText(builder, lineStart + matchStart, lineStart + matchEnd, layout);
                     } else {
                         matchWidth = layout.getPaint().measureText(builder, lineStart + matchStart, lineStart + matchEnd);
                     }
@@ -190,21 +192,19 @@ public class Justify {
                 // can modify the kerning.
                 // If that is the case, then we try to reduce the extra space slightly until there's no
                 // excess space left.
-                int loop = 0;
-                while (excess > 0) {
-                    if (++loop == 4) {
-                        android.util.Log.e("ERROR",
-                                "Could not compensate for excess space (" + excess + "px).");
+                if (excess > 0) {
+                    // Reduce the remaining space exponentially for each iteration.
+                    remaining -= excess;
+                    // Set the spans with the new proportions.
+                    final float reducedProportions = (spaceWidth + remaining) / spaceWidth;
+                    if(reducedProportions <= 1) {
+                        break; //something go wrong
                     }
                     // Clear the spans from the previous attempt.
                     for (int span=0; span<n; ++span) {
                         builder.removeSpan(spans.get(span));
                     }
                     spans.clear();
-                    // Reduce the remaining space exponentially for each iteration.
-                    remaining -= (excess + loop * loop);
-                    // Set the spans with the new proportions.
-                    final float reducedProportions = (spaceWidth + remaining) / spaceWidth;
                     for (int span=0; span<n; ++span) {
                         ScaleSpan scaleSpan = new ScaleSpan(reducedProportions);
                         spans.add(scaleSpan);
@@ -214,10 +214,6 @@ public class Justify {
                                 lineStart + textViewSpanEnds.get(span),
                                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                     }
-                    // recompute the excess space.
-                    excess = (int)Math.ceil(Layout.getDesiredWidth(builder,
-                            lineStart, lineEnd,
-                            layout.getPaint())) - want;
                 }
             }
         }
@@ -227,7 +223,7 @@ public class Justify {
     }
 
 
-    private static float measureSpannedText(CharSequence text, Layout layout, int start, int end) {
+    private static float measureSpannedText(CharSequence text,int start, int end,  Layout layout) {
         StaticLayout tempLayout = new StaticLayout(text.subSequence(start, end), layout.getPaint(), Integer.MAX_VALUE, layout.getAlignment(), layout.getSpacingMultiplier(), layout.getSpacingAdd(), false);
         int lineCount = tempLayout.getLineCount();
         float textWidth =0;
