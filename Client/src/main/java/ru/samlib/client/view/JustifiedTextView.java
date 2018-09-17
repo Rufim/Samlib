@@ -70,7 +70,6 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         if(!mMeasuring) {
             mMeasuring = true;
             try {
-                lastString = getText().toString();
                 // Setup ScaleXSpans on whitespaces to justify the text.
                 try {
                     Justify.setupScaleSpans(this);
@@ -90,6 +89,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         final Layout layout = getLayout();
         if (layout != null) {
             if(lastString == null || !lastString.equals(text.toString())) {
+                lastString = getText().toString();
                 justify();
             }
         }
