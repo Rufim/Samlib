@@ -15,9 +15,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
 
-public class JustifiedTextView extends android.support.v7.widget.AppCompatTextView implements Justify.Justified  {
+public class JustifiedTextView extends android.support.v7.widget.AppCompatTextView implements Justify.Justified {
 
-   String lastString;
+    String lastString;
 
     @SuppressWarnings("unused")
     public JustifiedTextView(final @NotNull Context context) {
@@ -60,27 +60,27 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
                     mTextScaleX = textScaleX;
                     mFakeBold = fakeBold;
                     mWidth = width;
-                    justify();
+                    mMeasuring = true;
+                    try {
+                        justify();
+                    } finally {
+                        mMeasuring = false;
+                    }
                 }
             }
         }
     }
 
     private void justify() {
-        if(!mMeasuring) {
-            mMeasuring = true;
-            try {
-                // Setup ScaleXSpans on whitespaces to justify the text.
-                try {
-                    Justify.setupScaleSpans(this);
-                } catch (Throwable ex) {
-                    Cat.e(ex);
-                }
-            } finally {
-                mMeasuring = false;
-            }
+        // Setup ScaleXSpans on whitespaces to justify the text.
+        try {
+            Justify.setupScaleSpans(this);
+        } catch (Throwable ex) {
+            Cat.e(ex);
         }
     }
+
+
 
     @Override
     protected void onTextChanged(final CharSequence text,
@@ -88,7 +88,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         final Layout layout = getLayout();
         if (layout != null) {
-            if(lastString == null || !lastString.equals(text.toString())) {
+            if (lastString == null || !lastString.equals(text.toString())) {
                 lastString = getText().toString();
                 justify();
             }
@@ -97,7 +97,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
 
     public boolean isJustified() {
         CharSequence text = getText();
-        if(text instanceof SpannableString) {
+        if (text instanceof SpannableString) {
             return ((SpannableString) text).getSpans(0, text.length(), Justify.ScaleSpan.class).length > 0;
         }
         return false;

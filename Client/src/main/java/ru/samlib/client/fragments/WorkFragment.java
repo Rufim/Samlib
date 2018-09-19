@@ -1516,7 +1516,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.setTextView(view);
                     spanner.registerHandler("a", new LinkHandler());
                     spanner.setFontResolver(fontResolver);
-                    view.setText(spanner.fromHtml(indent), TextView.BufferType.SPANNABLE);
+                    view.setText(spanner.fromHtml(indent.replace("-", "-")), TextView.BufferType.SPANNABLE);
                     // fix wrong height when use image spans
                     view.setTextSize(20);
                     initPreference(view);

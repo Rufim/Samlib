@@ -27,7 +27,7 @@ public class Justify {
 
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
-    public static final float DEFAULT_MAX_PROPORTION = 10f;
+    public static final float DEFAULT_MAX_PROPORTION = 15f;
 
     /**
      * Adds ScaleX spans to expand widespaces and justify the lines.
@@ -50,8 +50,7 @@ public class Justify {
         if (count < 2) return;
 
         // Layout line widths do not include the padding
-        final int want = textView.getMeasuredWidth() -
-                textView.getCompoundPaddingLeft() - textView.getCompoundPaddingRight();
+        final int want = textView.getMeasuredWidth() - textView.getCompoundPaddingLeft() - textView.getCompoundPaddingRight();
 
         // We won't justify lines if it requires expanding the spaces beyond the maximum proportion.
         final float maxProportion;
@@ -104,9 +103,9 @@ public class Justify {
             if (visibleLineEnd == lineStart) continue;
 
             // Layout line width
-//      final float w = layout.getLineWidth(line);    // Works fine, but only for API > 11
-//      final float w = layout.getLineMax(line);      // Doesn't work well
-            final float w = Layout.getDesiredWidth(builder, lineStart, lineEnd, layout.getPaint());
+            //final float w = layout.getLineWidth(line);    // Works fine, but only for API > 11
+            //final float w = layout.getLineMax(line);      // Doesn't work well
+            float w =  Layout.getDesiredWidth(builder, lineStart, lineEnd, layout.getPaint());
 
             // Remaining space to fill
             int remaining = (int)Math.floor(want - w);
@@ -118,8 +117,9 @@ public class Justify {
                             visibleLineEnd,
                             lineEnd,
                             Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    w =  Layout.getDesiredWidth(builder, lineStart, lineEnd, layout.getPaint());
+                    remaining = (int)Math.floor(want - w);
                 }
-
                 // Line text
                 final CharSequence sub = builder.subSequence(lineStart, visibleLineEnd);
 
