@@ -27,7 +27,7 @@ public class Justify {
 
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
-    public static final float DEFAULT_MAX_PROPORTION = 15f;
+    public static final float DEFAULT_MAX_PROPORTION = 50f;
 
     /**
      * Adds ScaleX spans to expand widespaces and justify the lines.

@@ -89,7 +89,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
         final Layout layout = getLayout();
         if (layout != null) {
             if (lastString == null || !lastString.equals(text.toString())) {
-                lastString = getText().toString();
+                lastString = text.toString();
                 justify();
             }
         }
