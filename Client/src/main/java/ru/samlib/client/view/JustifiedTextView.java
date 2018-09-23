@@ -2,7 +2,6 @@ package ru.samlib.client.view;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.os.Parcelable;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -12,8 +11,6 @@ import android.widget.TextView;
 import net.vrallev.android.cat.Cat;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.lang.ref.WeakReference;
 
 public class JustifiedTextView extends android.support.v7.widget.AppCompatTextView implements Justify.Justified {
 
@@ -50,14 +47,17 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
             final boolean fakeBold = getPaint().isFakeBoldText();
             final int width = MeasureSpec.getSize(widthMeasureSpec);
             final int height = MeasureSpec.getSize(heightMeasureSpec);
-            final int mode = MeasureSpec.getMode(widthMeasureSpec);
+            final int wMode = MeasureSpec.getMode(widthMeasureSpec);
+            final int hMode = MeasureSpec.getMode(heightMeasureSpec);
+           // final int lines = getLineCount();
             if (mTypeface != typeface ||
                     mTextSize != textSize ||
                     mTextScaleX != textScaleX ||
                     mFakeBold != fakeBold ||
                     mWidth != width ||
                     mHeight != height ||
-                    mMode != mode) {
+                    mWidthMode != wMode ||
+                    mHeightMode != hMode ) {
                 if (width > 0) {
                     mTypeface = typeface;
                     mTextSize = textSize;
@@ -65,7 +65,8 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
                     mFakeBold = fakeBold;
                     mWidth = width;
                     mHeight = height;
-                    mMode = mode;
+                    mWidthMode = wMode;
+                    mHeightMode = hMode;
                     mMeasuring = true;
                     try {
                         justify();
@@ -131,5 +132,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
     private boolean mFakeBold = false;
     private int mWidth = -1;
     private int mHeight = -1;
-    private int mMode = -1;
+    private int mWidthMode = -1;
+    private int mHeightMode = -1;
+    private int mLines = -1;
 }
