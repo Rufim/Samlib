@@ -1326,7 +1326,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
 
         public void refreshSettings(Context context) {
             backgroundColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorBackgroundReader, context.getResources().getColor(R.color.transparent));
-            fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 16f);
+            fontSize = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontSizeReader, 18f);
             fontColor = AndroidSystemUtils.getStringResPreference(context, R.string.preferenceColorFontReader, GuiUtils.getThemeColor(context, android.R.attr.textColor));
             font = Font.mapFonts(getContext().getAssets()).get(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontReader, Font.getDefFont().getName()));
             defaultType = Font.Type.valueOf(AndroidSystemUtils.getStringResPreference(context, R.string.preferenceFontStyleReader, Font.Type.PLAIN.name()));
@@ -1516,7 +1516,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     spanner.setTextView(view);
                     spanner.registerHandler("a", new LinkHandler());
                     spanner.setFontResolver(fontResolver);
-                    view.setText(spanner.fromHtml(indent.replace("-", "-")), TextView.BufferType.SPANNABLE);
+                    view.setText(spanner.fromHtml(indent), TextView.BufferType.SPANNABLE);
                     // fix wrong height when use image spans
                     view.setTextSize(20);
                     initPreference(view);

@@ -192,7 +192,7 @@ public class Justify {
                 // can modify the kerning.
                 // If that is the case, then we try to reduce the extra space slightly until there's no
                 // excess space left.
-                if (excess > 0) {
+                while (excess > 0) {
                     // Reduce the remaining space exponentially for each iteration.
                     remaining -= excess;
                     // Set the spans with the new proportions.
@@ -214,6 +214,10 @@ public class Justify {
                                 lineStart + textViewSpanEnds.get(span),
                                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                     }
+
+                    excess = (int)Math.ceil(Layout.getDesiredWidth(builder,
+                            lineStart, lineEnd,
+                            layout.getPaint())) - want;
                 }
             }
         }

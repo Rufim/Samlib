@@ -49,17 +49,23 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
             final float textScaleX = getTextScaleX();
             final boolean fakeBold = getPaint().isFakeBoldText();
             final int width = MeasureSpec.getSize(widthMeasureSpec);
+            final int height = MeasureSpec.getSize(heightMeasureSpec);
+            final int mode = MeasureSpec.getMode(widthMeasureSpec);
             if (mTypeface != typeface ||
                     mTextSize != textSize ||
                     mTextScaleX != textScaleX ||
                     mFakeBold != fakeBold ||
-                    mWidth != width) {
+                    mWidth != width ||
+                    mHeight != height ||
+                    mMode != mode) {
                 if (width > 0) {
                     mTypeface = typeface;
                     mTextSize = textSize;
                     mTextScaleX = textScaleX;
                     mFakeBold = fakeBold;
                     mWidth = width;
+                    mHeight = height;
+                    mMode = mode;
                     mMeasuring = true;
                     try {
                         justify();
@@ -123,5 +129,7 @@ public class JustifiedTextView extends android.support.v7.widget.AppCompatTextVi
     private float mTextSize = 0f;
     private float mTextScaleX = 0f;
     private boolean mFakeBold = false;
-    private int mWidth = 0;
+    private int mWidth = -1;
+    private int mHeight = -1;
+    private int mMode = -1;
 }
