@@ -1,5 +1,6 @@
 package ru.samlib.client.parser;
 
+import android.annotation.SuppressLint;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
@@ -34,9 +35,12 @@ import ru.kazantsev.template.util.TextUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -112,6 +116,30 @@ public class WorkParser extends Parser {
         return parse(rawContent, "text/html", encoding, work, processChapters);
     }
 
+    @SuppressLint("NewApi")
+    public static boolean unzipWork(File rawContent, Charset charset, File unzipped) throws IOException {
+        try (FileInputStream fin = new FileInputStream(rawContent);
+             ZipInputStream zin = charset == null ? new ZipInputStream(fin) : new ZipInputStream(fin, charset)) {
+            ZipEntry ze = null;
+            while ((ze = zin.getNextEntry()) != null) {
+                if (!ze.isDirectory() && HtmlClient.isSupportedFormat(ze.getName())) {
+                    FileOutputStream out = new FileOutputStream(unzipped);
+                    SystemUtils.copy(zin, out);
+                    zin.closeEntry();
+                    out.close();
+                    return true;
+                }
+            }
+        } catch (IllegalArgumentException iae) {
+            if (charset == null && iae.getMessage().contains("MALFORMED") && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                return unzipWork(rawContent, StandardCharsets.ISO_8859_1, unzipped);
+            } else {
+                throw iae;
+            }
+        }
+        return false;
+    }
+
     public static Work parse(File rawContent, String mimeType, String encoding, Work work, boolean processChapters) throws IOException {
         try {
             if (work.isNotSamlib()) {
@@ -122,20 +150,7 @@ public class WorkParser extends Parser {
                     boolean fileFound = false;
                     unzipped.delete();
                     if (unzipped.createNewFile()) {
-                        try (FileInputStream fin = new FileInputStream(rawContent);
-                             ZipInputStream zin = new ZipInputStream(fin)) {
-                            ZipEntry ze = null;
-                            while ((ze = zin.getNextEntry()) != null) {
-                                if (!ze.isDirectory() && HtmlClient.isSupportedFormat(ze.getName())) {
-                                    fileFound = true;
-                                    FileOutputStream out = new FileOutputStream(unzipped);
-                                    SystemUtils.copy(zin, out);
-                                    zin.closeEntry();
-                                    out.close();
-                                    break;
-                                }
-                            }
-                        }
+                        fileFound = unzipWork(rawContent, null, unzipped);
                     }
                     if (!fileFound) {
                         return work;
@@ -556,7 +571,7 @@ public class WorkParser extends Parser {
         public List<String> getIndents(Elements elements) {
             for (Element element : elements) {
                 FormattingVisitor formatter = new FormattingVisitor(indents);
-                NodeTraversor.traverse(formatter , element);
+                NodeTraversor.traverse(formatter, element);
             }
             return indents;
         }
@@ -626,11 +641,11 @@ public class WorkParser extends Parser {
                     }
                 } else if (nodeName.equalsIgnoreCase("dt")) {
                     append("  ");
-                } else if (StringUtil.in(nodeName, "span", "img", "font" , "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
+                } else if (StringUtil.in(nodeName, "span", "img", "font", "p", "div", "i", "b", "h1", "h2", "h3", "h4", "h5", "h6", "strong", "em", "small", "del", "ins", "sup")) {
                     StringBuilder attrs = new StringBuilder();
                     for (Attribute attribute : node.attributes()) {
                         //TODO: fix HtmlSpanner for handle this
-                        if(!(nodeName.equalsIgnoreCase("font") && attribute.getKey().equalsIgnoreCase("size") && (attribute.getValue().startsWith("+") || attribute.getValue().startsWith("-")))) {
+                        if (!(nodeName.equalsIgnoreCase("font") && attribute.getKey().equalsIgnoreCase("size") && (attribute.getValue().startsWith("+") || attribute.getValue().startsWith("-")))) {
                             attrs.append(" ");
                             attrs.append(attribute.getKey());
                             attrs.append("=");
@@ -665,7 +680,7 @@ public class WorkParser extends Parser {
                     if (parent.nodeName().equalsIgnoreCase("ol")) {
                         List<Node> lis = Stream.of(parent.childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("li")).collect(Collectors.toList());
                         int indexLi = lis.indexOf(node);
-                        if(indexLi >= 0) {
+                        if (indexLi >= 0) {
                             indexLi++;
                             append(indexLi + ". ");
                         }
@@ -688,26 +703,26 @@ public class WorkParser extends Parser {
                 String nodeName = node.nodeName();
                 if (StringUtil.in(nodeName, "i", "a", "b", "h1", "font", "h2", "h3", "h4", "h5", "h6", "p", "div", "span", "strong", "em", "small", "del", "ins", "sup")) {
                     if (StringUtil.in(nodeName, "p", "div")) {
-                        if(lastString().contains("<span>")) {
+                        if (lastString().contains("<span>")) {
                             append("</span>");
                         }
-                    } else if(StringUtil.in(nodeName,"font", "a", "b")) {
+                    } else if (StringUtil.in(nodeName, "font", "a", "b")) {
                         Node next = node.nextSibling();
                         //TODO: fix HtmlSpanner for handle this
-                        if(nodeName.equals("font") || (next != null && (next.toString().trim().isEmpty() || (next instanceof Element && ((Element) next).text().trim().isEmpty())))) {
+                        if (nodeName.equals("font") || (next != null && (next.toString().trim().isEmpty() || (next instanceof Element && ((Element) next).text().trim().isEmpty())))) {
                             append(" </" + nodeName + ">");
                         } else {
                             append("</" + nodeName + ">");
                         }
-                    } else if(!nodeName.equalsIgnoreCase("b") || !((Element) node).html().trim().isEmpty()) {
+                    } else if (!nodeName.equalsIgnoreCase("b") || !((Element) node).html().trim().isEmpty()) {
                         append("</" + nodeName + ">");
                     }
                 }
                 if (StringUtil.in(nodeName, "dt", "p", "div", "li", "ul")) {
                     append("\n");
-                } else if(nodeName.equalsIgnoreCase("td")
+                } else if (nodeName.equalsIgnoreCase("td")
                         && (node.parent() == null || Stream.of(node.parent().childNodes()).filter(n -> n.nodeName().equalsIgnoreCase("td")).collect(Collectors.toList()).indexOf(node) > 0)) {
-                     append("\n");
+                    append("\n");
                 }
 
             }
