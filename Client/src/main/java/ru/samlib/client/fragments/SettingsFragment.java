@@ -120,6 +120,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
 
         public SettingsAdaptor() {
             super(-1, R.layout.item_settings_group, R.layout.item_settings_text);
+            bindRoot = true;
         }
 
 
@@ -353,6 +354,7 @@ public class SettingsFragment extends ListFragment<SettingsFragment.Preference> 
                         case R.layout.item_settings_switch:
                             SwitchCompat switchCompat = (SwitchCompat) root.findViewById(R.id.item_settings_switch);
                             switchCompat.setTag(preference);
+                            switchCompat.setOnCheckedChangeListener(null);
                             switchCompat.setChecked(AndroidSystemUtils.getStringResPreference(getContext(), preference.idKey, preference.defValue == null ? false : (Boolean) preference.defValue));
                             if (preference.idKey == R.string.preferenceObservableNotification) {
                                 switchCompat.setEnabled(AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceObservableAuto, DEF_OBSERVABLE_AUTO));

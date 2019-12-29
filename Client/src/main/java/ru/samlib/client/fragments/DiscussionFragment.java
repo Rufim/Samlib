@@ -70,17 +70,19 @@ public class DiscussionFragment extends FilterDialogListFragment<Discussion> {
         public boolean onClick(View view, int position) {
             int id = view.getId();
             String link = null;
-            switch (id) {
-                case R.id.discussion_item_work:
-                case R.id.discussion_item_work_layout:
-                    link = getItems().get(position).getWork().getCommentsLink().getFullLink();
-                    break;
-                case R.id.discussion_item_author:
-                case R.id.discussion_item_author_layout:
-                    link = getItems().get(position).getAuthor().getFullLink();
-                    break;
+            if (position >= 0 && getItemCount() > position) {
+                switch (id) {
+                    case R.id.discussion_item_work:
+                    case R.id.discussion_item_work_layout:
+                        link = getItems().get(position).getWork().getCommentsLink().getFullLink();
+                        break;
+                    case R.id.discussion_item_author:
+                    case R.id.discussion_item_author_layout:
+                        link = getItems().get(position).getAuthor().getFullLink();
+                        break;
+                }
+                SectionActivity.launchActivity(getContext(), link);
             }
-            SectionActivity.launchActivity(getContext(), link);
             return true;
         }
 

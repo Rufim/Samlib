@@ -653,13 +653,15 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                     } else if (isAdded() && !isStopped) {
                         clearSelection();
                         WorkFragment.this.scrollToIndex(speakIndex, Integer.MIN_VALUE);
-                        itemList.getHandler().removeCallbacks(null);
-                        itemList.getHandler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                onNextPhrase(speakIndex, phraseIndex, phrases);
-                            }
-                        }, 200);
+                        if (itemList != null && itemList.getHandler() != null) {
+                            itemList.getHandler().removeCallbacks(null);
+                            itemList.getHandler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    onNextPhrase(speakIndex, phraseIndex, phrases);
+                                }
+                            }, 200);
+                        }
                     }
                 }
             }
@@ -1468,7 +1470,7 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
                                         DynamicImageSpan images[] = spannableString.getSpans(offset, spannableString.length(), DynamicImageSpan.class);
                                         if (images.length > 0) {
                                             DynamicImageSpan imageSpan = images[images.length - 1];
-                                            if (imageSpan.getDrawable() instanceof BitmapDrawable) {
+                                            if (imageSpan.getDrawable() instanceof BitmapDrawable && !((BitmapDrawable) imageSpan.getDrawable()).getBitmap().isRecycled()) {
                                                 ImageFragment.show(WorkFragment.this, ((BitmapDrawable) imageSpan.getDrawable()).getBitmap());
                                             }
                                             return true;

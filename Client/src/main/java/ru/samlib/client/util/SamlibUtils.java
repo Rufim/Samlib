@@ -128,7 +128,7 @@ public class SamlibUtils {
         String link = linkParts[0];
         if (linkParts.length > 1) {
             for (int i = 1; i < linkParts.length; i++) {
-                link += "_" + linkParts[i].charAt(0);
+                if (linkParts[i].length() > 0) link += "_" + linkParts[i].charAt(0);
             }
         }
         return "/" + link.charAt(0) + "/" + link + "/";
