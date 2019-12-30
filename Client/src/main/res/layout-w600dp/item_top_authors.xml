@@ -21,6 +21,7 @@
     <LinearLayout android:orientation="vertical"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
+                  android:background="@android:drawable/list_selector_background"
                   android:id="@+id/top_authors_autor_body"
                   android:gravity="center_vertical">
         <LinearLayout android:layout_width="match_parent"

@@ -64,6 +64,7 @@ public class TopAuthorsFragment extends ListFragment<Author> {
 
         public TopAuthorsAdapter() {
             super(R.layout.item_top_authors);
+            performSelectRoot = true;
         }
 
         @Override

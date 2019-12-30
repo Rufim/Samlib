@@ -12,6 +12,8 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:gravity="left"
+            android:focusable="true"
+            android:duplicateParentState="true"
             android:background="@android:drawable/list_selector_background"
             android:layout_height="wrap_content">
         <TextView

@@ -673,11 +673,6 @@ public class AuthorFragment extends ListFragment<Linkable> {
                         }
                     }
                     return true;
-                case R.id.work_item_layout:
-                case R.id.work_item_title:
-                case R.id.work_item_rate_and_size:
-                    openLinkable(linkable);
-                    return true;
                 case R.id.illustration_button:
                     IllustrationPagerFragment.show(newFragmentBuilder()
                             .addToBackStack()
@@ -689,6 +684,12 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             .addToBackStack()
                             .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                             .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left), getId(), linkable.getLink());
+                    return true;
+                case R.id.work_item_layout:
+                case R.id.work_item_title:
+                case R.id.work_item_rate_and_size:
+                    default:
+                    openLinkable(linkable);
                     return true;
             }
         }
