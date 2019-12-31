@@ -17,6 +17,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/SandyTheme"
+        android:usesCleartextTraffic="true"
         tools:replace="android:icon,android:theme">
         <provider
             android:name=".database.SuggestionProvider"

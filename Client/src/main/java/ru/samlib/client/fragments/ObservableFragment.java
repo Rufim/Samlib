@@ -339,6 +339,7 @@ public class ObservableFragment extends ListFragment<Author> {
                 }
             });
         });
+        updateThread.start();
     }
 
     private boolean isUpdateThreadActive() {

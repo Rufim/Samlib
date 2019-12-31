@@ -5,7 +5,7 @@ ext {
     buildToolsProjectVersion = '27.0.3'
     supportLibraryVersion = '27.1.1'
     versionProjectCode = 60
-    versionProjectName = "0.7.9.13"
+    versionProjectName = "0.7.9.14"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     statServer = 'sistat.mj.milesweb.cloud'
@@ -130,7 +130,7 @@ dependencies {
     implementation "com.github.Raizlabs.DBFlow:dbflow-core:$dbflowVersion"
     implementation "com.github.Raizlabs.DBFlow:dbflow:$dbflowVersion"
     implementation 'com.android.support:multidex:1.0.3'
-    implementation project(':template')
+    implementation "com.github.Rufim:AndroidTemplate:0.8.1"
     implementation 'ch.acra:acra:4.11'
     testImplementation 'junit:junit:4.12'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
