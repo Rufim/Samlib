@@ -587,7 +587,11 @@ public class WorkFragment extends ListFragment<String> implements View.OnClickLi
         i.putExtra(Constants.ArgsName.TTS_PITCH, getRate(pitch));
         i.putExtra(Constants.ArgsName.TTS_LANGUAGE, AndroidSystemUtils.getStringResPreference(getContext(), R.string.preferenceVoiceLanguage, "ru"));
         if (isAdded()) {
-            getActivity().startService(i);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getActivity().startForegroundService(i);
+            } else {
+                getActivity().startService(i);
+            }
             lockOrientation();
         }
     }

@@ -4,7 +4,7 @@ ext {
     compileSdkProjectVersion = 27
     buildToolsProjectVersion = '27.0.3'
     supportLibraryVersion = '27.1.1'
-    versionProjectCode = 61
+    versionProjectCode = 62
     versionProjectName = "0.7.9.14"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
