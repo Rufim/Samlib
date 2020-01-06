@@ -24,11 +24,11 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 
 import net.vrallev.android.cat.Cat;
 
+import io.github.inflationx.calligraphy3.CalligraphyUtils;
 import ru.kazantsev.template.adapter.ItemListAdapter;
 import ru.kazantsev.template.adapter.MultiItemListAdapter;
 import ru.kazantsev.template.fragments.ListFragment;
 import ru.kazantsev.template.lister.DataSource;
-import ru.kazantsev.template.net.HTTPExecutor;
 import ru.kazantsev.template.util.AndroidSystemUtils;
 import ru.kazantsev.template.util.GuiUtils;
 import ru.kazantsev.template.util.PreferenceMaster;
@@ -42,10 +42,7 @@ import ru.samlib.client.domain.Constants;
 import ru.samlib.client.domain.entity.Font;
 import ru.samlib.client.parser.SignInParser;
 import ru.samlib.client.util.TTSPlayer;
-import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.*;
 
 import static android.view.View.GONE;

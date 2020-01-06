@@ -30,22 +30,27 @@ public interface Linkable {
 
 
     public static boolean isSamlibLink(String link) {
+        if(link == null) return false;
         return isAuthorLink(link) || isWorkLink(link) || isCommentsLink(link) || isIllustrationsLink(link);
     }
 
     public static boolean isWorkLink(String link) {
+        if(link == null) return false;
         return link.matches(Constants.Pattern.WORK_URL_REGEXP);
     }
 
     public static boolean isAuthorLink(String link) {
+        if(link == null) return false;
         return link.matches(Constants.Pattern.AUTHOR_URL_REGEXP);
     }
 
     public static boolean isCommentsLink(String link) {
+        if(link == null) return false;
         return link.matches(Constants.Pattern.COMMENTS_URL_REGEXP);
     }
 
     public static boolean isIllustrationsLink(String link) {
+        if(link == null) return false;
         return link.matches(Constants.Pattern.ILLUSTRATIONS_URL_REGEXP);
     }
 }

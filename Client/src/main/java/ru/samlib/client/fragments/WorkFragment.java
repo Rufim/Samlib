@@ -43,6 +43,8 @@ import net.vrallev.android.cat.Cat;
 
 import org.greenrobot.eventbus.Subscribe;
 
+import io.github.inflationx.calligraphy3.CalligraphyUtils;
+import io.github.inflationx.calligraphy3.TypefaceUtils;
 import ru.kazantsev.template.activity.BaseActivity;
 import ru.kazantsev.template.dialog.DirectoryChooserDialog;
 import ru.kazantsev.template.fragments.BaseFragment;
@@ -73,9 +75,6 @@ import ru.samlib.client.receiver.TTSNotificationBroadcast;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.service.TTSService;
 import ru.samlib.client.util.*;
-import ru.samlib.client.view.JustifiedTextView;
-import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
-import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 import xyz.danoz.recyclerviewfastscroller.AbsRecyclerViewFastScroller;
 import xyz.danoz.recyclerviewfastscroller.FastScrollerTouchListener;
 

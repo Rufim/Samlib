@@ -4,8 +4,8 @@ ext {
     compileSdkProjectVersion = 27
     buildToolsProjectVersion = '27.0.3'
     supportLibraryVersion = '27.1.1'
-    versionProjectCode = 62
-    versionProjectName = "0.7.9.14"
+    versionProjectCode = 63
+    versionProjectName = "0.7.9.15"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     statServer = 'sistat.mj.milesweb.cloud'
@@ -97,6 +97,11 @@ android {
 
 }
 
+configurations {
+    cleanedAnnotations
+    compile.exclude group: 'org.jetbrains' , module:'annotations'
+}
+
 dependencies {
     compile fileTree(include: ["*.jar"], dir: "libs")
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
@@ -117,7 +122,8 @@ dependencies {
     implementation "org.greenrobot:eventbus:3.1.1"
     implementation "com.squareup.picasso:picasso:2.71828"
     implementation "com.google.code.gson:gson:2.8.2"
-    implementation "uk.co.chrisjenx:calligraphy:2.3.0"
+    implementation 'io.github.inflationx:calligraphy3:3.1.1'
+    implementation 'io.github.inflationx:viewpump:2.0.3'
     implementation "com.google.dagger:dagger:$daggerVersion"
 
     //   implementation "com.github.User:Repo:Tag"  for github repos
@@ -130,7 +136,7 @@ dependencies {
     implementation "com.github.Raizlabs.DBFlow:dbflow-core:$dbflowVersion"
     implementation "com.github.Raizlabs.DBFlow:dbflow:$dbflowVersion"
     implementation 'com.android.support:multidex:1.0.3'
-    implementation "com.github.Rufim:AndroidTemplate:0.8.1"
+    implementation "com.github.Rufim:AndroidTemplate:0.8.2"
     implementation 'ch.acra:acra:4.11'
     testImplementation 'junit:junit:4.12'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

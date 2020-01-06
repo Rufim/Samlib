@@ -20,6 +20,11 @@ import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.acra.config.ConfigurationBuilder;
+
+import io.github.inflationx.calligraphy3.CalligraphyConfig;
+import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
+import io.github.inflationx.viewpump.ViewPump;
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import ru.samlib.client.dagger.AppComponent;
 import ru.samlib.client.dagger.AppModule;
 import ru.samlib.client.dagger.DaggerAppComponent;
@@ -31,7 +36,6 @@ import ru.samlib.client.job.CleanCacheJob;
 import ru.samlib.client.job.ObservableUpdateJob;
 import ru.samlib.client.service.DatabaseService;
 import ru.samlib.client.util.MergeFromRequery;
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -70,9 +74,12 @@ public class App extends MultiDexApplication {
         singleton = this;
         jobManager = JobManager.create(this);
         jobManager.addJobCreator(new AppJobCreator());
-        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
-                .setFontAttrId(R.attr.fontPath)
+        ViewPump.init(ViewPump.builder()
+                .addInterceptor(new CalligraphyInterceptor(
+                        new CalligraphyConfig.Builder()
+                                .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
+                                .setFontAttrId(R.attr.fontPath)
+                                .build()))
                 .build());
         component = DaggerAppComponent.builder()
                 .appModule(new AppModule(this)).build();
