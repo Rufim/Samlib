@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 ext {
-    compileSdkProjectVersion = 27
-    buildToolsProjectVersion = '27.0.3'
+    compileSdkProjectVersion = 29
+    buildToolsProjectVersion = '29.0.0'
     supportLibraryVersion = '27.1.1'
-    versionProjectCode = 64
-    versionProjectName = "0.7.9.16"
+    versionProjectCode = 65
+    versionProjectName = "0.7.9.17"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     statServer = 'sistat.mj.milesweb.cloud'

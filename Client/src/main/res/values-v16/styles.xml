@@ -5,8 +5,4 @@
         <item name="android:fontFamily">@font/roboto</item>
     </style>
 
-    <style name="RobotoButtonStyle" parent="android:Widget.Holo.Button">
-        <item name="android:fontFamily">@font/roboto</item>
-    </style>
-
 </resources>

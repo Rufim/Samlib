@@ -54,7 +54,6 @@
         <item name="colorBorderComment">@color/material_deep_teal_200</item>
         <item name="fontFamily">@font/roboto</item>
         <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
-        <item name="android:buttonStyle">@style/RobotoButtonStyle</item>
 
         <item name="settingsColorBorder">@drawable/border_sandy</item>
         <item name="switchThumb">@drawable/switch_text_thumb_main_sandy</item>
@@ -72,10 +71,6 @@
     </style>
 
     <style name="RobotoTextViewStyle" parent="android:Widget.TextView">
-
-    </style>
-
-    <style name="RobotoButtonStyle" parent="android:Widget.Holo.Button">
 
     </style>
 
