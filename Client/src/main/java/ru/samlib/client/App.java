@@ -74,13 +74,6 @@ public class App extends MultiDexApplication {
         singleton = this;
         jobManager = JobManager.create(this);
         jobManager.addJobCreator(new AppJobCreator());
-        ViewPump.init(ViewPump.builder()
-                .addInterceptor(new CalligraphyInterceptor(
-                        new CalligraphyConfig.Builder()
-                                .setDefaultFontPath(Constants.Assets.ROBOTO_FONT_PATH)
-                                .setFontAttrId(R.attr.fontPath)
-                                .build()))
-                .build());
         component = DaggerAppComponent.builder()
                 .appModule(new AppModule(this)).build();
         ObservableUpdateJob.startSchedule();
