@@ -409,7 +409,7 @@ public class AuthorFragment extends ListFragment<Linkable> {
                             .setAnimation(R.anim.slide_in_left, R.anim.slide_out_right)
                             .setPopupAnimation(R.anim.slide_in_right, R.anim.slide_out_left)
                     , getId(), linkable.getLink());
-        } else {
+        } else if (linkable.getLink() != null) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkable.getLink()));
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, getActivity().getPackageName());
             getActivity().startActivity(intent);

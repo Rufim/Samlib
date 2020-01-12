@@ -4,8 +4,8 @@ ext {
     compileSdkProjectVersion = 29
     buildToolsProjectVersion = '29.0.0'
     supportLibraryVersion = '27.1.1'
-    versionProjectCode = 65
-    versionProjectName = "0.7.9.17"
+    versionProjectCode = 66
+    versionProjectName = "0.7.9.18"
     baseScheme = 'http'
     baseHost = 'samlib.ru'
     statServer = 'sistat.mj.milesweb.cloud'
