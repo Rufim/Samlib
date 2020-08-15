@@ -29,7 +29,7 @@ public class HtmlClient {
 
     private static final String TAG = HtmlClient.class.getSimpleName();
 
-    public static final String [] SUPPORTED_FORMATS = {"shtml", "html", "htm", "txt", "fb2"};
+    public static final String [] SUPPORTED_FORMATS = {"shtml", "html", "htm", "txt", "fb2", "zip"};
 
     private static HtmlClient instance;
     private static Hashtable<String, CachedResponse> htmlfiles = new Hashtable<>(1);

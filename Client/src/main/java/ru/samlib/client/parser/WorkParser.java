@@ -427,8 +427,11 @@ public class WorkParser extends Parser {
                 Elements refs = children.select("a");
                 for (Element ref : refs) {
                     Bookmark bookmark = new Bookmark(ref.text());
-                    bookmark.setIndent(ref.attr("l:href").substring(1));
-                    work.getAutoBookmarks().add(bookmark);
+                    String href = ref.attr("l:href");
+                    if (href.length() > 0) {
+                        bookmark.setIndent(ref.attr("l:href").substring(1));
+                        work.getAutoBookmarks().add(bookmark);
+                    }
                 }
 
             }
