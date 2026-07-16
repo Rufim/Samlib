@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- HomeScreen (шторка) -->
+    <string name="home_offline">офлайн</string>
+    <string name="home_online">онлайн</string>
+    <string name="home_profile_anonymous">Аноним</string>
+    <string name="home_profile_user">Пользователь</string>
+    <string name="home_group_feed">Лента</string>
+    <string name="home_group_catalog">Каталог</string>
+    <string name="home_group_mine">Моё</string>
+    <string name="home_group_more">Ещё</string>
+    <string name="home_newest">Новинки</string>
+    <string name="home_search">Поиск</string>
+    <string name="home_history">История</string>
+    <string name="home_followed">Отслеживаемые</string>
+    <string name="home_downloads">Сохранённые</string>
+    <string name="home_settings">Настройки</string>
+    <string name="home_open_file">Открыть файл</string>
+    <string name="home_help">Помощь</string>
+
+    <!-- HistoryScreen -->
+    <string name="history_title">История</string>
+    <string name="history_menu">Меню</string>
+    <string name="history_filter">Фильтр</string>
+    <string name="history_only_pinned">Только закреплённые</string>
+    <string name="history_clear">Очистить</string>
+    <string name="history_search">Поиск</string>
+    <string name="history_empty">Пусто</string>
+    <string name="history_deleted">Запись удалена</string>
+    <string name="history_undo">Отменить</string>
+    <string name="history_pin">Закрепить</string>
+    <string name="history_unpin">Открепить</string>
+
+    <!-- FollowedScreen -->
+    <string name="followed_title">Отслеживаемые</string>
+    <string name="followed_menu">Меню</string>
+    <string name="followed_more">Ещё</string>
+    <string name="followed_import">Импорт</string>
+    <string name="followed_export">Экспорт</string>
+    <string name="followed_exported">Экспортировано</string>
+    <string name="followed_author_deleted">Автор удалён из отслеживаемых</string>
+    <string name="followed_book_deleted">Книга удалена из отслеживаемых</string>
+    <string name="followed_undo">Отменить</string>
+    <string name="followed_empty">Нет отслеживаемых авторов и книг</string>
+    <string name="followed_authors">Авторы</string>
+    <string name="followed_books">Книги</string>
+    <string name="followed_changed_date">изменен: %1$s</string>
+    <string name="followed_seen">Просмотрено</string>
+    <string name="followed_unfollow">Отписаться</string>
+
+    <!-- LoginScreen -->
+    <string name="login_title">Вход на samlib.ru</string>
+    <string name="login_back">Назад</string>
+    <string name="login_logged_in">Вы вошли на samlib.ru</string>
+    <string name="login_my_page">Мой раздел</string>
+    <string name="login_logout">Выйти</string>
+    <string name="login_login">Логин</string>
+    <string name="login_password">Пароль</string>
+    <string name="login_submit">Войти</string>
+
+    <!-- HelpScreen -->
+    <string name="help_title">Помощь</string>
+    <string name="help_back">Назад</string>
+    <string name="help_app_title">Samlib — читалка</string>
+    <string name="help_app_description">Неофициальный клиент библиотеки СамИздат (samlib.ru): новинки, поиск, авторы, топы, обзоры, обсуждения, комментарии и иллюстрации, офлайн-чтение и озвучка.</string>
+    <string name="help_sections_title">Разделы меню</string>
+    <string name="help_sections_text">• Лента: новинки и поиск.\n• Каталог: Топ авторов, Обзоры, Обсуждения, Избранное.\n• Моё: история чтения и отслеживаемые авторы (подписки).\n• Ещё: настройки, помощь, открытие сохранённого файла.</string>
+    <string name="help_reading_title">Чтение</string>
+    <string name="help_reading_text">В читалке доступны настройки шрифта/темы (шестерёнка), автопрокрутка, озвучка (TTS), сохранение на устройство и иллюстрации — через меню «⋮».</string>
+    <string name="help_open_samlib">Открыть samlib.ru</string>
+</resources>

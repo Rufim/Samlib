@@ -1,0 +1,951 @@
+<html>
+<head>  <title>Самиздат: Управление</title> </head>
+<body bgcolor="#E9E9E9">
+       <div align="right">
+        
+        <h3></h3>
+        </div> 
+					
+<center><h2>Журнал &quot;Самиздат&quot;: Управление</h2>
+
+
+
+<!------- Первый блок ссылок ------------->							
+<a href=/><font color="#555555"><b>Самиздат:</b></font></a>
+[<a href="/cgi-bin/login">Регистрация</a>] <!-- -->
+
+[<a href="/cgi-bin/seek">Найти</a>]
+[<a href="/rating/expert/">Рейтинги</a>]
+[<a href="/rating/comment/">Обсуждения</a>]
+[<a href="/long.shtml">Новинки</a>]
+[<a href="/janr/index_janr_time23-1.shtml">Обзоры</a>]
+[<A HREF="/i/info/">Помощь</A>|<a href="/comment/r/redaktor/forum_main">Техвопросы</a>]
+
+<hr size=2 noshade></center>
+<div align="center">
+<table width="640" border="1" cellspacing="0" cellpadding="0" bgcolor="Silver">
+<tr>
+ <td align="JUSTIFY" valign="TOP">
+  <form action="/cgi-bin/seek" method=POST>
+  <input type=hidden name=DIR value= >
+  <table width="90%" border="0" cellspacing="0" cellpadding="5" align="CENTER">
+    <tr>
+	<td align="left" valign="top"colspan=2 ><font size="-1">
+	 Искать 
+         <input type="text" name="FIND" align="RIGHT" size="20" value="Пушкин">
+	 &nbsp;&nbsp;в&nbsp;&nbsp; <select name="PLACE">
+          <option value="index" selected >1. Название,автор,аннот.(Title,Author,Annot.)</option>	 
+         </select>
+	 <input type="Submit" name="submit" value="Найти! (Find)">
+	</td>
+   </tr>
+   <tr>
+	<td valign=top><font size="-1"><select name="JANR"><option value="0" selected>Жанр: Любой (zhanr: ljuboj)</option><option value="5">Жанр: Проза (zhanr: proza)</option><option value="4">Жанр: Поэзия (zhanr: poezija)</option><option value="3">Жанр: Лирика (zhanr: lirika)</option><option value="19">Жанр: Мемуары (zhanr: memuary)</option><option value="26">Жанр: История (zhanr: istorija)</option><option value="29">Жанр: Детская (zhanr: detskaja)</option><option value="2">Жанр: Детектив (zhanr: detektiw)</option><option value="25">Жанр: Приключения (zhanr: prikljuchenija)</option><option value="1">Жанр: Фантастика (zhanr: fantastika)</option><option value="24">Жанр: Фэнтези (zhanr: fentezi)</option><option value="22">Жанр: Киберпанк (zhanr: kiberpank)</option><option value="35">Жанр: Фанфик (zhanr: fanfik)</option><option value="36">Жанр: AI-Generated (zhanr: ai-generated)</option><option value="11">Жанр: Публицистика (zhanr: publicistika)</option><option value="32">Жанр: События (zhanr: sobytija)</option><option value="23">Жанр: Литобзор (zhanr: litobzor)</option><option value="9">Жанр: Критика (zhanr: kritika)</option><option value="15">Жанр: Философия (zhanr: filosofija)</option><option value="13">Жанр: Религия (zhanr: religija)</option><option value="14">Жанр: Эзотерика (zhanr: ezoterika)</option><option value="18">Жанр: Оккультизм (zhanr: okkulxtizm)</option><option value="17">Жанр: Мистика (zhanr: mistika)</option><option value="30">Жанр: Хоррор (zhanr: horror)</option><option value="28">Жанр: Политика (zhanr: politika)</option><option value="7">Жанр: Эротика (zhanr: erotika)</option><option value="12">Жанр: Любовный роман (zhanr: ljubownyj roman)</option><option value="20">Жанр: Естествознание (zhanr: estestwoznanie)</option><option value="21">Жанр: Изобретательство (zhanr: izobretatelxstwo)</option><option value="8">Жанр: Юмор (zhanr: jumor)</option><option value="27">Жанр: Байки (zhanr: bajki)</option><option value="31">Жанр: Пародии (zhanr: parodii)</option><option value="10">Жанр: Переводы (zhanr: perewody)</option><option value="16">Жанр: Сказки (zhanr: skazki)</option><option value="6">Жанр: Драматургия (zhanr: dramaturgija)</option><option value="33">Жанр: Постмодернизм (zhanr: postmodernizm)</option><option value="34">Жанр: Foreign+Translat (zhanr: foreign+translat)</option></select></td>	
+	<td valign=top><font size="-1"><select name="TYPE"><option value="0" selected>Форма: Любая (forma: ljubaja)</option><option value="1">Форма: Роман (forma: roman)</option><option value="2">Форма: Повесть (forma: powestx)</option><option value="16">Форма: Глава (forma: glawa)</option><option value="10">Форма: Сборник рассказов (forma: sbornik rasskazow)</option><option value="3">Форма: Рассказ (forma: rasskaz)</option><option value="11">Форма: Поэма (forma: poema)</option><option value="7">Форма: Сборник стихов (forma: sbornik stihow)</option><option value="6">Форма: Стихотворение (forma: stihotworenie)</option><option value="13">Форма: Эссе (forma: esse)</option><option value="4">Форма: Очерк (forma: ocherk)</option><option value="5">Форма: Статья (forma: statxja)</option><option value="19">Форма: Дневник (forma: dnewnik)</option><option value="17">Форма: Монография (forma: monografija)</option><option value="18">Форма: Справочник (forma: sprawochnik)</option><option value="12">Форма: Песня (forma: pesnja)</option><option value="15">Форма: Новелла (forma: nowella)</option><option value="9">Форма: Пьеса; сценарий (forma: pxesa; scenarij)</option><option value="8">Форма: Миниатюра (forma: miniatjura)</option><option value="14">Форма: Интервью (forma: interwxju)</option></select></td>	
+   </tr>
+  </table></form></td>
+</tr>
+</table>
+</div>
+
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>1</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/ablomasow_t_s/><font color=#555555>Дурри О.Дурогон</font></a>, <A
+ HREF=/a/ablomasow_t_s/pushkinu.shtml>Пушкину 225</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Эссе"  Жанр: История </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...  13 26 <font color=red><b>пушкин</b></font>у 225  1716722844 sun, 26 may ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>2</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/lazarew_a_d/><font color=#555555>Гайворонский Федор</font></a>, <A
+ HREF=/l/lazarew_a_d/xbeduf.shtml>Воронеж литературный</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>11k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Миниатюра"  Жанр: Байки </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...4866702   о том, каким местом <font color=red><b>пушкин</b></font> связан с воронежем. да и не т...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>3</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/lazarew_a_d/><font color=#555555>Гайворонский Федор</font></a>, <A
+ HREF=/l/lazarew_a_d/nogg.shtml>Я помню ноги девы милой...</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Лирика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...ног супруги молодой..." (а.с. <font color=red><b>пушкин</b></font>) 0   tue, 15 jun 2010 17:55:0...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>4</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/lew_shklowskij/><font color=#555555>Бурт Валерий</font></a>, <A
+ HREF=/l/lew_shklowskij/6ijunjadwastoletijaslishnimnazadrodilsjapushkin.shtml>6 июня, два столетия с лишним назад родился Пушкин</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>9k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Эссе"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...олетия с лишним назад родился <font color=red><b>пушкин</b></font> 4  tue, 07 jun 2022 12:18:00 ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>5</b></p></td>
+ 			<td width=553 height=12><p><a href=/r/razow_wladimir_borisowich/><font color=#555555>Разов Владимир Борисович</font></a>, <A
+ HREF=/r/razow_wladimir_borisowich/80gibelxnajachestx.shtml>13. Гибельная честь</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...тихотворение посвящено памяти <font color=red><b>пушкин</b></font>а и лермонтова. автор считает ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>6</b></p></td>
+ 			<td width=553 height=12><p><a href=/w/wiktor_r/><font color=#555555>Райзман Виктор</font></a>, <A
+ HREF=/w/wiktor_r/poeziya-235.shtml>Пушкинские тайны</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...1683733622  2 4 14/11/2012  6 <font color=red><b>пушкин</b></font>ские тайны 4  thu, 15 nov 2012...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>7</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/arkan/><font color=#555555>Аркан</font></a>, <A
+ HREF=/a/arkan/er02.shtml>Пушкиновоши, пушкиноведы и Я, ученик Поэта</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>12k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Эссе"  Жанр: Пародии </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+... dec 2008 13:38:00 gmt 13  31 <font color=red><b>пушкин</b></font>овоши, пушкиноведы и я, ученик...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>8</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/roman/><font color=#555555>Литов Михаил Юрьевич</font></a>, <A
+ HREF=/l/roman/obrachenie.shtml>Обращение К Пушкину</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>103k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Повесть"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...0 27/01/2011  2 5 обращение к <font color=red><b>пушкин</b></font>у  1296131461 thu, 27 jan 2011...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>9</b></p></td>
+ 			<td width=553 height=12><p><a href=/t/irinka/><font color=#555555>Труфанов Василий</font></a>, <A
+ HREF=/t/irinka/bn.shtml>Очарование белых ночей</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>2k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...ачало июня. овальный барельеф <font color=red><b>пушкин</b></font>а на стене моей комнаты, много...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>10</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/lengozow_m_o/><font color=#555555>Филинg М.О.</font></a>, <A
+ HREF=/l/lengozow_m_o/a44.shtml>Ай да Пушкин</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Юмор </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...04/2017  1683733276 2 4 ай да <font color=red><b>пушкин</b></font> 8 6  fri, 28 apr 2017 08:37:0...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>11</b></p></td>
+ 			<td width=553 height=12><p><a href=/w/wanke_w_a/><font color=#555555>Ванке Владимир</font></a>, <A
+ HREF=/w/wanke_w_a/1945-63.shtml>Вечный голос (на смерть А.С. Пушкина)</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+... вечный голос (на смерть а.с. <font color=red><b>пушкин</b></font>а) 6  10/02/2018 4 2  16837336...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>12</b></p></td>
+ 			<td width=553 height=12><p><a href=/g/gushina_a_a/><font color=#555555>Гущина Александра Алексеевна</font></a>, <A
+ HREF=/g/gushina_a_a/stihotworenie.shtml>***</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Лирика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...ксандра алексеевна    немного <font color=red><b>пушкин</b></font>а, немного лермонтова...)  fri...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>13</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/ljuksemburg_b_n/><font color=#555555>Беня Люкс</font></a>, <A
+ HREF=/l/ljuksemburg_b_n/sojuzpisatelxshajashina.shtml>Союзписательша Яшина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...   возможно, <font color=red><b>пушкин</b></font> - попаданец в наше время выра...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>14</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/ljuksemburg_b_n/><font color=#555555>Беня Люкс</font></a>, <A
+ HREF=/l/ljuksemburg_b_n/sojuzpisatelxshaabramowa.shtml>Союзписательша Абрамова</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...25 5 1 беня люкс  1 возможно, <font color=red><b>пушкин</b></font> - попаданец в наше время выра...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>15</b></p></td>
+ 			<td width=553 height=12><p><a href=/d/dushina_walentina_nikolaewna/><font color=#555555>Душина Валентина Николаевна</font></a>, <A
+ HREF=/d/dushina_walentina_nikolaewna/recenzijanasb-ikdikijmed.shtml>Рецензия на сб-к "Дикий мёд"</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>10k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+... "паруса науки" лицей no78 им.<font color=red><b>пушкин</b></font>а 5  рецензия на сб-к "дикий м...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>16</b></p></td>
+ 			<td width=553 height=12><p><a href=/g/galimow_b_i/><font color=#555555>Галимов Брячеслав Иванович</font></a>, <A
+ HREF=/g/galimow_b_i/chaadaev.shtml>Ночи с Чаадаевым</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>246k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Повесть"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...освященному ему стихотворению <font color=red><b>пушкин</b></font>а: "товарищ, верь: взойдёт она...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>17</b></p></td>
+ 			<td width=553 height=12><p><a href=/j/jashuk_w_i/><font color=#555555>Ящук Владимир Иванович</font></a>, <A
+ HREF=/j/jashuk_w_i/rady.shtml>Книга про Радивилiв</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>358k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Сборник рассказов"  Жанр: История </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...вицкий и петро козланюк, друг <font color=red><b>пушкин</b></font>а - петр каверин, бывали иван ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>18</b></p></td>
+ 			<td width=553 height=12><p><a href=/j/jashuk_w_i/><font color=#555555>Ящук Владимир Иванович</font></a>, <A
+ HREF=/j/jashuk_w_i/petrpawlowichkawerindrugpushkinazhilwradiwilowe.shtml>Петр Каверин, друг Пушкина, жил в Радивилове</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>17k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: История </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...03864  4 2 петр каверин, друг <font color=red><b>пушкин</b></font>а, жил в радивилове 26  5 thu,...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>19</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/aalmaz_a_a/><font color=#555555>Анонимный Летописец</font></a>, <A
+ HREF=/a/aalmaz_a_a/hist006.shtml>1990. Устав клуба "25 апреля". Группа "Ступени", город Пушкин</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Публицистика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...еля". группа "ступени", город <font color=red><b>пушкин</b></font> 5  1545822480 wed, 26 dec 201...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>20</b></p></td>
+ 			<td width=553 height=12><p><a href=/d/denisow_a_s/><font color=#555555>Денисов Александр Сергеевич</font></a>, <A
+ HREF=/d/denisow_a_s/olga_831.shtml>9.6. Угол Щорса и Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...47569260 6  9.6. угол щорса и <font color=red><b>пушкин</b></font>а 4 0   0 10/05/2023 2   денис...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>21</b></p></td>
+ 			<td width=553 height=12><p><a href=/m/melxnik_a_f/><font color=#555555>Мельник Александр Федосеевич</font></a>, <A
+ HREF=/m/melxnik_a_f/stihi-1.shtml>Как вырастить Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>2k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Байки </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...    6  как вырастить <font color=red><b>пушкин</b></font>а 27  thu, 16 jan 2020 12:13:0...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>22</b></p></td>
+ 			<td width=553 height=12><p><a href=/m/melxnik_a_f/><font color=#555555>Мельник Александр Федосеевич</font></a>, <A
+ HREF=/m/melxnik_a_f/istorija-3.shtml>Надоело молчать о Пушкине</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>3k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Очерк"  Жанр: История </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+.../10/2012  4 надоело молчать о <font color=red><b>пушкин</b></font>е 26  mon, 01 oct 2012 14:27:3...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>23</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/smolencew_a_i/><font color=#555555>Смоленцев Алексей Иванович</font></a>, <A
+ HREF=/s/smolencew_a_i/pushinpravoslavie-smolent.shtml>Александр Пушкин: "инстинкт Истины". Православный вектор судьбы</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>21k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: Критика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...44  02/05/2018 5  9 александр <font color=red><b>пушкин</b></font>: "инстинкт истины". православ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>24</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/smolencew_a_i/><font color=#555555>Смоленцев Алексей Иванович</font></a>, <A
+ HREF=/s/smolencew_a_i/ivsm-krest.shtml>Иван Смоленцев - неизвестный крестьянский русский поэт второй половины Хх века</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>19k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: Критика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...ь крестьянской россии открыли <font color=red><b>пушкин</b></font>, толстой, тургенев, бунин... ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>25</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/smolencew_a_i/><font color=#555555>Смоленцев Алексей Иванович</font></a>, <A
+ HREF=/s/smolencew_a_i/oprelectiax.shtml>О мотивации, сбойной конструкции и прочих прелестях иной "любви"</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>10k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Глава"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+... который?... в данном случае, <font color=red><b>пушкин</b></font>...    ...с тобой, такой... ск...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>26</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/anatoliy_s/><font color=#555555>Anatoliy Sibilov</font></a>, <A
+ HREF=/a/anatoliy_s/proza.shtml>Iiyteiiictbie B  Iiapctbiie Hebechoe</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>448k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Поэма"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...сергеем есениным, александром <font color=red><b>пушкин</b></font>ым,  американской кинозвездой ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>27</b></p></td>
+ 			<td width=553 height=12><p><a href=/g/gomonowa_a_s/><font color=#555555>Гомонова Анна Сергеевна Петренко</font></a>, <A
+ HREF=/g/gomonowa_a_s/komedia.shtml>Неизвестный Пушкин</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>10k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Пьеса; сценарий"  Жанр: Юмор </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...4 0  комическая пьеса о жизни <font color=red><b>пушкин</b></font>а после дуэли 9 неизвестный пу...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>28</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/apraksin_rsi_aleksandr/><font color=#555555>Апраксин Р-Си Александр</font></a>, <A
+ HREF=/a/apraksin_rsi_aleksandr/basnja1.shtml>Путевые заметки-басенные</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...мо усадьбы приютино.  крылов, <font color=red><b>пушкин</b></font>, брюллов......а усадьба олени...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>30</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/sozdatelew_a/><font color=#555555>Создателев Александр</font></a>, <A
+ HREF=/s/sozdatelew_a/prophet_pushkin_film.shtml>Про фильм "Пророк. История Александра Пушкина"</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>9k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: Публицистика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...м "пророк. история александра <font color=red><b>пушкин</b></font>а" 11  fri, 20 jun 2025 18:19:...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>31</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/alija_j/><font color=#555555>Алия Я.</font></a>, <A
+ HREF=/a/alija_j/jk2.shtml>Лукоморье</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>6k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Юмор </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...сонажи гамильтон... в разрезе <font color=red><b>пушкин</b></font>сой идеи  лукоморье 8 27 3 sat...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>32</b></p></td>
+ 			<td width=553 height=12><p><a href=/f/fedulowa_a_o/><font color=#555555>Федулова Анита Олеговна</font></a>, <A
+ HREF=/f/fedulowa_a_o/bezotvetnayalyubov.shtml>Безответная любовь</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Миниатюра"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...еловека, а возвышает его (а.с <font color=red><b>пушкин</b></font>)  0 0 10/05/2023 федулова ани...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>33</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/afonin_s_n/><font color=#555555>Афонин Сергей Николаевич</font></a>, <A
+ HREF=/a/afonin_s_n/neprorok.shtml>Непророк</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>7k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Миниатюра"  Жанр: Фантастика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...к 1 17 8  а что если "пророк" <font color=red><b>пушкин</b></font>а был изначально другой?  что ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>34</b></p></td>
+ 			<td width=553 height=12><p><a href=/r/raewskaja_z_p/><font color=#555555>Разные авторы</font></a>, <A
+ HREF=/r/raewskaja_z_p/potborkaopuschkine.shtml>Подборка статей о Пушкине разных авторов</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>78k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Критика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...60598741  5 подборка статей о <font color=red><b>пушкин</b></font>е разных авторов 9...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>35</b></p></td>
+ 			<td width=553 height=12><p><a href=/r/raewskaja_z_p/><font color=#555555>Раевская Злата Продолжение</font></a>, <A
+ HREF=/r/raewskaja_z_p/bednyijpuschkin.shtml>"Бедный" Пушкин</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>3k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...1 gmt 1577543691 11  "бедный" <font color=red><b>пушкин</b></font> 4 1683733432  4 2 23/11/2019 ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>36</b></p></td>
+ 			<td width=553 height=12><p><a href=/r/raewskaja_z_p/><font color=#555555>Раевская Злата Продолжение</font></a>, <A
+ HREF=/r/raewskaja_z_p/jsennijles.shtml>Осенний лес</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...пopa! oчeй oчapoвaньe! "а. с. <font color=red><b>пушкин</b></font> 4 осенний лес  6 1574688911 m...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>37</b></p></td>
+ 			<td width=553 height=12><p><a href=/w/wasmarg_a_t/><font color=#555555>Васмарг Агния Теодоровна</font></a>, <A
+ HREF=/w/wasmarg_a_t/proektpushkin.shtml>Проект Пушкин</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>12k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Новелла"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...:20:00 gmt 1765790400  проект <font color=red><b>пушкин</b></font> 5  15 15/12/2025 1765790561  ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>38</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/akimow_wadim_wadimowich/><font color=#555555>Акимов Вадим Вадимович</font></a>, <A
+ HREF=/a/akimow_wadim_wadimowich/katullus.shtml>Катулл и Постумья</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>3k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Пародии </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...утливая пародия не столько на <font color=red><b>пушкин</b></font>ский перевод катулла, сколько ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>39</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/aldanow_m_a/><font color=#555555>Алданов Марк Александрович</font></a>, <A
+ HREF=/a/aldanow_m_a/760.shtml>Что не так с убийством Пушкина?</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>32k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: История </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...ньгах. он планомерно задирает <font color=red><b>пушкин</b></font>а всеми возможными способами с...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>40</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/aldanow_m_a/><font color=#555555>Алданов Марк Александрович</font></a>, <A
+ HREF=/a/aldanow_m_a/741.shtml>Путлеровцы судят Молодогвардейцев</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>14k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Очерк"  Жанр: Публицистика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...обще ничего не надо. вчера же <font color=red><b>пушкин</b></font>ский районный суд петербурга п...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>41</b></p></td>
+ 			<td width=553 height=12><p><a href=/z/zelinskij_a_a/><font color=#555555>Зелинский Александр Анатольевич</font></a>, <A
+ HREF=/z/zelinskij_a_a/idet_osennyaya_pora.shtml>Идет осенняя пора</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...очно над бывшей спальней сани <font color=red><b>пушкин</b></font>а. и при этом я задолго до въе...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>42</b></p></td>
+ 			<td width=553 height=12><p><a href=/k/kudisow_a_w/><font color=#555555>Кудисов Александр Владимирович</font></a>, <A
+ HREF=/k/kudisow_a_w/zimnee_utro.shtml>Зимне-майское утро...</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...рого: по мотивам зимнего утра <font color=red><b>пушкин</b></font>а а.с., на тему актуальной пог...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>43</b></p></td>
+ 			<td width=553 height=12><p><a href=/p/petrowskij_a_w/><font color=#555555>Алекс</font></a>, <A
+ HREF=/p/petrowskij_a_w/pushkind.shtml>Мысли о поэмах Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>14k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Эссе"  Жанр: Критика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...  13 мысли о поэмах <font color=red><b>пушкин</b></font>а 9  thu, 02 aug 2012 17:02:00...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>44</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/shabanow_a/><font color=#555555>Шабанов Александр</font></a>, <A
+ HREF=/s/shabanow_a/satire_pushkin_putin.shtml>Оживили Пушкина, а Путин... Состряпано по лекалам Госдепа!</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>5k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Рассказ"  Жанр: Постмодернизм </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...  ай, да <font color=red><b>пушкин</b></font>, ай да сукин сын. да и путин ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>45</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/shewelew/><font color=#555555>Шевелев Александр</font></a>, <A
+ HREF=/s/shewelew/monami.shtml>Мой друг!</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...одражание "нашему всё" - а.с. <font color=red><b>пушкин</b></font>у)))   wed, 08 apr 2015 19:39:...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>46</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/aleksej_shalygin/><font color=#555555>Шалыгин Алексей</font></a>, <A
+ HREF=/a/aleksej_shalygin/fazyostanowok.shtml>Фазы остановок</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...бога мне роптать..."     а.с. <font color=red><b>пушкин</b></font>  ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>48</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/aleksandr_s_m/><font color=#555555>Малышев Александр Санчезз</font></a>, <A
+ HREF=/a/aleksandr_s_m/a4-1.shtml>На смерть Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...  6 на смерть <font color=red><b>пушкин</b></font>а 4  fri, 25 aug 2023 07:58:46...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>49</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/lois_a/><font color=#555555>Лоис Александре</font></a>, <A
+ HREF=/l/lois_a/pushkin.shtml>По умолчанию Портрет Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Миниатюра"  Жанр: Эзотерика </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...    8 14 по умолчанию портрет <font color=red><b>пушкин</b></font>а  1389013886 mon, 06 jan 2014...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>50</b></p></td>
+ 			<td width=553 height=12><p><a href=/l/lirow_a_s/><font color=#555555>Лиров Александр Сергеевич</font></a>, <A
+ HREF=/l/lirow_a_s/izbrannoe-13.shtml>Памяти Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...1/2022 1740514992  2 4 памяти <font color=red><b>пушкин</b></font>а 4 6  tue, 22 nov 2022 08:16:...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>51</b></p></td>
+ 			<td width=553 height=12><p><a href=/c/cygankow_a_p/><font color=#555555>Цыганков Алексей Кесарь</font></a>, <A
+ HREF=/c/cygankow_a_p/papxe-mashe.shtml>Папье-маше</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>""  Жанр: Юмор </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...                         (а.с.<font color=red><b>пушкин</b></font>."зимний вечер")   tue, 24 jun...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>52</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/andreew_f_w/><font color=#555555>Aley</font></a>, <A
+ HREF=/a/andreew_f_w/32.shtml>Он же не Пушкин!</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>9k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Статья"  Жанр: История </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...3 4 2  1683732914 26 он же не <font color=red><b>пушкин</b></font>!  5 1387390260 wed, 18 dec 20...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>53</b></p></td>
+ 			<td width=553 height=12><p><a href=/g/gowor_alisa/><font color=#555555>Говор Алиса</font></a>, <A
+ HREF=/g/gowor_alisa/pisxmoizbudushegowknigu.shtml>Татьяна, героиня Пушкина</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Пародии </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...    татьяна, героиня <font color=red><b>пушкин</b></font>а 31 6  thu, 15 aug 2013 12:12...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>54</b></p></td>
+ 			<td width=553 height=12><p><a href=/p/pustota_w/><font color=#555555>Пустота Внутри</font></a>, <A
+ HREF=/p/pustota_w/wnochxs.shtml>В ночь...</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>3k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Сборник стихов"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...ночь... 4 7  когда начиталась <font color=red><b>пушкин</b></font>а и начала думать стихами.эх.....<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>55</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/shatajlo_a_n/><font color=#555555>Шатайло Александр Николаевич</font></a>, <A
+ HREF=/s/shatajlo_a_n/n1-4.shtml>На Пушкинском празднике поэзии</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...37507165 4 2 08/11/2020  6 на <font color=red><b>пушкин</b></font>ском празднике поэзии 4  wed, ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>56</b></p></td>
+ 			<td width=553 height=12><p><a href=/p/pawlenko_a_w/><font color=#555555>Колчак Антонина Валентиновна</font></a>, <A
+ HREF=/p/pawlenko_a_w/podrajanierushkinskoytatyane.shtml>Подражание Пушкинской Татьяне</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+... татьяну ларину..  подражание <font color=red><b>пушкин</b></font>ской татьяне 4 6  tue, 14 apr ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>57</b></p></td>
+ 			<td width=553 height=12><p><a href=/a/anashkin_dmitrij_wladimirowich/><font color=#555555>Анашкин Дмитрий Владимирович</font></a>, <A
+ HREF=/a/anashkin_dmitrij_wladimirowich/gerl.shtml>Девушка,с которой не везет</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>42k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Рассказ"  Жанр: Приключения </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...щий в заброшенной мансарде на <font color=red><b>пушкин</b></font>ской улице, отправился на свид...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>58</b></p></td>
+ 			<td width=553 height=12><p><a href=/k/korolewa_a_o/><font color=#555555>Королёва Анастасия Олеговна</font></a>, <A
+ HREF=/k/korolewa_a_o/zhestokijmir-1.shtml>Жестокий мир</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>0k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Проза </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...тендую на звание современного <font color=red><b>пушкин</b></font>а, просто пишу для души. если ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>59</b></p></td>
+ 			<td width=553 height=12><p><a href=/z/zajdenberg_a_m/><font color=#555555>Зайденберг Анатолий Моисеевич</font></a>, <A
+ HREF=/z/zajdenberg_a_m/httpzhurnallibrucgi-binzhurnaloperationnew_bookdirzzajdenberg_a_m-128.shtml>Печален Пушкина роман</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>1k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Стихотворение"  Жанр: Поэзия </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...643 2 4 10/10/2008 6  печален <font color=red><b>пушкин</b></font>а роман 4 8  fri, 10 oct 2008 ...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+	<center>
+		<table width=640 border=0><tbody><tr>
+			<td width="29" height="12"><p align=center><b>60</b></p></td>
+ 			<td width=553 height=12><p><a href=/s/schastliwcewa_a_s/><font color=#555555>Антонина</font></a>, <A
+ HREF=/s/schastliwcewa_a_s/8.shtml>Лицея день заветный</A> </p></td>
+			<td width=44 height=12 valign=center><ul><li><b>21k</li></b></td></tr>
+			<tbody><tr><td width=29 height=11><p>&nbsp;</p>
+</td>
+			<td width=601 height=11 colspan=2><p><font size=2>"Форма: Рассказ"  Жанр: Естествознание </font>
+ <font size="-1"><i>[Совпадений: 1]</i></font><br>
+...нтонина   александр сергеевич <font color=red><b>пушкин</b></font> не всегда был знаменитым, тал...<br>
+
+			</td></tr></tbody>
+		</table>
+	</center>
+<center>На поиск затрачено: 1 сек.<br> Страница 1: 58 произведений! <a
+href=http://samlib.ru/cgi-bin/seek?DIR=&PLACE=index&FIND=Пушкин&JANR=0&TYPE=0&PAGE=2>следующая>></a></center><br><hr align="CENTER" size="2" noshade>
+<p><center><i><a href="/p/petrienko_p_w/">Связаться с программистом сайта</a>.</i></center>
+<p>
+<noindex><b>
+
+<!-- 
+2019: 28.05 x , 01.09 x, 04.12 x
+2020: 28.02 4 , 04.06 3, 07.09 3
+2021: 07.02 3 , 31.07 1, 26.11 3
+2024: 19.03 2
+-->
+
+<p><font size="2">Новые книги авторов СИ, вышедшие из печати:<br>
+
+<!-- 10.03.2024 -->
+О.Болдырева&nbsp;<a href=/b/boldyrewa_o_m/kradysh.shtml>"Крадуш. Чужие души"</a>
+М.Николаев&nbsp;<a href=/n/nikolaew_m_p/invasion.shtml>"Вторжение на Землю"</a>
+
+<center><i><small><a href=/d/denisowa_e/1.shtml>Как попасть в этoт список</a></small></i></center>
+
+</font>
+</b></noindex>
+<p>
+<div align=center>
+<a href=https://leather-time.ru>Кожевенное мастерство</a> |
+Сайт <a href=http://www.artlib.ru>"Художники"</a> |
+<a href=http://www.recself.ru/?id=2025&idr=0>Доска об'явлений "Книги"</a></div>
+<p align="right">8.11.beta<p>
+</body>
+</html>

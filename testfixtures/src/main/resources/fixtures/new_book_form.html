@@ -1,0 +1,354 @@
+<html>
+<head>  <title>Самиздат: Лаборатория</title> </head>
+<body bgcolor="#E9E9E9">
+       <div align="right">
+        
+        <h3></h3>
+        </div> 
+					
+<center><h2>Журнал &quot;Самиздат&quot;: Лаборатория</h2>
+
+
+
+<!------- Первый блок ссылок ------------->							
+<a href=/><font color="#555555"><b>Самиздат:</b></font></a>
+
+[<a href=/cgi-bin/gohome><font color="brown">rufim</font></a>: <a href="/cgi-bin/logout">разрегистрация</a>]
+[<a href="/cgi-bin/seek">Найти</a>]
+[<a href="/rating/expert/">Рейтинги</a>]
+[<a href="/rating/comment/">Обсуждения</a>]
+[<a href="/long.shtml">Новинки</a>]
+[<a href="/janr/index_janr_time23-1.shtml">Обзоры</a>]
+[<A HREF="/i/info/">Помощь</A>|<a href="/comment/r/redaktor/forum_main">Техвопросы</a>]
+
+<hr size=2 noshade></center>
+<li>Поля, помеченные звездочкой (<b><font color="Red">*</font></b>), заполнять в обязательном порядке!
+<li>Текст произведения вводится в область "Текст" ИЛИ указывается имя файла c текстом.
+<li>Произведение [<b><a href="/editors/k/kazancew_d/">k/kazancew_d</a></b>/<a
+href="/editors/k/kazancew_d/.shtml"></a>]:
+<div align="center">
+<table width="640" border="1" cellspacing="0" cellpadding="0" bgcolor="Silver">
+<form action="/cgi-bin/zhurnal" method=POST ENCTYPE="multipart/form-data">
+ <tr>
+ <td align="JUSTIFY" valign="TOP">
+ <center>
+<!-- form table2 begin -->
+<input type=hidden name=DIR value=k/kazancew_d >
+<input type=hidden name=REPLACE value= >
+<input type=hidden name=OWNER value="rufim" >
+<input type=hidden name=TMP_FILE value="" >
+<input type=hidden name=REQUIRED value="STORE_FILE,TITLE,DATE,JANR,AUTHOR" >
+
+  <table width="98%" border="0" cellspacing="0" cellpadding="5" align="CENTER" valign="TOP">
+
+   <tr>
+        <td></td>
+        <td align="left" valign="top">
+         <a href="#1">Имя файла:</a>
+	</td><td>
+         <b><font color="Red">*</font></b>
+	</td><td colspan=1>
+         <input type="text" name="STORE_FILE" align="RIGHT" size="30" value=""><br>
+	 <input type=checkbox value="1" name="OWERWRITE"><a href=#4>Поверх старого</a><br>
+	 
+        </td><td colspan=3>
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Store">
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Delete">
+        </td>
+   </tr>
+
+   <tr>
+        <td valign=top rowspan=8>
+        </td>
+        <td align="left" valign="top">
+         Заглавие:
+	</td><td>
+ 	 <b><font color="Red">*</font></b>
+	</td><td colspan=1>
+         <input type="text" name="TITLE" align="RIGHT" size="30" value="">
+        </td><td colspan=3>
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Rename">
+        </td>
+  <tr>
+  </tr>
+
+        <td align="left" valign="top">
+         Автор:
+	</td><td>
+ 	 <b><font color="Red">*</font></b>
+	</td><td colspan=1>
+         <input type="text" name="AUTHOR" align="RIGHT" size="30" value="Казанцев Дмитрий">
+        </td><td colspan=3>
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Text edit">        
+        </td>
+  </tr>
+
+  <tr>
+
+        <td align="left" valign="top" >
+         Форма:
+        </td>
+
+        <td align="center" valign="top" ><b><font color="Red">*</font></b>
+        </td> 
+
+        <td align="left" valign="top" colspan=4>
+          <select name="TYPE"><option value="0">Форма > выберите (forma > wyberite)</option><option value="1">Роман (roman)</option><option value="2">Повесть (powestx)</option><option value="16">Глава (glawa)</option><option value="10">Сборник рассказов (sbornik rasskazow)</option><option value="3">Рассказ (rasskaz)</option><option value="11">Поэма (poema)</option><option value="7">Сборник стихов (sbornik stihow)</option><option value="6">Стихотворение (stihotworenie)</option><option value="13">Эссе (esse)</option><option value="4">Очерк (ocherk)</option><option value="5">Статья (statxja)</option><option value="19">Дневник (dnewnik)</option><option value="17">Монография (monografija)</option><option value="18">Справочник (sprawochnik)</option><option value="12">Песня (pesnja)</option><option value="15">Новелла (nowella)</option><option value="9">Пьеса; сценарий (pxesa; scenarij)</option><option value="8">Миниатюра (miniatjura)</option><option value="14">Интервью (interwxju)</option></select>&nbsp;&nbsp;
+	  Переводчик: <input type="text" name="TRANSLATOR" align="RIGHT" size=10 value="">
+        </td>
+
+  </tr>
+
+
+  <tr>
+
+        <td align="left" valign="top" >
+         Жанр:
+        </td>
+
+        <td align="center" valign="top" ><b><font color="Red">*</font></b>
+        </td> 
+
+        <td align="left" valign="top" colspan=4>
+<table cellspacing=0 cellpadding=0 border=0>
+<td><select name="JANR" multiple size=5><option value="0">Нет (net)</option><option value="5">Проза (proza)</option><option value="4">Поэзия (poezija)</option><option value="3">Лирика (lirika)</option><option value="19">Мемуары (memuary)</option><option value="26">История (istorija)</option><option value="29">Детская (detskaja)</option><option value="2">Детектив (detektiw)</option><option value="25">Приключения (prikljuchenija)</option><option value="1">Фантастика (fantastika)</option><option value="24">Фэнтези (fentezi)</option><option value="22">Киберпанк (kiberpank)</option><option value="35">Фанфик (fanfik)</option><option value="36">AI-Generated (ai-generated)</option><option value="11">Публицистика (publicistika)</option><option value="32">События (sobytija)</option><option value="23">Литобзор (litobzor)</option><option value="9">Критика (kritika)</option><option value="15">Философия (filosofija)</option><option value="13">Религия (religija)</option><option value="14">Эзотерика (ezoterika)</option><option value="18">Оккультизм (okkulxtizm)</option><option value="17">Мистика (mistika)</option><option value="30">Хоррор (horror)</option><option value="28">Политика (politika)</option><option value="7">Эротика (erotika)</option><option value="12">Любовный роман (ljubownyj roman)</option><option value="20">Естествознание (estestwoznanie)</option><option value="21">Изобретательство (izobretatelxstwo)</option><option value="8">Юмор (jumor)</option><option value="27">Байки (bajki)</option><option value="31">Пародии (parodii)</option><option value="10">Переводы (perewody)</option><option value="16">Сказки (skazki)</option><option value="6">Драматургия (dramaturgija)</option><option value="33">Постмодернизм (postmodernizm)</option><option value="34">Foreign+Translat (foreign+translat)</option></select></td>
+<td>&nbsp;&nbsp;</td>
+<td><a href="#7">Доступ к книге</a> на чтение:<br><select name=READ_LEVEL> <option value="2"  selected > Для всех</option><option value="3"> Для френдов</option><option value="4"> Скрытый</option><option value="5"> Автор и модератор</option></select><br>
+Доступ к книге на запись:<br><select name=WRITE_LEVEL><option value="2"> Для всех</option><option value="5"> Для френдов</option><option value="4" selected > Автор и модератор</option></select></td></table>
+	</td>
+
+  </tr>
+
+
+  <tr>
+
+        <td align="left" valign="top" >
+         <a href="/cgi-bin/groupedit?DIR=k/kazancew_d"i target=_blank>Группа:</a>
+        </td>
+
+        <td align="center" valign="top" >
+        </td>   
+
+        <td align="left" valign="top" >
+          <select name="ADD_TYPE"><option value="0" selected>Нет (net)</option><option value="1">Приложение на Android (prilozhenie na android)</option><option value="2">Child of Light (child of light)</option></select> 
+        </td>
+	<td>
+	 <input type=checkbox value="1" name="NO_VOTE">Выкл.оценки<br> 
+	 <input type=checkbox value="1" name="NO_FB2">Выкл.fb2<br>
+	</td>
+  </tr>
+
+  <tr>
+
+        <td align="left" valign="top" >
+         Дата создания:
+        </td>
+
+        <td align="center" valign="top" ><b><font color="Red">*</font></b>
+        </td>   
+
+        <td align="left" valign="top" >
+         <input type="text" name="DATE" align="RIGHT" size="10" value="04/07/2026">
+         <i>Формат</i> ДД/ММ/ГГГГ 
+        </td>
+	<td><a href=#6>Комментарии</a>:
+	 <select name="NO_COMMENT"><option value="0">Открыты (otkryty)</option><option value="1">Выкл. (wykl.)</option><option value="2">Приватные (priwatnye)</option><option value="3">Для залогиненных (dlja zaloginennyh)</option><option value="4">Для френдов (dlja frendow)</option><option value="5">Для постоянных (dlja postojannyh)</option><option value="6">Запись только автору (zapisx tolxko awtoru)</option><option value="7">Читать френдам (chitatx frendam)</option><option value="8">Читать залогиненным (chitatx zaloginennym)</option></select>
+	</td>
+  </tr>
+
+  <tr>
+        <td align="left" valign="top" >
+         Аннотация:
+        </td>
+
+        
+        <td align="center" valign="top">
+        </td>   
+
+        
+        <td align="left" valign="top" colspan=4>
+         <textarea name="ANNOT" cols="40" rows="4" wrap=virtual wordwrap=soft></textarea><br>
+
+        </td>
+   </tr>
+   <tr>
+     <td colspan="7">
+       <table border=0 width="100%" cellpadding=3><tr>
+        <td colspan=4 bgcolor="#000000">
+         <center><font color="#FFFFFF">
+          УКАЖИТЕ ИМЯ ФАЙЛА С ТЕКСТОМ:</font>
+        </td></tr>
+       <tr>
+
+        <td align="left" valign="top" colspan=2>
+	 <small>
+	 <a href="#4">Допустимы типы файла</a>: MS Word (doc, docx), RTF (rtf), Text/HTML, FB2. 
+	 Можно упаковать zip,rar,arj. Для Text/HTML укажите кодировку.
+	 </small>
+        </td>
+
+        <td align="left" valign="top" colspan=2>
+	 <small>
+         <a href="#3">Кодировка:</a>
+         <select name="CODESET">
+	 <option value='auto'>Auto</option>
+         <option value='windows-1251'>Windows-1251</option>
+         <option value='ibm866'>DOS text</option>
+         <option value='koi8-r'>KOI-8</option></select>
+	 </small>
+        </td>
+
+      </tr><tr>
+
+        <td align="left" valign="top" colspan=4>
+         <a href="#5">Файл с текстом:</i></a>
+         <input type="File" name="FILE" align="RIGHT" size="25"> 
+        </td>
+
+      </tr><tr>
+
+        <td colspan=4>
+         <center>ИЛИ ВСТАВЬТЕ ТЕКСТ В ОКНО: 
+        </td>
+
+     </tr><tr>
+
+        <td align="left" valign="top" colspan=4>
+         <a href="#6">Текст:</a>
+(некоторые броузеры могут обрезать большие тексты, обязательно
+проверьте, поместился ли в окно <b><u>Весь</u></b> ваш текст)
+	 <br><center>
+         <textarea name="TEXT" cols=60 rows=10 wordwrap=virtual wrap=soft></textarea>
+        </td>
+     </tr></table>
+    </td>
+   </tr>
+
+
+
+
+
+   <tr>
+        <td valign=top>
+        </td>
+
+    <td colspan=6><center>
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Store">
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Delete">
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Rename">
+         <input type="Submit" name="OPERATION" width="10" height="15" value="Text edit">        
+	<br>
+    </td>
+   </tr>
+
+   
+  </table>
+ </form>
+<!-- form table2 end -->
+      
+
+ </td>
+</tr>
+</table>
+</div>
+
+<div align="center">
+ <table width="600" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td align="left" valign="TOP">
+   <hr align="LEFT" size="1" width="80">
+<a name="1">
+<i><b>Имя файла</b> -- только латинские буквы и цифры. Обозначает имя файла,
+которое будет присвоено произведению. Имя файла влияет на сортировку 
+произведений в разделе. Произведения располагаются по порядку латинского алфавита 
+(a, b, c, d...), либо арабских цифр (01, 02, 03...), с которых начинается имя 
+файла произведения.
+
+<br><br>
+<a name="2">
+<i><b>Группа</b> -- дополнительные группы, которые задаются в 
+<a href="http://samlib.ru/cgi-bin/zhurnal?OPERATION=edit_dir&DIR=k/kazancew_d">установках раздела</a>, 
+позволяют Вам группировать Ваши произведения по любым условиям,
+например по принадлежности к сериалу.
+
+<br><br>
+<a name="3">
+<i><b>Кодировка</b> -- Если текст загружается из текстового или 
+HTML-ного файла, укажите его кодировку (по умолчанию считается windows-1251)
+
+<br><br>
+<a name="4">
+<i><b>Поверх старого</b> -- Если вам надо загрузить файл поверх старого
+(например отредактированную версию текста) и хочется при этом сохранить
+оценки и комментарии старого текста, то укажите имя файла как у старого и
+поставьте "галочку" в этом пункте. 
+
+<br><br>
+<a name="5">
+<i><b>Файл с текстом</b> -- Для ввода текста произведения Вы можете 
+воспользоваться
+одной из двух возможностей: либо указав здесь имя Вашего файла с текстом,
+либо введя текст в окошко ниже.
+
+<br><br>
+<a name="6">
+<i><b>Комментарии</b> -- управление режимом работы ленты комментов к
+произведению. Бывают:
+<ul>
+<li>Открытые -- комментарии могут писать и читать все
+<li>Выкл -- комментарии отключены
+<li>Приватные -- комментарии пишут все, но анонсы о них нигде не
+публикуются, чтобы увидеть их, надо зайти в произведение
+<li>Для залогиненых -- комментарии могут писать только залогиненные
+пользователи
+<li>Для френдов -- комментарии могут писать только ваши френды.
+</ul>
+
+<br><br>
+<a name="7">
+<i><b>Доступ к книге на чтение</b> -- управление доступом к
+произведению:
+<ul>
+<li>Для всех -- читать могут все
+<li>Для френдов -- читать могут только френды (<b>*</b>)
+<li>Скрытый -- читать могут все при наличии прямой ссылки, анонсы о
+произведении нигде не публикуются (<font color=red>#</font>)
+<li>Автор и модератор -- только автору и модератору, анонсы и в разделе не публикуются
+(<b>#</b>).
+</ul>
+
+
+   </td>
+  </tr>
+ </table>
+</div>
+<hr align="CENTER" size="2" noshade>
+<p><center><i><a href="/p/petrienko_p_w/">Связаться с программистом сайта</a>.</i></center>
+<p>
+<noindex><b>
+
+<!-- 
+2019: 28.05 x , 01.09 x, 04.12 x
+2020: 28.02 4 , 04.06 3, 07.09 3
+2021: 07.02 3 , 31.07 1, 26.11 3
+2024: 19.03 2
+-->
+
+<p><font size="2">Новые книги авторов СИ, вышедшие из печати:<br>
+
+<!-- 10.03.2024 -->
+О.Болдырева&nbsp;<a href=/b/boldyrewa_o_m/kradysh.shtml>"Крадуш. Чужие души"</a>
+М.Николаев&nbsp;<a href=/n/nikolaew_m_p/invasion.shtml>"Вторжение на Землю"</a>
+
+<center><i><small><a href=/d/denisowa_e/1.shtml>Как попасть в этoт список</a></small></i></center>
+
+</font>
+</b></noindex>
+<p>
+<div align=center>
+<a href=https://leather-time.ru>Кожевенное мастерство</a> |
+Сайт <a href=http://www.artlib.ru>"Художники"</a> |
+<a href=http://www.recself.ru/?id=2025&idr=0>Доска об'явлений "Книги"</a></div>
+<p align="right">8.11.beta<p>
+</body>
+</html>

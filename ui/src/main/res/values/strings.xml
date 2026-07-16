@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Самлиб</string>
+    <string name="main_legacy_imported">Перенесено из старой версии: подписок %1$d, в истории %2$d, книг %3$d</string>
+</resources>

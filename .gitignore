@@ -1,9 +1,14 @@
 *.iml
+.gradle/
 /local.properties
 .idea/
 .DS_Store
 build/
 /captures
-.gradle/
-/.idea/gradle.xml
-/.idea/modules.xml
+.externalNativeBuild
+.cxx
+.kotlin/
+keystore.properties
+*.key
+.claude/
+docs/superpowers/

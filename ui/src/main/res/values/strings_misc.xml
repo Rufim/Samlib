@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Поиск -->
+    <string name="search_title">Поиск</string>
+    <string name="search_query_label">Запрос</string>
+    <string name="search_action">Найти</string>
+    <string name="search_loading">Загрузка…</string>
+    <string name="search_load_more">Загрузить ещё</string>
+    <string name="search_no_results">Ничего не найдено</string>
+    <string name="search_hint_browser">Введите запрос — откроется в браузере</string>
+    <string name="search_hint_default">Введите запрос и нажмите поиск</string>
+
+    <!-- Новинки -->
+    <string name="newest_title">Новинки</string>
+
+    <!-- Рейтинги -->
+    <string name="rating_works_count">%1$d работ</string>
+    <string name="rating_expert_prefix">эксперт %1$s</string>
+    <string name="rating_last_prefix">посл. %1$s</string>
+
+    <!-- Комментарии -->
+    <string name="comments_title">Комментарии</string>
+    <string name="comments_posted">Комментарий отправлен</string>
+    <string name="comments_empty">Нет комментариев</string>
+    <string name="comments_show_more">Показать ещё</string>
+    <string name="comments_login_hint">Чтобы оставить комментарий, войдите на сайт или укажите имя (обязательно). Почта и адрес страницы — по желанию.</string>
+    <string name="comments_your_name">Ваше имя: %1$s</string>
+    <string name="comments_name_not_set">не указано</string>
+    <string name="comments_name_label">Имя*</string>
+    <string name="comments_email_label">Почта (необязательно)</string>
+    <string name="comments_url_label">Адрес страницы (необязательно)</string>
+    <string name="comments_reply_to">Ответ на #%1$d</string>
+    <string name="comments_placeholder">Комментарий…</string>
+    <string name="comments_send">Отправить</string>
+    <string name="comments_quote">Цитата</string>
+    <string name="comments_quote_from">Цитата: %1$s</string>
+    <string name="comments_anonymous">Аноним</string>
+    <string name="comments_deleted">Комментарий удалён</string>
+    <string name="comments_reply">Ответить</string>
+
+    <!-- Сохранённые -->
+    <string name="downloads_title">Сохранённые</string>
+    <string name="downloads_empty">Нет сохранённых файлов</string>
+
+    <!-- Иллюстрации -->
+    <string name="illustrations_title">Иллюстрации</string>
+    <string name="illustrations_empty">Нет иллюстраций</string>
+
+    <!-- Уведомления об обновлениях подписок -->
+    <string name="followed_channel_name">Обновления авторов</string>
+    <string name="followed_work_updated">Обновилась книга: %1$s</string>
+</resources>

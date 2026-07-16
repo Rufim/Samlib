@@ -1,0 +1,123 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:AuthorEditParser.kt$AuthorEditParser$m.value.any { it in 'а'..'я' || it in 'А'..'Я' || it == 'ё' || it == 'Ё' }</ID>
+    <ID>ComplexCondition:AuthorParser.kt$AuthorParser$!img.isNullOrEmpty() &amp;&amp; Regex("""\.(jpe?g|gif|png)$""", RegexOption.IGNORE_CASE).containsMatchIn(img) &amp;&amp; !img.contains("clear.gif") &amp;&amp; !img.contains("sp.gif")</ID>
+    <ID>ComplexCondition:BlockViews.kt$m.value == "." &amp;&amp; m.range.first &gt; 0 &amp;&amp; text[m.range.first - 1].isDigit() &amp;&amp; end &lt; text.length &amp;&amp; text[end].isDigit()</ID>
+    <ID>ComplexCondition:CommentsScreen.kt$loggedIn &amp;&amp; (c.canReply || c.canDelete) &amp;&amp; c.msgid != null</ID>
+    <ID>ComplexCondition:SamlibLinks.kt$uri?.host != null || uri?.isOpaque == true || h.startsWith("/") || authorDir == null</ID>
+    <ID>CyclomaticComplexMethod:AuthorParser.kt$AuthorParser$private fun parseCategories( region: String, authorDir: String, ): List&lt;Category&gt;</ID>
+    <ID>CyclomaticComplexMethod:AuthorParser.kt$AuthorParser$private fun parseHead( region: String, authorDir: String, acc: HeadAcc, )</ID>
+    <ID>CyclomaticComplexMethod:DefaultAuthorRepository.kt$DefaultAuthorRepository$private suspend fun checkAuthor( e: AuthorEntity, now: Long, ): List&lt;ObservedWorkEntity&gt;</ID>
+    <ID>CyclomaticComplexMethod:AuthorScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AuthorScreen( link: String, onAction: (AuthorAction) -&gt; Unit, viewModel: AuthorViewModel = koinViewModel { parametersOf(link) }, )</ID>
+    <ID>CyclomaticComplexMethod:BlockViews.kt$private fun splitSentences(text: String): List&lt;Pair&lt;Int, String&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:EpubParser.kt$EpubParser$fun parse(bytes: ByteArray): EpubDocument</ID>
+    <ID>CyclomaticComplexMethod:Fb2Parser.kt$Fb2Parser$private fun walk( el: Element, binaries: Map&lt;String, Pair&lt;String, String&gt;&gt;, out: MutableList&lt;ContentBlock&gt;, )</ID>
+    <ID>CyclomaticComplexMethod:FollowedScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun FollowedScreen( onAuthor: (String) -&gt; Unit, onOpenWork: (String) -&gt; Unit = {}, onMenu: () -&gt; Unit = {}, viewModel: FollowedViewModel = koinViewModel(), )</ID>
+    <ID>CyclomaticComplexMethod:HomeScreen.kt$@Composable fun HomeScreen( onAction: (HomeAction) -&gt; Unit, viewModel: HomeViewModel = koinViewModel(), )</ID>
+    <ID>CyclomaticComplexMethod:InlineHtml.kt$fun htmlToAnnotatedString( html: String, linkListener: LinkInteractionListener? = null, ): AnnotatedString</ID>
+    <ID>CyclomaticComplexMethod:LocalWorkScreen.kt$@Composable fun LocalWorkScreen( uri: String, onBack: () -&gt; Unit, scrollTo: Int = -1, onOpenSettings: () -&gt; Unit = {}, onOpenSearch: () -&gt; Unit = {}, viewModel: LocalWorkViewModel = koinViewModel { parametersOf(uri, scrollTo) }, )</ID>
+    <ID>CyclomaticComplexMethod:NewestScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun NewestScreen( onAuthor: (String) -&gt; Unit, onOpenWork: (String) -&gt; Unit = {}, onMenu: () -&gt; Unit = {}, viewModel: NewestViewModel = koinViewModel(), )</ID>
+    <ID>CyclomaticComplexMethod:RatingScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun RatingScreen( section: RatingSection, onMenu: () -&gt; Unit = {}, onAuthor: (String) -&gt; Unit = {}, onOpenWork: (String) -&gt; Unit = {}, onOpenComments: (String) -&gt; Unit = {}, viewModel: RatingViewModel = koinViewModel(key = section.name) { parametersOf(section) }, )</ID>
+    <ID>CyclomaticComplexMethod:ReaderBody.kt$@Composable fun ReaderBody( state: WorkState, onRetry: () -&gt; Unit, listState: LazyListState, bg: Color, fg: Color, linkListener: LinkInteractionListener?, ttsActive: Boolean, ttsPlaying: Boolean, speakBlock: Int, wordStart: Int, wordEnd: Int, onWordTap: (index: Int, offset: Int) -&gt; Unit, onActiveLayout: (TextLayoutResult) -&gt; Unit, progress: Float, canScroll: Boolean, scrollbarVisible: Boolean, onTapPercent: () -&gt; Unit, onScrollToFraction: (Float) -&gt; Unit, autoScroll: Boolean, onOpenTtsSheet: () -&gt; Unit, onOpenAutoScrollSheet: () -&gt; Unit, onOpenTextSheet: () -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:ReaderScaffold.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ReaderScaffold( state: WorkState, // видимость пунктов меню-«троеточия»: у локальной книги большинство скрыто menu: ReaderMenuVisibility, onAction: (ReaderAction) -&gt; Unit, linkListener: LinkInteractionListener? = null, // ссылка книги для сохранения прогресса чтения по озвучке (null для локальных файлов) workLink: String? = null, // запуск media-сессии TTS (реализация — TtsService.start, физически в :app, недоступна :ui) ttsServiceLauncher: TtsServiceLauncher, )</ID>
+    <ID>CyclomaticComplexMethod:SamlibNavHost.kt$@Composable fun SamlibNavHost( navController: NavHostController, startRoute: Any = HomeRoute, // авто-открытие последней книги при старте: кладётся поверх Home (back → на главную) autoOpenRoute: Any? = null, )</ID>
+    <ID>CyclomaticComplexMethod:SearchScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SearchScreen( onOpenLink: (String) -&gt; Unit, onMenu: () -&gt; Unit = {}, viewModel: SearchViewModel = koinViewModel(), )</ID>
+    <ID>CyclomaticComplexMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen( onBack: () -&gt; Unit, viewModel: SettingsViewModel = koinViewModel(), )</ID>
+    <ID>CyclomaticComplexMethod:DefaultWorkContentParser.kt$DefaultWorkContentParser$override fun parse(rawHtml: String): List&lt;ContentBlock&gt;</ID>
+    <ID>CyclomaticComplexMethod:WorkEditScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun WorkEditScreen( authorLink: String, workFile: String?, onBack: () -&gt; Unit, viewModel: WorkEditViewModel = koinViewModel(key = "workedit:$authorLink:$workFile") { parametersOf(authorLink, workFile) }, )</ID>
+    <ID>CyclomaticComplexMethod:WorkEditViewModel.kt$WorkEditViewModel$fun save()</ID>
+    <ID>CyclomaticComplexMethod:WorkScreen.kt$@Composable fun WorkScreen( link: String, onBack: () -&gt; Unit, scrollTo: Int = -1, onOpenWork: (String) -&gt; Unit = {}, onOpenAuthor: (String) -&gt; Unit = {}, onOpenLink: (String) -&gt; Unit = {}, onOpenSettings: () -&gt; Unit = {}, onOpenIllustrations: () -&gt; Unit = {}, onOpenSearch: () -&gt; Unit = {}, viewModel: WorkViewModel = koinViewModel { parametersOf(link, scrollTo) }, )</ID>
+    <ID>LongMethod:AboutEditScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AboutEditScreen( authorLink: String, onBack: () -&gt; Unit, viewModel: AboutEditViewModel = koinViewModel { parametersOf(authorLink) }, )</ID>
+    <ID>LongMethod:AuthorScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AuthorScreen( link: String, onAction: (AuthorAction) -&gt; Unit, viewModel: AuthorViewModel = koinViewModel { parametersOf(link) }, )</ID>
+    <ID>LongMethod:CommentsScreen.kt$@Composable private fun CommentComposer( state: CommentComposerState, onName: (String) -&gt; Unit, onEmail: (String) -&gt; Unit, onUrl: (String) -&gt; Unit, onCancelReply: () -&gt; Unit, onSend: (String) -&gt; Unit, )</ID>
+    <ID>LongMethod:CommentsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun CommentsScreen( link: String, onBack: () -&gt; Unit, onOpenLink: (String) -&gt; Unit = {}, viewModel: CommentsViewModel = koinViewModel { parametersOf(link) }, )</ID>
+    <ID>LongMethod:DirEditScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DirEditScreen( authorLink: String, onBack: () -&gt; Unit, viewModel: DirEditViewModel = koinViewModel { parametersOf(authorLink) }, )</ID>
+    <ID>LongMethod:FollowedScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun FollowedScreen( onAuthor: (String) -&gt; Unit, onOpenWork: (String) -&gt; Unit = {}, onMenu: () -&gt; Unit = {}, viewModel: FollowedViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:FormatToolbar.kt$@Composable fun FormatToolbar( target: FormatTarget, modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:GroupEditScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun GroupEditScreen( authorLink: String, onBack: () -&gt; Unit, viewModel: GroupEditViewModel = koinViewModel { parametersOf(authorLink) }, )</ID>
+    <ID>LongMethod:HistoryScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun HistoryScreen( onOpenWork: (String) -&gt; Unit, onMenu: () -&gt; Unit = {}, viewModel: HistoryViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:HomeScreen.kt$@Composable fun HomeScreen( onAction: (HomeAction) -&gt; Unit, viewModel: HomeViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:LocalWorkScreen.kt$@Composable fun LocalWorkScreen( uri: String, onBack: () -&gt; Unit, scrollTo: Int = -1, onOpenSettings: () -&gt; Unit = {}, onOpenSearch: () -&gt; Unit = {}, viewModel: LocalWorkViewModel = koinViewModel { parametersOf(uri, scrollTo) }, )</ID>
+    <ID>LongMethod:NewestScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun NewestScreen( onAuthor: (String) -&gt; Unit, onOpenWork: (String) -&gt; Unit = {}, onMenu: () -&gt; Unit = {}, viewModel: NewestViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:ReaderScaffold.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ReaderScaffold( state: WorkState, // видимость пунктов меню-«троеточия»: у локальной книги большинство скрыто menu: ReaderMenuVisibility, onAction: (ReaderAction) -&gt; Unit, linkListener: LinkInteractionListener? = null, // ссылка книги для сохранения прогресса чтения по озвучке (null для локальных файлов) workLink: String? = null, // запуск media-сессии TTS (реализация — TtsService.start, физически в :app, недоступна :ui) ttsServiceLauncher: TtsServiceLauncher, )</ID>
+    <ID>LongMethod:ReaderTopBar.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ReaderTopBar( state: ReaderTopBarState, onBack: () -&gt; Unit, onTitleClick: () -&gt; Unit, onOpenSearch: () -&gt; Unit, onOpenChapters: () -&gt; Unit, onOpenSettings: () -&gt; Unit, onMenuAction: (ReaderMenuAction) -&gt; Unit, )</ID>
+    <ID>LongMethod:SamlibNavHost.kt$@Composable fun SamlibNavHost( navController: NavHostController, startRoute: Any = HomeRoute, // авто-открытие последней книги при старте: кладётся поверх Home (back → на главную) autoOpenRoute: Any? = null, )</ID>
+    <ID>LongMethod:SearchScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SearchScreen( onOpenLink: (String) -&gt; Unit, onMenu: () -&gt; Unit = {}, viewModel: SearchViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen( onBack: () -&gt; Unit, viewModel: SettingsViewModel = koinViewModel(), )</ID>
+    <ID>LongMethod:WorkEditScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun WorkEditScreen( authorLink: String, workFile: String?, onBack: () -&gt; Unit, viewModel: WorkEditViewModel = koinViewModel(key = "workedit:$authorLink:$workFile") { parametersOf(authorLink, workFile) }, )</ID>
+    <ID>LongMethod:WorkFilter.kt$@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class) @Composable fun FilterScreen( initial: WorkFilter, showQuery: Boolean = true, onApply: (WorkFilter) -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
+    <ID>LongMethod:WorkSearchScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun WorkSearchScreen( link: String?, uri: String?, onBack: () -&gt; Unit, onOpenResult: (blockIndex: Int) -&gt; Unit, viewModel: WorkSearchViewModel = koinViewModel(key = "search:${link ?: uri}") { parametersOf(link, uri) }, )</ID>
+    <ID>LongParameterList:NativeEditorPane.kt$( initialText: String, editorBackground: Int, precomputedText: PrecomputedTextCompat?, precomputing: Boolean, pendingOffset: Int, editorActive: Boolean, editCanScroll: Boolean, editScrollProgress: Float, onEditorCreated: (EditText) -&gt; Unit, onScrollHostCreated: (NestedScrollView) -&gt; Unit, onReleased: (NestedScrollView) -&gt; Unit, onScrollChanged: () -&gt; Unit, onTapPercent: () -&gt; Unit, onScrollToFraction: (Float) -&gt; Unit, )</ID>
+    <ID>LongParameterList:ReaderBody.kt$( state: WorkState, onRetry: () -&gt; Unit, listState: LazyListState, bg: Color, fg: Color, linkListener: LinkInteractionListener?, ttsActive: Boolean, ttsPlaying: Boolean, speakBlock: Int, wordStart: Int, wordEnd: Int, onWordTap: (index: Int, offset: Int) -&gt; Unit, onActiveLayout: (TextLayoutResult) -&gt; Unit, progress: Float, canScroll: Boolean, scrollbarVisible: Boolean, onTapPercent: () -&gt; Unit, onScrollToFraction: (Float) -&gt; Unit, autoScroll: Boolean, onOpenTtsSheet: () -&gt; Unit, onOpenAutoScrollSheet: () -&gt; Unit, onOpenTextSheet: () -&gt; Unit, )</ID>
+    <ID>LongParameterList:ReaderSheets.kt$( playing: Boolean, rate: Float, pitch: Float, onDismiss: () -&gt; Unit, onPlayPause: () -&gt; Unit, onStop: () -&gt; Unit, onRateChange: (Float) -&gt; Unit, onRateChangeFinished: () -&gt; Unit, onPitchChange: (Float) -&gt; Unit, onPitchChangeFinished: () -&gt; Unit, )</ID>
+    <ID>LongParameterList:WorkScreen.kt$( link: String, onBack: () -&gt; Unit, scrollTo: Int = -1, onOpenWork: (String) -&gt; Unit = {}, onOpenAuthor: (String) -&gt; Unit = {}, onOpenLink: (String) -&gt; Unit = {}, onOpenSettings: () -&gt; Unit = {}, onOpenIllustrations: () -&gt; Unit = {}, onOpenSearch: () -&gt; Unit = {}, viewModel: WorkViewModel = koinViewModel { parametersOf(link, scrollTo) }, )</ID>
+    <ID>LongParameterList:WorkViewModel.kt$WorkViewModel$( private val link: String, // индекс блока для перехода из поиска по книге (-1 = использовать сохранённую позицию) private val scrollTo: Int, private val workRepo: WorkRepository, private val settingsRepo: ReaderSettingsRepository, private val translator: Translator, private val authorRepo: AuthorRepository, private val loadWork: LoadWorkUseCase, private val saveWork: SaveWorkUseCase, private val openExternally: OpenExternallyUseCase, private val downloadFb2: DownloadFb2UseCase, val ttsServiceLauncher: TtsServiceLauncher, )</ID>
+    <ID>LoopWithTooManyJumpStatements:AuthorParser.kt$AuthorParser$for</ID>
+    <ID>LoopWithTooManyJumpStatements:BlockViews.kt$for</ID>
+    <ID>LoopWithTooManyJumpStatements:EpubParser.kt$EpubParser$for</ID>
+    <ID>LoopWithTooManyJumpStatements:DefaultLegacyImporter.kt$DefaultLegacyImporter$while</ID>
+    <ID>LoopWithTooManyJumpStatements:WorkEditTextOps.kt$while</ID>
+    <ID>LoopWithTooManyJumpStatements:WorkSearchViewModel.kt$WorkSearchViewModel$while</ID>
+    <ID>MatchingDeclarationName:AuthorScreen.kt$AuthorAction</ID>
+    <ID>MatchingDeclarationName:SamlibLinks.kt$SamlibTarget</ID>
+    <ID>MaxLineLength:DocParserTest.kt$DocParserTest$"""&lt;cp:coreProperties xmlns:cp="x" xmlns:dc="http://purl.org/dc/elements/1.1/"&gt;&lt;dc:title&gt;Моя книга&lt;/dc:title&gt;&lt;/cp:coreProperties&gt;"""</ID>
+    <ID>MaxLineLength:DocParserTest.kt$DocParserTest$"""&lt;w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"&gt;&lt;w:body&gt;&lt;w:p&gt;&lt;w:r&gt;&lt;w:t&gt;Текст&lt;/w:t&gt;&lt;/w:r&gt;&lt;/w:p&gt;&lt;/w:body&gt;&lt;/w:document&gt;"""</ID>
+    <ID>MaxLineLength:LegacyImporterTest.kt$LegacyImporterTest$"INSERT INTO Author VALUES('/k/kazancew_d/','Казанцев Дмитрий','Казанцев Д.',1,0,1700000000000,1700000000,4)"</ID>
+    <ID>MaxLineLength:LegacyImporterTest.kt$LegacyImporterTest$"authorShortName TEXT, genres TEXT, savedDate INTEGER, indentIndex INTEGER, indent TEXT, userBookmark INTEGER)"</ID>
+    <ID>MaxLineLength:LegacyImporterTest.kt$LegacyImporterTest$"observable INTEGER, deleted INTEGER, lastUpdateDate INTEGER, lastCheckedDate INTEGER, workCount INTEGER)"</ID>
+    <ID>MaxLineLength:WorkEditTextOps.kt$/** Индекс блока в [draftBlocks], чей [DraftBlock.rawRange] содержит [offset] (или последний, если offset за концом текста). */</ID>
+    <ID>NestedBlockDepth:AuthorEditParser.kt$AuthorEditParser$fun parseForm(html: String): Map&lt;String, String&gt;</ID>
+    <ID>NestedBlockDepth:AuthorParser.kt$AuthorParser$private fun parseCategories( region: String, authorDir: String, ): List&lt;Category&gt;</ID>
+    <ID>NestedBlockDepth:EpubParser.kt$EpubParser$fun parse(bytes: ByteArray): EpubDocument</ID>
+    <ID>NestedBlockDepth:Fb2Parser.kt$Fb2Parser$private fun extractXml(bytes: ByteArray): String</ID>
+    <ID>NestedBlockDepth:Fb2Parser.kt$Fb2Parser$private fun walk( el: Element, binaries: Map&lt;String, Pair&lt;String, String&gt;&gt;, out: MutableList&lt;ContentBlock&gt;, )</ID>
+    <ID>NestedBlockDepth:LocalFileRepository.kt$DefaultLocalFileRepository$private fun displayName(uri: Uri): String</ID>
+    <ID>NestedBlockDepth:DefaultWorkContentParser.kt$DefaultWorkContentParser$override fun parse(rawHtml: String): List&lt;ContentBlock&gt;</ID>
+    <ID>ReturnCount:AuthorParser.kt$AuthorParser$private fun parseWorkDl( doc: Element, authorDir: String, ): Work?</ID>
+    <ID>ReturnCount:BlockViews.kt$private fun AnnotatedString.highlighted( start: Int, end: Int, color: Color, ): AnnotatedString</ID>
+    <ID>ReturnCount:CharsetDetect.kt$fun decodeBytes( bytes: ByteArray, isHtml: Boolean, ): String</ID>
+    <ID>ReturnCount:DiscussionParser.kt$DiscussionParser$private fun parseRow(row: Element): Discussion?</ID>
+    <ID>ReturnCount:LocalFileRepository.kt$DefaultLocalFileRepository$override suspend fun ensureLocalCopy(uri: String): String</ID>
+    <ID>ReturnCount:LocalWorkViewModel.kt$LocalWorkViewModel$fun needsStoragePermission(path: String): Boolean</ID>
+    <ID>ReturnCount:LogFileWriter.kt$LogFileWriter$private fun ensureMediaStoreUri(): Uri?</ID>
+    <ID>ReturnCount:MainActivity.kt$MainActivity$private fun isNetworkAvailable(): Boolean</ID>
+    <ID>ReturnCount:NewestParser.kt$NewestParser$private fun parseRow(row: Element): Work?</ID>
+    <ID>ReturnCount:SamlibHttpClient.kt$SamlibHttpClient$suspend fun postComment( workLinkNoSuffix: String, draft: CommentDraft, operation: String, loginCookie: String, ): String?</ID>
+    <ID>ReturnCount:SamlibLinks.kt$fun classifySamlibLink( href: String, authorDir: String? = null, ): SamlibTarget</ID>
+    <ID>ReturnCount:SearchParser.kt$SearchParser$private fun parseRow(row: Element): Work?</ID>
+    <ID>ReturnCount:SearchScreen.kt$&lt;no name provided&gt;$override fun shouldOverrideUrlLoading( view: WebView?, request: WebResourceRequest?, ): Boolean</ID>
+    <ID>ReturnCount:TopAuthorsParser.kt$TopAuthorsParser$private fun parseRow(row: Element): Author?</ID>
+    <ID>ReturnCount:WorkEditScreen.kt$fun editMaxScroll(): Int</ID>
+    <ID>ReturnCount:WorkEditScreen.kt$fun jumpToHit(index: Int)</ID>
+    <ID>ReturnCount:WorkRatingParser.kt$WorkRatingParser$private fun parseRateVotes(raw: String): Pair&lt;BigDecimal, Int&gt;?</ID>
+    <ID>ReturnCount:WorkRatingParser.kt$WorkRatingParser$private fun parseRow(row: Element): Work?</ID>
+    <ID>SpreadOperator:DataModules.kt$(*ALL_MIGRATIONS)</ID>
+    <ID>SwallowedException:LocalWorkViewModel.kt$LocalWorkViewModel$e: Exception</ID>
+    <ID>SwallowedException:ParserUtils.kt$ParserUtils$e: Exception</ID>
+    <ID>ThrowsCount:EpubParser.kt$EpubParser$fun parse(bytes: ByteArray): EpubDocument</ID>
+    <ID>TooGenericExceptionCaught:AuthorEditParser.kt$AuthorEditParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:AuthorParser.kt$AuthorParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CommentsParser.kt$CommentsParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DiscussionParser.kt$DiscussionParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Fb2Parser.kt$Fb2Parser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:IllustrationsParser.kt$IllustrationsParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:LocalWorkViewModel.kt$LocalWorkViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:LocalWorkViewModel.kt$LocalWorkViewModel$e: Throwable</ID>
+    <ID>TooGenericExceptionCaught:NewestParser.kt$NewestParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ParserUtils.kt$ParserUtils$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SamlibResult.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SearchParser.kt$SearchParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TopAuthorsParser.kt$TopAuthorsParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebSearchParser.kt$WebSearchParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WorkParser.kt$WorkParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WorkRatingParser.kt$WorkRatingParser$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WorkTranslation.kt$WorkTranslation$e: Exception</ID>
+    <ID>UnusedParameter:ReaderBody.kt$ttsPlaying: Boolean</ID>
+    <ID>UnusedParameter:WorkScreen.kt$onOpenWork: (String) -&gt; Unit = {}</ID>
+    <ID>UnusedPrivateProperty:WorkRepositoryCacheTest.kt$WorkRepositoryCacheTest$private val cp1251: Charset = Charset.forName("windows-1251")</ID>
+    <ID>UseCheckOrError:LocalFileRepository.kt$DefaultLocalFileRepository$throw IllegalStateException("Не удалось открыть файл")</ID>
+    <ID>UseCheckOrError:LocalWorkViewModelTest.kt$FakeLocalRepo$throw IllegalStateException("boom")</ID>
+  </CurrentIssues>
+</SmellBaseline>

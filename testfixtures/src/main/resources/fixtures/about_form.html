@@ -1,0 +1,19 @@
+<html><body>
+<form action="/cgi-bin/zhurnal" method=POST>
+<input type=hidden name=DIR value=k/kazancew_d >
+<input type=hidden name=STORE_FILE value=about >
+Страна <input type=text size=12 name=COUNTRY value="Россия" >
+, Город <input type=text size=17 name=TOWN value="Москва" >
+День рождения: (ДД/ММ/ГГГГ)<input type=text size=10 name=BD value="04/05/1990" >
+  <table>
+  <tr><td colspan=4><small>
+   <textarea name="BODY" cols=100 rows=40>
+Привет! Пишу фантастику.
+Вторая строка.</textarea>
+  </small></td></tr>
+  <tr><td>
+   <input type="Submit" name="OPERATION" value="Сохранить! (Store body)">
+  </td></tr>
+  </table>
+ </form>
+</body></html>

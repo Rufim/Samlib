@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Общие действия/подписи (ui/common) -->
+    <string name="common_back">Назад</string>
+    <string name="common_menu">Меню</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_done">Готово</string>
+    <string name="common_go">Перейти</string>
+    <string name="common_retry">Повторить</string>
+    <string name="common_saved">Сохранено</string>
+    <string name="common_deleted">Удалено</string>
+    <string name="common_insert">Вставить</string>
+
+    <!-- TextPositionDialog -->
+    <string name="position_dialog_title">Позиция в тексте</string>
+    <string name="position_dialog_percent_label">Процент (0–100, до сотых)</string>
+
+    <!-- FilterScreen -->
+    <string name="filter_title">Фильтр</string>
+    <string name="filter_reset">Сброс</string>
+    <string name="filter_apply">Применить</string>
+    <string name="filter_search_label">Поиск</string>
+    <string name="filter_genres">Жанры</string>
+    <string name="filter_genres_empty">Жанры не выбраны — учитываются все</string>
+    <string name="filter_remove_genre">Убрать жанр %1$s</string>
+    <string name="filter_add">Добавить</string>
+    <string name="filter_author_gender">Пол автора</string>
+    <string name="filter_gender_male">Мужской</string>
+    <string name="filter_gender_female">Женский</string>
+    <string name="filter_gender_unknown">Неизвестно</string>
+    <string name="filter_exclude">Исключать выбранное</string>
+    <string name="filter_add_genres">Добавить жанры</string>
+    <string name="filter_all_genres_added">Все жанры уже добавлены</string>
+
+    <!-- FormatToolbar -->
+    <string name="format_bold_letter">Ж</string>
+    <string name="format_italic_letter">К</string>
+    <string name="format_underline_letter">Ч</string>
+    <string name="format_list">• Список</string>
+    <string name="format_link">Ссылка</string>
+    <string name="format_table">Таблица</string>
+    <string name="format_rows_label">Строк</string>
+    <string name="format_cols_label">Столбцов</string>
+    <string name="format_url_label">Адрес (URL)</string>
+    <string name="format_link_text_label">Текст ссылки</string>
+
+    <!-- UnsupportedScreen -->
+    <string name="unsupported_title">Страница</string>
+    <string name="unsupported_message">Эта страница не поддерживается в приложении</string>
+    <string name="unsupported_open_in_browser">Открыть в браузере</string>
+</resources>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AuthorScreen -->
+    <string name="author_title_fallback">Автор</string>
+    <string name="author_back">Назад</string>
+    <string name="author_edit_section">Редактировать раздел</string>
+    <string name="author_menu_dir_info">Сведения о разделе</string>
+    <string name="author_menu_groups">Группы</string>
+    <string name="author_menu_about">О себе</string>
+    <string name="author_menu_add_work">Добавить произведение</string>
+    <string name="author_unfollow">Отписаться</string>
+    <string name="author_follow">Следить</string>
+    <string name="author_stat_size">Объём:</string>
+    <string name="author_stat_works">Работ:</string>
+    <string name="author_stat_rating">Рейтинг:</string>
+    <string name="author_stat_views">Посещений:</string>
+    <string name="author_stat_lives">Живёт:</string>
+    <string name="author_recommendations_title">Начните знакомство с:</string>
+    <string name="author_updated_badge">обновлено</string>
+    <string name="author_edit_work">Редактировать произведение</string>
+    <string name="author_comments_count">Комментарии: %1$d</string>
+
+    <!-- WorkEditScreen -->
+    <string name="workedit_deleted_message">Произведение удалено</string>
+    <string name="workedit_file_read_error">Не удалось прочитать файл</string>
+    <string name="workedit_delete_confirm_title">Удалить произведение?</string>
+    <string name="workedit_delete_confirm_text">«%1$s» будет удалено с Самиздата безвозвратно.</string>
+    <string name="workedit_text_title">Текст произведения</string>
+    <string name="workedit_back_to_data">К данным книги</string>
+    <string name="workedit_search_in_text">Поиск по тексту</string>
+    <string name="workedit_mode_edit">Правка</string>
+    <string name="workedit_mode_preview">Превью</string>
+    <string name="workedit_save">Сохранить</string>
+    <string name="workedit_search_placeholder">Найти в тексте</string>
+    <string name="workedit_close_search">Закрыть поиск</string>
+    <string name="workedit_title_edit">Данные книги</string>
+    <string name="workedit_title_new">Новое произведение</string>
+    <string name="workedit_back">Назад</string>
+    <string name="workedit_delete">Удалить</string>
+    <string name="workedit_filename_label">Имя файла (латиницей)</string>
+    <string name="workedit_title_label">Название</string>
+    <string name="workedit_form_label">Форма</string>
+    <string name="workedit_genre_label">Жанр</string>
+    <string name="workedit_group_label">Группа</string>
+    <string name="workedit_annotation_label">Аннотация</string>
+    <string name="workedit_upload_file">Загрузить текст файлом</string>
+    <string name="workedit_detach_file">Открепить файл</string>
+    <string name="workedit_write_text">Написать текст</string>
+    <string name="workedit_edit_text">Редактировать текст</string>
+
+    <!-- DirEditScreen -->
+    <string name="diredit_title">Сведения о разделе</string>
+    <string name="diredit_back">Назад</string>
+    <string name="diredit_save">Сохранить</string>
+    <string name="diredit_section_title_label">Название раздела</string>
+    <string name="diredit_author_label">Автор</string>
+    <string name="diredit_email_label">Почта</string>
+    <string name="diredit_homepage_label">Домашняя страница</string>
+    <string name="diredit_annotation_label">Аннотация раздела</string>
+
+    <!-- GroupEditScreen -->
+    <string name="groupedit_title">Группы</string>
+    <string name="groupedit_back">Назад</string>
+    <string name="groupedit_save">Сохранить</string>
+    <string name="groupedit_group_number">Группа %1$d</string>
+    <string name="groupedit_delete_group">Удалить группу</string>
+    <string name="groupedit_name_label">Название</string>
+    <string name="groupedit_annotation_label">Аннотация</string>
+    <string name="groupedit_add_group">Добавить группу</string>
+
+    <!-- AboutEditScreen -->
+    <string name="aboutedit_title">О себе</string>
+    <string name="aboutedit_back">Назад</string>
+    <string name="aboutedit_save">Сохранить</string>
+    <string name="aboutedit_saved">Сохранено</string>
+    <string name="aboutedit_change_avatar">Изменить аватар</string>
+    <string name="aboutedit_text_label">Текст «о себе» (HTML)</string>
+    <string name="aboutedit_file_read_error">Не удалось прочитать файл</string>
+</resources>

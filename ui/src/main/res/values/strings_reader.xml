@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Читалка (ReaderScaffold) -->
+    <string name="reader_title_fallback">Чтение</string>
+    <string name="reader_back">Назад</string>
+    <string name="reader_search_in_book">Поиск по книге</string>
+    <string name="reader_toc">Оглавление</string>
+    <string name="reader_settings">Настройки</string>
+    <string name="reader_more">Ещё</string>
+    <string name="reader_unpin_history">Открепить в истории</string>
+    <string name="reader_pin_history">Закрепить в истории</string>
+    <string name="reader_go_author">К автору</string>
+    <string name="reader_observe_work">Отслеживать книгу</string>
+    <string name="reader_illustrations">Иллюстрации</string>
+    <string name="reader_download_fb2">Скачать FB2</string>
+    <string name="reader_save_to_device">Сохранить на устройство</string>
+    <string name="reader_open_external">Открыть в другой читалке</string>
+    <string name="reader_translating">Перевод… %1$d/%2$d</string>
+    <string name="reader_show_original">Показать оригинал</string>
+    <string name="reader_translate_to">Перевести на %1$s</string>
+    <string name="reader_autoscroll">Автопрокрутка</string>
+    <string name="reader_speak">Озвучить</string>
+    <string name="reader_close">Закрыть</string>
+    <string name="reader_pause">Пауза</string>
+    <string name="reader_resume">Продолжить</string>
+    <string name="reader_tts">Озвучка</string>
+    <string name="reader_stop_tts">Остановить озвучку</string>
+    <string name="reader_tts_stop_button">Стоп</string>
+    <string name="reader_tts_sleep_until">Остановка чтения в %1$s</string>
+    <string name="reader_tts_rate">Скорость: %1$s</string>
+    <string name="reader_tts_pitch">Тембр: %1$s</string>
+    <string name="reader_stop_autoscroll">Остановить прокрутку</string>
+    <string name="reader_autoscroll_speed">Скорость: %1$d</string>
+
+    <!-- Тосты экранов книги (WorkScreen / LocalWorkScreen) -->
+    <string name="reader_saved">Сохранено: %1$s</string>
+    <string name="reader_save_error">Ошибка сохранения</string>
+    <string name="reader_open_failed">Не удалось открыть</string>
+    <string name="reader_fb2_downloading">Загрузка FB2…</string>
+    <string name="reader_fb2_failed">Не удалось скачать</string>
+    <string name="reader_no_file_access">Нет доступа к файлу, откройте вручную</string>
+    <string name="reader_full_path">Полный путь: %1$s</string>
+    <string name="reader_path_not_found">путь не найден</string>
+
+    <!-- Поиск по книге (WorkSearchScreen) -->
+    <string name="worksearch_title">Поиск по книге</string>
+    <string name="worksearch_query_label">Что искать</string>
+    <string name="worksearch_clear">Очистить</string>
+    <string name="worksearch_min_chars">Введите минимум 2 символа</string>
+    <string name="worksearch_no_results">Ничего не найдено</string>
+    <string name="worksearch_found">Найдено: %1$s</string>
+
+    <!-- Настройки (SettingsScreen / SettingsSections) -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_category_text">Текст</string>
+    <string name="settings_category_translate">Перевод</string>
+    <string name="settings_category_tts">Озвучка (TTS)</string>
+    <string name="settings_category_network">Сеть</string>
+    <string name="settings_category_other">Прочее</string>
+    <string name="settings_font_size">Размер шрифта: %1$d</string>
+    <string name="settings_font">Шрифт</string>
+    <string name="settings_mono_font">Моноширинный шрифт (pre-блоки)</string>
+    <string name="settings_translate_language">Язык перевода</string>
+    <string name="settings_translate_source_auto">Автоопределение языка-источника</string>
+    <string name="settings_translate_source">Язык-источник</string>
+    <string name="settings_close">Закрыть</string>
+    <string name="settings_justify">Выравнивание по ширине</string>
+    <string name="settings_domain_label">Домен samlib</string>
+    <string name="settings_proxy_label">HTTP-прокси (host:port)</string>
+    <string name="settings_proxy_hint">напр. 127.0.0.1:8080 — пусто = без прокси</string>
+    <string name="settings_apply_network">Применить сетевые настройки</string>
+    <string name="settings_offline">Офлайн-режим</string>
+    <string name="settings_offline_desc">Скрыть разделы samlib, работать только с кэшем и файлами</string>
+    <string name="settings_file_logging">Запись лога в файл</string>
+    <string name="settings_file_logging_desc">Сохранять лог приложения в Download/Samlib/ для диагностики</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_colors">Цвета</string>
+    <string name="settings_bg">Фон</string>
+    <string name="settings_text">Текст</string>
+    <string name="settings_reset">Сброс</string>
+    <string name="settings_highlight">Подсветка читаемого текста</string>
+    <string name="settings_color">Цвет</string>
+    <string name="settings_autoscroll_speed">Скорость автопрокрутки: %1$d</string>
+    <string name="settings_sleep_timer_off">Таймер остановки чтения: выкл</string>
+    <string name="settings_sleep_timer_min">Таймер остановки чтения: %1$d мин</string>
+    <string name="settings_sleep_timer_desc">Останавливает озвучку по истечении времени. Пока экран виден, прокрутка (в т.ч. автоскролл) продлевает таймер; в фоне он идёт до конца.</string>
+    <string name="settings_tts_rate">Озвучка: скорость %1$s</string>
+    <string name="settings_tts_pitch">Озвучка: тембр %1$s</string>
+    <string name="settings_tts_engine">Движок озвучки</string>
+    <string name="settings_default">По умолчанию</string>
+    <string name="settings_tts_voice">Голос</string>
+    <string name="settings_voice_language">Язык голоса</string>
+    <string name="settings_auto">Авто</string>
+    <string name="settings_cancel">Отмена</string>
+    <string name="settings_pick_color">Выбор цвета</string>
+    <string name="settings_hue">Оттенок</string>
+    <string name="settings_saturation">Насыщенность</string>
+    <string name="settings_brightness">Яркость</string>
+    <string name="settings_tts_loading">Определяем движки озвучки…</string>
+    <string name="settings_tts_unavailable">Движок озвучки (TTS) не найден на устройстве. Установите его и включите в системных настройках синтеза речи.</string>
+    <string name="settings_tts_no_voices">Голоса для выбранного языка не найдены — установите их в системных настройках синтеза речи.</string>
+    <string name="settings_clear_cache">Очистить кэш произведений</string>
+    <string name="settings_import_legacy">Перенести данные из старой версии</string>
+    <string name="settings_cache_cleared">Кэш очищен</string>
+    <string name="settings_read_file_failed">Не удалось прочитать файл</string>
+    <string name="settings_legacy_empty">Данные старой версии не найдены или пусты</string>
+    <string name="settings_legacy_report">Перенесено: подписок %1$d, в истории %2$d, книг %3$d</string>
+    <string name="settings_legacy_not_found">База старой версии не найдена — выберите файл</string>
+</resources>

@@ -1,0 +1,42 @@
+<html><body>
+<form method=POST action="/cgi-bin/zhurnal" enctype="multipart/form-data">
+<input type=hidden name=DIR value="k/kazancew_d">
+<input type=hidden name=REPLACE value="Yes">
+<input type=hidden name=OWNER value="rufim">
+<input type=hidden name=TOWN value="Россия,?">
+<input type=hidden name=BD value="04/05/199X">
+<input type=hidden name=LAST_ADD value="09/01/2018">
+<input type=hidden name=REQUIRED value="AUTHOR,TITLE,DATE">
+<input type=text name=AUTHOR value="Казанцев Дмитрий">
+<input type=text name=TITLE value="Лаборатория.">
+<select name=READ_LEVEL>
+<option value="1">Для всех</option>
+<option value="2" selected>Только зарегистрированным</option>
+<option value="4">Только для меня</option>
+</select>
+<select name=WRITE_LEVEL>
+<option value="2">Все</option>
+<option value="4" selected>Только я</option>
+</select>
+<select name=READ_DEFAULT>
+<option value="1">Открыт</option>
+<option value="2" selected>Закрыт</option>
+</select>
+<input type=text name=EMAIL value="0rufim0@gmail.com">
+<input type=text name=SUBS_EMAIL value="0rufim0@gmail.com">
+<input type=checkbox name=SUBS_ALL value="1" checked>
+<input type=checkbox name=NOTIFY value="1">
+<input type=text name=HOME_LINK value="">
+<input type=text name=ADD_TYPE value="">
+<select name=NO_COMMENT_DIR>
+<option value="0">Разрешить</option>
+<option value="99" selected>Запретить</option>
+</select>
+<textarea name=ANNOT>
+Аннотация раздела в две
+строки.</textarea>
+<input type=text name=DATE value="13/11/2010">
+<input type=Submit name=OPERATION value="Сохранить! (Store dir)">
+<input type=Submit name=OPERATION value="Удалить! (Delete)">
+</form>
+</body></html>

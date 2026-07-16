@@ -1,0 +1,34 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+complexity:
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 10
+  LongMethod:
+    active: true
+    threshold: 90
+  TooManyFunctions:
+    active: false
+
+naming:
+  # @Composable-функции по конвенции именуются с большой буквы (как типы).
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    active: false
+  ForbiddenComment:
+    active: false
+  # @Preview-функции вызываются только инструментами (Android Studio), а не кодом.
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+
+comments:
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
